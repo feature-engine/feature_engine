@@ -214,6 +214,78 @@ def test_model_performance_2_correlated_groups(df_test):
     pd.testing.assert_frame_equal(Xt, df)
 
 
+def test_model_performance_single_corr_group_duplicated_features(df_single):
+    """Test selector consistency in case of very similar columns (e.g. duplicated).
+
+    This test checks that in case of columns with the same values for the selection
+    method (for example same correlation with target), the transformer consistently
+    drops the feature that is is alphabetically bigger instead of selecting one of the
+    two columns randomly.
+    """
+
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=2,
+        n_informative=2,
+        n_redundant=0,
+        n_clusters_per_class=1,
+        weights=[0.50],
+        class_sep=2,
+        random_state=1,
+    )
+
+    # trasform array into pandas df
+    colnames = ["var_" + str(i) for i in range(2)]
+    X = pd.DataFrame(X, columns=colnames)
+
+    # Duplicate columns
+    for col in X.columns:
+        X[col + "_duplicated"] = X[col]
+
+    transformer = SmartCorrelatedSelection(
+        variables=None,
+        method="pearson",
+        threshold=0.8,
+        missing_values="raise",
+        selection_method="corr_with_target",
+        estimator=RandomForestClassifier(n_estimators=10, random_state=1),
+        scoring="roc_auc",
+        cv=3,
+    )
+
+    Xt = transformer.fit_transform(X, y)
+
+    # test init params
+    assert transformer.scoring == "roc_auc"
+    assert transformer.cv == 3
+
+    # test fit attrs
+    assert transformer.correlated_feature_sets_ == (
+        [
+            {
+                "var_1",
+                "var_1_duplicated",
+            },
+            {"var_0_duplicated", "var_0"},
+        ]
+    )
+    assert transformer.features_to_drop_ == [
+        "var_1_duplicated",
+        "var_0_duplicated",
+    ]
+    assert transformer.correlated_feature_dict_ == {
+        "var_1": {
+            "var_1_duplicated",
+        },
+        "var_0": {"var_0_duplicated"},
+    }
+
+    # expected result
+    df = X[["var_0", "var_1"]].copy()
+    # test transform output
+    pd.testing.assert_frame_equal(Xt, df)
+
+
 def test_cv_generator(df_single):
     X, y = df_single
     cv = KFold(3)
@@ -469,7 +541,7 @@ def test_corr_with_target_single_corr_group(df_single):
 
     # test fit attrs
     assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
-    assert transformer.features_to_drop_ == ['var_4', 'var_1']
+    assert transformer.features_to_drop_ == ["var_4", "var_1"]
     assert transformer.correlated_feature_dict_ == {"var_2": {"var_1", "var_4"}}
     # test transform output
     pd.testing.assert_frame_equal(Xt, df)
