@@ -169,9 +169,9 @@ jobs:
             python -m venv env
             source env/bin/activate
             pip install --upgrade pip
-            pip install twine wheel
+            pip install twine build
             rm -rf dist/*
-            python -m build
+            python -m build --wheel --sdist --outdir dist
             ls -l dist
             twine upload dist/*
 
