@@ -171,7 +171,7 @@ jobs:
             pip install --upgrade pip
             pip install twine wheel
             rm -rf dist/*
-            python setup.py sdist bdist_wheel --universal
+            python -m build
             ls -l dist
             twine upload dist/*
 
