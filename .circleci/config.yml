@@ -192,7 +192,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - 1.8.X
+                - 1.9.X
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py39
