@@ -1,0 +1,51 @@
+Version 1.9.X
+=============
+
+Version 1.9.0
+-------------
+
+Deployed: 27th Aug 2025
+
+Contributors
+~~~~~~~~~~~~
+
+- `Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_
+- `Franz Király  <https://github.com/fkiraly>`_
+- `Sancho Luijten  <https://github.com/sancholp>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we expand the functionality of 3 feature selection transformers: `ProbeFeatureSelection()`,
+`RecursiveFeatureAddition()` and `RecursiveFeatureElimination()`.
+
+`ProbeFeatureSelection()` can now create probes with additional distributions, and also
+combine the probes using the mean, max or mean plus standard deviation.
+
+`RecursiveFeatureAddition()` and `RecursiveFeatureElimination()` now work with all sklearn
+estimators, regardless of whether they return feature importance or coefficients. For those
+without these features, importance is determined by feature permutaton.
+
+Thanks to all contributors who made this possible either by contributing code or raising issues.
+
+Enhancements
+~~~~~~~~~~~~
+
+- Added 2 additional distributions, discrete uniform and Poisson, to create probes in `ProbeFeatureSelection()`.
+- Expanded `ProbeFeatureSelection()`'s functionality to obtain the mean, max or mean plus std of random probes.
+- Expanded `RecursiveFeatureAddition()` and `RecursiveFeatureElimination()`'s functionality to support estimators without feature importance or coefficients.
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed fragmented dataframe warning in `DecisionTreeFeatures()`.
+- Replaced default sorting method by merge_sort in `SmartCorrelatedSelection()`. (`Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_)
+
+Code maintenance
+~~~~~~~~~~~~~~~~
+
+- Migrated various config files to pyproject.toml. (`Franz Király  <https://github.com/fkiraly>`_)
+- Added support for Python 3.13.
+
+Docs
+~~~~
+
+- Updated doscstings for `DropHighPSIFeatures` to reflect the fact that the PSI is symmetric but our implementation is not. (`Sancho Luijten  <https://github.com/sancholp>`_)
