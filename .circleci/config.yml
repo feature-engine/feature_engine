@@ -171,7 +171,7 @@ jobs:
             pip install --upgrade pip
             pip install twine build
             rm -rf dist/*
-            python -m build --wheel --sdist --outdir dist
+            python -m build
             ls -l dist
             twine upload dist/*
 
