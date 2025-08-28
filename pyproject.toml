@@ -62,6 +62,9 @@ include-package-data = true
 [tool.setuptools.package-data]
 feature_engine = ["VERSION", "py.typed"]
 
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+
 [tool.setuptools.dynamic]
 version = {file = "feature_engine/VERSION"}
 
