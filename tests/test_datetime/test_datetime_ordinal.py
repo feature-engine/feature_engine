@@ -35,7 +35,6 @@ def df_datetime_ordinal_na():
 def test_datetime_ordinal_no_start_date(df_datetime_ordinal):
     transformer = DatetimeOrdinal(variables=["date_col_1", "date_col_2"])
     X_transformed = transformer.fit_transform(df_datetime_ordinal)
-
     expected_ordinal_1 = pd.Series(
         [d.toordinal() for d in df_datetime_ordinal["date_col_1"]],
         name="date_col_1_ordinal",
