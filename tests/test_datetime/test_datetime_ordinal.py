@@ -144,7 +144,6 @@ def test_datetime_ordinal_get_feature_names_out_with_input_features_drop_origina
 def test_datetime_ordinal_non_datetime_variable_in_transform(df_datetime_ordinal):
     transformer = DatetimeOrdinal(variables=["date_col_1"])
     transformer.fit(df_datetime_ordinal)
-    
     # Create a new dataframe where 'date_col_1' is no longer datetime
     X_test = df_datetime_ordinal.copy()
     X_test["date_col_1"] = ["a", "b", "c", "d", "e"]
