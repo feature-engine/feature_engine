@@ -192,7 +192,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
             The data to transform.
-, default
+
         Returns
         -------
         X_new: Pandas dataframe, shape = [n_samples, n_features x n_df_features]
