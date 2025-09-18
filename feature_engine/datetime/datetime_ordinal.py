@@ -222,11 +222,15 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             # Convert to datetime, then to ordinal
             datetime_series = pd.to_datetime(X_new[var])
             # Handle NaT values: toordinal() raises ValueError for NaT
-            ordinal_series = datetime_series.apply(lambda x: x.toordinal() if pd.notna(x) else pd.NA)
+            ordinal_series = datetime_series.apply(
+                lambda x: x.toordinal() if pd.notna(x) else pd.NA
+            )
 
             if self.start_date_ordinal_ is not None:
                 # Only apply offset if not NaT
-                ordinal_series = ordinal_series.apply(lambda x: x - self.start_date_ordinal_ + 1 if pd.notna(x) else pd.NA)
+                ordinal_series = ordinal_series.apply(
+                    lambda x: x - self.start_date_ordinal_ + 1 if pd.notna(x) else pd.NA
+                )
 
             X_new[str(var) + "_ordinal"] = ordinal_series
 
