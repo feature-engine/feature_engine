@@ -247,3 +247,23 @@ def test_datetime_ordinal_missing_values_raise_in_transform(
         ValueError, match="Some of the variables in the dataset contain NaN"
     ):
         transformer.transform(X_test)  # 3 columns + NA data
+
+
+def test_raises_error_for_invalid_missing_values():
+    with pytest.raises(
+        ValueError, match="missing_values takes only values 'raise' or 'ignore'"
+    ):
+        DatetimeOrdinal(missing_values="foo")
+
+
+def test_raises_error_for_invalid_drop_original():
+    with pytest.raises(
+        ValueError, match="drop_original takes only booleans True or False"
+    ):
+        DatetimeOrdinal(drop_original="bar")
+
+
+def test_more_tags_returns_expected_tags():
+    transformer = DatetimeOrdinal()
+    expected_tags = {"variables": "datetime"}
+    assert transformer._more_tags() == expected_tags
