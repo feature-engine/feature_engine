@@ -10,4 +10,5 @@ features from existing datetime or object-like data.
    :maxdepth: 1
 
    DatetimeFeatures
+   DatetimeOrdinal
    DatetimeSubtraction

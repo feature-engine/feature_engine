@@ -256,6 +256,7 @@ extract many new features from the date and time parts of the datetime variable:
 
 - :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
 - :doc:`api_doc/datetime/DatetimeSubtraction`: computes subtractions between datetime variables
+- :doc:`api_doc/datetime/DatetimeOrdinal`: converts datetime variables into ordinal numbers
 
 Feature Selection:
 ~~~~~~~~~~~~~~~~~~

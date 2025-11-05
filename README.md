@@ -143,6 +143,7 @@ Please share your story by answering 1 quick question
 ### Datetime
  * DatetimeFeatures
  * DatetimeSubtraction
+ * DatetimeOrdinal
  
 ### Time Series
  * LagFeatures

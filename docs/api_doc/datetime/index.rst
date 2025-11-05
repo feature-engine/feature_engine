@@ -11,4 +11,5 @@ features from existing datetime or object-like data.
 
    DatetimeFeatures
    DatetimeSubtraction
+   DatetimeOrdinal
 
