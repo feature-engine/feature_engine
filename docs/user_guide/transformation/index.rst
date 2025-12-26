@@ -33,6 +33,7 @@ on the nature of the variable.
    LogCpTransformer
    ReciprocalTransformer
    ArcsinTransformer
+   ArcSinhTransformer
    PowerTransformer
    BoxCoxTransformer
    YeoJohnsonTransformer
