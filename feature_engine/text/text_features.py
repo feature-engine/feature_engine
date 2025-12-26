@@ -291,7 +291,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         Parameters
         ----------
         input_features : array-like of str or None, default=None
-            Input features. If None, uses feature_names_in_.
+            Input features. If None, uses ``feature_names_in_``.
 
         Returns
         -------
