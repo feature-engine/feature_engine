@@ -44,9 +44,9 @@ class ArcSinhTransformer(BaseNumericalTransformer):
 
     The transformation is: x → arcsinh((x - loc) / scale)
 
-    For large |x|, arcsinh(x) behaves like ln(|x|) + ln(2), providing similar
-    variance-stabilizing properties as the log transformation. For small |x|,
-    it behaves approximately linearly (x → x). This makes it ideal for variables
+    For large values of x, arcsinh(x) behaves like ln(x) + ln(2), providing similar
+    variance-stabilizing properties as the log transformation. For small values of x,
+    it behaves approximately linearly. This makes it ideal for variables
     like net worth, profit/loss, or any metric that can be positive or negative.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
