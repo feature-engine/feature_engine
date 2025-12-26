@@ -1,7 +1,7 @@
 # Authors: Ankit Hemant Lade (contributor)
 # License: BSD 3 clause
 
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -223,7 +223,12 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
         X = check_X(X)
 
         # Store coordinate variables
-        self.variables_ = [self.lat1, self.lon1, self.lat2, self.lon2]
+        self.variables_: List[Union[str, int]] = [
+            self.lat1,
+            self.lon1,
+            self.lat2,
+            self.lon2,
+        ]
 
         # Check all coordinate columns exist
         missing = set(self.variables_) - set(X.columns)
