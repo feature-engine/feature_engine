@@ -197,7 +197,8 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
         # Validate validate_ranges
         if not isinstance(validate_ranges, bool):
             raise ValueError(
-                f"validate_ranges must be a boolean. Got {type(validate_ranges).__name__}."
+                "validate_ranges must be a boolean. "
+                f"Got {type(validate_ranges).__name__}."
             )
 
         _check_param_drop_original(drop_original)
