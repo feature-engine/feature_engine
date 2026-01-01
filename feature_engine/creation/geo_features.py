@@ -82,6 +82,11 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
     drop_original: bool, default=False
         Whether to drop the original coordinate columns after transformation.
 
+    validate_ranges: bool, default=True
+        Whether to validate that latitude values are within [-90, 90] and
+        longitude values are within [-180, 180]. If False, coordinates outside
+        valid ranges may produce incorrect distance calculations.
+
     Attributes
     ----------
     variables_:
@@ -96,7 +101,7 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
     Methods
     -------
     fit:
-        This transformer does not learn parameters. Validates input columns.
+        This transformer does not learn parameters.
 
     fit_transform:
         Fit to data, then transform it.
@@ -153,6 +158,7 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
         output_unit: Literal["km", "miles", "meters", "feet"] = "km",
         output_col: str = "geo_distance",
         drop_original: bool = False,
+        validate_ranges: bool = True,
     ) -> None:
 
         # Validate coordinate column names
@@ -188,6 +194,12 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
                 f"output_col must be a string. Got {type(output_col).__name__}."
             )
 
+        # Validate validate_ranges
+        if not isinstance(validate_ranges, bool):
+            raise ValueError(
+                f"validate_ranges must be a boolean. Got {type(validate_ranges).__name__}."
+            )
+
         _check_param_drop_original(drop_original)
 
         self.lat1 = lat1
@@ -198,12 +210,11 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
         self.output_unit = output_unit
         self.output_col = output_col
         self.drop_original = drop_original
+        self.validate_ranges = validate_ranges
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
         This transformer does not learn parameters.
-
-        Validates that the coordinate columns exist and are numerical.
 
         Parameters
         ----------
@@ -243,18 +254,19 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
         # Check for missing values
         _check_contains_na(X, self.variables_)
 
-        # Validate coordinate ranges (optional sanity check)
-        for lat_col in [self.lat1, self.lat2]:
-            if (X[lat_col].abs() > 90).any():
-                raise ValueError(
-                    f"Latitude values in '{lat_col}' must be between -90 and 90."
-                )
+        # Validate coordinate ranges if enabled
+        if self.validate_ranges:
+            for lat_col in [self.lat1, self.lat2]:
+                if (X[lat_col].abs() > 90).any():
+                    raise ValueError(
+                        f"Latitude values in '{lat_col}' must be between -90 and 90."
+                    )
 
-        for lon_col in [self.lon1, self.lon2]:
-            if (X[lon_col].abs() > 180).any():
-                raise ValueError(
-                    f"Longitude values in '{lon_col}' must be between -180 and 180."
-                )
+            for lon_col in [self.lon1, self.lon2]:
+                if (X[lon_col].abs() > 180).any():
+                    raise ValueError(
+                        f"Longitude values in '{lon_col}' must be between -180 and 180."
+                    )
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
