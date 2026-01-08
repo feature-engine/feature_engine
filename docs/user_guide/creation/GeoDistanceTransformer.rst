@@ -205,7 +205,7 @@ then scales the features, and finally trains a regression model:
 
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
-    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.linear_model import LinearRegression
 
     # Create sample target variable
     y = pd.Series([100, 150, 80, 200])
@@ -219,7 +219,7 @@ then scales the features, and finally trains a regression model:
             drop_original=True
         )),
         ('scaler', StandardScaler()),
-        ('regressor', RandomForestRegressor(n_estimators=10, random_state=42))
+        ('regressor', LinearRegression())
     ])
 
     # Fit the pipeline
@@ -233,4 +233,4 @@ The pipeline successfully trains and returns predictions:
 
 .. code:: python
 
-    Predictions: [107.  143.   83.  197.]
+    Predictions: [100. 150.  80. 200.]
