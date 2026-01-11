@@ -247,6 +247,7 @@ Feature-engine allows you to create new features by combining them mathematicall
 -  :doc:`api_doc/creation/RelativeFeatures`: combines variables with reference features
 -  :doc:`api_doc/creation/CyclicalFeatures`: creates variables using sine and cosine, suitable for cyclical features
 -  :doc:`api_doc/creation/DecisionTreeFeatures`: creates variables resulting from predictions of decision trees on 1 or more features
+-  :doc:`api_doc/creation/GeoDistanceeFeatures`: creates distance variables based on given latitude and longitude values
 
 Datetime:
 ~~~~~~~~~
