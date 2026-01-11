@@ -3,12 +3,12 @@
 .. currentmodule:: feature_engine.creation
 
 GeoDistanceFeatures
-======================
+===================
 
-:class:`GeoDistanceFeatures ()` calculates the distance between two geographical
+:class:`GeoDistanceFeatures()` calculates the distance between two geographical
 coordinate pairs (latitude/longitude) and adds the result as a new feature.
 
-:class:`GeoDistanceFeatures ()` is useful for location-based machine learning problems such as
+:class:`GeoDistanceFeatures()` is useful for location-based machine learning problems such as
 real estate pricing, delivery route optimization, ride-sharing applications,
 and any domain where geographic proximity is relevant.
 
@@ -58,7 +58,7 @@ Now let's calculate the distances using the haversine formula and returning the 
 .. code:: python
 
     # Set up the transformer
-    gdt = GeoDistanceFeatures (
+    gdt = GeoDistanceFeatures(
         lat1='origin_lat',
         lon1='origin_lon',
         lat2='dest_lat',
@@ -92,7 +92,7 @@ calculation suitable for short distances:
 
 .. code:: python
 
-    gdt_euclidean = GeoDistanceFeatures (
+    gdt_euclidean = GeoDistanceFeatures(
         lat1='origin_lat', lon1='origin_lon',
         lat2='dest_lat', lon2='dest_lon',
         method='euclidean',
@@ -118,7 +118,7 @@ Alternatively, we can use the Manhattan distance, which is useful for grid-based
 
 .. code:: python
 
-    gdt_manhattan = GeoDistanceFeatures (
+    gdt_manhattan = GeoDistanceFeatures(
         lat1='origin_lat', lon1='origin_lon',
         lat2='dest_lat', lon2='dest_lon',
         method='manhattan',
@@ -147,7 +147,7 @@ Here we calculate distances in miles:
 
 .. code:: python
 
-    gdt = GeoDistanceFeatures (
+    gdt = GeoDistanceFeatures(
         lat1='origin_lat', lon1='origin_lon',
         lat2='dest_lat', lon2='dest_lon',
         output_unit='miles',
@@ -176,7 +176,7 @@ coordinate columns after calculating the distance:
 
 .. code:: python
 
-    gdt = GeoDistanceFeatures (
+    gdt = GeoDistanceFeatures(
         lat1='origin_lat', lon1='origin_lon',
         lat2='dest_lat', lon2='dest_lon',
         drop_original=True
@@ -197,7 +197,7 @@ After transformation, only the non-coordinate columns and the new distance colum
 Calculating distance within a Pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`GeoDistanceFeatures ()` works seamlessly with scikit-learn pipelines. In the
+:class:`GeoDistanceFeatures()` works seamlessly with scikit-learn pipelines. In the
 following example, we create a pipeline that first calculates the geographic distance,
 then scales the features, and finally trains a regression model:
 
@@ -212,7 +212,7 @@ then scales the features, and finally trains a regression model:
 
     # Create a pipeline for price prediction
     pipe = Pipeline([
-        ('geo_distance', GeoDistanceFeatures (
+        ('geo_distance', GeoDistanceFeatures(
             lat1='origin_lat', lon1='origin_lon',
             lat2='dest_lat', lon2='dest_lon',
             output_unit='km',
