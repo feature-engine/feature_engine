@@ -29,9 +29,9 @@ EARTH_RADIUS = {
 }
 
 
-class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
+class GeoDistanceFeatures (TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
-    GeoDistanceTransformer() calculates the distance between two geographical
+    GeoDistanceFeatures () calculates the distance between two geographical
     coordinate pairs (latitude/longitude) and adds the result as a new feature.
 
     This transformer is useful for location-based machine learning problems such as
@@ -127,14 +127,14 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
     --------
 
     >>> import pandas as pd
-    >>> from feature_engine.creation import GeoDistanceTransformer
+    >>> from feature_engine.creation import GeoDistanceFeatures 
     >>> X = pd.DataFrame({
     ...     'origin_lat': [40.7128, 34.0522, 41.8781],
     ...     'origin_lon': [-74.0060, -118.2437, -87.6298],
     ...     'dest_lat': [34.0522, 41.8781, 40.7128],
     ...     'dest_lon': [-118.2437, -87.6298, -74.0060],
     ... })
-    >>> gdt = GeoDistanceTransformer(
+    >>> gdt = GeoDistanceFeatures (
     ...     lat1='origin_lat', lon1='origin_lon',
     ...     lat2='dest_lat', lon2='dest_lon',
     ...     method='haversine', output_unit='km'
@@ -227,7 +227,7 @@ class GeoDistanceTransformer(TransformerMixin, BaseEstimator, GetFeatureNamesOut
 
         Returns
         -------
-        self: GeoDistanceTransformer
+        self: GeoDistanceFeatures 
             The fitted transformer.
         """
 

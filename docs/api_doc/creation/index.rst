@@ -13,7 +13,7 @@ by either combining or transforming existing features.
    RelativeFeatures
    CyclicalFeatures
    DecisionTreeFeatures
-   GeoDistanceTransformer
+   GeoDistanceFeatures
 
 
 Transformers in other Libraries

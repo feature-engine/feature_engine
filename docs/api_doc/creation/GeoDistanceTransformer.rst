@@ -1,6 +1,6 @@
-GeoDistanceTransformer
+GeoDistanceFeatures
 ======================
 
-.. autoclass:: feature_engine.creation.GeoDistanceTransformer
+.. autoclass:: feature_engine.creation.GeoDistanceFeatures
     :members:
 
