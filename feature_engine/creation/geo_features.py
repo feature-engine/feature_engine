@@ -29,9 +29,9 @@ EARTH_RADIUS = {
 }
 
 
-class GeoDistanceFeatures (TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
+class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
-    GeoDistanceFeatures () calculates the distance between two geographical
+    GeoDistanceFeatures() calculates the distance between two geographical
     coordinate pairs (latitude/longitude) and adds the result as a new feature.
 
     This transformer is useful for location-based machine learning problems such as
@@ -134,7 +134,7 @@ class GeoDistanceFeatures (TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
     ...     'dest_lat': [34.0522, 41.8781, 40.7128],
     ...     'dest_lon': [-118.2437, -87.6298, -74.0060],
     ... })
-    >>> gdt = GeoDistanceFeatures (
+    >>> gdt = GeoDistanceFeatures(
     ...     lat1='origin_lat', lon1='origin_lon',
     ...     lat2='dest_lat', lon2='dest_lon',
     ...     method='haversine', output_unit='km'
