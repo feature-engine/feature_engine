@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -13,7 +14,7 @@ variables_arr = ["x0", "x1", "x2", "x3", "x4"]
 variables_user = ["Dog", "Cat", "Bird", "Frog", "Duck"]
 
 
-class MockTransformer(GetFeatureNamesOutMixin):
+class MockTransformer(BaseEstimator, GetFeatureNamesOutMixin):
     def fit(self, X, y=None):
         X = check_X(X)
         self.feature_names_in_ = list(X.columns)
@@ -272,7 +273,7 @@ def test_raise_error_when_input_feature_non_permitted(df_vartypes):
 # ================ Tests for transformers that add features to the data =======
 
 
-class MockCreator(GetFeatureNamesOutMixin):
+class MockCreator(BaseEstimator, GetFeatureNamesOutMixin):
     def __init__(self, variables, drop_original):
         self.variables = variables
         self.drop_original = drop_original
@@ -399,7 +400,7 @@ def test_new_feature_names_pipe_and_skl_transformer_that_adds_features(
 # ================ Tests for transformers that remove features to the data =======
 
 
-class MockSelector(GetFeatureNamesOutMixin):
+class MockSelector(BaseEstimator, GetFeatureNamesOutMixin):
     def fit(self, X, y=None):
         X = check_X(X)
         self.feature_names_in_ = list(X.columns)
