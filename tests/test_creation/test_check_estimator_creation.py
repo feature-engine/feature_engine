@@ -8,7 +8,7 @@ from sklearn.utils.fixes import parse_version
 from feature_engine.creation import (
     CyclicalFeatures,
     DecisionTreeFeatures,
-    GeoDistanceFeatures ,
+    GeoDistanceFeatures,
     MathFeatures,
     RelativeFeatures,
 )
@@ -88,7 +88,7 @@ def test_geo_distance_transformer_in_pipeline():
     })
     y = pd.Series([0, 1])
 
-    transformer = GeoDistanceFeatures (
+    transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", validate_ranges=False
     )
     pipe = Pipeline([("geo", transformer)]).set_output(transform="pandas")
