@@ -28,6 +28,7 @@ Creation
 
    creation/index
    datetime/index
+   text/index
 
 
 Selection

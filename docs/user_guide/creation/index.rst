@@ -66,6 +66,7 @@ Feature creation module
    MathFeatures
    RelativeFeatures
    DecisionTreeFeatures
+   GeoDistanceTransformer
 
 Feature-engine in Practice
 --------------------------
