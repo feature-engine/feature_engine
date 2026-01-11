@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from feature_engine.creation import GeoDistanceFeatures 
+from feature_engine.creation import GeoDistanceFeatures
 
 
 @pytest.fixture

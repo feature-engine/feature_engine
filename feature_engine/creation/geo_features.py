@@ -127,7 +127,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     --------
 
     >>> import pandas as pd
-    >>> from feature_engine.creation import GeoDistanceFeatures 
+    >>> from feature_engine.creation import GeoDistanceFeatures
     >>> X = pd.DataFrame({
     ...     'origin_lat': [40.7128, 34.0522, 41.8781],
     ...     'origin_lon': [-74.0060, -118.2437, -87.6298],
@@ -227,7 +227,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         Returns
         -------
-        self: GeoDistanceFeatures 
+        self: GeoDistanceFeatures
             The fitted transformer.
         """
 
