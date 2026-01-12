@@ -21,7 +21,6 @@ _estimators = [
     BoxCoxTransformer(),
     LogTransformer(),
     LogCpTransformer(),
-    LogCpTransformer(),
     ArcsinTransformer(),
     ArcSinhTransformer(),
     PowerTransformer(),
