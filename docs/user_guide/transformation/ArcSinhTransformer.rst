@@ -114,6 +114,19 @@ We can now transform the variables:
     train_t = tf.transform(X_train)
     test_t = tf.transform(X_test)
 
+    print(train_t.head())
+
+The dataframe with the transformed variables:
+
+.. code:: python
+
+            profit  net_worth
+    105   8.997273 -11.552056
+    68    8.886371 -10.753000
+    479  10.016437 -10.686152
+    399  10.116836 -11.092693
+    434  10.310523  -9.723893
+
 The arcsinh transformation compresses extreme values while preserving the sign:
 
 .. code:: python
