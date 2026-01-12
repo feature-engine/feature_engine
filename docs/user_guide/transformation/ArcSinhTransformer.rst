@@ -148,7 +148,12 @@ Using loc and scale parameters
 ------------------------------
 
 :class:`ArcSinhTransformer()` supports location and scale parameters to
-center and normalize data before transformation:
+center and normalize data before transformation.
+
+In practice, it is common to standardize the variable (zero mean, unit variance)
+so that the center of the distribution falls in the linear region of the arcsinh
+function, while the tails are compressed logarithmically. We can achieve this
+by setting ``loc`` to the mean and ``scale`` to the standard deviation:
 
 .. code:: python
 
