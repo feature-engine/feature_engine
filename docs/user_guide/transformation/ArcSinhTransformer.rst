@@ -174,8 +174,18 @@ the original values:
     train_t = tf.transform(X_train)
     train_recovered = tf.inverse_transform(train_t)
 
-    # Values should match original
-    np.allclose(X_train['profit'], train_recovered['profit'])
+    print(train_recovered.head())
+
+The recovered data:
+
+.. code:: python
+
+               profit     net_worth
+    105   4040.508568 -51995.296356
+    68    3616.360250 -23385.060066
+    479  11195.749114 -21872.915016
+    399  12378.163120 -32844.713949
+    434  15023.570521  -8356.085689
 
 API Reference
 -------------
