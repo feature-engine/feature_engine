@@ -77,6 +77,19 @@ jobs:
           command: |
             tox -e py311-sklearn160
 
+  test_feature_engine_py311_sklearn170:
+    docker:
+      - image: cimg/python:3.11.7
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.11 and scikit-learn 1.7.0
+          command: |
+            tox -e py311-sklearn170
+
   test_feature_engine_py312:
     docker:
       - image: cimg/python:3.12.1
@@ -183,6 +196,7 @@ workflows:
       - test_feature_engine_py310
       - test_feature_engine_py311_sklearn150
       - test_feature_engine_py311_sklearn160
+      - test_feature_engine_py311_sklearn170
       - test_feature_engine_py312
       - test_feature_engine_py313
       - test_style
@@ -199,6 +213,7 @@ workflows:
             - test_feature_engine_py310
             - test_feature_engine_py311_sklearn150
             - test_feature_engine_py311_sklearn160
+            - test_feature_engine_py311_sklearn170
             - test_feature_engine_py312
             - test_feature_engine_py313
             - test_style

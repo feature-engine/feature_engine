@@ -122,7 +122,8 @@ Please share your story by answering 1 quick question
  * MathFeatures
  * RelativeFeatures
  * CyclicalFeatures
- * DecisionTreeFeatures()
+ * DecisionTreeFeatures
+ * GeoDistanceFeatures
 
 ### Feature Selection:
  * DropFeatures

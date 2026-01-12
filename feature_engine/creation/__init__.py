@@ -4,14 +4,14 @@ variables in the dataframe.
 """
 from .cyclical_features import CyclicalFeatures
 from .decision_tree_features import DecisionTreeFeatures
-from .geo_features import GeoDistanceTransformer
+from .geo_features import GeoDistanceFeatures
 from .math_features import MathFeatures
 from .relative_features import RelativeFeatures
 
 __all__ = [
     "CyclicalFeatures",
     "DecisionTreeFeatures",
-    "GeoDistanceTransformer",
+    "GeoDistanceFeatures",
     "MathFeatures",
     "RelativeFeatures",
 ]
