@@ -5,7 +5,7 @@
 ArcSinhTransformer
 ==================
 
-The :class:`ArcSinhTransformer()` applies the inverse hyperbolic sine transformation
+:class:`ArcSinhTransformer()` applies the inverse hyperbolic sine transformation
 (arcsinh) to numerical variables. Also known as the pseudo-logarithm, this
 transformation is useful for data that contains both positive and negative values.
 
@@ -58,7 +58,7 @@ Example
 Let's create a dataframe with positive and negative values and apply the arcsinh
 transformation:
 
-Unlike the :class:`LogTransformer()`, the :class:`ArcSinhTransformer()` can handle
+Unlike the :class:`LogTransformer()`, :class:`ArcSinhTransformer()` can handle
 zero and negative values without requiring any preprocessing.
 
 Example
@@ -125,7 +125,7 @@ The arcsinh transformation compresses extreme values while preserving the sign:
 Using loc and scale parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`ArcSinhTransformer()` supports location and scale parameters to
+:class:`ArcSinhTransformer()` supports location and scale parameters to
 center and normalize data before transformation:
 
 .. code:: python
@@ -143,7 +143,7 @@ center and normalize data before transformation:
 Inverse transformation
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`ArcSinhTransformer()` supports inverse transformation to recover
+:class:`ArcSinhTransformer()` supports inverse transformation to recover
 the original values:
 
 .. code:: python
