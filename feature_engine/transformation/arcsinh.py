@@ -143,8 +143,6 @@ class ArcSinhTransformer(BaseNumericalTransformer):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer does not learn parameters.
-
         Selects the numerical variables and stores feature names.
 
         Parameters
