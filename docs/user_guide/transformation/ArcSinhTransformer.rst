@@ -11,10 +11,52 @@ transformation is useful for data that contains both positive and negative value
 
 The transformation is: x → arcsinh((x - loc) / scale)
 
-For large values of x, arcsinh(x) behaves like ln(x) + ln(2), providing similar
-variance-stabilizing properties as the log transformation. For small values of x,
-it behaves approximately linearly (x tends to x). This makes it ideal for variables
-like net worth, profit/loss, or any metric that can be positive or negative.
+Comparison to LogTransformer and ArcsinTransformer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **LogTransformer**: `log(x)` requires `x > 0`. If your data contains zeros or negative values, you cannot use the standard LogTransformer directly. You would need to shift the data (e.g. `LogCpTransformer`) or remove non-positive values.
+- **ArcsinTransformer**: `arcsin(sqrt(x))` is typically used for proportions/ratios bounded between 0 and 1. It is not suitable for general unbounded numerical data.
+- **ArcSinhTransformer**: `arcsinh(x)` works for **all real numbers** (positive, negative, and zero). It handles zero gracefully (arcsinh(0) = 0) and is symmetric around zero.
+
+When to use ArcSinhTransformer:
+- Your data contains zeros or negative values (e.g., profit/loss, debt, temperature).
+- You want a log-like transformation to stabilize variance or compress extreme values.
+- You don't want to add an arbitrary constant (shift) to make values positive.
+
+Intuitive Explanation of Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The transformation includes optional `loc` (location) and `scale` parameters:
+
+.. math::
+    y = \text{arcsinh}\left(\frac{x - \text{loc}}{\text{scale}}\right)
+
+- **Why scale?**
+  The `arcsinh(x)` function is linear near zero (for small x) and logarithmic for large x.
+  The "linear region" is roughly between -1 and 1.
+  By adjusting the `scale`, you control which part of your data falls into this linear region versus the logarithmic region.
+  - If `scale` is large, more of your data falls in the linear region (behavior close to original data).
+  - If `scale` is small, more of your data falls in the logarithmic region (stronger compression of values).
+  Common practice is to set `scale` to 1 or usage the standard deviation of the variable.
+
+- **Why loc?**
+  The `loc` parameter centers the data. The transition from negative logarithmic behavior to positive logarithmic behavior happens around `x = loc`.
+  Common practice is to set `loc` to 0 or usage the mean of the variable.
+
+References
+~~~~~~~~~~
+
+For more details on the inverse hyperbolic sine transformation:
+
+1. `How should I transform non-negative data including zeros? <https://stats.stackexchange.com/questions/1444/how-should-i-transform-non-negative-data-including-zeros>`_ (StackExchange)
+2. `Interpreting Treatment Effects: Inverse Hyperbolic Sine Outcome Variable <https://blogs.worldbank.org/en/impactevaluations/interpreting-treatment-effects-inverse-hyperbolic-sine-outcome-variable-and>`_ (World Bank Blog)
+3. `Burbidge, J. B., Magee, L., & Robb, A. L. (1988). Alternative transformations to handle extreme values of the dependent variable. Journal of the American Statistical Association. <https://www.jstor.org/stable/2288929>`_
+
+Example
+~~~~~~~
+
+Let's create a dataframe with positive and negative values and apply the arcsinh
+transformation:
 
 Unlike the :class:`LogTransformer()`, the :class:`ArcSinhTransformer()` can handle
 zero and negative values without requiring any preprocessing.
