@@ -142,6 +142,8 @@ The arcsinh transformation compresses extreme values while preserving the sign. 
 
     plt.tight_layout()
 
+.. image:: ../../images/arcsinh_profit_histogram.png
+
 Using loc and scale parameters
 ------------------------------
 
