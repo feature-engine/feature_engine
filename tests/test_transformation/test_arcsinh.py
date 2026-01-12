@@ -125,7 +125,7 @@ def test_negative_values():
     )
 
 
-@pytest.mark.parametrize("invalid_scale", [0, -1, -0.5, -100])
+@pytest.mark.parametrize("invalid_scale", [0, -1, -0.5, -100, "string", False])
 def test_invalid_scale_raises_error(invalid_scale):
     """Test that non-positive scale values raise ValueError."""
     with pytest.raises(ValueError, match="scale must be a positive number"):
