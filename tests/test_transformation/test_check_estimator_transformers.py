@@ -7,6 +7,7 @@ from sklearn.utils.fixes import parse_version
 
 from feature_engine.transformation import (
     ArcsinTransformer,
+    ArcSinhTransformer,
     BoxCoxTransformer,
     LogCpTransformer,
     LogTransformer,
@@ -20,7 +21,9 @@ _estimators = [
     BoxCoxTransformer(),
     LogTransformer(),
     LogCpTransformer(),
+    LogCpTransformer(),
     ArcsinTransformer(),
+    ArcSinhTransformer(),
     PowerTransformer(),
     ReciprocalTransformer(),
     YeoJohnsonTransformer(),
