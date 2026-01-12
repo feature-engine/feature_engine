@@ -52,8 +52,8 @@ For more details on the inverse hyperbolic sine transformation:
 2. `Interpreting Treatment Effects: Inverse Hyperbolic Sine Outcome Variable <https://blogs.worldbank.org/en/impactevaluations/interpreting-treatment-effects-inverse-hyperbolic-sine-outcome-variable-and>`_ (World Bank Blog)
 3. `Burbidge, J. B., Magee, L., & Robb, A. L. (1988). Alternative transformations to handle extreme values of the dependent variable. Journal of the American Statistical Association. <https://www.jstor.org/stable/2288929>`_
 
-Example
-~~~~~~~
+Python demo
+-----------
 
 Let's create a dataframe with positive and negative values and apply the arcsinh
 transformation:
