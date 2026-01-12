@@ -46,8 +46,9 @@ class ArcSinhTransformer(BaseNumericalTransformer):
 
     For large values of x, arcsinh(x) behaves like ln(x) + ln(2), providing similar
     variance-stabilizing properties as the log transformation. For small values of x,
-    it behaves approximately linearly. This makes it ideal for variables
-    like net worth, profit/loss, or any metric that can be positive or negative.
+    it behaves approximately linearly (i.e., arcsinh(x) ≈ x). This makes it ideal for
+    variables like net worth, profit/loss, or any metric that can be positive or
+    negative.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
     will automatically select and transform all variables of type numeric.
