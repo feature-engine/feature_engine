@@ -93,7 +93,7 @@ The dataframe contains positive and negative values:
     3  15230.298564 -32346.838885
     4  -2341.533747  34911.165681
 
-Now let's set up the ArcSinhTransformer:
+Now let's set up the ArcSinhTransformer and fit it to the training set:
 
 .. code:: python
 
