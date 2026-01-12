@@ -58,7 +58,7 @@ Example
 Let's create a dataframe with positive and negative values and apply the arcsinh
 transformation:
 
-Unlike the :class:`LogTransformer()`, :class:`ArcSinhTransformer()` can handle
+Unlike :class:`LogTransformer()`, :class:`ArcSinhTransformer()` can handle
 zero and negative values without requiring any preprocessing.
 
 Example
