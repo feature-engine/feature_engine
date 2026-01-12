@@ -187,9 +187,4 @@ The recovered data:
     399  12378.163120 -32844.713949
     434  15023.570521  -8356.085689
 
-API Reference
--------------
 
-.. autoclass:: ArcSinhTransformer
-    :members:
-    :inherited-members:
