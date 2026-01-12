@@ -127,7 +127,7 @@ The dataframe with the transformed variables:
     399  10.116836 -11.092693
     434  10.310523  -9.723893
 
-The arcsinh transformation compresses extreme values while preserving the sign:
+The arcsinh transformation compresses extreme values while preserving the sign. We can inspect the distribution of the original and transformed variables with histograms:
 
 .. code:: python
 
