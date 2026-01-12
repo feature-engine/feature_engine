@@ -55,14 +55,8 @@ For more details on the inverse hyperbolic sine transformation:
 Python demo
 -----------
 
-Let's create a dataframe with positive and negative values and apply the arcsinh
-transformation:
-
 Unlike :class:`LogTransformer()`, :class:`ArcSinhTransformer()` can handle
 zero and negative values without requiring any preprocessing.
-
-Example
-~~~~~~~
 
 Let's create a dataframe with positive and negative values and apply the arcsinh
 transformation:
@@ -85,6 +79,19 @@ transformation:
 
     # Separate into train and test
     X_train, X_test = train_test_split(X, test_size=0.3, random_state=0)
+
+    print(X.head())
+
+The dataframe contains positive and negative values:
+
+.. code:: python
+
+             profit     net_worth
+    0   4967.141530  69967.771829
+    1  -1382.643012  46231.684146
+    2   6476.885381   2981.518496
+    3  15230.298564 -32346.838885
+    4  -2341.533747  34911.165681
 
 Now let's set up the ArcSinhTransformer:
 
