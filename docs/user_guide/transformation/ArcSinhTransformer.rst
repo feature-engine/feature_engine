@@ -12,7 +12,7 @@ transformation is useful for data that contains both positive and negative value
 The transformation is: x → arcsinh((x - loc) / scale)
 
 Comparison to LogTransformer and ArcsinTransformer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------------------
 
 - **LogTransformer**: `log(x)` requires `x > 0`. If your data contains zeros or negative values, you cannot use the standard LogTransformer directly. You would need to shift the data (e.g. `LogCpTransformer`) or remove non-positive values.
 - **ArcsinTransformer**: `arcsin(sqrt(x))` is typically used for proportions/ratios bounded between 0 and 1. It is not suitable for general unbounded numerical data.
@@ -24,7 +24,7 @@ When to use ArcSinhTransformer:
 - You don't want to add an arbitrary constant (shift) to make values positive.
 
 Intuitive Explanation of Parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------
 
 The transformation includes optional `loc` (location) and `scale` parameters:
 
@@ -44,7 +44,7 @@ The transformation includes optional `loc` (location) and `scale` parameters:
   Common practice is to set `loc` to 0 or usage the mean of the variable.
 
 References
-~~~~~~~~~~
+----------
 
 For more details on the inverse hyperbolic sine transformation:
 
@@ -123,7 +123,7 @@ The arcsinh transformation compresses extreme values while preserving the sign:
     plt.tight_layout()
 
 Using loc and scale parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
 :class:`ArcSinhTransformer()` supports location and scale parameters to
 center and normalize data before transformation:
@@ -141,7 +141,7 @@ center and normalize data before transformation:
     train_t = tf.transform(X_train)
 
 Inverse transformation
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 :class:`ArcSinhTransformer()` supports inverse transformation to recover
 the original values:
