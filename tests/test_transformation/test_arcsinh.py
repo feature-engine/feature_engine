@@ -112,12 +112,11 @@ def test_negative_values():
     transformer = ArcSinhTransformer()
     X_tr = transformer.fit_transform(X.copy())
 
-    assert X_tr["a"].iloc[0] < 0
-    assert X_tr["a"].iloc[1] < 0
-    assert X_tr["a"].iloc[2] == 0
-    assert X_tr["a"].iloc[3] > 0
-    assert X_tr["a"].iloc[4] > 0
+    # Expected values: arcsinh([ -1000, -500, 0, 500, 1000 ])
+    expected = [-7.600902, -6.907755, 0.0, 6.907755, 7.600902]
+    np.testing.assert_array_almost_equal(X_tr["a"], expected, decimal=5)
 
+    # Verify symmetry property: arcsinh(-x) = -arcsinh(x)
     np.testing.assert_almost_equal(
         X_tr["a"].iloc[0], -X_tr["a"].iloc[4], decimal=10
     )
