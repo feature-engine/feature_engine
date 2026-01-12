@@ -104,7 +104,7 @@ Now let's set up the ArcSinhTransformer and fit it to the training set:
     tf.fit(X_train)
 
 The transformer does not learn any parameters when applying the fit method. It does
-check however that the variables are numerical.
+check, however, that the variables are numerical.
 
 We can now transform the variables:
 
