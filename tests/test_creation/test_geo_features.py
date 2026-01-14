@@ -331,3 +331,32 @@ def test_output_units_conversion():
 
     expected_miles = dist_km * 0.621371
     np.testing.assert_almost_equal(dist_miles, expected_miles, decimal=0)
+
+
+def test_invalid_param_types_raises_error():
+    """Test that invalid parameter types raise ValueError."""
+    # Test lat1 not string
+    with pytest.raises(ValueError, match="lat1 must be a string"):
+        GeoDistanceFeatures(lat1=123, lon1="lon1", lat2="lat2", lon2="lon2")
+
+    # Test output_col not string
+    with pytest.raises(ValueError, match="output_col must be a string"):
+        GeoDistanceFeatures(
+            lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", output_col=123
+        )
+
+
+def test_more_tags_and_sklearn_tags():
+    """Test that _more_tags returns expected dictionary."""
+    transformer = GeoDistanceFeatures(lat1="l1", lon1="lg1", lat2="l2", lon2="lg2")
+    tags = transformer._more_tags()
+    assert tags["variables"] == "numerical"
+    assert (
+        tags["_xfail_checks"]["check_parameters_default_constructible"]
+        == "transformer has mandatory parameters"
+    )
+
+    # basic check for sklearn tags if available (new sklearn versions)
+    if hasattr(transformer, "__sklearn_tags__"):
+        tags = transformer.__sklearn_tags__()
+        assert tags is not None
