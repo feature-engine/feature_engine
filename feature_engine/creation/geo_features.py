@@ -444,5 +444,3 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
             "check_parameters_default_constructible"
         ] = "transformer has mandatory parameters"
         return tags_dict
-
-
