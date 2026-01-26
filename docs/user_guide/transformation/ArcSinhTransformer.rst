@@ -277,7 +277,7 @@ see the variables after the ISH transformation:
 
 .. image:: ../../images/arcsinh-loc-demo.png
 
-We observe that that making all variable values positive, results in the best transformation
+We observe that making all variable values positive, results in the best transformation
 (right panel), as the transformed variable has a more Gaussian looking distribution.
 Centering the variable at the mean reduces the difference between larger and zero and
 negative values after the transformation (middle panel).
@@ -548,7 +548,7 @@ For more details on the inverse hyperbolic sine transformation, check the follow
 1. `How should I transform non-negative data including zeros? <https://stats.stackexchange.com/questions/1444/how-should-i-transform-non-negative-data-including-zeros>`_ (StackExchange)
 2. `Interpreting Treatment Effects: Inverse Hyperbolic Sine Outcome Variable <https://blogs.worldbank.org/en/impactevaluations/interpreting-treatment-effects-inverse-hyperbolic-sine-outcome-variable-and>`_ (World Bank Blog)
 3. `Burbidge, J. B., Magee, L., & Robb, A. L. (1988). Alternative transformations to handle extreme values of the dependent variable. Journal of the American Statistical Association. <https://www.jstor.org/stable/2288929>`_
-4. `Aihounton, Henningsen. (12020). Units of measurement and the inverse hyperbolic sine transformation. The Econometrics Journal. <https://academic.oup.com/ectj/article-abstract/24/2/334/5948096>`_
+4. `Aihounton, Henningsen. (2020). Units of measurement and the inverse hyperbolic sine transformation. The Econometrics Journal. <https://academic.oup.com/ectj/article-abstract/24/2/334/5948096>`_
 
 Tutorials, books and courses
 ----------------------------
