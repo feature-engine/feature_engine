@@ -13,6 +13,7 @@ mathematical transformations.
    LogCpTransformer
    ReciprocalTransformer
    ArcsinTransformer
+   ArcSinhTransformer
    PowerTransformer
    BoxCoxTransformer
    YeoJohnsonTransformer
