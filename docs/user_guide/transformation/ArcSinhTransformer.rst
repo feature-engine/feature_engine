@@ -445,8 +445,8 @@ the histogram of the resulting dataframe:
     test_scale.hist(bins=20, figsize=(8,4))
     plt.show()
 
-In the following image, we see that increasing the scale of profit results in a more stable
-distribution (more on this later):
+In the following image, we see that decreasing the scale of profit (we divided it by 5)
+results in a more stable distribution (more on this later):
 
 .. image:: ../../images/arcsinh-scale.png
 
