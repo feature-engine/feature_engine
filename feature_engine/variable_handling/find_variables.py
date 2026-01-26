@@ -271,14 +271,14 @@ def find_categorical_and_numerical_variables(
             raise ValueError("The list of variables is empty.")
 
         # find categorical variables
-        variables_cat = [
-            var for var in X[variables].select_dtypes(include=["object", "category"]).columns
-        ]
+        variables_cat = list(
+            X[variables].select_dtypes(include=["object", "category"]).columns
+        )
 
         # find numerical variables
         variables_num = list(X[variables].select_dtypes(include="number").columns)
 
-        if any([v for v in variables if v not in variables_cat + variables_num]):
+        if any(v for v in variables if v not in variables_cat + variables_num):
             raise TypeError(
                 "Some of the variables are neither numerical nor categorical."
             )
