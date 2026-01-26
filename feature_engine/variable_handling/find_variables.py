@@ -85,7 +85,7 @@ def find_categorical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     """
     variables = [
         column
-        for column in X.select_dtypes(include=["O", "category"]).columns
+        for column in X.select_dtypes(include=["object", "category"]).columns
         if _is_categorical_and_is_not_datetime(X[column])
     ]
     if len(variables) == 0:
@@ -254,7 +254,7 @@ def find_categorical_and_numerical_variables(
         if variables is None:
             variables_cat = [
                 column
-                for column in X.select_dtypes(include=["O", "category"]).columns
+                for column in X.select_dtypes(include=["object", "category"]).columns
                 if _is_categorical_and_is_not_datetime(X[column])
             ]
         # find numerical variables in dataset
@@ -272,7 +272,7 @@ def find_categorical_and_numerical_variables(
 
         # find categorical variables
         variables_cat = [
-            var for var in X[variables].select_dtypes(include=["O", "category"]).columns
+            var for var in X[variables].select_dtypes(include=["object", "category"]).columns
         ]
 
         # find numerical variables
