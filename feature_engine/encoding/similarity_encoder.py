@@ -232,12 +232,13 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         X = check_X(X)
         variables_ = self._check_or_select_variables(X)
 
-        if self.keywords:
-            if not all(item in variables_ for item in self.keywords.keys()):
-                raise ValueError(
-                    "There are variables in keywords that are not present "
-                    "in the dataset."
-                )
+        if self.keywords and not all(
+            item in variables_ for item in self.keywords.keys()
+        ):
+            raise ValueError(
+                "There are variables in keywords that are not present "
+                "in the dataset."
+            )
 
         # if data contains nan, fail before running any logic
         if self.missing_values == "raise":
@@ -318,7 +319,13 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         new_values = []
         for var in self.variables_:
             if self.missing_values == "impute":
-                series = X[var].astype(object).fillna("").infer_objects(copy=False).astype(str)
+                series = (
+                    X[var]
+                    .astype(object)
+                    .fillna("")
+                    .infer_objects(copy=False)
+                    .astype(str)
+                )
             else:
                 series = X[var].astype(str)
 

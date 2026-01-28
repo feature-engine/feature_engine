@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import patch
 from sklearn.utils import Bunch
 
+
 # Mock fetch_california_housing to avoid 403 Forbidden errors in CI
 def mock_fetch_california_housing(*args, **kwargs):
     rng = np.random.default_rng(42)
@@ -40,7 +41,11 @@ def mock_fetch_california_housing(*args, **kwargs):
         DESCR="mocked california housing",
     )
 
-patch("sklearn.datasets.fetch_california_housing", side_effect=mock_fetch_california_housing).start()
+
+patch(
+    "sklearn.datasets.fetch_california_housing",
+    side_effect=mock_fetch_california_housing,
+).start()
 
 
 @pytest.fixture(scope="module")
