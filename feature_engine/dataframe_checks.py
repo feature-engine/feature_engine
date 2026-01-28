@@ -324,8 +324,8 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
                 # For object columns, we try to convert to numeric only for the check.
                 if np.isinf(pd.to_numeric(series, errors="coerce")).any():
                     raise ValueError(
-                        "Some of the variables to transform contain inf values. Check and "
-                        "remove those before using this transformer."
+                        "Some of the variables to transform contain inf values. Check "
+                        "and remove those before using this transformer."
                     )
             elif np.isinf(series).any():
                 raise ValueError(
