@@ -39,6 +39,12 @@ def test_is_categorical_and_is_datetime(df, df_datetime):
     df["age_str"] = ["20", "21", "19", "18"]
     assert _is_categorical_and_is_datetime(df["age_str"]) is False
 
+    df = df.copy()
+    # from pandas 3 onwards, object types that contain strings are not recognised as
+    # objects any more
+    df["Age"] = df["Age"].astype("O")
+    assert _is_categorical_and_is_datetime(df["Age"]) is False
+
 
 def test_is_categorical_and_is_not_datetime(df):
     assert _is_categorical_and_is_not_datetime(df["date_obj0"]) is False

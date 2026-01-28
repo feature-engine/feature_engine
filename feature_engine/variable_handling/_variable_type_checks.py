@@ -49,4 +49,6 @@ def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
     elif isinstance(column.dtype, pd.CategoricalDtype):
         is_dt = not _is_categories_num(column) and _is_convertible_to_dt(column)
 
+    else:
+        is_dt = False
     return is_dt
