@@ -189,7 +189,6 @@ def test_callable_method(df_correlated_double, random_uniform_method):
 
 
 def test_raises_error_when_method_not_permitted(df_correlated_double):
-
     X = df_correlated_double
     method = "hola"
 

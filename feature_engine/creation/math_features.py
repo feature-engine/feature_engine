@@ -140,7 +140,6 @@ class MathFeatures(BaseCreation):
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
-
         if (
             not isinstance(variables, list)
             or not all(isinstance(var, (int, str)) for var in variables)

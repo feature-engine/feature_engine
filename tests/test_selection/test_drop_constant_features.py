@@ -143,7 +143,6 @@ def test_error_if_all_constant_and_quasi_constant_features():
 
 
 def test_missing_values_param_functionality():
-
     df = {
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],

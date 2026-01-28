@@ -290,9 +290,11 @@ def test_verbose_print_out(capfd, df_vartypes, df_na):
 
     out, err = capfd.readouterr()
     assert (
-        out == "The following variables are added to the DataFrame: "
+        out
+        == "The following variables are added to the DataFrame: "
         "['new_variable', 'Studies']\n"
-        or out == "The following variables are added to the DataFrame: "
+        or out
+        == "The following variables are added to the DataFrame: "
         "['Studies', 'new_variable']\n"
     )
 
@@ -301,9 +303,11 @@ def test_verbose_print_out(capfd, df_vartypes, df_na):
 
     out, err = capfd.readouterr()
     assert (
-        out == "The following variables are dropped from the DataFrame: "
+        out
+        == "The following variables are dropped from the DataFrame: "
         "['new_variable', 'Studies']\n"
-        or out == "The following variables are dropped from the DataFrame: "
+        or out
+        == "The following variables are dropped from the DataFrame: "
         "['Studies', 'new_variable']\n"
     )
 

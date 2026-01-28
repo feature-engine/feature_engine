@@ -136,7 +136,6 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         return_boundaries: bool = False,
         precision: int = 3,
     ) -> None:
-
         if not isinstance(q, int):
             raise ValueError(f"q must be an integer. Got {q} instead.")
 

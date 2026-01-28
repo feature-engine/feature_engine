@@ -50,7 +50,6 @@ def df_regression():
 
 
 def test_classification():
-
     X, y = df_classification()
 
     sel = SelectByTargetMeanPerformance(
@@ -107,7 +106,6 @@ def test_classification():
 
 
 def test_regression():
-
     X, y = df_regression()
 
     sel = SelectByTargetMeanPerformance(
@@ -203,7 +201,6 @@ def test_raises_error_if_evaluating_single_variable_and_threshold_is_None(df_tes
 
 
 def test_test_selector_with_one_variable():
-
     X, y = df_regression()
 
     sel = SelectByTargetMeanPerformance(

@@ -203,7 +203,6 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         unseen: str = "ignore",
         fill_value: Union[int, float, None] = None,
     ) -> None:
-
         super().__init__(variables, ignore_format)
         check_parameter_unseen(unseen, ["ignore", "raise"])
         if fill_value is not None and not isinstance(fill_value, (int, float)):

@@ -120,7 +120,6 @@ class GetFeatureNamesOutMixin:
             # If input to fit is an array, then the variable names in
             # feature_names_in_ are "x0", "x1","x2" ..."xn".
             if self.feature_names_in_ == [f"x{i}" for i in range(self.n_features_in_)]:
-
                 # If the input was an array, we let the user enter the variable names.
                 if len(input_features) == self.n_features_in_:
                     if isinstance(input_features, list):

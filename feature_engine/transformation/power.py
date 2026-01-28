@@ -99,7 +99,6 @@ class PowerTransformer(BaseNumericalTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         exp: Union[float, int] = 0.5,
     ):
-
         if not isinstance(exp, (float, int)):
             raise ValueError("exp must be a float or an int")
 

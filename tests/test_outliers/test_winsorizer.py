@@ -186,21 +186,21 @@ def test_indicators_are_added(df_normal_dist):
     X = transformer.fit_transform(df_normal_dist)
     # test that the number of output variables is correct
     assert X.shape[1] == 3 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
     transformer = Winsorizer(
         tail="left", capping_method="quantiles", fold=0.1, add_indicators=True
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
     transformer = Winsorizer(
         tail="right", capping_method="quantiles", fold=0.1, add_indicators=True
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert np.all(X.iloc[:, df_normal_dist.shape[1] :].sum(axis=0) > 0)
 
 
 def test_indicators_filter_variables(df_vartypes):

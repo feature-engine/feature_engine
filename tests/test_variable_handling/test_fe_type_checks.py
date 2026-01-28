@@ -1,3 +1,5 @@
+import pandas as pd
+
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
@@ -45,6 +47,10 @@ def test_is_categorical_and_is_datetime(df, df_datetime):
     df["Age"] = df["Age"].astype("O")
     assert _is_categorical_and_is_datetime(df["Age"]) is False
 
+    # Object Datetime
+    s_obj_dt = pd.Series([pd.Timestamp("2020-01-01")], dtype="object")
+    assert _is_categorical_and_is_datetime(s_obj_dt) is True
+
 
 def test_is_categorical_and_is_not_datetime(df):
     assert _is_categorical_and_is_not_datetime(df["date_obj0"]) is False
@@ -53,3 +59,11 @@ def test_is_categorical_and_is_not_datetime(df):
 
     df["age_str"] = ["20", "21", "19", "18"]
     assert _is_categorical_and_is_not_datetime(df["age_str"]) is True
+
+    # Object Integer
+    s_obj_int = pd.Series([1, 2], dtype="object")
+    assert _is_categorical_and_is_not_datetime(s_obj_int) is True
+
+    # Object Datetime should be False
+    s_obj_dt = pd.Series([pd.Timestamp("2020-01-01")], dtype="object")
+    assert _is_categorical_and_is_not_datetime(s_obj_dt) is False

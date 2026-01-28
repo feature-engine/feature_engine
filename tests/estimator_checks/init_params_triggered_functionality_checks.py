@@ -5,6 +5,7 @@ etc.
 In this script, we add common tests for the functionality triggered by those
 parameters.
 """
+
 import pytest
 from sklearn import clone
 
@@ -30,7 +31,6 @@ def check_takes_cv_constructor(estimator):
     cv_constructor_ls = [KFold(n_splits=3), StratifiedKFold(n_splits=3), None]
 
     for cv_constructor in cv_constructor_ls:
-
         sel = estimator.set_params(cv=cv_constructor)
         sel.fit(X, y)
         Xtransformed = sel.transform(X)

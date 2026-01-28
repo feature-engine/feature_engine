@@ -9,7 +9,6 @@ from feature_engine.transformation import YeoJohnsonTransformer
 
 
 def test_pipeline_with_set_output_sklearn_last():
-
     X, y = load_iris(return_X_y=True, as_frame=True)
 
     pipeline = make_pipeline(
@@ -28,7 +27,6 @@ def test_pipeline_with_set_output_sklearn_last():
 
 
 def test_pipeline_with_set_output_featureengine_last():
-
     X, y = load_iris(return_X_y=True, as_frame=True)
 
     pipeline = make_pipeline(
@@ -50,7 +48,6 @@ def test_pipeline_with_set_output_featureengine_last():
 
 
 def test_individual_transformer():
-
     X, y = load_iris(return_X_y=True, as_frame=True)
 
     transformer = YeoJohnsonTransformer()

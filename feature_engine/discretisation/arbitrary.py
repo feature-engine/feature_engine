@@ -119,7 +119,6 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         precision: int = 3,
         errors: str = "ignore",
     ) -> None:
-
         if not isinstance(binning_dict, dict):
             raise ValueError(
                 "binning_dict must be a dictionary with the interval limits per "
@@ -128,8 +127,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
 
         if errors not in ["ignore", "raise"]:
             raise ValueError(
-                "errors only takes values 'ignore' and 'raise'. "
-                f"Got {errors} instead."
+                f"errors only takes values 'ignore' and 'raise'. Got {errors} instead."
             )
 
         super().__init__(return_object, return_boundaries, precision)
@@ -176,7 +174,6 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         X = super().transform(X)
         # check if NaN values were introduced by the discretisation procedure.
         if X[self.variables_].isnull().sum().sum() > 0:
-
             # obtain the name(s) of the columns with null values
             nan_columns = (
                 X[self.variables_].columns[X[self.variables_].isnull().any()].tolist()
@@ -204,9 +201,9 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     def _more_tags(self):
         tags_dict = _return_tags()
         # add additional test that fails
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
+            "transformer has 1 mandatory parameter"
+        )
         return tags_dict
 
     def __sklearn_tags__(self):
