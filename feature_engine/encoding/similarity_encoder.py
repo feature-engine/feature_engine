@@ -266,6 +266,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                     X[var]
                     .astype(object)
                     .fillna("")
+                    .infer_objects(copy=False)
                     .astype(str)
                     .value_counts()
                     .head(self.top_categories)
@@ -317,7 +318,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         new_values = []
         for var in self.variables_:
             if self.missing_values == "impute":
-                series = X[var].astype(object).fillna("").astype(str)
+                series = X[var].astype(object).fillna("").infer_objects(copy=False).astype(str)
             else:
                 series = X[var].astype(str)
 

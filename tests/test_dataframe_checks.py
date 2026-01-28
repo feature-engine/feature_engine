@@ -250,7 +250,7 @@ def test_optional_contains_na(df_na):
 
 def test_contains_inf(df_na):
     df_obj = df_na.astype(object)
-    df_obj.fillna(np.inf, inplace=True)
+    df_obj = df_obj.fillna(np.inf).infer_objects(copy=False)
     with pytest.raises(ValueError):
         assert _check_contains_inf(df_obj, ["Age", "Marks"])
 
