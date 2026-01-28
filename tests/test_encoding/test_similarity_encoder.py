@@ -237,13 +237,19 @@ def test_get_feature_names_out_na(df_enc_big_na):
         "var_C_F",
     ]
 
-    expected_dict = {
+    # The empty string is added because of NaN handling in fit
+    # Depending on pandas version, it might be "nan" or ""
+    expected_dict_1 = {
         "var_A": ["B", "D", "G", "A", "C", "E", "F", ""],
         "var_B": ["A", "D", "B", "G", "C", "E", "F"],
         "var_C": ["C", "D", "B", "G", "A", "E", "F"],
     }
-    # Comparison logic that handles potential dict key/value order differences
-    assert tr.encoder_dict_ == expected_dict
+    expected_dict_2 = {
+        "var_A": ["B", "D", "G", "A", "C", "E", "F", "nan"],
+        "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+        "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+    }
+    assert tr.encoder_dict_ in [expected_dict_1, expected_dict_2]
     assert tr.get_feature_names_out(input_features=None) == out
     assert tr.get_feature_names_out(input_features=input_features) == out
 
