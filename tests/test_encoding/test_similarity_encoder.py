@@ -152,11 +152,15 @@ def test_string_dtype_with_pd_na():
     X = encoder.fit_transform(df)
     assert (X.isna().sum() == 0).all(axis=None)
     # The categories will include "<NA>" or the string version of it
-    assert "<NA>" in encoder.encoder_dict_["var_A"] or "" in encoder.encoder_dict_["var_A"]
+    assert (
+        "<NA>" in encoder.encoder_dict_["var_A"]
+        or "" in encoder.encoder_dict_["var_A"]
+    )
 
 
 def test_string_dtype_with_literal_nan_strings():
-    # Test with literal "nan" and "<NA>" strings to hit skips in transform (line 339, 341 False)
+    # Test with literal "nan" and "<NA>" strings to hit skips in
+    # transform (line 339, 341 False)
     df = pd.DataFrame({"var_A": ["nan", "<NA>", "A", "B"]}, dtype="string")
     encoder = StringSimilarityEncoder(missing_values="impute")
     X = encoder.fit_transform(df)
