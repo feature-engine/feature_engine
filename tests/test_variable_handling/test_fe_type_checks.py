@@ -51,6 +51,18 @@ def test_is_categorical_and_is_datetime(df, df_datetime):
     s_obj_dt = pd.Series([pd.Timestamp("2020-01-01")], dtype="object")
     assert _is_categorical_and_is_datetime(s_obj_dt) is True
 
+    # StringDtype Datetime (if convertible)
+    s_str_dt = pd.Series(["2020-01-01", "2020-01-02"], dtype="string")
+    assert _is_categorical_and_is_datetime(s_str_dt) is True
+
+    # Numeric (should be False for both if and elif branches)
+    s_num = pd.Series([1, 2, 3])
+    assert _is_categorical_and_is_datetime(s_num) is False
+
+    # Categorical (should hit the 'if' branch)
+    s_cat = pd.Series(["a", "b"], dtype="category")
+    assert _is_categorical_and_is_datetime(s_cat) is False
+
 
 def test_is_categorical_and_is_not_datetime(df):
     assert _is_categorical_and_is_not_datetime(df["date_obj0"]) is False
@@ -67,3 +79,15 @@ def test_is_categorical_and_is_not_datetime(df):
     # Object Datetime should be False
     s_obj_dt = pd.Series([pd.Timestamp("2020-01-01")], dtype="object")
     assert _is_categorical_and_is_not_datetime(s_obj_dt) is False
+
+    # StringDtype (not convertible to numeric/datetime) should be True
+    s_str = pd.Series(["a", "b"], dtype="string")
+    assert _is_categorical_and_is_not_datetime(s_str) is True
+
+    # Numeric should be False
+    s_num = pd.Series([1, 2, 3])
+    assert _is_categorical_and_is_not_datetime(s_num) is False
+
+    # Categorical should be True (it hits the 'if' branch)
+    s_cat = pd.Series(["a", "b"], dtype="category")
+    assert _is_categorical_and_is_not_datetime(s_cat) is True
