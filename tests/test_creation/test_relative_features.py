@@ -112,7 +112,6 @@ def test_error_when_entered_variables_not_in_df(df_vartypes):
 
 
 def test_classic_binary_operation(df_vartypes):
-
     transformer = RelativeFeatures(
         variables=["Age"],
         reference=["Marks"],
@@ -139,7 +138,6 @@ def test_classic_binary_operation(df_vartypes):
 
 
 def test_alternative_operation(df_vartypes):
-
     # input df
     df = df_vartypes.copy()
 
@@ -245,7 +243,6 @@ def test_multiple_operations_with_multiple_variables(df_vartypes):
 
 
 def test_when_missing_values_is_ignore(df_vartypes):
-
     df_na = df_vartypes.copy()
     df_na.loc[1, "Age"] = np.nan
 
@@ -276,7 +273,6 @@ def test_when_missing_values_is_ignore(df_vartypes):
 
 
 def test_error_when_null_values_in_variable(df_vartypes):
-
     df_na = df_vartypes.copy()
     df_na.loc[1, "Age"] = np.nan
 
@@ -330,7 +326,6 @@ def test_when_df_cols_are_integers(df_vartypes):
 
 @pytest.mark.parametrize("_func", [["div"], ["truediv"], ["floordiv"], ["mod"]])
 def test_error_when_division_by_zero_and_fill_value_is_none(_func, df_vartypes):
-
     df_zero = df_vartypes.copy()
     df_zero.loc[1, "Marks"] = 0
 

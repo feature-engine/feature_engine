@@ -35,7 +35,7 @@ def test_error_if_binoutput_not_permitted_value(bin_output_):
 
 @pytest.mark.parametrize("precision_", ["arbitrary", -1, 0.3])
 def test_error_if_precision_not_permitted_value(precision_):
-    msg = "precision must be None or a positive integer. " f"Got {precision_} instead."
+    msg = f"precision must be None or a positive integer. Got {precision_} instead."
     with pytest.raises(ValueError) as record:
         DecisionTreeDiscretiser(precision=precision_)
     assert str(record.value) == msg
@@ -56,7 +56,7 @@ def test_precision_errors_if_none_when_bin_output_is_boundaries():
 
 @pytest.mark.parametrize("regression_", ["arbitrary", -1, 0.3])
 def test_error_if_regression_is_not_bool(regression_):
-    msg = "regression can only take True or False. " f"Got {regression_} instead."
+    msg = f"regression can only take True or False. Got {regression_} instead."
     with pytest.raises(ValueError) as record:
         DecisionTreeDiscretiser(regression=regression_)
     assert str(record.value) == msg
@@ -82,7 +82,6 @@ def test_error_when_regression_is_true_and_target_is_binary(df_discretise):
 
 
 def test_classification_predictions(df_normal_dist):
-
     transformer = DecisionTreeDiscretiser(
         cv=3,
         scoring="roc_auc",
@@ -120,7 +119,6 @@ def test_classification_predictions(df_normal_dist):
     ],
 )
 def test_classification_rounds_predictions(df_normal_dist, params):
-
     transformer = DecisionTreeDiscretiser(
         precision=params[0],
         cv=3,
@@ -202,7 +200,6 @@ def test_classification_boundaries(df_normal_dist):
 
 
 def test_regression(df_normal_dist):
-
     transformer = DecisionTreeDiscretiser(
         cv=3,
         scoring="neg_mean_squared_error",
@@ -276,7 +273,6 @@ def test_regression(df_normal_dist):
     ],
 )
 def test_regression_rounds_predictions(df_normal_dist, params):
-
     transformer = DecisionTreeDiscretiser(
         precision=params[0],
         cv=3,

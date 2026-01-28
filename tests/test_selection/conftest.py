@@ -29,8 +29,8 @@ def df_test():
 def df_test_with_groups():
     # Parameters
     n_samples = 100  # Total number of samples
-    n_groups = 10    # Total number of groups
-    n_features = 5   # Number of features
+    n_groups = 10  # Total number of groups
+    n_features = 5  # Number of features
 
     # Generate random features
     np.random.seed(1)
@@ -44,14 +44,14 @@ def df_test_with_groups():
     np.random.shuffle(groups)
 
     # Create DataFrame
-    df = pd.DataFrame(features, columns=[f'var_{i+1}' for i in range(n_features)])
-    df['target'] = target
-    df['group'] = groups
+    df = pd.DataFrame(features, columns=[f"var_{i + 1}" for i in range(n_features)])
+    df["target"] = target
+    df["group"] = groups
 
-    features = [col for col in df.columns if col.startswith('var')]
+    features = [col for col in df.columns if col.startswith("var")]
     X = df[features]
-    y = df['target']
-    groups = df['group']
+    y = df["target"]
+    groups = df["group"]
 
     return X, y, groups
 

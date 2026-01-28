@@ -143,14 +143,12 @@ class LagFeatures(BaseForecastTransformer):
         drop_original: bool = False,
         drop_na: bool = False,
     ) -> None:
-
         if not (
             isinstance(periods, int)
             and periods > 0
             or isinstance(periods, list)
             and all(isinstance(num, int) and num > 0 for num in periods)
         ):
-
             raise ValueError(
                 "periods must be an integer or a list of positive integers. "
                 f"Got {periods} instead."
@@ -163,7 +161,7 @@ class LagFeatures(BaseForecastTransformer):
 
         if not isinstance(sort_index, bool):
             raise ValueError(
-                "sort_index takes values True and False." f"Got {sort_index} instead."
+                f"sort_index takes values True and False.Got {sort_index} instead."
             )
 
         super().__init__(variables, missing_values, drop_original, drop_na)
@@ -192,7 +190,6 @@ class LagFeatures(BaseForecastTransformer):
 
         # if freq is not None, it overrides periods.
         if self.freq is not None:
-
             if isinstance(self.freq, list):
                 df_ls = []
                 for fr in self.freq:

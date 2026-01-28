@@ -102,7 +102,6 @@ class LogTransformer(BaseNumericalTransformer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         base: str = "e",
     ) -> None:
-
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
 
@@ -320,7 +319,6 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         base: str = "e",
         C: Union[int, float, str, Dict[Union[str, int], Union[float, int]]] = "auto",
     ) -> None:
-
         if base not in ["e", "10"]:
             raise ValueError(
                 f"base can take only '10' or 'e' as values. Got {base} instead."

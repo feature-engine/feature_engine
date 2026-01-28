@@ -103,7 +103,6 @@ def test_raises_error_when_wrong_input_params(_bins, _strategy, estimator):
 
 @pytest.mark.parametrize("estimator", _estimators)
 def test_variable_selection(estimator):
-
     transformer = clone(estimator)
 
     X, y = test_df(categorical=True, datetime=True)
@@ -189,7 +188,6 @@ def test_variable_selection(estimator):
 
 @pytest.mark.parametrize("estimator", _estimators)
 def test_feature_names_in(estimator):
-
     transformer = clone(estimator)
     X, y = test_df(categorical=True)
 
@@ -241,7 +239,6 @@ def test_attributes_upon_fitting(_strategy, _bins, estimator):
 
 @pytest.mark.parametrize("estimator", _estimators)
 def test_raises_error_when_df_has_nan(df_enc, df_na, estimator):
-
     transformer = clone(estimator)
 
     X, y = test_df(categorical=True)

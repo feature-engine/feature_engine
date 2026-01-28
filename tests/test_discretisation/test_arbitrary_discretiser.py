@@ -91,8 +91,7 @@ def test_error_when_nan_introduced_during_transform():
     test.columns = ["var_a", "var_b"]
 
     msg = (
-        "During the discretisation, NaN values were introduced "
-        "in the feature(s) var_b."
+        "During the discretisation, NaN values were introduced in the feature(s) var_b."
     )
 
     limits_dict = {"var_a": [-5, -2, 0, 2, 5], "var_b": [0, 2, 5]}

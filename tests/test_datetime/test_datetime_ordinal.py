@@ -7,28 +7,32 @@ from feature_engine.datetime import DatetimeOrdinal
 
 @pytest.fixture(scope="module")
 def df_datetime_ordinal():
-    df = pd.DataFrame({
-        "date_col_1": pd.to_datetime(
-            ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]
-        ),
-        "date_col_2": pd.to_datetime(
-            ["2024-02-10", "2024-02-11", "2024-02-12", "2024-02-13", "2024-02-14"]
-        ),
-        "non_date_col": [1, 2, 3, 4, 5],
-    })
+    df = pd.DataFrame(
+        {
+            "date_col_1": pd.to_datetime(
+                ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]
+            ),
+            "date_col_2": pd.to_datetime(
+                ["2024-02-10", "2024-02-11", "2024-02-12", "2024-02-13", "2024-02-14"]
+            ),
+            "non_date_col": [1, 2, 3, 4, 5],
+        }
+    )
     return df
 
 
 @pytest.fixture(scope="module")
 def df_datetime_ordinal_na():
-    df = pd.DataFrame({
-        "date_col_1": pd.to_datetime(
-            ["2023-01-01", "2023-01-02", None, "2023-01-04", "2023-01-05"]
-        ),
-        "date_col_2": pd.to_datetime(
-            ["2024-02-10", "2024-02-11", "2024-02-12", None, "2024-02-14"]
-        ),
-    })
+    df = pd.DataFrame(
+        {
+            "date_col_1": pd.to_datetime(
+                ["2023-01-01", "2023-01-02", None, "2023-01-04", "2023-01-05"]
+            ),
+            "date_col_2": pd.to_datetime(
+                ["2024-02-10", "2024-02-11", "2024-02-12", None, "2024-02-14"]
+            ),
+        }
+    )
     return df
 
 
@@ -36,11 +40,11 @@ def df_datetime_ordinal_na():
     "variables_param",
     [
         ["date_col_1", "date_col_2"],  # Case 1: 'variables' are specified
-        None,                          # Case 2: 'variables' not specified
+        None,  # Case 2: 'variables' not specified
     ],
     ids=[
         "variables_specified",
-        "variables_auto_find"
+        "variables_auto_find",
     ],  # Optional but recommended for test readability
 )
 def test_datetime_ordinal_feature_creation(df_datetime_ordinal, variables_param):
@@ -111,8 +115,7 @@ def test_datetime_ordinal_with_start_date_datetime_object(df_datetime_ordinal):
 def test_datetime_ordinal_missing_values_raise(df_datetime_ordinal_na):
     transformer = DatetimeOrdinal(missing_values="raise")
     with pytest.raises(
-            ValueError,
-            match="Some of the variables in the dataset contain NaN"
+        ValueError, match="Some of the variables in the dataset contain NaN"
     ):
         transformer.fit(df_datetime_ordinal_na)
 
@@ -149,8 +152,7 @@ def test_datetime_ordinal_missing_values_ignore(df_datetime_ordinal_na):
 
 def test_datetime_ordinal_invalid_start_date():
     with pytest.raises(
-        ValueError,
-        match="start_date could not be converted to datetime"
+        ValueError, match="start_date could not be converted to datetime"
     ):
         DatetimeOrdinal(start_date="not-a-date")
 

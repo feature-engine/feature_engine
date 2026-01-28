@@ -143,7 +143,6 @@ class EndTailImputer(BaseImputer):
         fold: int = 3,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
-
         if imputation_method not in ["gaussian", "iqr", "max"]:
             raise ValueError(
                 "imputation_method takes only values 'gaussian', 'iqr' or 'max'"

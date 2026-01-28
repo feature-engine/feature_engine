@@ -400,9 +400,9 @@ class ProbeFeatureSelection(BaseSelector):
         tags_dict["requires_y"] = True
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
+            "transformer has 1 mandatory parameter"
+        )
 
         # msg = "transformers need more than 1 feature to work"
         # tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg

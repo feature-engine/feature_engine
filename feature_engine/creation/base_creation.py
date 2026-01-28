@@ -30,7 +30,6 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
-
         _check_param_missing_values(missing_values)
         _check_param_drop_original(drop_original)
 
@@ -120,13 +119,13 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         tags_dict["allow_nan"] = True
         tags_dict["variables"] = "skip"
         # Tests that are OK to fail:
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
-        tags_dict["_xfail_checks"][
-            "check_fit2d_1feature"
-        ] = "this transformer works with datasets that contain at least 2 variables. \
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
+            "transformer has 1 mandatory parameter"
+        )
+        tags_dict["_xfail_checks"]["check_fit2d_1feature"] = (
+            "this transformer works with datasets that contain at least 2 variables. \
         Otherwise, there is nothing to combine"
+        )
         return tags_dict
 
     def __sklearn_tags__(self):

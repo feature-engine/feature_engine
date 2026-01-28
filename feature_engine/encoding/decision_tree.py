@@ -225,7 +225,6 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         unseen: str = "ignore",
         fill_value: Optional[float] = None,
     ) -> None:
-
         if encoding_method not in ["ordered", "arbitrary"]:
             raise ValueError(
                 "`encoding_method` takes only values 'ordered' and 'arbitrary'."

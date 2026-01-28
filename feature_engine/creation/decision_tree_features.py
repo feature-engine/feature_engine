@@ -220,7 +220,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
-
         if precision is not None and (not isinstance(precision, int) or precision < 1):
             raise ValueError(
                 "precision must be None or a positive integer. "

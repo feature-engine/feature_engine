@@ -321,12 +321,7 @@ def test_find_feature_importancewith_groups(df_test_with_groups):
     )
 
     mean_, std_ = find_feature_importance(
-        X=X,
-        y=y,
-        estimator=rf,
-        cv=cv,
-        scoring=scoring,
-        groups=groups
+        X=X, y=y, estimator=rf, cv=cv, scoring=scoring, groups=groups
     )
 
     pd.testing.assert_series_equal(mean_, expected_mean_)

@@ -139,7 +139,6 @@ class RandomSampleImputer(BaseImputer):
         seed: str = "general",
         seeding_method: str = "add",
     ) -> None:
-
         if seed not in ["general", "observation"]:
             raise ValueError("seed takes only values 'general' or 'observation'")
 
@@ -250,7 +249,6 @@ class RandomSampleImputer(BaseImputer):
         elif self.seed == "observation" and self.random_state:
             for feature in self.variables_:
                 if X[feature].isnull().sum() > 0:
-
                     # loop over each observation with missing data
                     for i in X[X[feature].isnull()].index:
                         # find the seed using additional variables

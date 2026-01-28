@@ -160,7 +160,6 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         drop_original: bool = False,
         drop_na: bool = False,
     ) -> None:
-
         if not isinstance(functions, (str, list)) or not all(
             isinstance(val, str) for val in functions
         ):

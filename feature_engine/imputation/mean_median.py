@@ -102,7 +102,6 @@ class MeanMedianImputer(BaseImputer):
         imputation_method: str = "median",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
-
         if imputation_method not in ["median", "mean"]:
             raise ValueError("imputation_method takes only values 'median' or 'mean'")
 

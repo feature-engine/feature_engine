@@ -154,7 +154,6 @@ def test_fit_raises_error_if_user_dictionary_key_not_in_df(df_cyclical):
 
 
 def test_raises_error_when_init_parameters_not_permitted(df_cyclical):
-
     with pytest.raises(TypeError):
         # when max_values is not a dictionary
         CyclicalFeatures(max_values=("dayi", 31))

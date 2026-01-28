@@ -24,7 +24,6 @@ def get_feature_importances(estimator):
     coef_ = getattr(estimator, "coef_", None)
 
     if coef_ is not None:
-
         if estimator.coef_.ndim == 1:
             importances = np.abs(coef_)
 

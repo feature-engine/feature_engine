@@ -43,7 +43,7 @@ def test_error_if_unseen_is_encode_and_fill_value_is_none():
 
 @pytest.mark.parametrize("precision", ["string", 0.1, -1, np.nan])
 def test_error_if_precision_gets_not_permitted_value(precision):
-    msg = "Parameter `precision` takes integers or None. " f"Got {precision} instead."
+    msg = f"Parameter `precision` takes integers or None. Got {precision} instead."
     with pytest.raises(ValueError, match=msg):
         DecisionTreeEncoder(precision=precision)
 

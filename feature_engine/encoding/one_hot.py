@@ -165,7 +165,6 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ) -> None:
-
         if top_categories and (
             not isinstance(top_categories, int) or top_categories < 0
         ):
@@ -215,7 +214,6 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         self.encoder_dict_ = {}
 
         for var in variables_:
-
             # make dummies only for the most popular categories
             if self.top_categories:
                 self.encoder_dict_[var] = [

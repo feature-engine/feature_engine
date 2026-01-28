@@ -123,7 +123,6 @@ def test_correctly_ignores_nan_in_transform(df_enc_big):
 
 
 def test_correctly_ignores_nan_in_fit(df_enc_big):
-
     df = df_enc_big.copy()
     df.loc[df["var_C"] == "G", "var_C"] = np.nan
 
@@ -166,7 +165,6 @@ def test_correctly_ignores_nan_in_fit(df_enc_big):
 
 
 def test_correctly_ignores_nan_in_fit_when_var_is_numerical(df_enc_big):
-
     df = df_enc_big.copy()
     df["var_C"] = [
         1,
@@ -477,7 +475,6 @@ def test_variables_cast_as_category_with_na_in_transform(df_enc_big):
 
 
 def test_variables_cast_as_category_with_na_in_fit(df_enc_big):
-
     df = df_enc_big.copy()
     df.loc[df["var_C"] == "G", "var_C"] = np.nan
     df["var_C"] = df["var_C"].astype("category")

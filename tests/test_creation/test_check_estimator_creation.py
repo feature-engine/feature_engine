@@ -80,12 +80,14 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
 # Test GeoDistanceFeatures in pipeline with proper column names
 def test_geo_distance_transformer_in_pipeline():
     """Test GeoDistanceFeatures works in a sklearn pipeline."""
-    X = pd.DataFrame({
-        "lat1": [40.7128, 34.0522],
-        "lon1": [-74.0060, -118.2437],
-        "lat2": [34.0522, 41.8781],
-        "lon2": [-118.2437, -87.6298],
-    })
+    X = pd.DataFrame(
+        {
+            "lat1": [40.7128, 34.0522],
+            "lon1": [-74.0060, -118.2437],
+            "lat2": [34.0522, 41.8781],
+            "lon2": [-118.2437, -87.6298],
+        }
+    )
     y = pd.Series([0, 1])
 
     transformer = GeoDistanceFeatures(

@@ -160,7 +160,6 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         drop_original: bool = False,
         validate_ranges: bool = True,
     ) -> None:
-
         # Validate coordinate column names
         for param_name, param_value in [
             ("lat1", lat1),
@@ -440,7 +439,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         tags_dict = _return_tags()
         tags_dict["variables"] = "numerical"
         # This transformer has mandatory parameters
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has mandatory parameters"
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
+            "transformer has mandatory parameters"
+        )
         return tags_dict
