@@ -1,9 +1,7 @@
-import warnings
-
 import pandas as pd
+from pandas.api.types import is_string_dtype as is_object
 from pandas.core.dtypes.common import is_datetime64_any_dtype as is_datetime
 from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
-from pandas.core.dtypes.common import is_object_dtype as is_object
 
 
 def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
@@ -25,9 +23,11 @@ def _is_categories_num(column: pd.Series) -> bool:
 
 
 def _is_convertible_to_dt(column: pd.Series) -> bool:
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        return is_datetime(pd.to_datetime(column, errors="ignore", utc=True))
+    try:
+        var = pd.to_datetime(column, utc=True)
+        return is_datetime(var)
+    except:
+        return False
 
 
 def _is_convertible_to_num(column: pd.Series) -> bool:
