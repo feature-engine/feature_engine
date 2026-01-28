@@ -189,7 +189,8 @@ def test_match_dtypes_string_to_datetime(df_vartypes):
     assert match_columns.match_dtypes is True
     assert match_columns.verbose is False
     # test fit attrs
-    assert match_columns.dtype_dict_ == {"dob": np.dtype("<M8[ns]")}
+    # Pandas 2 uses ns, Pandas 3 uses us for datetime precision
+    assert match_columns.dtype_dict_["dob"] in (np.dtype("<M8[ns]"), np.dtype("<M8[us]"))
     # test transform output
     pd.testing.assert_series_equal(train.dtypes, transformed_df.dtypes)
     pd.testing.assert_frame_equal(transformed_df, train)

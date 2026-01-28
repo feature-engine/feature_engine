@@ -334,15 +334,12 @@ def test_extract_features_from_different_timezones():
         pd.DataFrame({"time_hour": [7, 8, 9, 14, 15, 16]}),
         check_dtype=False,
     )
-    exp_err_msg = (
-        "Tz-aware datetime.datetime cannot be converted to datetime64 "
-        "unless utc=True, at position 3"
-    )
     with pytest.raises(ValueError) as errinfo:
         assert DatetimeFeatures(
             variables="time", features_to_extract=["hour"], utc=False
         ).fit_transform(df)
-    assert str(errinfo.value) == exp_err_msg
+    # Pandas 3 may not include ", at position X" suffix
+    assert "Tz-aware datetime.datetime cannot be converted to datetime64 unless utc=True" in str(errinfo.value)
 
 
 def test_extract_features_from_different_timezones_when_string(

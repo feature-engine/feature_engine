@@ -265,7 +265,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 self.encoder_dict_[var] = (
                     X[var]
                     .astype(str)
-                    .replace("nan", "")
+                    .replace({"nan": "", "<NA>": ""})
                     .value_counts()
                     .head(self.top_categories)
                     .index.tolist()
@@ -276,7 +276,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                     X[var]
                     .astype(str)
                     .value_counts(dropna=True)
-                    .drop("nan", errors="ignore")
+                    .drop(["nan", "<NA>"], errors="ignore")
                     .head(self.top_categories)
                     .index.tolist()
                 )
@@ -316,12 +316,13 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         new_values = []
         for var in self.variables_:
             if self.missing_values == "impute":
-                X[var] = X[var].astype(str).replace("nan", "")
+                X[var] = X[var].astype(str).replace({"nan": "", "<NA>": ""})
             categories = X[var].dropna().astype(str).unique()
             column_encoder_dict = {
                 x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in categories
             }
             column_encoder_dict["nan"] = [np.nan] * len(self.encoder_dict_[var])
+            column_encoder_dict["<NA>"] = [np.nan] * len(self.encoder_dict_[var])
             encoded = np.vstack(X[var].astype(str).map(column_encoder_dict).values)
             if self.missing_values == "ignore":
                 encoded[X[var].isna(), :] = np.nan

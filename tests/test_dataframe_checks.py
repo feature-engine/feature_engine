@@ -249,9 +249,10 @@ def test_optional_contains_na(df_na):
 
 
 def test_contains_inf(df_na):
-    df_na.fillna(np.inf, inplace=True)
+    df_obj = df_na.astype(object)
+    df_obj.fillna(np.inf, inplace=True)
     with pytest.raises(ValueError):
-        assert _check_contains_inf(df_na, ["Age", "Marks"])
+        assert _check_contains_inf(df_obj, ["Age", "Marks"])
 
 
 def test_check_X_raises_error_on_duplicated_column_names():
