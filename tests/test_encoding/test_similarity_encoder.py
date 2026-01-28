@@ -212,7 +212,31 @@ def test_get_feature_names_out_na(df_enc_big_na):
     tr = StringSimilarityEncoder()
     tr.fit(df_enc_big_na)
 
-    out = [
+    out_1 = [
+        "var_A_B",
+        "var_A_D",
+        "var_A_G",
+        "var_A_A",
+        "var_A_C",
+        "var_A_E",
+        "var_A_F",
+        "var_A_",
+        "var_B_A",
+        "var_B_D",
+        "var_B_B",
+        "var_B_G",
+        "var_B_C",
+        "var_B_E",
+        "var_B_F",
+        "var_C_C",
+        "var_C_D",
+        "var_C_B",
+        "var_C_G",
+        "var_C_A",
+        "var_C_E",
+        "var_C_F",
+    ]
+    out_2 = [
         "var_A_B",
         "var_A_D",
         "var_A_G",
@@ -250,8 +274,8 @@ def test_get_feature_names_out_na(df_enc_big_na):
         "var_C": ["C", "D", "B", "G", "A", "E", "F"],
     }
     assert tr.encoder_dict_ in [expected_dict_1, expected_dict_2]
-    assert tr.get_feature_names_out(input_features=None) == out
-    assert tr.get_feature_names_out(input_features=input_features) == out
+    assert tr.get_feature_names_out(input_features=None) in [out_1, out_2]
+    assert tr.get_feature_names_out(input_features=input_features) in [out_1, out_2]
 
 
 @pytest.mark.parametrize("keywords", ["hello", 0.5, [1]])

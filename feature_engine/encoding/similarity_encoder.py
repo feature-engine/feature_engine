@@ -264,8 +264,9 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
+                    .astype(object)
+                    .fillna("")
                     .astype(str)
-                    .replace({"nan": "", "<NA>": ""})
                     .value_counts()
                     .head(self.top_categories)
                     .index.tolist()
@@ -316,18 +317,23 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         new_values = []
         for var in self.variables_:
             if self.missing_values == "impute":
-                X[var] = X[var].astype(str).replace({"nan": "", "<NA>": ""})
-            categories = X[var].dropna().astype(str).unique()
+                series = X[var].astype(object).fillna("").astype(str)
+            else:
+                series = X[var].astype(str)
+
+            categories = series.unique()
             column_encoder_dict = {
                 x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in categories
             }
             # Ensure map result is always an array of the correct size.
             # Missing values in categories or unknown categories will map to NaN.
             default_nan = [np.nan] * len(self.encoder_dict_[var])
-            column_encoder_dict["nan"] = default_nan
-            column_encoder_dict["<NA>"] = default_nan
+            if "nan" not in column_encoder_dict:
+                column_encoder_dict["nan"] = default_nan
+            if "<NA>" not in column_encoder_dict:
+                column_encoder_dict["<NA>"] = default_nan
 
-            encoded_series = X[var].astype(str).map(column_encoder_dict)
+            encoded_series = series.map(column_encoder_dict)
 
             # Robust stacking: replace any float NaNs (from unknown values) with arrays
             encoded_list = [
