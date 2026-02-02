@@ -193,7 +193,6 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
         transformer,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
-
         if not issubclass(transformer.__class__, TransformerMixin):
             raise TypeError(
                 "transformer expected a Scikit-learn transformer. "
@@ -338,7 +337,6 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
         # Feature selection: transformers that remove features
         elif self.transformer_.__class__.__name__ in _SELECTORS:
-
             # return the dataframe with the selected features
             X.drop(columns=self.features_to_drop_, inplace=True)
 
@@ -444,9 +442,9 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
         tags_dict = _return_tags()
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"][
-            "check_parameters_default_constructible"
-        ] = "transformer has 1 mandatory parameter"
+        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
+            "transformer has 1 mandatory parameter"
+        )
         return tags_dict
 
     def __sklearn_tags__(self):

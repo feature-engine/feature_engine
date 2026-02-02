@@ -186,7 +186,6 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         utc: Union[None, bool] = None,
         format: Union[None, str] = None,
     ) -> None:
-
         if features_to_extract:
             if not (
                 isinstance(features_to_extract, list) or features_to_extract == "all"
@@ -216,7 +215,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             )
 
         if utc is not None and not isinstance(utc, bool):
-            raise ValueError("utc takes only booleans or None. " f"Got {utc} instead.")
+            raise ValueError(f"utc takes only booleans or None. Got {utc} instead.")
 
         self.variables = _check_variables_input_value(variables)
         self.drop_original = drop_original
@@ -248,7 +247,6 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
         # special case index
         if self.variables == "index":
-
             if not (
                 is_datetime(X.index)
                 or (

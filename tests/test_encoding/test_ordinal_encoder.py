@@ -138,10 +138,11 @@ def test_error_if_input_df_contains_categories_not_present_in_training_df(
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
-    # check that only one warning was raised
-    assert len(record) == 1
+    # check that at least one warning was raised (Pandas 3 may emit additional
+    # deprecation warnings)
+    assert len(record) >= 1
     # check that the message matches
-    assert record[0].message.args[0] == msg
+    assert any(r.message.args[0] == msg for r in record)
 
     # check for error when rare_labels equals 'raise'
     with pytest.raises(ValueError) as record:
@@ -183,7 +184,6 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
 
 
 def test_ordered_encoding_1_variable_ignore_format(df_enc_numeric):
-
     encoder = OrdinalEncoder(
         encoding_method="ordered", variables=["var_A"], ignore_format=True
     )
@@ -206,7 +206,6 @@ def test_ordered_encoding_1_variable_ignore_format(df_enc_numeric):
 
 
 def test_arbitrary_encoding_automatically_find_variables_ignore_format(df_enc_numeric):
-
     encoder = OrdinalEncoder(
         encoding_method="arbitrary", variables=None, ignore_format=True
     )
@@ -243,7 +242,7 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
-    assert X["var_A"].dtypes == int
+    assert X["var_A"].dtypes.name == "int64"
 
 
 @pytest.mark.parametrize(

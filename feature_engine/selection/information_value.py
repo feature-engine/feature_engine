@@ -169,7 +169,6 @@ class SelectByInformationValue(BaseSelector, WoE):
         threshold: Union[float, int] = 0.2,
         confirm_variables: bool = False,
     ) -> None:
-
         if not isinstance(bins, int) or isinstance(bins, int) and bins <= 0:
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
@@ -181,8 +180,7 @@ class SelectByInformationValue(BaseSelector, WoE):
 
         if not isinstance(threshold, (int, float)):
             raise ValueError(
-                f"threshold must be a an integer or a float. Got {threshold} "
-                "instead."
+                f"threshold must be a an integer or a float. Got {threshold} instead."
             )
 
         self.variables = _check_variables_input_value(variables)

@@ -117,7 +117,6 @@ class MatchCategories(
         ignore_format: bool = False,
         missing_values: str = "raise",
     ) -> None:
-
         super().__init__(variables, missing_values, ignore_format)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -175,7 +174,6 @@ class MatchCategories(
     def _check_nas_in_result(self, X: pd.DataFrame):
         # check if NaN values were introduced by the encoding
         if X[self.category_dict_.keys()].isnull().sum().sum() > 0:
-
             # obtain the name(s) of the columns that have null values
             nan_columns = (
                 X[self.category_dict_.keys()]

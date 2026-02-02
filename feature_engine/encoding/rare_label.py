@@ -142,7 +142,6 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         missing_values: str = "raise",
         ignore_format: bool = False,
     ) -> None:
-
         if not isinstance(tol, (int, float)) or tol < 0 or tol > 1:
             raise ValueError(f"tol takes values between 0 and 1. Got {tol} instead.")
 
@@ -197,7 +196,6 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         for var in variables_:
             if len(X[var].unique()) > self.n_categories:
-
                 # if the variable has more than the indicated number of categories
                 # the encoder will learn the most frequent categories
                 t = X[var].value_counts(normalize=True)

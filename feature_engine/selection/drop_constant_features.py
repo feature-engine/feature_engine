@@ -140,7 +140,6 @@ class DropConstantFeatures(BaseSelector):
         missing_values: str = "raise",
         confirm_variables: bool = False,
     ):
-
         if (
             not isinstance(tol, (float, int))
             or isinstance(tol, bool)
@@ -151,7 +150,7 @@ class DropConstantFeatures(BaseSelector):
 
         if missing_values not in ["raise", "ignore", "include"]:
             raise ValueError(
-                "missing_values takes only values 'raise', 'ignore' or " "'include'."
+                "missing_values takes only values 'raise', 'ignore' or 'include'."
             )
 
         super().__init__(confirm_variables)
@@ -224,9 +223,9 @@ class DropConstantFeatures(BaseSelector):
         tags_dict["allow_nan"] = True
         tags_dict["variables"] = "all"
         # add additional test that fails
-        tags_dict["_xfail_checks"][
-            "check_fit2d_1sample"
-        ] = "the transformer raises an error when dropping all columns, ok to fail"
+        tags_dict["_xfail_checks"]["check_fit2d_1sample"] = (
+            "the transformer raises an error when dropping all columns, ok to fail"
+        )
         return tags_dict
 
     def __sklearn_tags__(self):

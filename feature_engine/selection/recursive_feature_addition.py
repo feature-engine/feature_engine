@@ -195,7 +195,6 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
         # loop over the ordered list of features by feature importance starting
         # from the second element in the list.
         for feature in list(self.feature_importances_.index)[1:]:
-
             # Add feature and train new model
             model_tmp = cross_validate(
                 estimator=self.estimator,

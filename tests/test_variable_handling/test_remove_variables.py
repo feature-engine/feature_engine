@@ -18,7 +18,6 @@ test_dict = [
 
 @pytest.mark.parametrize("df, variables, overlap, col_not_in_df", test_dict)
 def test_retain_variables_if_in_df(df, variables, overlap, col_not_in_df):
-
     msg = "None of the variables in the list are present in the dataframe."
 
     assert retain_variables_if_in_df(df, variables) == overlap
