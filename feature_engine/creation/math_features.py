@@ -185,13 +185,19 @@ class MathFeatures(BaseCreation):
         super().__init__(missing_values, drop_original)
 
         self.variables = variables
-        self.func = self._normalize_func(func)
+        self.func = self._map_unnamed_func_to_str(func)
         self.new_variables_names = new_variables_names
 
-    def _normalize_func(self, func: Any) -> Any:
+    def _map_unnamed_func_to_str(self, func: Any) -> Any:
         if isinstance(func, list):
-            return [self._normalize_func(f) for f in func]
+            return [self._map_unnamed_func_to_str(f) for f in func]
 
+        # We map certain numpy functions to their string alias.
+        # This serves two purposes:
+        # 1) It avoids a FutureWarning in pandas 2.1+ which recommends
+        # using the string alias for better performance and future-proofing.
+        # 2) It ensures consistent column naming (e.g. "sum_x1_x2")
+        # regardless of how the function was passed (np.sum vs "sum").
         map_dict = {
             np.sum: "sum",
             np.mean: "mean",
