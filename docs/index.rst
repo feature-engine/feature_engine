@@ -355,7 +355,7 @@ For more details on how to contribute check the contributing page. Click on the
 Sponsors
 --------
 
-Feature-engine is supported by `Train in Data https://www.trainindata.com/>`_:
+Feature-engine is supported by `Train in Data <https://www.trainindata.com/>`_:
 
 |
 
