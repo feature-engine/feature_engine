@@ -271,9 +271,3 @@ sphinx-build -b html docs build
 ## License
 
 The content of this repository is licensed under a [BSD 3-Clause license](https://github.com/feature-engine/feature_engine/blob/main/LICENSE.md).
-
-## Sponsor us
-
-[Sponsor us](https://github.com/sponsors/feature-engine) and support further our 
-mission to democratize machine learning and programming tools through open-source 
-software.

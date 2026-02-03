@@ -361,8 +361,12 @@ Feature-engine is supported by `Train in Data <https://www.trainindata.com/>`_:
 
 .. image:: images/sponsors/trainindata.png
    :width: 200pt
-   :align: center
+   :align: left
    :target:  https://www.trainindata.com/
+
+|
+|
+|
 
 
 Open Source
