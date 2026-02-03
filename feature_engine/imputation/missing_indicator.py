@@ -104,6 +104,7 @@ class AddMissingIndicator(BaseImputer):
         missing_only: bool = True,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
+
         if not isinstance(missing_only, bool):
             raise ValueError("missing_only takes values True or False")
 

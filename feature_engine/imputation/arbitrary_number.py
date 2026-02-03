@@ -118,6 +118,7 @@ class ArbitraryNumberImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         imputer_dict: Optional[dict] = None,
     ) -> None:
+
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
             self.arbitrary_number = arbitrary_number
         else:

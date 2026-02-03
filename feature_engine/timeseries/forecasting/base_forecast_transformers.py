@@ -74,6 +74,7 @@ class BaseForecastTransformer(
         drop_original: bool = False,
         drop_na: bool = False,
     ) -> None:
+
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'. "
@@ -229,9 +230,9 @@ class BaseForecastTransformer(
         tags_dict["allow_nan"] = True
         tags_dict["variables"] = "numerical"
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_methods_subset_invariance"] = (
-            "LagFeatures is not invariant when applied to a subset. Not sure why yet"
-        )
+        tags_dict["_xfail_checks"][
+            "check_methods_subset_invariance"
+        ] = "LagFeatures is not invariant when applied to a subset. Not sure why yet"
         return tags_dict
 
     def __sklearn_tags__(self):

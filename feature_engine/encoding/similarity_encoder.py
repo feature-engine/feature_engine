@@ -232,13 +232,12 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         X = check_X(X)
         variables_ = self._check_or_select_variables(X)
 
-        if self.keywords and not all(
-            item in variables_ for item in self.keywords.keys()
-        ):
-            raise ValueError(
-                "There are variables in keywords that are not present "
-                "in the dataset."
-            )
+        if self.keywords:
+            if not all(item in variables_ for item in self.keywords.keys()):
+                raise ValueError(
+                    "There are variables in keywords that are not present "
+                    "in the dataset."
+                )
 
         # if data contains nan, fail before running any logic
         if self.missing_values == "raise":
@@ -265,10 +264,8 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
-                    .astype(object)
-                    .fillna("")
-                    .infer_objects(copy=False)
                     .astype(str)
+                    .replace("nan", "")
                     .value_counts()
                     .head(self.top_categories)
                     .index.tolist()
@@ -279,7 +276,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                     X[var]
                     .astype(str)
                     .value_counts(dropna=True)
-                    .drop(["nan", "<NA>"], errors="ignore")
+                    .drop("nan", errors="ignore")
                     .head(self.top_categories)
                     .index.tolist()
                 )
@@ -319,36 +316,13 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         new_values = []
         for var in self.variables_:
             if self.missing_values == "impute":
-                series = (
-                    X[var]
-                    .astype(object)
-                    .fillna("")
-                    .infer_objects(copy=False)
-                    .astype(str)
-                )
-            else:
-                series = X[var].astype(str)
-
-            categories = series.unique()
+                X[var] = X[var].astype(str).replace("nan", "")
+            categories = X[var].dropna().astype(str).unique()
             column_encoder_dict = {
                 x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in categories
             }
-            # Ensure map result is always an array of the correct size.
-            # Missing values in categories or unknown categories will map to NaN.
-            default_nan = [np.nan] * len(self.encoder_dict_[var])
-            if "nan" not in column_encoder_dict:
-                column_encoder_dict["nan"] = default_nan
-            if "<NA>" not in column_encoder_dict:
-                column_encoder_dict["<NA>"] = default_nan
-
-            encoded_series = series.map(column_encoder_dict)
-
-            # Robust stacking: replace any float NaNs (from unknown values) with arrays
-            encoded_list = [
-                v if isinstance(v, (list, np.ndarray)) else default_nan
-                for v in encoded_series
-            ]
-            encoded = np.vstack(encoded_list)
+            column_encoder_dict["nan"] = [np.nan] * len(self.encoder_dict_[var])
+            encoded = np.vstack(X[var].astype(str).map(column_encoder_dict).values)
             if self.missing_values == "ignore":
                 encoded[X[var].isna(), :] = np.nan
             new_values.append(encoded)

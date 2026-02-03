@@ -164,6 +164,7 @@ class WindowFeatures(BaseForecastTransformer):
         drop_original: bool = False,
         drop_na: bool = False,
     ) -> None:
+
         if isinstance(window, list) and len(window) != len(set(window)):
             raise ValueError(f"There are duplicated windows in the list: {window}")
 

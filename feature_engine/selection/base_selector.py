@@ -32,6 +32,7 @@ class BaseSelector(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         self,
         confirm_variables: bool = False,
     ) -> None:
+
         if not isinstance(confirm_variables, bool):
             raise ValueError(
                 "confirm_variables takes only values True and False. "

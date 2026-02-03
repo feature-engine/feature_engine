@@ -49,7 +49,7 @@ def multiclass_target():
 
 @pytest.mark.parametrize("precision", ["string", 0.1, -1, np.nan])
 def test_error_if_precision_gets_not_permitted_value(precision):
-    msg = f"precision must be None or a positive integer. Got {precision} instead."
+    msg = "precision must be None or a positive integer. " f"Got {precision} instead."
     with pytest.raises(ValueError, match=msg):
         DecisionTreeFeatures(precision=precision)
 
@@ -63,7 +63,10 @@ def test_error_if_regression_gets_not_permitted_value(regression):
 
 @pytest.mark.parametrize("drop", ["string", 0.1, -1, np.nan])
 def test_error_if_drop_original_gets_not_permitted_value(drop):
-    msg = f"drop_original takes only boolean values True and False. Got {drop} instead."
+    msg = (
+        "drop_original takes only boolean values True and False. "
+        f"Got {drop} instead."
+    )
     with pytest.raises(ValueError, match=msg):
         DecisionTreeFeatures(drop_original=drop)
 

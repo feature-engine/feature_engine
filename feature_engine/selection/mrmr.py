@@ -233,6 +233,7 @@ class MRMR(BaseSelector):
         random_state: Optional[int] = None,
         n_jobs: Optional[int] = None,
     ):
+
         if not isinstance(method, str) or method not in [
             "MIQ",
             "MID",
@@ -384,6 +385,7 @@ class MRMR(BaseSelector):
         return self
 
     def _calculate_relevance(self, X, y):
+
         if self.method in ["MIQ", "MID"]:
             if self.regression is True:
                 relevance = mutual_info_regression(
@@ -440,6 +442,7 @@ class MRMR(BaseSelector):
         return relevance
 
     def _calculate_redundance(self, X, y):
+
         if self.method in ["FCD", "FCQ", "RFCQ"]:
             redundance = X.corrwith(y).values
             redundance = np.absolute(redundance)

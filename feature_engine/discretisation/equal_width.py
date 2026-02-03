@@ -144,6 +144,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         return_boundaries: bool = False,
         precision: int = 3,
     ) -> None:
+
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 

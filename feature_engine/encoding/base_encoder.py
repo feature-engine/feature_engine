@@ -49,6 +49,7 @@ class CategoricalInitMixin:
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
     ) -> None:
+
         if not isinstance(ignore_format, bool):
             raise ValueError(
                 "ignore_format takes only booleans True and False. "
@@ -83,6 +84,7 @@ class CategoricalInitMixinNA:
         missing_values: str = "raise",
         ignore_format: bool = False,
     ) -> None:
+
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'. "
@@ -238,8 +240,10 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         return X
 
     def _check_nan_values_after_transformation(self, X):
+
         # check if NaN values were introduced by the encoding
         if X[self.variables_].isnull().sum().sum() > 0:
+
             # obtain the name(s) of the columns have null values
             nan_columns = (
                 X[self.encoder_dict_.keys()]

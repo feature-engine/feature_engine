@@ -140,6 +140,7 @@ class MathFeatures(BaseCreation):
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
+
         if (
             not isinstance(variables, list)
             or not all(isinstance(var, (int, str)) for var in variables)
@@ -184,24 +185,8 @@ class MathFeatures(BaseCreation):
         super().__init__(missing_values, drop_original)
 
         self.variables = variables
-        self.func = self._normalize_func(func)
+        self.func = func
         self.new_variables_names = new_variables_names
-
-    def _normalize_func(self, func: Any) -> Any:
-        if isinstance(func, list):
-            return [self._normalize_func(f) for f in func]
-
-        import numpy as np
-        map_dict = {
-            np.sum: "sum",
-            np.mean: "mean",
-            np.std: "std",
-            np.min: "min",
-            np.max: "max",
-            np.median: "median",
-            np.prod: "prod",
-        }
-        return map_dict.get(func, func)
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """

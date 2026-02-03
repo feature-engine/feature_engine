@@ -182,6 +182,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         regression: bool = True,
         random_state: Optional[int] = None,
     ) -> None:
+
         if bin_output not in ["prediction", "bin_number", "boundaries"]:
             raise ValueError(
                 "bin_output takes values  'prediction', 'bin_number' or 'boundaries'. "
@@ -251,6 +252,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         scores_dict_ = {}
 
         for var in self.variables_:
+
             if self.regression:
                 model = DecisionTreeRegressor(random_state=self.random_state)
             else:

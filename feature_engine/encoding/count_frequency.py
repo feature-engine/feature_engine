@@ -159,6 +159,7 @@ class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         ignore_format: bool = False,
         unseen: str = "ignore",
     ) -> None:
+
         if encoding_method not in ["count", "frequency"]:
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'. "

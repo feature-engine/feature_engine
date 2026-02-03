@@ -113,9 +113,11 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         threshold: Union[None, int, float] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
+
         if not isinstance(missing_only, bool):
             raise ValueError(
-                f"missing_only takes values True or False. Got {missing_only} instead."
+                "missing_only takes values True or False. "
+                f"Got {missing_only} instead."
             )
 
         if threshold is not None:

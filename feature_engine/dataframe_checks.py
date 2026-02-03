@@ -6,7 +6,6 @@ from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_string_dtype
 from scipy.sparse import issparse
 from sklearn.utils.validation import _check_y, check_consistent_length, column_or_1d
 
@@ -122,10 +121,10 @@ def check_y(
     elif isinstance(y, pd.Series):
         if y.isnull().any():
             raise ValueError("y contains NaN values.")
-        if y.dtype != "O" and not is_string_dtype(y) and not np.isfinite(y).all():
+        if y.dtype != "O" and not np.isfinite(y).all():
             raise ValueError("y contains infinity values.")
-        if y_numeric and (y.dtype == "O" or is_string_dtype(y)):
-            y = y.astype("float64")
+        if y_numeric and y.dtype == "O":
+            y = y.astype("float")
         y = y.copy()
 
     elif isinstance(y, pd.DataFrame):
@@ -315,20 +314,8 @@ def _check_contains_inf(X: pd.DataFrame, variables: List[Union[str, int]]) -> No
         If the variable(s) contain np.inf values
     """
 
-    # Filter to numeric columns and object columns.
-    # np.isinf doesn't work on string dtype.
-    for v in variables:
-        series = X[v]
-        if not is_string_dtype(series):
-            if series.dtype == "O":
-                # For object columns, we try to convert to numeric only for the check.
-                if np.isinf(pd.to_numeric(series, errors="coerce")).any():
-                    raise ValueError(
-                        "Some of the variables to transform contain inf values. Check "
-                        "and remove those before using this transformer."
-                    )
-            elif np.isinf(series).any():
-                raise ValueError(
-                    "Some of the variables to transform contain inf values. Check and "
-                    "remove those before using this transformer."
-                )
+    if np.isinf(X[variables]).any().any():
+        raise ValueError(
+            "Some of the variables to transform contain inf values. Check and "
+            "remove those before using this transformer."
+        )

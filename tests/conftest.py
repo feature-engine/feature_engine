@@ -1,51 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from unittest.mock import patch
-from sklearn.utils import Bunch
-
-
-# Mock fetch_california_housing to avoid 403 Forbidden errors in CI
-def mock_fetch_california_housing(*args, **kwargs):
-    rng = np.random.default_rng(42)
-    data = rng.uniform(1, 10, (100, 8))
-    feature_names = [
-        "MedInc", "HouseAge", "AveRooms", "AveBedrms",
-        "Population", "AveOccup", "Latitude", "Longitude"
-    ]
-    df = pd.DataFrame(data, columns=feature_names)
-
-    # Create a target that correlates with the expected 'selected' features
-    # to satisfy MRMR tests which expect specific features to be chosen.
-    target = (
-        5.0 * df["MedInc"] +
-        4.0 * df["Latitude"] +
-        3.0 * df["HouseAge"] +
-        2.0 * df["AveRooms"] +
-        1.0 * df["AveOccup"] +
-        rng.standard_normal(100) * 0.1
-    )
-
-    if kwargs.get("return_X_y"):
-        if kwargs.get("as_frame"):
-            return df, pd.Series(target, name="MedHouseVal")
-        return data, target.values
-
-    df["MedHouseVal"] = target
-    return Bunch(
-        data=data,
-        target=target.values,
-        frame=df if kwargs.get("as_frame") else None,
-        feature_names=feature_names,
-        target_names=["MedHouseVal"],
-        DESCR="mocked california housing",
-    )
-
-
-patch(
-    "sklearn.datasets.fetch_california_housing",
-    side_effect=mock_fetch_california_housing,
-).start()
 
 
 @pytest.fixture(scope="module")

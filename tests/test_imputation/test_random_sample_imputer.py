@@ -261,6 +261,7 @@ def test_error_if_random_state_is_string(df_na):
 
 
 def test_variables_cast_as_category(df_na):
+
     df_na = df_na.copy()
     df_na["City"] = df_na["City"].astype("category")
 

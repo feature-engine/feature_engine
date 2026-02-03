@@ -7,7 +7,7 @@ from feature_engine.encoding._helper_functions import check_parameter_unseen
 def test_raises_error_when_accepted_values_not_permitted(accepted):
     with pytest.raises(ValueError) as record:
         check_parameter_unseen("zero", accepted)
-    msg = f"accepted_values should be a list of strings.  Got {accepted} instead."
+    msg = "accepted_values should be a list of strings. " f" Got {accepted} instead."
     assert str(record.value) == msg
 
 
@@ -16,6 +16,7 @@ def test_raises_error_when_error_not_in_accepted_values(accepted):
     with pytest.raises(ValueError) as record:
         check_parameter_unseen("zero", accepted)
     msg = (
-        f"Parameter `unseen` takes only values {', '.join(accepted)}. Got zero instead."
+        f"Parameter `unseen` takes only values {', '.join(accepted)}."
+        " Got zero instead."
     )
     assert str(record.value) == msg

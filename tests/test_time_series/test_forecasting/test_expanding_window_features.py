@@ -7,6 +7,7 @@ from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
 
 
 def test_get_feature_names_out_raises_when_input_features_is_string(df_time):
+
     tr = ExpandingWindowFeatures(functions=["mean", "sum"])
     tr.fit(df_time)
 
@@ -16,6 +17,7 @@ def test_get_feature_names_out_raises_when_input_features_is_string(df_time):
 
 
 def test_get_feature_names_out_raises_when_input_features_not_transformed(df_time):
+
     tr = ExpandingWindowFeatures(functions=["mean", "sum"])
     tr.fit(df_time)
 
@@ -563,7 +565,7 @@ def test_error_duplicate_functions(df_time):
 
 @pytest.mark.parametrize("functions", [[np.min, np.max], np.min])
 def test_error_native_functions(df_time, functions):
-    msg = f"functions must be a list of strings or a string.Got {functions} instead."
+    msg = "functions must be a list of strings or a string." f"Got {functions} instead."
     with pytest.raises(ValueError) as record:
         ExpandingWindowFeatures(
             variables=["ambient_temp"],

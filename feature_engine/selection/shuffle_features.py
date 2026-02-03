@@ -181,6 +181,7 @@ class SelectByShuffling(BaseSelector):
         random_state: Union[int, None] = None,
         confirm_variables: bool = False,
     ):
+
         if threshold and not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float or None")
 
@@ -262,6 +263,7 @@ class SelectByShuffling(BaseSelector):
 
         # shuffle features and save feature performance drift into a dict
         for feature in self.variables_:
+
             X_shuffled = X[self.variables_].copy()
 
             # shuffle individual feature
@@ -315,9 +317,9 @@ class SelectByShuffling(BaseSelector):
         tags_dict["requires_y"] = True
         # add additional test that fails
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
-            "transformer has 1 mandatory parameter"
-        )
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
 
         msg = "transformers need more than 1 feature to work"
         tags_dict["_xfail_checks"]["check_fit2d_1feature"] = msg

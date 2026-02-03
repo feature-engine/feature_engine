@@ -114,6 +114,7 @@ class BaseRecursiveSelector(BaseSelector):
         variables: Variables = None,
         confirm_variables: bool = False,
     ):
+
         if not isinstance(threshold, (int, float)):
             raise ValueError("threshold can only be integer or float")
 
@@ -209,9 +210,9 @@ class BaseRecursiveSelector(BaseSelector):
         tags_dict["variables"] = "numerical"
         tags_dict["requires_y"] = True
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
-            "transformer has 1 mandatory parameter"
-        )
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
 
         msg = "transformers need more than 1 feature to work"

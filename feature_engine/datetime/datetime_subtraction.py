@@ -163,6 +163,7 @@ class DatetimeSubtraction(BaseCreation):
         utc: Union[None, bool] = None,
         format: Union[None, str] = None,
     ) -> None:
+
         valid_output_units = {
             "D",
             "Y",

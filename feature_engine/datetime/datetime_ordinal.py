@@ -115,6 +115,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         start_date: Union[None, str, datetime.datetime] = None,
         drop_original: bool = True,
     ) -> None:
+
         if missing_values not in ["raise", "ignore"]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'. "
