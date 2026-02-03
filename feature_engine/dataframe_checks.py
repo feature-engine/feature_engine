@@ -124,7 +124,7 @@ def check_y(
     elif isinstance(y, pd.Series):
         if y.isnull().any():
             raise ValueError("y contains NaN values.")
-        if y.dtype != "O" and not is_object(y) and not np.isfinite(y).all():
+        if not is_object(y) and not np.isfinite(y).all():
             raise ValueError("y contains infinity values.")
         if y_numeric and is_object(y):
             y = y.astype("float64")
