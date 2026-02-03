@@ -175,7 +175,7 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         if not isinstance(verbose, bool):
             raise ValueError(
-                f"verbose takes only booleans True and False.Got '{verbose} instead."
+                f"verbose takes only booleans True and False. Got '{verbose} instead."
             )
 
         # note: np.nan is an instance of float!!!
