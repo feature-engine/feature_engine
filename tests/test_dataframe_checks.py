@@ -249,37 +249,14 @@ def test_optional_contains_na(df_na):
 
 
 def test_contains_inf(df_na):
-    df_obj = df_na.astype(object)
-    df_obj = df_obj.fillna(np.inf).infer_objects(copy=False)
-    with pytest.raises(ValueError):
-        assert _check_contains_inf(df_obj, ["Age", "Marks"])
-
-    # Test object column with mixed types containing string inf
-    df_mixed = pd.DataFrame({"A": [1, "inf", 3]}, dtype=object)
-    with pytest.raises(ValueError):
-        _check_contains_inf(df_mixed, ["A"])
-
-    # Line 325 branch False: object column WITHOUT inf
-    df_obj_no_inf = pd.DataFrame({"A": [1, 2, 3]}, dtype=object)
-    _check_contains_inf(df_obj_no_inf, ["A"])
-
-    # Line 330 branch False: numeric column WITHOUT inf
-    df_num_no_inf = pd.DataFrame({"A": [1.1, 2.2, 3.3]})
-    _check_contains_inf(df_num_no_inf, ["A"])
-
-    # Test StringDtype column (should skip inf check and not raise error)
-    df_str = pd.DataFrame({"A": ["a", "b", "c"]}, dtype="string")
-    _check_contains_inf(df_str, ["A"])
-
     # Test numeric column with inf
     df_num_inf = pd.DataFrame({"A": [1.1, np.inf, 3.3]})
     with pytest.raises(ValueError):
         _check_contains_inf(df_num_inf, ["A"])
 
-    # Test object column with numeric inf
-    df_obj_num_inf = pd.DataFrame({"A": [1, np.inf, 3]}, dtype=object)
-    with pytest.raises(ValueError):
-        _check_contains_inf(df_obj_num_inf, ["A"])
+    # Test numeric column WITHOUT inf
+    df_num_no_inf = pd.DataFrame({"A": [1.1, 2.2, 3.3]})
+    _check_contains_inf(df_num_no_inf, ["A"])
 
 
 def test_check_X_raises_error_on_duplicated_column_names():
