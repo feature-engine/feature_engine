@@ -57,6 +57,7 @@ def test_detect_variables_with_na_in_variables_entered_by_user(df_na):
 
 
 def test_return_na_data_method(df_na):
+
     # test with vars
     imputer = DropMissingData(
         threshold=0.5, variables=["City", "Studies", "Age", "Marks"]
@@ -78,6 +79,7 @@ def test_error_when_missing_only_not_bool():
 
 
 def test_threshold(df_na):
+
     # Each row must have 100% data available
     imputer = DropMissingData(threshold=1)
     X = imputer.fit_transform(df_na)
@@ -121,6 +123,7 @@ def test_threshold_value_error(df_na):
 
 
 def test_threshold_with_variables(df_na):
+
     # Each row must have 100% data avaiable for columns ['Marks']
     imputer = DropMissingData(threshold=1, variables=["Marks"])
     X = imputer.fit_transform(df_na)

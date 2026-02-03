@@ -159,6 +159,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         variables: Variables = None,
         confirm_variables: bool = False,
     ):
+
         if threshold:
             if not isinstance(threshold, (int, float)):
                 raise ValueError(
@@ -254,9 +255,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         tags_dict["variables"] = "numerical"
         tags_dict["requires_y"] = True
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
-            "transformer has 1 mandatory parameter"
-        )
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
         tags_dict["_xfail_checks"]["check_estimators_nan_inf"] = "transformer allows NA"
 
         msg = "transformers need more than 1 feature to work"

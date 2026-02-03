@@ -17,6 +17,7 @@ def test_attr_classes(df_classification):
 
 
 def test_categorical_variables(df_classification):
+
     X, y = df_classification
 
     tr = TargetMeanClassifier(variables="cat_var_A")
@@ -126,6 +127,7 @@ def test_categorical_variables(df_classification):
 
 
 def test_numerical_variables(df_classification):
+
     X, y = df_classification
 
     tr = TargetMeanClassifier(variables="num_var_A", bins=2)
@@ -234,6 +236,7 @@ def test_numerical_variables(df_classification):
 
 
 def test_classifier_all_variables(df_classification):
+
     X, y = df_classification
 
     tr = TargetMeanClassifier(bins=2)

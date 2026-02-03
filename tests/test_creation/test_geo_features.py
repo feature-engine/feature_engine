@@ -8,41 +8,35 @@ from feature_engine.creation import GeoDistanceFeatures
 @pytest.fixture
 def df_coords():
     """Fixture providing sample coordinate data for a single route."""
-    return pd.DataFrame(
-        {
-            "lat1": [40.7128],
-            "lon1": [-74.0060],
-            "lat2": [34.0522],
-            "lon2": [-118.2437],
-        }
-    )
+    return pd.DataFrame({
+        "lat1": [40.7128],
+        "lon1": [-74.0060],
+        "lat2": [34.0522],
+        "lon2": [-118.2437],
+    })
 
 
 @pytest.fixture
 def df_multi_coords():
     """Fixture providing sample coordinate data with multiple rows."""
-    return pd.DataFrame(
-        {
-            "origin_lat": [40.7128, 34.0522, 41.8781],
-            "origin_lon": [-74.0060, -118.2437, -87.6298],
-            "dest_lat": [34.0522, 41.8781, 40.7128],
-            "dest_lon": [-118.2437, -87.6298, -74.0060],
-        }
-    )
+    return pd.DataFrame({
+        "origin_lat": [40.7128, 34.0522, 41.8781],
+        "origin_lon": [-74.0060, -118.2437, -87.6298],
+        "dest_lat": [34.0522, 41.8781, 40.7128],
+        "dest_lon": [-118.2437, -87.6298, -74.0060],
+    })
 
 
 @pytest.fixture
 def df_with_extra():
     """Fixture for DataFrame with coordinates and extra columns."""
-    return pd.DataFrame(
-        {
-            "lat1": [40.0],
-            "lon1": [-74.0],
-            "lat2": [34.0],
-            "lon2": [-118.0],
-            "other": [1],
-        }
-    )
+    return pd.DataFrame({
+        "lat1": [40.0],
+        "lon1": [-74.0],
+        "lat2": [34.0],
+        "lon2": [-118.0],
+        "other": [1],
+    })
 
 
 def test_haversine_distance_default(df_coords):
@@ -58,14 +52,12 @@ def test_haversine_distance_default(df_coords):
 
 def test_haversine_distance_miles():
     """Test Haversine distance in miles."""
-    X = pd.DataFrame(
-        {
-            "lat1": [40.7128],
-            "lon1": [-74.0060],
-            "lat2": [34.0522],
-            "lon2": [-118.2437],
-        }
-    )
+    X = pd.DataFrame({
+        "lat1": [40.7128],
+        "lon1": [-74.0060],
+        "lat2": [34.0522],
+        "lon2": [-118.2437],
+    })
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", output_unit="miles"
     )
@@ -78,14 +70,12 @@ def test_haversine_distance_miles():
 @pytest.mark.parametrize("output_unit", ["km", "miles", "meters", "feet"])
 def test_same_location_zero_distance(method, output_unit):
     """Test that same location returns zero distance for all methods and units."""
-    X = pd.DataFrame(
-        {
-            "lat1": [40.7128, 34.0522],
-            "lon1": [-74.0060, -118.2437],
-            "lat2": [40.7128, 34.0522],
-            "lon2": [-74.0060, -118.2437],
-        }
-    )
+    X = pd.DataFrame({
+        "lat1": [40.7128, 34.0522],
+        "lon1": [-74.0060, -118.2437],
+        "lat2": [40.7128, 34.0522],
+        "lon2": [-74.0060, -118.2437],
+    })
     transformer = GeoDistanceFeatures(
         lat1="lat1",
         lon1="lon1",
@@ -142,15 +132,13 @@ def test_custom_output_column_name(df_coords):
 
 def test_drop_original_columns():
     """Test drop_original parameter removes coordinate columns."""
-    X = pd.DataFrame(
-        {
-            "lat1": [40.7128],
-            "lon1": [-74.0060],
-            "lat2": [34.0522],
-            "lon2": [-118.2437],
-            "other": [1],
-        }
-    )
+    X = pd.DataFrame({
+        "lat1": [40.7128],
+        "lon1": [-74.0060],
+        "lat2": [34.0522],
+        "lon2": [-118.2437],
+        "other": [1],
+    })
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", drop_original=True
     )
@@ -222,14 +210,12 @@ def test_missing_columns_raises_error():
 @pytest.mark.parametrize("invalid_lat", [100, -100])
 def test_invalid_latitude_range_raises_error(invalid_lat):
     """Test that latitude outside [-90, 90] raises ValueError."""
-    X = pd.DataFrame(
-        {
-            "lat1": [invalid_lat],
-            "lon1": [0],
-            "lat2": [0],
-            "lon2": [0],
-        }
-    )
+    X = pd.DataFrame({
+        "lat1": [invalid_lat],
+        "lon1": [0],
+        "lat2": [0],
+        "lon2": [0],
+    })
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
@@ -240,14 +226,12 @@ def test_invalid_latitude_range_raises_error(invalid_lat):
 @pytest.mark.parametrize("invalid_lon", [200, -200])
 def test_invalid_longitude_range_raises_error(invalid_lon):
     """Test that longitude outside [-180, 180] raises ValueError."""
-    X = pd.DataFrame(
-        {
-            "lat1": [0],
-            "lon1": [invalid_lon],
-            "lat2": [0],
-            "lon2": [0],
-        }
-    )
+    X = pd.DataFrame({
+        "lat1": [0],
+        "lon1": [invalid_lon],
+        "lat2": [0],
+        "lon2": [0],
+    })
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
@@ -257,14 +241,12 @@ def test_invalid_longitude_range_raises_error(invalid_lon):
 
 def test_validate_ranges_disabled():
     """Test that invalid coordinates don't raise error when validate_ranges=False."""
-    X = pd.DataFrame(
-        {
-            "lat1": [100],
-            "lon1": [200],
-            "lat2": [0],
-            "lon2": [0],
-        }
-    )
+    X = pd.DataFrame({
+        "lat1": [100],
+        "lon1": [200],
+        "lat2": [0],
+        "lon2": [0],
+    })
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", validate_ranges=False
     )
@@ -330,14 +312,12 @@ def test_get_feature_names_out_with_drop_original(df_with_extra):
 
 def test_output_units_conversion():
     """Test different output units give consistent results with correct conversion."""
-    X = pd.DataFrame(
-        {
-            "lat1": [40.7128],
-            "lon1": [-74.0060],
-            "lat2": [34.0522],
-            "lon2": [-118.2437],
-        }
-    )
+    X = pd.DataFrame({
+        "lat1": [40.7128],
+        "lon1": [-74.0060],
+        "lat2": [34.0522],
+        "lon2": [-118.2437],
+    })
 
     transformer_km = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", output_unit="km"

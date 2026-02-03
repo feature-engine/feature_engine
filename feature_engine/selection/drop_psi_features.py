@@ -313,6 +313,7 @@ class DropHighPSIFeatures(BaseSelector):
         confirm_variables: bool = False,
         p_value: float = 0.001,
     ):
+
         if not isinstance(split_col, (str, int, type(None))):
             raise ValueError(
                 f"split_col must be a string an integer or None. Got "
@@ -361,7 +362,8 @@ class DropHighPSIFeatures(BaseSelector):
 
         if not isinstance(min_pct_empty_bins, (float, int)) or min_pct_empty_bins < 0:
             raise ValueError(
-                f"min_pct_empty_bins must be >= 0. Got {min_pct_empty_bins} instead."
+                f"min_pct_empty_bins must be >= 0. Got {min_pct_empty_bins} "
+                f"instead."
             )
 
         if missing_values not in ["raise", "ignore"]:
@@ -451,6 +453,7 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Set up parameters for numerical features
         if len(num_variables_) > 0:
+
             # Set up the discretizer for numerical features
             if self.strategy == "equal_width":
                 bucketer = EqualWidthDiscretiser(bins=self.bins)

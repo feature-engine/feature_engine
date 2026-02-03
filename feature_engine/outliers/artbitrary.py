@@ -118,6 +118,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
         min_capping_dict: Optional[dict] = None,
         missing_values: str = "raise",
     ) -> None:
+
         if not max_capping_dict and not min_capping_dict:
             raise ValueError(
                 "Please provide at least 1 dictionary with the capping values."
@@ -199,9 +200,9 @@ class ArbitraryOutlierCapper(BaseOutlier):
     def _more_tags(self):
         tags_dict = _return_tags()
         # add additional test that fails
-        tags_dict["_xfail_checks"]["check_parameters_default_constructible"] = (
-            "transformer has 1 mandatory parameter"
-        )
+        tags_dict["_xfail_checks"][
+            "check_parameters_default_constructible"
+        ] = "transformer has 1 mandatory parameter"
         return tags_dict
 
     def __sklearn_tags__(self):

@@ -185,7 +185,8 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             and (smoothing != "auto")
         ) or (isinstance(smoothing, (float, int)) and smoothing < 0):
             raise ValueError(
-                f"smoothing must be greater than 0 or 'auto'. Got {smoothing} instead."
+                f"smoothing must be greater than 0 or 'auto'. "
+                f"Got {smoothing} instead."
             )
         self.smoothing = smoothing
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])

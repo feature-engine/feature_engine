@@ -63,6 +63,7 @@ def test_load_titanic_raw(handle_missing, predictors_only, null_sum):
 
 @pytest.mark.parametrize("cabin", [None, "letter_only", "drop"])
 def test_cabin(cabin):
+
     data = load_titanic(cabin=None)
     assert "cabin" in data.columns
     assert list(data["cabin"].head(4).values) == ["B5", "C22 C26", "C22 C26", "C22 C26"]

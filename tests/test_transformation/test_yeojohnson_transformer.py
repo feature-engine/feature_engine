@@ -123,7 +123,7 @@ def test_inverse_with_with_non_linear_index():
             "var2": np.arange(0, 20),
             "var3": np.arange(-10, 10),
         },
-        index=[13, 15, 12, 11, 17, 9, 4, 0, 1, 14, 18, 2, 3, 6, 5, 7, 8, 2, 16, 10],
+        index=[13, 15, 12, 11, 17, 9, 4, 0, 1, 14, 18, 2, 3, 6, 5, 7, 8, 2, 16, 10]
     )
 
     transformer = YeoJohnsonTransformer(variables=None)

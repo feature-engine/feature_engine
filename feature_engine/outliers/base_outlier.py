@@ -102,6 +102,7 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
 
 class WinsorizerBase(BaseOutlier):
+
     _intro_docstring = """The extreme values beyond which an observation is considered
     an outlier are determined using:
 
@@ -156,6 +157,7 @@ class WinsorizerBase(BaseOutlier):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
     ) -> None:
+
         if capping_method not in ("gaussian", "iqr", "quantiles", "mad"):
             raise ValueError(
                 f"capping_method must be 'gaussian', 'iqr', 'mad', 'quantiles'."

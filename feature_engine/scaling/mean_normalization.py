@@ -102,6 +102,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
     ) -> None:
+
         self.variables = _check_variables_input_value(variables)
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):

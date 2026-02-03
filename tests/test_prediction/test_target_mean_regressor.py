@@ -5,6 +5,7 @@ from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
 
 
 def test_regressor_categorical_variables(df_regression):
+
     X, y = df_regression
 
     tr = TargetMeanRegressor(variables="cat_var_A")
@@ -104,6 +105,7 @@ def test_regressor_categorical_variables(df_regression):
 
 
 def test_classifier_numerical_variables(df_regression):
+
     X, y = df_regression
 
     tr = TargetMeanRegressor(variables="num_var_A", bins=2)
@@ -204,6 +206,7 @@ def test_classifier_numerical_variables(df_regression):
 
 
 def test_classifier_all_variables(df_regression):
+
     X, y = df_regression
 
     tr = TargetMeanRegressor(bins=2)

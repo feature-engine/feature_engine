@@ -7,7 +7,6 @@
 from sklearn import pipeline
 from sklearn.base import _fit_context, clone
 from sklearn.pipeline import _final_estimator_has, _fit_transform_one
-
 try:
     from sklearn.utils import _print_elapsed_time
 except ImportError:

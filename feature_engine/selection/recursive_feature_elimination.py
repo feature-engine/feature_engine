@@ -180,6 +180,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
         # evaluate every feature, starting from the least important
         # remember that feature_importances_ is ordered already
         for feature in list(self.feature_importances_.index):
+
             # if there is only 1 feature left
             if X_tmp.shape[1] == 1:
                 self.performance_drifts_[feature] = 0
@@ -208,6 +209,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
             self.performance_drifts_std_[feature] = model_tmp["test_score"].std()
 
             if performance_drift > self.threshold:
+
                 _selected_features.append(feature)
 
             else:

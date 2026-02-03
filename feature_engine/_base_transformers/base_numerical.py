@@ -1,4 +1,4 @@
-"""The base transformer provides functionality that is shared by most transformer
+""" The base transformer provides functionality that is shared by most transformer
 classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """

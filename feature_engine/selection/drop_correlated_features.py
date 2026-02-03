@@ -149,9 +149,11 @@ class DropCorrelatedFeatures(BaseSelector):
         missing_values: str = "ignore",
         confirm_variables: bool = False,
     ):
+
         if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
             raise ValueError(
-                f"`threshold` must be a float between 0 and 1. Got {threshold} instead."
+                "`threshold` must be a float between 0 and 1. "
+                f"Got {threshold} instead."
             )
 
         if missing_values not in ["raise", "ignore"]:

@@ -8,7 +8,6 @@ of variables in the transformed dataframe, or the list of variables entered by t
 user. The second is a bit useless, it is just included for compatibility with the
 Scikit-learn Pipelne.
 """
-
 from sklearn import clone
 from sklearn.pipeline import Pipeline
 
@@ -50,6 +49,7 @@ def check_get_feature_names_out(estimator):
 
     # tests for transformers that DO NOT ADD OR REMOVE features:
     else:
+
         # test transformer
         assert estimator.get_feature_names_out(input_features=None) == feature_names
         assert (

@@ -176,6 +176,7 @@ def test_get_feature_names_out(df_time):
 
 
 def test_single_window_when_using_periods(df_time):
+
     expected_results = {
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
@@ -272,6 +273,7 @@ def test_single_window_when_using_periods(df_time):
 
 
 def test_single_window_when_using_freq(df_time):
+
     expected_results = {
         "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76],
         "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
@@ -379,6 +381,7 @@ def test_single_window_when_using_freq(df_time):
 
 
 def test_multiple_windows(df_time):
+
     # Case 1: automatically select variables
     transformer = WindowFeatures(
         window=[2, 3], functions=["sum", "mean"], periods=15, freq="min"

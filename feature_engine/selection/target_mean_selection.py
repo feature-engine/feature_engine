@@ -225,6 +225,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
         regression: bool = False,
         confirm_variables: bool = False,
     ):
+
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
@@ -236,7 +237,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
 
         if threshold is not None and not isinstance(threshold, (int, float)):
             raise ValueError(
-                f"threshold can only take integer or float. Got {threshold} instead."
+                "threshold can only take integer or float. " f"Got {threshold} instead."
             )
 
         if regression is True and scoring not in _REGRESSION_METRICS:

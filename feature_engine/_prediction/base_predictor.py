@@ -86,6 +86,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         bins: int = 5,
         strategy: str = "equal_width",
     ):
+
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
@@ -197,6 +198,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         return pipeline
 
     def _make_combined_pipeline(self):
+
         encoder_num = MeanEncoder(variables=self.variables_numerical_, unseen="raise")
         encoder_cat = MeanEncoder(variables=self.variables_categorical_, unseen="raise")
 

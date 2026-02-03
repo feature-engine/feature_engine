@@ -125,6 +125,7 @@ class CyclicalFeatures(
         max_values: Optional[Dict[str, Union[int, float]]] = None,
         drop_original: Optional[bool] = False,
     ) -> None:
+
         _check_numerical_dict(max_values)
         _check_param_drop_original(drop_original)
 

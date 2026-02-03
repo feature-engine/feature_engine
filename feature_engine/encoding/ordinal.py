@@ -167,6 +167,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         ignore_format: bool = False,
         unseen: str = "ignore",
     ) -> None:
+
         if encoding_method not in ["ordered", "arbitrary"]:
             raise ValueError(
                 "encoding_method takes only values 'ordered' and 'arbitrary'"

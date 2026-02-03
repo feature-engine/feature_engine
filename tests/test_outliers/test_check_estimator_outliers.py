@@ -27,7 +27,9 @@ else:
     FAILED_CHECKS = _return_tags()["_xfail_checks"]
     FAILED_CHECKS_AOC = _return_tags()["_xfail_checks"]
 
-    msg1 = "transformers raise errors when data variation is low, thus this check fails"
+    msg1 = (
+        "transformers raise errors when data variation is low, " "thus this check fails"
+    )
 
     msg2 = "transformer has 1 mandatory parameter"
 

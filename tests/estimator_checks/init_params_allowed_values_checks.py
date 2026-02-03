@@ -1,7 +1,6 @@
 """Many transformers have similar init parameters which take the same input values.
 In this script, we add tests for the allowed values for those parameters.
 """
-
 import pytest
 from sklearn import clone
 
