@@ -390,4 +390,3 @@ Table of Contents
    about/index
    whats_new/index
    versions/index
-   donate
