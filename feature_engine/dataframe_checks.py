@@ -10,6 +10,8 @@ from pandas.api.types import is_string_dtype
 from scipy.sparse import issparse
 from sklearn.utils.validation import _check_y, check_consistent_length, column_or_1d
 
+from feature_engine.variable_handling._variable_type_checks import is_object
+
 
 def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
     """
@@ -122,9 +124,9 @@ def check_y(
     elif isinstance(y, pd.Series):
         if y.isnull().any():
             raise ValueError("y contains NaN values.")
-        if y.dtype != "O" and not is_string_dtype(y) and not np.isfinite(y).all():
+        if y.dtype != "O" and not is_object(y) and not np.isfinite(y).all():
             raise ValueError("y contains infinity values.")
-        if y_numeric and (y.dtype == "O" or is_string_dtype(y)):
+        if y_numeric and is_object(y):
             y = y.astype("float64")
         y = y.copy()
 
