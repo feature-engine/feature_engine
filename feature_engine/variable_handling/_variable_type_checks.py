@@ -1,6 +1,5 @@
 import pandas as pd
-from pandas.api.types import is_object_dtype as is_object
-from pandas.api.types import is_string_dtype as is_string
+from pandas.api.types import is_object_dtype as is_object, is_string_dtype as is_string
 from pandas.core.dtypes.common import is_datetime64_any_dtype as is_datetime
 from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
 
