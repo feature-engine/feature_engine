@@ -1,5 +1,6 @@
 from typing import Any, List, Optional, Union
 
+import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -191,7 +192,6 @@ class MathFeatures(BaseCreation):
         if isinstance(func, list):
             return [self._normalize_func(f) for f in func]
 
-        import numpy as np
         map_dict = {
             np.sum: "sum",
             np.mean: "mean",
