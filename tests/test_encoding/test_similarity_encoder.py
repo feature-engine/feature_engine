@@ -271,7 +271,6 @@ def test_get_feature_names_out_na(df_enc_big_na):
     assert tr.get_feature_names_out(input_features=input_features) == out
 
 
-
 @pytest.mark.parametrize("keywords", ["hello", 0.5, [1]])
 def test_keywords_bad_type(keywords):
     with pytest.raises(ValueError):

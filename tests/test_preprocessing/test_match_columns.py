@@ -312,7 +312,6 @@ def test_verbose_print_out(capfd, df_vartypes, df_na):
     )
 
 
-
 def test_raises_error_if_na_in_df(df_na, df_vartypes):
     # when dataset contains na, fit method
     with pytest.raises(ValueError):

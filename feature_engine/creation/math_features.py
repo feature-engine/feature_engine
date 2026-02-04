@@ -157,16 +157,15 @@ class MathFeatures(BaseCreation):
                 "func does not work with dictionaries in this transformer."
             )
 
-        if new_variables_names is not None:
-            if (
-                not isinstance(new_variables_names, list)
-                or not all(isinstance(var, str) for var in new_variables_names)
-                or len(set(new_variables_names)) != len(new_variables_names)
-            ):
-                raise ValueError(
-                    "new_variable_names should be None or a list of unique strings. "
-                    f"Got {new_variables_names} instead."
-                )
+        if new_variables_names is not None and (
+            not isinstance(new_variables_names, list)
+            or not all(isinstance(var, str) for var in new_variables_names)
+            or len(set(new_variables_names)) != len(new_variables_names)
+        ):
+            raise ValueError(
+                "new_variable_names should be None or a list of unique strings. "
+                f"Got {new_variables_names} instead."
+            )
 
         if new_variables_names is not None:
             if isinstance(func, list):
@@ -175,12 +174,11 @@ class MathFeatures(BaseCreation):
                         "The number of new feature names must coincide with the number "
                         "of functions."
                     )
-            else:
-                if len(new_variables_names) != 1:
-                    raise ValueError(
-                        "The number of new feature names must coincide with the number "
-                        "of functions."
-                    )
+            elif len(new_variables_names) != 1:
+                raise ValueError(
+                    "The number of new feature names must coincide with the number "
+                    "of functions."
+                )
 
         super().__init__(missing_values, drop_original)
 
@@ -209,7 +207,7 @@ class MathFeatures(BaseCreation):
         }
         return map_dict.get(func, func)
 
-    def fit(self, X: pd.DataFrame, y = None):
+    def fit(self, X: pd.DataFrame, y=None):
         """
         This method does not learn any parameters. It just stores the normalized
         function representation.
@@ -226,7 +224,6 @@ class MathFeatures(BaseCreation):
         # Normalize func to func_ (sklearn convention: don't modify init params)
         self.func_ = self._map_unnamed_func_to_str(self.func)
         return self
-
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
