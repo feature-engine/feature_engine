@@ -345,16 +345,17 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # Handle both .000000 and .000000000 formats for Pandas 2/3 compatibility
-    transformed_df.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in transformed_df.columns
-    ]
-    ref.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in ref.columns
-    ]
+    # TODO: Remove pandas < 3 support when dropping older pandas versions
+    if pd.__version__ >= "3":
+        # Pandas 3 uses microseconds format
+        transformed_df.columns = [c.replace(".000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000", "") for c in ref.columns]
+    else:
+        # Pandas 2 uses nanoseconds format
+        transformed_df.columns = [c.replace(".000000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000000", "") for c in ref.columns]
     pd.testing.assert_frame_equal(ref, transformed_df)
+
 
 
 def test_sklearn_ohe_object_many_features(df_vartypes):
@@ -380,16 +381,17 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # Handle both .000000 and .000000000 formats for Pandas 2/3 compatibility
-    transformed_df.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in transformed_df.columns
-    ]
-    ref.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in ref.columns
-    ]
+    # TODO: Remove pandas < 3 support when dropping older pandas versions
+    if pd.__version__ >= "3":
+        # Pandas 3 uses microseconds format
+        transformed_df.columns = [c.replace(".000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000", "") for c in ref.columns]
+    else:
+        # Pandas 2 uses nanoseconds format
+        transformed_df.columns = [c.replace(".000000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000000", "") for c in ref.columns]
     pd.testing.assert_frame_equal(ref, transformed_df)
+
 
 
 def test_sklearn_ohe_numeric(df_vartypes):
@@ -411,16 +413,17 @@ def test_sklearn_ohe_numeric(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes[variables_to_encode])
 
-    # Handle both .000000 and .000000000 formats for Pandas 2/3 compatibility
-    transformed_df.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in transformed_df.columns
-    ]
-    ref.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in ref.columns
-    ]
+    # TODO: Remove pandas < 3 support when dropping older pandas versions
+    if pd.__version__ >= "3":
+        # Pandas 3 uses microseconds format
+        transformed_df.columns = [c.replace(".000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000", "") for c in ref.columns]
+    else:
+        # Pandas 2 uses nanoseconds format
+        transformed_df.columns = [c.replace(".000000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000000", "") for c in ref.columns]
     pd.testing.assert_frame_equal(ref, transformed_df)
+
 
 
 def test_sklearn_ohe_all_features(df_vartypes):
@@ -455,16 +458,17 @@ def test_sklearn_ohe_all_features(df_vartypes):
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
-    # Handle both .000000 and .000000000 formats for Pandas 2/3 compatibility
-    transformed_df.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in transformed_df.columns
-    ]
-    ref.columns = [
-        c.replace(".000000000", "").replace(".000000", "")
-        for c in ref.columns
-    ]
+    # TODO: Remove pandas < 3 support when dropping older pandas versions
+    if pd.__version__ >= "3":
+        # Pandas 3 uses microseconds format
+        transformed_df.columns = [c.replace(".000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000", "") for c in ref.columns]
+    else:
+        # Pandas 2 uses nanoseconds format
+        transformed_df.columns = [c.replace(".000000000", "") for c in transformed_df.columns]
+        ref.columns = [c.replace(".000000000", "") for c in ref.columns]
     pd.testing.assert_frame_equal(ref, transformed_df)
+
 
 
 def test_sklearn_ohe_with_crossvalidation():
@@ -532,15 +536,17 @@ def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
         "dob_2020-02-24T00:03:00.000000000",
     ]
 
-    actual_features = [
-        f.replace(".000000000", "").replace(".000000", "")
-        for f in ohe_wrap.get_feature_names_out()
-    ]
-    expected_features = [
-        f.replace(".000000000", "").replace(".000000", "")
-        for f in expected_features_all
-    ]
+    # TODO: Remove pandas < 3 support when dropping older pandas versions
+    if pd.__version__ >= "3":
+        # Pandas 3 uses microseconds format
+        actual_features = [f.replace(".000000", "") for f in ohe_wrap.get_feature_names_out()]
+        expected_features = [f.replace(".000000", "") for f in expected_features_all]
+    else:
+        # Pandas 2 uses nanoseconds format
+        actual_features = [f.replace(".000000000", "") for f in ohe_wrap.get_feature_names_out()]
+        expected_features = [f.replace(".000000000", "") for f in expected_features_all]
     assert actual_features == expected_features
+
 
 
 @pytest.mark.parametrize(

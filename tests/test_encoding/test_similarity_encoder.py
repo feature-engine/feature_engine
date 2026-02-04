@@ -143,6 +143,11 @@ def test_nan_behaviour_ignore(df_enc_big_na):
     encoder = StringSimilarityEncoder(missing_values="ignore")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(axis=1) == df_enc_big_na.isna().any(axis=1)).all()
+    assert encoder.encoder_dict_ == {
+        "var_A": ["B", "D", "G", "A", "C", "E", "F"],
+        "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+        "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+    }
 
 
 def test_string_dtype_with_pd_na():
@@ -231,31 +236,7 @@ def test_get_feature_names_out_na(df_enc_big_na):
     tr = StringSimilarityEncoder()
     tr.fit(df_enc_big_na)
 
-    out_1 = [
-        "var_A_B",
-        "var_A_D",
-        "var_A_G",
-        "var_A_A",
-        "var_A_C",
-        "var_A_E",
-        "var_A_F",
-        "var_A_",
-        "var_B_A",
-        "var_B_D",
-        "var_B_B",
-        "var_B_G",
-        "var_B_C",
-        "var_B_E",
-        "var_B_F",
-        "var_C_C",
-        "var_C_D",
-        "var_C_B",
-        "var_C_G",
-        "var_C_A",
-        "var_C_E",
-        "var_C_F",
-    ]
-    out_2 = [
+    out = [
         "var_A_B",
         "var_A_D",
         "var_A_G",
@@ -280,21 +261,15 @@ def test_get_feature_names_out_na(df_enc_big_na):
         "var_C_F",
     ]
 
-    # The empty string is added because of NaN handling in fit
-    # Depending on pandas version, it might be "nan" or ""
-    expected_dict_1 = {
+    # NaN values are replaced with empty string "" before string conversion
+    assert tr.encoder_dict_ == {
         "var_A": ["B", "D", "G", "A", "C", "E", "F", ""],
         "var_B": ["A", "D", "B", "G", "C", "E", "F"],
         "var_C": ["C", "D", "B", "G", "A", "E", "F"],
     }
-    expected_dict_2 = {
-        "var_A": ["B", "D", "G", "A", "C", "E", "F", "nan"],
-        "var_B": ["A", "D", "B", "G", "C", "E", "F"],
-        "var_C": ["C", "D", "B", "G", "A", "E", "F"],
-    }
-    assert tr.encoder_dict_ in [expected_dict_1, expected_dict_2]
-    assert tr.get_feature_names_out(input_features=None) in [out_1, out_2]
-    assert tr.get_feature_names_out(input_features=input_features) in [out_1, out_2]
+    assert tr.get_feature_names_out(input_features=None) == out
+    assert tr.get_feature_names_out(input_features=input_features) == out
+
 
 
 @pytest.mark.parametrize("keywords", ["hello", 0.5, [1]])

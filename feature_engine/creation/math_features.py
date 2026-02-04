@@ -185,7 +185,7 @@ class MathFeatures(BaseCreation):
         super().__init__(missing_values, drop_original)
 
         self.variables = variables
-        self.func = self._map_unnamed_func_to_str(func)
+        self.func = func
         self.new_variables_names = new_variables_names
 
     def _map_unnamed_func_to_str(self, func: Any) -> Any:
@@ -209,6 +209,25 @@ class MathFeatures(BaseCreation):
         }
         return map_dict.get(func, func)
 
+    def fit(self, X: pd.DataFrame, y = None):
+        """
+        This method does not learn any parameters. It just stores the normalized
+        function representation.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training input samples.
+
+        y: pandas Series, or np.array. Defaults to None.
+            It is not needed in this transformer. You can pass y or None.
+        """
+        super().fit(X, y)
+        # Normalize func to func_ (sklearn convention: don't modify init params)
+        self.func_ = self._map_unnamed_func_to_str(self.func)
+        return self
+
+
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Create and add new variables.
@@ -228,9 +247,9 @@ class MathFeatures(BaseCreation):
         new_variable_names = self._get_new_features_name()
 
         if len(new_variable_names) == 1:
-            X[new_variable_names[0]] = X[self.variables].agg(self.func, axis=1)
+            X[new_variable_names[0]] = X[self.variables].agg(self.func_, axis=1)
         else:
-            X[new_variable_names] = X[self.variables].agg(self.func, axis=1)
+            X[new_variable_names] = X[self.variables].agg(self.func_, axis=1)
 
         if self.drop_original:
             X.drop(columns=self.variables, inplace=True)
@@ -247,14 +266,14 @@ class MathFeatures(BaseCreation):
         else:
             varlist = [f"{var}" for var in self.variables_]
 
-            if isinstance(self.func, list):
+            if isinstance(self.func_, list):
                 functions = [
-                    fun if type(fun) is str else fun.__name__ for fun in self.func
+                    fun if type(fun) is str else fun.__name__ for fun in self.func_
                 ]
                 feature_names = [
                     f"{function}_{'_'.join(varlist)}" for function in functions
                 ]
             else:
-                feature_names = [f"{self.func}_{'_'.join(varlist)}"]
+                feature_names = [f"{self.func_}_{'_'.join(varlist)}"]
 
         return feature_names
