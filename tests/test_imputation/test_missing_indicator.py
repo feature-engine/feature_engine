@@ -1,8 +1,10 @@
-import pytest
-from sklearn.pipeline import Pipeline
 import warnings
 import numpy as np
 import pandas as pd
+import pytest
+
+from sklearn.pipeline import Pipeline
+
 from feature_engine.imputation import AddMissingIndicator
 
 
