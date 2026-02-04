@@ -160,9 +160,13 @@ class AddMissingIndicator(BaseImputer):
         """
 
         X = self._transform(X)
-
-        indicator_names = [f"{feature}_na" for feature in self.variables_]
-        X[indicator_names] = X[self.variables_].isna().astype(int)
+        X_indicators = (
+            X[self.variables_]
+            .isna()
+            .astype("int8")
+            .add_suffix("_na")
+        )
+        X = pd.concat([X, X_indicators], axis=1)
 
         return X
 
