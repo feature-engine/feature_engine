@@ -1,6 +1,8 @@
 import pytest
 from sklearn.pipeline import Pipeline
-
+import warnings  
+import numpy as np  
+import pandas as pd 
 from feature_engine.imputation import AddMissingIndicator
 
 
@@ -96,32 +98,26 @@ def test_get_feature_names_out_from_pipeline(df_na):
 
     assert tr.get_feature_names_out(input_features=None) == feat_out
     assert tr.get_feature_names_out(input_features=original_features) == feat_out
+ 
+def test_no_performance_warning_with_many_variables():  
+    n_cols = 101  
+    df = pd.DataFrame(  
+        np.random.randn(10, n_cols),  
+        columns=[f"col_{i}" for i in range(n_cols)],  
+    )  
 
+    # Introduce missing values  
+    df.iloc[0, :] = np.nan  
 
-def test_no_performance_warning_with_many_variables():
-    # Test for issue #886: PerformanceWarning due to fragmentation
-    import numpy as np
-    import pandas as pd
-    import warnings
+    ami = AddMissingIndicator(missing_only=False)  
+    ami.fit(df)  
 
-    # Create a dataframe with many columns to potentially trigger fragmentation warning
-    n_cols = 101
-    data = np.random.randn(10, n_cols)
-    df = pd.DataFrame(data, columns=[f"col_{i}" for i in range(n_cols)])
-    # Add some missing values
-    df.iloc[0, :] = np.nan
+    with warnings.catch_warnings(record=True) as captured:  
+        warnings.simplefilter("always")  
+        ami.transform(df)  
 
-    ami = AddMissingIndicator(missing_only=False)
-    ami.fit(df)
-
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        ami.transform(df)
-
-        # Check that no PerformanceWarning was raised
-        found_warning = False
-        for warning in w:
-            if issubclass(warning.category, pd.errors.PerformanceWarning):
-                found_warning = True
-                break
-        assert not found_warning, "PerformanceWarning was raised during transform"
+    assert not any(  
+        issubclass(w.category, pd.errors.PerformanceWarning)  
+        for w in captured  
+    ), "PerformanceWarning was raised during transform"  
+    
