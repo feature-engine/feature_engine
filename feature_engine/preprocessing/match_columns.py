@@ -262,11 +262,9 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         X = X.drop(_columns_to_drop, axis=1)
 
-        # Add missing columns one at a time to avoid Pandas 3 StringDtype reindex issue
-        for col in _columns_to_add:
-            X[col] = self.fill_value
-
-        # Reorder columns to match training set, without fill_value to avoid issues
+        # Add missing columns first and then reorder to avoid
+        # Pandas 3 StringDtype reindex issue (before we used reindex)
+        X[_columns_to_add] = self.fill_value
         X = X[self.feature_names_in_]
 
         if self.match_dtypes:
