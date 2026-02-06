@@ -136,6 +136,13 @@ def test_aggregations_with_functions(df_vartypes):
         }
     )
 
+    # TODO: Remove pandas < 3 support when dropping older pandas versions
+    # In pandas >=3, when the user passes np.std, agg will use numpy.
+    # In pandas <3, when the user passes np.std, agg will use pd.std.
+    # Hence the difference in results
+    if pd.__version__ >= "3":
+        ref["std_Age_Marks"] = np.std(df_vartypes[["Age", "Marks"]], axis=1)
+
     # transform params
     pd.testing.assert_frame_equal(X, ref)
 
