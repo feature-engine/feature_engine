@@ -1,6 +1,5 @@
 from typing import Any, List, Optional, Union
 
-import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -186,28 +185,6 @@ class MathFeatures(BaseCreation):
         self.func = func
         self.new_variables_names = new_variables_names
 
-    def _map_numpy_func_to_str(self, func: Any) -> Any:
-        if isinstance(func, list):
-            return [self._map_numpy_func_to_str(f) for f in func]
-
-        # We map certain numpy functions to their string alias.
-        # This serves two purposes:
-        # 1) It avoids a FutureWarning in pandas 2.1+ which recommends
-        # using the string alias for better performance and future-proofing.
-        # 2) It ensures consistent column naming (e.g. "sum_x1_x2")
-        # regardless of how the function was passed (np.sum vs "sum").
-        map_dict = {
-            np.sum: "sum",
-            np.mean: "mean",
-            np.std: "std",
-            np.min: "min",
-            np.max: "max",
-            np.median: "median",
-            np.prod: "prod",
-        }
-        return map_dict.get(func, func)
-
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Create and add new variables.
@@ -224,14 +201,12 @@ class MathFeatures(BaseCreation):
         """
         X = self._check_transform_input_and_state(X)
 
-        func_ = self._map_numpy_func_to_str(self.func)
-
         new_variable_names = self._get_new_features_name()
 
         if len(new_variable_names) == 1:
-            X[new_variable_names[0]] = X[self.variables].agg(func_, axis=1)
+            X[new_variable_names[0]] = X[self.variables].agg(self.func, axis=1)
         else:
-            X[new_variable_names] = X[self.variables].agg(func_, axis=1)
+            X[new_variable_names] = X[self.variables].agg(self.func, axis=1)
 
         if self.drop_original:
             X.drop(columns=self.variables, inplace=True)
@@ -247,13 +222,15 @@ class MathFeatures(BaseCreation):
 
         else:
             varlist = [f"{var}" for var in self.variables_]
-            func_ = self._map_numpy_func_to_str(self.func)
 
-            if isinstance(func_, list):
+            if isinstance(self.func, list):
+                functions = [
+                    fun if type(fun) is str else fun.__name__ for fun in self.func
+                ]
                 feature_names = [
-                    f"{function}_{'_'.join(varlist)}" for function in func_
+                    f"{function}_{'_'.join(varlist)}" for function in functions
                 ]
             else:
-                feature_names = [f"{func_}_{'_'.join(varlist)}"]
+                feature_names = [f"{self.func}_{'_'.join(varlist)}"]
 
         return feature_names
