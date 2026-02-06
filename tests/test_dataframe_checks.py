@@ -248,15 +248,19 @@ def test_optional_contains_na(df_na):
     assert str(record.value) == msg
 
 
-def test_contains_inf(df_na):
-    # Test numeric column with inf
-    df_num_inf = pd.DataFrame({"A": [1.1, np.inf, 3.3]})
-    with pytest.raises(ValueError):
-        _check_contains_inf(df_num_inf, ["A"])
+def test_contains_inf_raises_on_inf():
+    msg = (
+        "Some of the variables to transform contain inf values. Check and "
+        "remove those before using this transformer."
+    )
+    df = pd.DataFrame({"A": [1.1, np.inf, 3.3]})
+    with pytest.raises(ValueError, match=msg):
+        _check_contains_inf(df, ["A"])
 
-    # Test numeric column WITHOUT inf
-    df_num_no_inf = pd.DataFrame({"A": [1.1, 2.2, 3.3]})
-    _check_contains_inf(df_num_no_inf, ["A"])
+
+def test_contains_inf_passes_without_inf():
+    df = pd.DataFrame({"A": [1.1, 2.2, 3.3]})
+    assert _check_contains_inf(df, ["A"]) is None
 
 
 def test_check_X_raises_error_on_duplicated_column_names():
