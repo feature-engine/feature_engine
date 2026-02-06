@@ -328,7 +328,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             }
             # Ensure map result is always an array of the correct size.
             # Missing values in categories or unknown categories will map to NaN.
-            default_nan = [np.nan] * len(self.encoder_dict_[var])
+            default_nan = np.full(len(self.encoder_dict_[var]), np.nan)
             if "nan" not in column_encoder_dict:
                 column_encoder_dict["nan"] = default_nan
             if "<NA>" not in column_encoder_dict:
