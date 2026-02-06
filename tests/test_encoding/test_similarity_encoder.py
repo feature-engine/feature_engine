@@ -1,5 +1,6 @@
 from difflib import SequenceMatcher
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -115,9 +116,14 @@ def test_nan_behaviour_error_fit(df_enc_big_na):
     assert str(record.value) == msg
 
 
-def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
+@pytest.mark.parametrize("nan_value", [np.nan, pd.NA, None])
+def test_nan_behaviour_error_transform(df_enc_big, nan_value):
     encoder = StringSimilarityEncoder(missing_values="raise")
     encoder.fit(df_enc_big)
+
+    df_enc_big_na = df_enc_big.copy()
+    df_enc_big_na.loc[0, "var_A"] = nan_value
+
     with pytest.raises(ValueError) as record:
         encoder.transform(df_enc_big_na)
     msg = (
@@ -128,9 +134,15 @@ def test_nan_behaviour_error_transform(df_enc_big, df_enc_big_na):
     assert str(record.value) == msg
 
 
-def test_nan_behaviour_impute(df_enc_big_na):
+@pytest.mark.parametrize("nan_value", [np.nan, pd.NA, None])
+def test_nan_behaviour_impute(df_enc_big, nan_value):
+
+    df_enc_big_na = df_enc_big.copy()
+    df_enc_big_na.loc[0, "var_A"] = nan_value
+
     encoder = StringSimilarityEncoder(missing_values="impute")
     X = encoder.fit_transform(df_enc_big_na)
+
     assert (X.isna().sum() == 0).all(axis=None)
     assert encoder.encoder_dict_ == {
         "var_A": ["B", "D", "G", "A", "C", "E", "F", ""],
@@ -139,15 +151,27 @@ def test_nan_behaviour_impute(df_enc_big_na):
     }
 
 
-def test_nan_behaviour_ignore(df_enc_big_na):
+@pytest.mark.parametrize("nan_value", [np.nan, pd.NA, None])
+def test_nan_behaviour_ignore(df_enc_big, nan_value):
+    df_enc_big_na = df_enc_big.copy()
+    df_enc_big_na.loc[0, "var_A"] = nan_value
+
     encoder = StringSimilarityEncoder(missing_values="ignore")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(axis=1) == df_enc_big_na.isna().any(axis=1)).all()
-    assert encoder.encoder_dict_ == {
-        "var_A": ["B", "D", "G", "A", "C", "E", "F"],
-        "var_B": ["A", "D", "B", "G", "C", "E", "F"],
-        "var_C": ["C", "D", "B", "G", "A", "E", "F"],
-    }
+    if nan_value is not None:
+        assert encoder.encoder_dict_ == {
+            "var_A": ["B", "D", "G", "A", "C", "E", "F"],
+            "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+            "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+        }
+    else:
+        # Note that None is converted to a string and not treated as nan value
+        assert encoder.encoder_dict_ == {
+            "var_A": ["B", "D", "G", "A", "C", "E", "F", "None"],
+            "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+            "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+        }
 
 
 def test_string_dtype_with_pd_na():
@@ -157,10 +181,7 @@ def test_string_dtype_with_pd_na():
     X = encoder.fit_transform(df)
     assert (X.isna().sum() == 0).all(axis=None)
     # The categories will include "<NA>" or the string version of it
-    assert (
-        "<NA>" in encoder.encoder_dict_["var_A"]
-        or "" in encoder.encoder_dict_["var_A"]
-    )
+    assert "" in encoder.encoder_dict_["var_A"]
 
 
 def test_string_dtype_with_literal_nan_strings():
