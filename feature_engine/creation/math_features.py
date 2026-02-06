@@ -1,5 +1,6 @@
 from typing import Any, List, Optional, Union
 
+import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -140,7 +141,6 @@ class MathFeatures(BaseCreation):
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
-
         if (
             not isinstance(variables, list)
             or not all(isinstance(var, (int, str)) for var in variables)
@@ -157,16 +157,15 @@ class MathFeatures(BaseCreation):
                 "func does not work with dictionaries in this transformer."
             )
 
-        if new_variables_names is not None:
-            if (
-                not isinstance(new_variables_names, list)
-                or not all(isinstance(var, str) for var in new_variables_names)
-                or len(set(new_variables_names)) != len(new_variables_names)
-            ):
-                raise ValueError(
-                    "new_variable_names should be None or a list of unique strings. "
-                    f"Got {new_variables_names} instead."
-                )
+        if new_variables_names is not None and (
+            not isinstance(new_variables_names, list)
+            or not all(isinstance(var, str) for var in new_variables_names)
+            or len(set(new_variables_names)) != len(new_variables_names)
+        ):
+            raise ValueError(
+                "new_variable_names should be None or a list of unique strings. "
+                f"Got {new_variables_names} instead."
+            )
 
         if new_variables_names is not None:
             if isinstance(func, list):
@@ -175,18 +174,56 @@ class MathFeatures(BaseCreation):
                         "The number of new feature names must coincide with the number "
                         "of functions."
                     )
-            else:
-                if len(new_variables_names) != 1:
-                    raise ValueError(
-                        "The number of new feature names must coincide with the number "
-                        "of functions."
-                    )
+            elif len(new_variables_names) != 1:
+                raise ValueError(
+                    "The number of new feature names must coincide with the number "
+                    "of functions."
+                )
 
         super().__init__(missing_values, drop_original)
 
         self.variables = variables
         self.func = func
         self.new_variables_names = new_variables_names
+
+    def _map_unnamed_func_to_str(self, func: Any) -> Any:
+        if isinstance(func, list):
+            return [self._map_unnamed_func_to_str(f) for f in func]
+
+        # We map certain numpy functions to their string alias.
+        # This serves two purposes:
+        # 1) It avoids a FutureWarning in pandas 2.1+ which recommends
+        # using the string alias for better performance and future-proofing.
+        # 2) It ensures consistent column naming (e.g. "sum_x1_x2")
+        # regardless of how the function was passed (np.sum vs "sum").
+        map_dict = {
+            np.sum: "sum",
+            np.mean: "mean",
+            np.std: "std",
+            np.min: "min",
+            np.max: "max",
+            np.median: "median",
+            np.prod: "prod",
+        }
+        return map_dict.get(func, func)
+
+    def fit(self, X: pd.DataFrame, y=None):
+        """
+        This method does not learn any parameters. It just stores the normalized
+        function representation.
+
+        Parameters
+        ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The training input samples.
+
+        y: pandas Series, or np.array. Defaults to None.
+            It is not needed in this transformer. You can pass y or None.
+        """
+        super().fit(X, y)
+        # Normalize func to func_ (sklearn convention: don't modify init params)
+        self.func_ = self._map_unnamed_func_to_str(self.func)
+        return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -207,9 +244,9 @@ class MathFeatures(BaseCreation):
         new_variable_names = self._get_new_features_name()
 
         if len(new_variable_names) == 1:
-            X[new_variable_names[0]] = X[self.variables].agg(self.func, axis=1)
+            X[new_variable_names[0]] = X[self.variables].agg(self.func_, axis=1)
         else:
-            X[new_variable_names] = X[self.variables].agg(self.func, axis=1)
+            X[new_variable_names] = X[self.variables].agg(self.func_, axis=1)
 
         if self.drop_original:
             X.drop(columns=self.variables, inplace=True)
@@ -226,14 +263,14 @@ class MathFeatures(BaseCreation):
         else:
             varlist = [f"{var}" for var in self.variables_]
 
-            if isinstance(self.func, list):
+            if isinstance(self.func_, list):
                 functions = [
-                    fun if type(fun) is str else fun.__name__ for fun in self.func
+                    fun if type(fun) is str else fun.__name__ for fun in self.func_
                 ]
                 feature_names = [
                     f"{function}_{'_'.join(varlist)}" for function in functions
                 ]
             else:
-                feature_names = [f"{self.func}_{'_'.join(varlist)}"]
+                feature_names = [f"{self.func_}_{'_'.join(varlist)}"]
 
         return feature_names

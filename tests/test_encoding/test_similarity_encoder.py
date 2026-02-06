@@ -150,6 +150,30 @@ def test_nan_behaviour_ignore(df_enc_big_na):
     }
 
 
+def test_string_dtype_with_pd_na():
+    # Test StringDtype with pd.NA to hit "<NA>" branch in transform
+    df = pd.DataFrame({"var_A": ["A", "B", pd.NA]}, dtype="string")
+    encoder = StringSimilarityEncoder(missing_values="impute")
+    X = encoder.fit_transform(df)
+    assert (X.isna().sum() == 0).all(axis=None)
+    # The categories will include "<NA>" or the string version of it
+    assert (
+        "<NA>" in encoder.encoder_dict_["var_A"]
+        or "" in encoder.encoder_dict_["var_A"]
+    )
+
+
+def test_string_dtype_with_literal_nan_strings():
+    # Test with literal "nan" and "<NA>" strings to hit skips in
+    # transform (line 339, 341 False)
+    df = pd.DataFrame({"var_A": ["nan", "<NA>", "A", "B"]}, dtype="string")
+    encoder = StringSimilarityEncoder(missing_values="impute")
+    X = encoder.fit_transform(df)
+    assert (X.isna().sum() == 0).all(axis=None)
+    assert "nan" in encoder.encoder_dict_["var_A"]
+    assert "<NA>" in encoder.encoder_dict_["var_A"]
+
+
 def test_inverse_transform_error(df_enc_big):
     encoder = StringSimilarityEncoder()
     X = encoder.fit_transform(df_enc_big)
@@ -237,6 +261,7 @@ def test_get_feature_names_out_na(df_enc_big_na):
         "var_C_F",
     ]
 
+    # NaN values are replaced with empty string "" before string conversion
     assert tr.encoder_dict_ == {
         "var_A": ["B", "D", "G", "A", "C", "E", "F", ""],
         "var_B": ["A", "D", "B", "G", "C", "E", "F"],

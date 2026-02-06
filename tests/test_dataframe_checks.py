@@ -249,22 +249,43 @@ def test_optional_contains_na(df_na):
 
 
 def test_contains_inf(df_na):
-    df_na.fillna(np.inf, inplace=True)
+    # Test numeric column with inf
+    df_num_inf = pd.DataFrame({"A": [1.1, np.inf, 3.3]})
     with pytest.raises(ValueError):
-        assert _check_contains_inf(df_na, ["Age", "Marks"])
+        _check_contains_inf(df_num_inf, ["A"])
+
+    # Test numeric column WITHOUT inf
+    df_num_no_inf = pd.DataFrame({"A": [1.1, 2.2, 3.3]})
+    _check_contains_inf(df_num_no_inf, ["A"])
 
 
 def test_check_X_raises_error_on_duplicated_column_names():
     df = pd.DataFrame(
         {
-            "col1": [1, 2, 3],
-            "col2": ["a", "b", "c"],
-            "col3": pd.date_range("2023-01-01", periods=3),
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
         }
     )
-    df.columns = ["same", "unique", "same"]
-
+    df.columns = ["var_A", "var_A", "var_B", "var_C"]
     with pytest.raises(ValueError) as err_txt:
         check_X(df)
-
     assert err_txt.match("Input data contains duplicated variable names.")
+
+
+def test_check_X_errors():
+    # Test scalar array error (line 58)
+    with pytest.raises(ValueError) as record:
+        check_X(np.array(1))
+    assert record.match("Expected 2D array, got scalar array instead")
+
+    # Test 1D array error (line 65)
+    with pytest.raises(ValueError) as record:
+        check_X(np.array([1, 2, 3]))
+    assert record.match("Expected 2D array, got 1D array instead")
+
+    # Test incorrect type error (line 80)
+    with pytest.raises(TypeError) as record:
+        check_X("not a dataframe")
+    assert record.match("X must be a numpy array or pandas dataframe")
