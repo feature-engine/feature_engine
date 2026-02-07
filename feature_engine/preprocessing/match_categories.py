@@ -167,7 +167,10 @@ class MatchCategories(
             _check_optional_contains_na(X, self.variables_)
 
         for feature, levels in self.category_dict_.items():
-            X[feature] = pd.Categorical(X[feature], levels)
+            X[feature] = pd.Categorical(
+                X[feature].where(X[feature].isin(levels)),
+                categories=levels
+            )
 
         self._check_nas_in_result(X)
         return X

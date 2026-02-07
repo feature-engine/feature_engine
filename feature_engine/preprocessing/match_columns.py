@@ -275,12 +275,17 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 if new_dtype != _current_dtypes[column]
             }
 
-            if self.verbose:
-                for column, new_dtype in _columns_to_update.items():
+            for column, new_dtype in _columns_to_update.items():
+                if self.verbose:
                     print(
                         f"The {column} dtype is changing from ",
                         f"{_current_dtypes[column]} to {new_dtype}",
                     )
+
+                # Handle pandas 4 future warning
+                if isinstance(new_dtype, pd.CategoricalDtype):
+                    cats = new_dtype.categories
+                    X[column] = X[column].where(X[column].isin(cats))
 
             X = X.astype(_columns_to_update)
 
