@@ -90,7 +90,7 @@ jobs:
           command: |
             tox -e py311-sklearn170
 
-  test_feature_engine_py312:
+  test_feature_engine_py312_pandas230:
     docker:
       - image: cimg/python:3.12.1
     working_directory: ~/project
@@ -101,7 +101,20 @@ jobs:
       - run:
           name: Run tests with Python 3.12
           command: |
-            tox -e py312
+            tox -e py312-pandas230
+
+  test_feature_engine_py312_pandas300:
+    docker:
+      - image: cimg/python:3.12.1
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests with Python 3.12
+          command: |
+            tox -e py312-pandas300
 
   test_feature_engine_py313:
     docker:
@@ -197,7 +210,8 @@ workflows:
       - test_feature_engine_py311_sklearn150
       - test_feature_engine_py311_sklearn160
       - test_feature_engine_py311_sklearn170
-      - test_feature_engine_py312
+      - test_feature_engine_py312_pandas230
+      - test_feature_engine_py312_pandas300
       - test_feature_engine_py313
       - test_style
       - test_docs
@@ -214,7 +228,8 @@ workflows:
             - test_feature_engine_py311_sklearn150
             - test_feature_engine_py311_sklearn160
             - test_feature_engine_py311_sklearn170
-            - test_feature_engine_py312
+            - test_feature_engine_py312_pandas230
+            - test_feature_engine_py312_pandas300
             - test_feature_engine_py313
             - test_style
             - test_docs
