@@ -140,6 +140,7 @@ class MathFeatures(BaseCreation):
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
+
         if (
             not isinstance(variables, list)
             or not all(isinstance(var, (int, str)) for var in variables)
@@ -156,27 +157,30 @@ class MathFeatures(BaseCreation):
                 "func does not work with dictionaries in this transformer."
             )
 
-        if new_variables_names is not None and (
-            not isinstance(new_variables_names, list)
-            or not all(isinstance(var, str) for var in new_variables_names)
-            or len(set(new_variables_names)) != len(new_variables_names)
-        ):
-            raise ValueError(
-                "new_variable_names should be None or a list of unique strings. "
-                f"Got {new_variables_names} instead."
-            )
+        if new_variables_names is not None:
+            if (
+                not isinstance(new_variables_names, list)
+                or not all(isinstance(var, str) for var in new_variables_names)
+                or len(set(new_variables_names)) != len(new_variables_names)
+            ):
+                raise ValueError(
+                    "new_variable_names should be None or a list of unique strings. "
+                    f"Got {new_variables_names} instead."
+                )
 
         if new_variables_names is not None:
-            if isinstance(new_variables_names, list):
-                expected = len(func)
+            if isinstance(func, list):
+                if len(new_variables_names) != len(func):
+                    raise ValueError(
+                        "The number of new feature names must coincide with the number "
+                        "of functions."
+                    )
             else:
-                expected = 1
-
-            if len(new_variables_names) != expected:
-                raise ValueError(
-                    "The number of new feature names must coincide with the number "
-                    "of functions."
-                )
+                if len(new_variables_names) != 1:
+                    raise ValueError(
+                        "The number of new feature names must coincide with the number "
+                        "of functions."
+                    )
 
         super().__init__(missing_values, drop_original)
 
