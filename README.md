@@ -114,6 +114,7 @@ Please share your story by answering 1 quick question
 * PowerTransformer
 * BoxCoxTransformer
 * YeoJohnsonTransformer
+* ArcSinhTransformer
 
 ### Variable Scaling methods
 * MeanNormalizationScaler
