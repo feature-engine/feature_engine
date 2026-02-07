@@ -26,6 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 
 dynamic = ["version"]
@@ -50,6 +51,7 @@ tests = [
     "flake8>=3.9.2",
     "isort>=5.8.0",
     "mypy>=0.740",
+    "tzdata",
 ]
 
 [project.urls]

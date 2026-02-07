@@ -145,6 +145,19 @@ jobs:
           command: |
             tox -e py313
 
+  test_feature_engine_py314:
+    docker:
+      - image: cimg/python:3.14.0
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests (Python 3.14)
+          command: |
+            tox -e py314
+
 
   # ------------------------
   # Quality checks
@@ -250,6 +263,7 @@ workflows:
       - test_feature_engine_py312_pandas230
       - test_feature_engine_py312_pandas300
       - test_feature_engine_py313
+      - test_feature_engine_py314
       - test_style
       - test_docs
       - test_type
@@ -270,6 +284,7 @@ workflows:
             - test_feature_engine_py312_pandas230
             - test_feature_engine_py312_pandas300
             - test_feature_engine_py313
+            - test_feature_engine_py314
             - test_style
             - test_docs
             - test_type
