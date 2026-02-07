@@ -175,7 +175,7 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         if not isinstance(verbose, bool):
             raise ValueError(
-                "verbose takes only booleans True and False." f"Got '{verbose} instead."
+                f"verbose takes only booleans True and False. Got '{verbose} instead."
             )
 
         # note: np.nan is an instance of float!!!
@@ -262,7 +262,10 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         X = X.drop(_columns_to_drop, axis=1)
 
-        X = X.reindex(columns=self.feature_names_in_, fill_value=self.fill_value)
+        # Add missing columns first and then reorder to avoid
+        # Pandas 3 StringDtype reindex issue (before we used reindex)
+        X[_columns_to_add] = self.fill_value
+        X = X[self.feature_names_in_]
 
         if self.match_dtypes:
             _current_dtypes = X.dtypes.to_dict()

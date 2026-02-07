@@ -123,7 +123,8 @@ Please share your story by answering 1 quick question
  * MathFeatures
  * RelativeFeatures
  * CyclicalFeatures
- * DecisionTreeFeatures()
+ * DecisionTreeFeatures
+ * GeoDistanceFeatures
 
 ### Feature Selection:
  * DropFeatures
@@ -273,8 +274,7 @@ sphinx-build -b html docs build
 
 The content of this repository is licensed under a [BSD 3-Clause license](https://github.com/feature-engine/feature_engine/blob/main/LICENSE.md).
 
-## Sponsor us
 
-[Sponsor us](https://github.com/sponsors/feature-engine) and support further our 
-mission to democratize machine learning and programming tools through open-source 
-software.
+## Sponsor
+
+Feature-engine is made possible with the support of [Train in Data](https://www.trainindata.com/).

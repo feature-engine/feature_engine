@@ -124,11 +124,6 @@ html_theme_options = {
             "url": "https://www.blog.trainindata.com/",
             "icon": "fab fa-blogger",
         },
-        {
-            "name": "Sponsor",
-            "url": "https://github.com/sponsors/feature-engine",
-            "icon": "fas fa-hand-holding-heart",
-        },
     ],
     "navigation_depth": 2,
     "show_toc_level": 2,

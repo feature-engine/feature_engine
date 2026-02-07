@@ -201,7 +201,7 @@ class LagFeatures(BaseForecastTransformer):
                         axis=0,
                     )
                     df_ls.append(tmp)
-                tmp = pd.concat(df_ls, axis=1)
+                tmp = pd.concat(df_ls, axis=1, sort=False)
 
             else:
                 tmp = X[self.variables_].shift(
@@ -219,7 +219,7 @@ class LagFeatures(BaseForecastTransformer):
                         axis=0,
                     )
                     df_ls.append(tmp)
-                tmp = pd.concat(df_ls, axis=1)
+                tmp = pd.concat(df_ls, axis=1, sort=False)
 
             else:
                 tmp = X[self.variables_].shift(

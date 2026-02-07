@@ -1,4 +1,8 @@
+import warnings
+import numpy as np
+import pandas as pd
 import pytest
+
 from sklearn.pipeline import Pipeline
 
 from feature_engine.imputation import AddMissingIndicator
@@ -96,3 +100,26 @@ def test_get_feature_names_out_from_pipeline(df_na):
 
     assert tr.get_feature_names_out(input_features=None) == feat_out
     assert tr.get_feature_names_out(input_features=original_features) == feat_out
+
+
+def test_no_performance_warning_with_many_variables():
+    n_cols = 101
+    df = pd.DataFrame(
+        np.random.randn(10, n_cols),
+        columns=[f"col_{i}" for i in range(n_cols)],
+    )
+
+    # Introduce missing values
+    df.iloc[0, :] = np.nan
+
+    ami = AddMissingIndicator(missing_only=False)
+    ami.fit(df)
+
+    with warnings.catch_warnings(record=True) as captured:
+        warnings.simplefilter("always")
+        ami.transform(df)
+
+    assert not any(
+        issubclass(w.category, pd.errors.PerformanceWarning)
+        for w in captured
+    ), "PerformanceWarning was raised during transform"

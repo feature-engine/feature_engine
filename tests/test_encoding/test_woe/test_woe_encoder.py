@@ -149,10 +149,11 @@ def test_warn_if_transform_df_contains_categories_not_seen_in_fit(df_enc, df_enc
         encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
         encoder.transform(df_enc_rare[["var_A", "var_B"]])
 
-    # check that only one warning was raised
-    assert len(record) == 1
+    # check that at least one warning was raised (Pandas 3 may emit additional
+    # deprecation warnings)
+    assert len(record) >= 1
     # check that the message matches
-    assert record[0].message.args[0] == msg
+    assert any(r.message.args[0] == msg for r in record)
 
     # check for error when rare_labels equals 'raise'
     with pytest.raises(ValueError) as record:
@@ -389,7 +390,7 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     transf_df["var_B"] = VAR_B
 
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
-    assert X["var_A"].dtypes == float
+    assert X["var_A"].dtypes.name == "float64"
 
 
 @pytest.mark.parametrize(
