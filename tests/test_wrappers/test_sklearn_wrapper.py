@@ -30,13 +30,12 @@ from sklearn.preprocessing import (
     PowerTransformer,
     StandardScaler,
 )
-from sklearn.utils.fixes import parse_version
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
+sklearn_version = sklearn.__version__
 
-if sklearn_version < parse_version("1.6"):
+if sklearn_version < "1.6.0":
     kbd = KBinsDiscretizer(n_bins=3, encode="ordinal")
 else:
     kbd = KBinsDiscretizer(
@@ -90,6 +89,7 @@ def test_permitted_param_transformer(transformer, df_na):
 def test_error_when_transformer_is_estimator(transformer, df_na):
     with pytest.raises(TypeError):
         SklearnTransformerWrapper(transformer=transformer)
+
 
 if sklearn_version < parse_version("1.6"):
     kbd = KBinsDiscretizer(encode="one_hot")
