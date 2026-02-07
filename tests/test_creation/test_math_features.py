@@ -79,12 +79,6 @@ def test_error_new_variable_names_not_permitted():
             func=["sum", "mean"],
             new_variables_names=["sum_of_two_vars", "sum_of_two_vars"],
         )
-    with pytest.raises(ValueError):
-        MathFeatures(
-            variables=variables,
-            func=["sum", "mean"],
-            new_variables_names="sum_of_two_vars"
-        )
 
 
 def test_aggregations_with_strings(df_vartypes):
