@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import sklearn
 from sklearn import __version__ as skl_version
 from sklearn.base import clone
 from sklearn.datasets import fetch_california_housing
@@ -29,14 +30,22 @@ from sklearn.preprocessing import (
     PowerTransformer,
     StandardScaler,
 )
+from sklearn.utils.fixes import parse_version
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 
+sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
+
+if sklearn_version < parse_version("1.6"):
+    kbd = KBinsDiscretizer(n_bins=3, encode="ordinal")
+else:
+    kbd = KBinsDiscretizer(
+        n_bins=3, encode="ordinal", quantile_method="averaged_inverted_cdf"
+    )
+
 _transformers = [
     Binarizer(threshold=2),
-    KBinsDiscretizer(
-        n_bins=3, encode="ordinal", quantile_method="averaged_inverted_cdf"
-    ),
+    kbd,
     StandardScaler(),
     MinMaxScaler(),
     Normalizer(),
@@ -82,6 +91,11 @@ def test_error_when_transformer_is_estimator(transformer, df_na):
     with pytest.raises(TypeError):
         SklearnTransformerWrapper(transformer=transformer)
 
+if sklearn_version < parse_version("1.6"):
+    kbd = KBinsDiscretizer(encode="one_hot")
+else:
+    kbd = KBinsDiscretizer(encode="one_hot", quantile_method="averaged_inverted_cdf")
+
 
 @pytest.mark.parametrize(
     "transformer",
@@ -89,7 +103,7 @@ def test_error_when_transformer_is_estimator(transformer, df_na):
         PCA(),
         VotingClassifier(RandomForestClassifier()),
         MissingIndicator(),
-        KBinsDiscretizer(encode="one_hot", quantile_method="averaged_inverted_cdf"),
+        kbd,
         SimpleImputer(add_indicator=True),
         _OneHotEncoder(sparse=True),
     ],
