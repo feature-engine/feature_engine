@@ -5,11 +5,11 @@ from typing import List, Tuple, Union
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
-from pandas.core.dtypes.common import is_object_dtype as is_object
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
+    is_object,
 )
 from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
@@ -85,7 +85,9 @@ def find_categorical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     """
     variables = [
         column
-        for column in X.select_dtypes(include=["O", "category"]).columns
+        for column in X.select_dtypes(
+            include=["O", "category", "string"]
+        ).columns
         if _is_categorical_and_is_not_datetime(X[column])
     ]
     if len(variables) == 0:
@@ -251,12 +253,13 @@ def find_categorical_and_numerical_variables(
     # If user leaves default None parameter.
     elif variables is None:
         # find categorical variables
-        if variables is None:
-            variables_cat = [
-                column
-                for column in X.select_dtypes(include=["O", "category"]).columns
-                if _is_categorical_and_is_not_datetime(X[column])
-            ]
+        variables_cat = [
+            column
+            for column in X.select_dtypes(
+                include=["O", "category", "string"]
+            ).columns
+            if _is_categorical_and_is_not_datetime(X[column])
+        ]
         # find numerical variables in dataset
         variables_num = list(X.select_dtypes(include="number").columns)
 
@@ -271,14 +274,14 @@ def find_categorical_and_numerical_variables(
             raise ValueError("The list of variables is empty.")
 
         # find categorical variables
-        variables_cat = [
-            var for var in X[variables].select_dtypes(include=["O", "category"]).columns
-        ]
+        variables_cat = list(
+            X[variables].select_dtypes(include=["O", "category", "string"]).columns
+        )
 
         # find numerical variables
         variables_num = list(X[variables].select_dtypes(include="number").columns)
 
-        if any([v for v in variables if v not in variables_cat + variables_num]):
+        if any(v for v in variables if v not in variables_cat + variables_num):
             raise TypeError(
                 "Some of the variables are neither numerical nor categorical."
             )

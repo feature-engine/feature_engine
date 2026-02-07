@@ -219,7 +219,7 @@ class WindowFeatures(BaseForecastTransformer):
                     .shift(periods=self.periods, freq=self.freq)
                 )
                 df_ls.append(tmp)
-            tmp = pd.concat(df_ls, axis=1)
+            tmp = pd.concat(df_ls, axis=1, sort=False)
 
         else:
             tmp = (
