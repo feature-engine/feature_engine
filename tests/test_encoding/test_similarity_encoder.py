@@ -167,24 +167,12 @@ def test_nan_behaviour_ignore(df_enc_big, nan_value):
             "var_C": ["C", "D", "B", "G", "A", "E", "F"],
         }
     else:
-        if nan_value is not None:
-            assert encoder.encoder_dict_ == {
-                "var_A": ["B", "D", "G", "A", "C", "E", "F"],
-                "var_B": ["A", "D", "B", "G", "C", "E", "F"],
-                "var_C": ["C", "D", "B", "G", "A", "E", "F"],
-            }
-        else:
-            assert encoder.encoder_dict_ == {
-                "var_A": ["B", "D", "G", "A", "C", "E", "F"],
-                "var_B": ["A", "D", "B", "G", "C", "E", "F"],
-                "var_C": ["C", "D", "B", "G", "A", "E", "F"],
-            }
-            # Note that None is converted to a string and not treated as nan value
-            assert encoder.encoder_dict_ == {
-                "var_A": ["B", "D", "G", "A", "C", "E", "F", "None"],
-                "var_B": ["A", "D", "B", "G", "C", "E", "F"],
-                "var_C": ["C", "D", "B", "G", "A", "E", "F"],
-            }
+
+        assert encoder.encoder_dict_ == {
+            "var_A": ["B", "D", "G", "A", "C", "E", "F"],
+            "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+            "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+        }
 
 
 def test_string_dtype_with_pd_na():
