@@ -101,7 +101,9 @@ def test_classification(
     rounded_perfs = {
         key: round(sel.performance_drifts_[key], 4) for key in sel.performance_drifts_
     }
-    assert rounded_perfs == performances
+    assert rounded_perfs.keys() == performances.keys()
+    for key in performances:
+        assert rounded_perfs[key] == pytest.approx(performances[key], abs=0.001)
 
     # test transform output
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)

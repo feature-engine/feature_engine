@@ -32,7 +32,7 @@ There are many ways to contribute to Feature-engine:
 - Improve our documentation, i.e., fix typos, improve grammar, or add more code examples.
 - Write a blog, tweet, or share our project with others.
 - Use Feature-engine in your lectures if you teach.
-- `Sponsor us <https://github.com/sponsors/feature-engine>`_.
+
 
 With plenty of ways to get involved, we would be happy for you to support the project.
 You only need to abide by the principles of openness, respect, and consideration of

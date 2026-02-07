@@ -248,6 +248,7 @@ Feature-engine allows you to create new features by combining them mathematicall
 -  :doc:`api_doc/creation/RelativeFeatures`: combines variables with reference features
 -  :doc:`api_doc/creation/CyclicalFeatures`: creates variables using sine and cosine, suitable for cyclical features
 -  :doc:`api_doc/creation/DecisionTreeFeatures`: creates variables resulting from predictions of decision trees on 1 or more features
+-  :doc:`api_doc/creation/GeoDistanceFeatures`: creates distance variables based on latitude and longitude values
 
 Datetime:
 ~~~~~~~~~
@@ -353,27 +354,21 @@ let us know!
 For more details on how to contribute check the contributing page. Click on the
 :ref:`**Contribute** <contribute>` guide.
 
-Sponsor us
-----------
+Sponsors
+--------
 
-`Empower Sole <https://github.com/sponsors/solegalli>`_, the main developer of
-Feature-engine, to assemble a team of paid contributors to accelerate the development of
-Feature-engine.
+Feature-engine is supported by `Train in Data <https://www.trainindata.com/>`_:
 
-.. figure::  images/sponsors/call_for_sponsors.png
-   :align:   center
-   :target: https://github.com/sponsors/solegalli
+|
 
-Currently, Sole and our contributors dedicate their free time voluntarily
-to advancing the project. You can help us reach a funding milestone so that we can
-gather a group of 2-3 contributors who will commit regular hours each week to enhance
-documentation and expand Feature-engine's functionality at a faster pace.
+.. image:: images/sponsors/trainindata.png
+   :width: 200pt
+   :align: left
+   :target:  https://www.trainindata.com/
 
-`Your contribution <https://github.com/sponsors/solegalli>`_ will play a vital role in
-propelling Feature-engine to new heights, ensuring it remains a valuable resource for
-the data science community.
-
-If you don't have a Github account, you can also `sponsor us here <https://buymeacoffee.com/solegalliy>`_.
+|
+|
+|
 
 
 Open Source
@@ -401,4 +396,3 @@ Table of Contents
    about/index
    whats_new/index
    versions/index
-   donate

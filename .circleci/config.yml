@@ -1,6 +1,12 @@
 version: 2.1
+
 orbs:
   codecov: codecov/codecov@3.2.3
+
+
+# --------------------------------------------------
+# Anchors & defaults
+# --------------------------------------------------
 
 defaults: &defaults
   docker:
@@ -17,14 +23,24 @@ prepare_tox: &prepare_tox
 
 init_pypirc: &init_pypirc
   run:
-    name: init .pypirc
+    name: Init .pypirc
     command: |
       echo -e "[pypi]" >> ~/.pypirc
       echo -e "repository = $FE_PYPI_URL" >> ~/.pypirc
       echo -e "username = $FE_PYPI_USER" >> ~/.pypirc
       echo -e "password = $FE_PYPI_API_KEY" >> ~/.pypirc
 
+
+# --------------------------------------------------
+# Jobs
+# --------------------------------------------------
+
 jobs:
+
+  # ------------------------
+  # Test matrix
+  # ------------------------
+
   test_feature_engine_py39:
     docker:
       - image: cimg/python:3.9.0
@@ -34,7 +50,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.9
+          name: Run tests (Python 3.9)
           command: |
             tox -e py39
 
@@ -47,7 +63,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.10
+          name: Run tests (Python 3.10)
           command: |
             tox -e py310
 
@@ -60,7 +76,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.11 and scikit-learn 1.5.0
+          name: Run tests (Python 3.11, scikit-learn 1.5)
           command: |
             tox -e py311-sklearn150
 
@@ -73,7 +89,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.11 and scikit-learn 1.6.0
+          name: Run tests (Python 3.11, scikit-learn 1.6)
           command: |
             tox -e py311-sklearn160
 
@@ -86,11 +102,11 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.11 and scikit-learn 1.7.0
+          name: Run tests (Python 3.11, scikit-learn 1.7)
           command: |
             tox -e py311-sklearn170
 
-  test_feature_engine_py312:
+  test_feature_engine_py312_pandas230:
     docker:
       - image: cimg/python:3.12.1
     working_directory: ~/project
@@ -99,9 +115,22 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.12
+          name: Run tests (Python 3.12, pandas 2.3)
           command: |
-            tox -e py312
+            tox -e py312-pandas230
+
+  test_feature_engine_py312_pandas300:
+    docker:
+      - image: cimg/python:3.12.1
+    working_directory: ~/project
+    steps:
+      - checkout:
+          path: ~/project
+      - *prepare_tox
+      - run:
+          name: Run tests (Python 3.12, pandas 3.0)
+          command: |
+            tox -e py312-pandas300
 
   test_feature_engine_py313:
     docker:
@@ -112,9 +141,14 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests with Python 3.13
+          name: Run tests (Python 3.13)
           command: |
             tox -e py313
+
+
+  # ------------------------
+  # Quality checks
+  # ------------------------
 
   test_style:
     docker:
@@ -125,7 +159,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run stylechecks
+          name: Run style checks
           command: |
             tox -e stylechecks
 
@@ -138,7 +172,7 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run doc build
+          name: Build documentation
           command: |
             tox -e docs
 
@@ -151,9 +185,14 @@ jobs:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run typechecks
+          name: Run type checks
           command: |
             tox -e typechecks
+
+
+  # ------------------------
+  # Coverage
+  # ------------------------
 
   upload_codecov:
     docker:
@@ -171,13 +210,18 @@ jobs:
             coverage report
       - codecov/upload
 
+
+  # ------------------------
+  # Release
+  # ------------------------
+
   package_and_upload_to_pypi:
     <<: *defaults
     steps:
       - checkout
       - *init_pypirc
       - run:
-          name: upload to pypi
+          name: Build and upload package
           command: |
             python -m venv env
             source env/bin/activate
@@ -188,8 +232,14 @@ jobs:
             ls -l dist
             twine upload dist/*
 
+
+# --------------------------------------------------
+# Workflows
+# --------------------------------------------------
+
 workflows:
   version: 2
+
   test-all:
     jobs:
       - test_feature_engine_py39
@@ -197,16 +247,19 @@ workflows:
       - test_feature_engine_py311_sklearn150
       - test_feature_engine_py311_sklearn160
       - test_feature_engine_py311_sklearn170
-      - test_feature_engine_py312
+      - test_feature_engine_py312_pandas230
+      - test_feature_engine_py312_pandas300
       - test_feature_engine_py313
       - test_style
       - test_docs
       - test_type
+
       - upload_codecov:
           filters:
             branches:
               ignore:
                 - 1.9.X
+
       - package_and_upload_to_pypi:
           requires:
             - test_feature_engine_py39
@@ -214,7 +267,8 @@ workflows:
             - test_feature_engine_py311_sklearn150
             - test_feature_engine_py311_sklearn160
             - test_feature_engine_py311_sklearn170
-            - test_feature_engine_py312
+            - test_feature_engine_py312_pandas230
+            - test_feature_engine_py312_pandas300
             - test_feature_engine_py313
             - test_style
             - test_docs
