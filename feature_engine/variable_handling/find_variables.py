@@ -253,14 +253,13 @@ def find_categorical_and_numerical_variables(
     # If user leaves default None parameter.
     elif variables is None:
         # find categorical variables
-        if variables is None:
-            variables_cat = [
-                column
-                for column in X.select_dtypes(
-                    include=["O", "category", "string"]
-                ).columns
-                if _is_categorical_and_is_not_datetime(X[column])
-            ]
+        variables_cat = [
+            column
+            for column in X.select_dtypes(
+                include=["O", "category", "string"]
+            ).columns
+            if _is_categorical_and_is_not_datetime(X[column])
+        ]
         # find numerical variables in dataset
         variables_num = list(X.select_dtypes(include="number").columns)
 
