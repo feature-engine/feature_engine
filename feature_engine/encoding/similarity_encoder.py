@@ -275,9 +275,9 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             for var in cols_to_iterate:
                 self.encoder_dict_[var] = (
                     X[var]
+                    .dropna()
                     .astype(str)
                     .value_counts(dropna=True)
-                    .drop(["nan", "<NA>"], errors="ignore")
                     .head(self.top_categories)
                     .index.tolist()
                 )

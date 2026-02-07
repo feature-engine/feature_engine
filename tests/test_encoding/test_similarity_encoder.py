@@ -159,20 +159,11 @@ def test_nan_behaviour_ignore(df_enc_big, nan_value):
     encoder = StringSimilarityEncoder(missing_values="ignore")
     X = encoder.fit_transform(df_enc_big_na)
     assert (X.isna().any(axis=1) == df_enc_big_na.isna().any(axis=1)).all()
-    # TODO: Remove pandas < 3 support when dropping older pandas versions
-    if pd.__version__ >= "3":
-        assert encoder.encoder_dict_ == {
-            "var_A": ["B", "D", "G", "A", "C", "E", "F"],
-            "var_B": ["A", "D", "B", "G", "C", "E", "F"],
-            "var_C": ["C", "D", "B", "G", "A", "E", "F"],
-        }
-    else:
-
-        assert encoder.encoder_dict_ == {
-            "var_A": ["B", "D", "G", "A", "C", "E", "F"],
-            "var_B": ["A", "D", "B", "G", "C", "E", "F"],
-            "var_C": ["C", "D", "B", "G", "A", "E", "F"],
-        }
+    assert encoder.encoder_dict_ == {
+        "var_A": ["B", "D", "G", "A", "C", "E", "F"],
+        "var_B": ["A", "D", "B", "G", "C", "E", "F"],
+        "var_C": ["C", "D", "B", "G", "A", "E", "F"],
+    }
 
 
 def test_string_dtype_with_pd_na():
