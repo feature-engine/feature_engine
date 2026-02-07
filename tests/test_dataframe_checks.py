@@ -39,6 +39,15 @@ def test_check_X_raises_error_sparse_matrix():
         assert check_X(sparse_mx)
 
 
+def test_check_X_raises_error_with_complex_data():
+    msg = "Complex data not supported"
+    rng = np.random.RandomState(0)
+    X = rng.uniform(size=10) + 1j * rng.uniform(size=10)
+    X = X.reshape(-1, 1)
+    with pytest.raises(TypeError, match=msg):
+        assert check_X(X)
+
+
 def test_raises_error_if_empty_df():
     df = pd.DataFrame([])
     with pytest.raises(ValueError):
