@@ -57,11 +57,11 @@ else:
         "ArcsinTransformer",
     ]
     extra_failing_checks = {
-        estimator_name: {
-            check: "this checks passes a negative value which is not supported by the "
-            "transformer"
-            for check in checks_with_negative_values
-        }
+        estimator_name: dict.fromkeys(
+            checks_with_negative_values,
+            "this checks passes a negative value which is not supported by "
+            "the transformer",
+        )
         for estimator_name in estimators_not_supporting_negative_values
     }
 
