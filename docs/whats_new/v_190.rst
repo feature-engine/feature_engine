@@ -9,7 +9,6 @@ Deployed: 27th Aug 2025
 Contributors
 ~~~~~~~~~~~~
 
-- `ankitlade12 <https://github.com/ankitlade12>`_
 - `Claudio Salvatore Arcidiacono <https://github.com/ClaudioSalvatoreArcidiacono>`_
 - `Franz Király  <https://github.com/fkiraly>`_
 - `Sancho Luijten  <https://github.com/sancholp>`_
@@ -45,7 +44,6 @@ Code maintenance
 
 - Migrated various config files to pyproject.toml. (`Franz Király  <https://github.com/fkiraly>`_)
 - Added support for Python 3.13.
-- Added support for Python 3.14.
 
 Docs
 ~~~~
