@@ -1,6 +1,3 @@
-import warnings
-
-import pandas as pd
 import pytest
 
 from feature_engine.variable_handling import (
@@ -12,147 +9,173 @@ from feature_engine.variable_handling import (
 )
 
 
-@pytest.fixture
-def df():
-    return pd.DataFrame(
-        {
-            "Age": [20, 21, 22],
-            "Marks": [85, 90, 95],
-            "Gender": ["M", "F", "M"],
-            "Date": pd.date_range("2020-01-01", periods=3),
-        }
-    )
+def test_numerical_variables_finds_numerical_variables(df, df_int):
+    assert find_numerical_variables(df) == ["Age", "Marks"]
+    assert find_numerical_variables(df_int) == [3, 4]
 
 
-@pytest.fixture
-def df_empty():
-    return pd.DataFrame(
-        {
-            "Gender": ["M", "F", "M"],
-            "Date": pd.date_range("2020-01-01", periods=3),
-        }
-    )
-
-
-# --- find_numerical_variables --- #
-
-
-def test_find_numerical_variables_error(df):
+def test_numerical_variables_raises_error_when_no_numerical_variables(df, df_int):
     msg = (
-        "No numerical variables found in this dataframe. Check "
-        "variable format with pandas dtypes or set allow_empty to True "
-        "to return an empty list instead."
+        "No numerical variables found in this dataframe."
     )
     with pytest.raises(TypeError, match=msg):
-        find_numerical_variables(df_empty())
+        assert find_numerical_variables(df.drop(["Age", "Marks"], axis=1))
 
-
-def test_find_numerical_variables_allow_empty_returns_empty_list(df_empty):
-    result = find_numerical_variables(df_empty(), allow_empty=True)
-    assert result == []
-
-
-def test_find_numerical_variables_warns(df_empty):
-    with pytest.warns(UserWarning, match="No numerical variables found"):
-        find_numerical_variables(df_empty(), allow_empty=True)
-
-
-# --- find_categorical_variables --- #
-
-
-def test_find_categorical_variables_error(df):
-    df_num_only = df[["Age", "Marks"]]
-    msg = (
-        "No categorical variables found in this dataframe. Check variable "
-        "format with pandas dtypes or set allow_empty to True to return an "
-        "empty list instead."
-    )
     with pytest.raises(TypeError, match=msg):
-        find_categorical_variables(df_num_only)
+        assert find_numerical_variables(df_int.drop([3, 4], axis=1))
 
+def test_numerical_variables_warns_when_allow_empty(df, df_int):
+    msg = "No numerical variables found in this dataframe."
 
-def test_find_categorical_variables_allow_empty_returns_empty_list(df_num_only):
-    result = find_categorical_variables(df_num_only, allow_empty=True)
-    assert result == []
+    # Test with a regular DataFrame
+    with pytest.warns(UserWarning, match=msg):
+        result = find_numerical_variables(df.drop(["Age", "Marks"], axis=1), allow_empty=True)
+        assert result == []
 
-
-def test_find_categorical_variables_warns(df_num_only):
-    with pytest.warns(UserWarning, match="No categorical variables found"):
-        find_categorical_variables(df_num_only, allow_empty=True)
-
-
-# --- find_datetime_variables --- #
-
-
-def test_find_datetime_variables_error(df):
-    df_no_date = df[["Age", "Marks", "Gender"]]
-    msg = "No datetime variables found in this dataframe."
-    with pytest.raises(ValueError, match=msg):
-        find_datetime_variables(df_no_date)
-
-
-def test_find_datetime_variables_allow_empty_returns_empty_list(df_no_date):
-    result = find_datetime_variables(df_no_date, allow_empty=True)
-    assert result == []
-
-
-def test_find_datetime_variables_warns(df_no_date):
-    with pytest.warns(UserWarning, match="No datetime variables found"):
-        find_datetime_variables(df_no_date, allow_empty=True)
-
-
-# --- find_all_variables --- #
-
-
-def test_find_all_variables_empty_warn(df_empty):
-    with pytest.warns(UserWarning, match="No variables found"):
-        result = find_all_variables(df_empty(), allow_empty=True)
+    # Test with integer-only DataFrame
+    with pytest.warns(UserWarning, match=msg):
+        result = find_numerical_variables(df_int.drop([3, 4], axis=1), allow_empty=True)
         assert result == []
 
 
-def test_find_all_variables_error(df_empty):
-    msg = "No variables found in this dataframe."
-    with pytest.raises(ValueError, match=msg):
-        find_all_variables(df_empty())
+def test_numerical_variables_returns_empty_list_when_no_numerical_variables(df, df_int):
+    assert find_numerical_variables(df.drop(["Age", "Marks"], axis=1), allow_empty=True) == []
+    assert find_numerical_variables(df_int.drop([3, 4], axis=1), allow_empty=True) == []
 
 
-# --- find_categorical_and_numerical_variables --- #
+def test_categorical_variables_finds_categorical_variables(df, df_int):
+    assert find_categorical_variables(df) == ["Name", "City"]
+    assert find_categorical_variables(df_int) == [1, 2]
 
 
-def test_find_cat_and_num_variables_empty_warn(df_empty):
-    cat_vars, num_vars = find_categorical_and_numerical_variables(
-        df_empty(), allow_empty=True
+def test_categorical_variables_raises_error_when_no_categorical_variables(df, df_int):
+    msg = (
+        "No categorical variables found in this dataframe."
     )
-    assert cat_vars == []
-    assert num_vars == []
-
-
-def test_find_cat_and_num_variables_error(df_empty):
-    msg = "There are no numerical or categorical variables in the dataframe"
     with pytest.raises(TypeError, match=msg):
-        find_categorical_and_numerical_variables(df_empty())
+        assert find_categorical_variables(df.drop(["Name", "City"], axis=1))
 
-
-def test_find_cat_and_num_variables_single_variable_warn(df_empty):
-    df_invalid = pd.DataFrame({"col": [None, None]})
-    cat_vars, num_vars = find_categorical_and_numerical_variables(
-        df_invalid, variables="col", allow_empty=True
-    )
-    assert cat_vars == []
-    assert num_vars == []
-
-
-def test_find_cat_and_num_variables_list_warn(df_empty):
-    df_invalid = pd.DataFrame({"col": [None, None]})
-    cat_vars, num_vars = find_categorical_and_numerical_variables(
-        df_invalid, variables=["col"], allow_empty=True
-    )
-    assert cat_vars == []
-    assert num_vars == []
-
-
-def test_find_cat_and_num_variables_list_error(df_empty):
-    df_invalid = pd.DataFrame({"col": [None, None]})
-    msg = "Some of the variables are neither numerical nor categorical."
     with pytest.raises(TypeError, match=msg):
-        find_categorical_and_numerical_variables(df_invalid, variables=["col"])
+        assert find_categorical_variables(df_int.drop([1, 2], axis=1))
+
+
+def test_datetime_variables_finds_datetime_variables(df_datetime):
+    vars_dt = [
+        "date_range",
+        "date_obj0",
+        "date_range_tz",
+        "date_obj1",
+        "date_obj2",
+        "time_obj",
+        "time_objTZ",
+    ]
+
+    assert find_datetime_variables(df_datetime) == vars_dt
+
+    assert find_datetime_variables(
+        df_datetime[vars_dt].reindex(columns=["date_obj1", "date_range", "date_obj2"]),
+    ) == ["date_obj1", "date_range", "date_obj2"]
+
+
+def test_datetime_variables_raises_error_when_no_datetime_variables(df_datetime):
+    msg = "No datetime variables found in this dataframe."
+
+    vars_nondt = ["Marks", "Age", "Name"]
+
+    with pytest.raises(ValueError) as record:
+        assert find_datetime_variables(df_datetime.loc[:, vars_nondt])
+    assert str(record.value) == msg
+
+
+def test_find_all_variables(df):
+    all_vars = [
+        "Name",
+        "City",
+        "Age",
+        "Marks",
+        "date_range",
+        "date_obj0",
+        "date_range_tz",
+    ]
+    all_vars_no_dt = ["Name", "City", "Age", "Marks"]
+
+    assert find_all_variables(df, exclude_datetime=False) == all_vars
+    assert find_all_variables(df, exclude_datetime=True) == all_vars_no_dt
+
+
+def test_find_categorical_and_numerical_variables(df_vartypes):
+    # Case 1: user passes 1 variable that is categorical
+    assert find_categorical_and_numerical_variables(df_vartypes, ["Name"]) == (
+        ["Name"],
+        [],
+    )
+    assert find_categorical_and_numerical_variables(df_vartypes, "Name") == (
+        ["Name"],
+        [],
+    )
+
+    # Case 2: user passes 1 variable that is numerical
+    assert find_categorical_and_numerical_variables(df_vartypes, ["Age"]) == (
+        [],
+        ["Age"],
+    )
+    assert find_categorical_and_numerical_variables(df_vartypes, "Age") == (
+        [],
+        ["Age"],
+    )
+
+    # Case 3: user passes 1 categorical and 1 numerical variable
+    assert find_categorical_and_numerical_variables(df_vartypes, ["Age", "Name"]) == (
+        ["Name"],
+        ["Age"],
+    )
+
+    # Case 4: automatically identify variables
+    assert find_categorical_and_numerical_variables(df_vartypes, None) == (
+        ["Name", "City"],
+        ["Age", "Marks"],
+    )
+    assert find_categorical_and_numerical_variables(
+        df_vartypes[["Name", "City"]], None
+    ) == (["Name", "City"], [])
+    assert find_categorical_and_numerical_variables(
+        df_vartypes[["Age", "Marks"]], None
+    ) == ([], ["Age", "Marks"])
+
+    # Case 5: error when no variable is numerical or categorical
+    with pytest.raises(TypeError):
+        find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), None)
+
+    with pytest.raises(TypeError):
+        find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), ["dob"])
+
+    with pytest.raises(TypeError):
+        find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), "dob")
+
+    # Case 6: user passes empty list
+    with pytest.raises(ValueError):
+        find_categorical_and_numerical_variables(df_vartypes, [])
+
+    # Case 7: datetime cast as object
+    df = df_vartypes.copy()
+    df["dob"] = df["dob"].astype("O")
+
+    # datetime variable is skipped when automatically finding variables, but
+    # selected if user passes it in list
+    assert find_categorical_and_numerical_variables(df, None) == (
+        ["Name", "City"],
+        ["Age", "Marks"],
+    )
+    assert find_categorical_and_numerical_variables(df, ["Name", "Marks", "dob"]) == (
+        ["Name", "dob"],
+        ["Marks"],
+    )
+
+    # Case 8: variables cast as category
+    df = df_vartypes.copy()
+    df["City"] = df["City"].astype("category")
+    assert find_categorical_and_numerical_variables(df, None) == (
+        ["Name", "City"],
+        ["Age", "Marks"],
+    )
+    assert find_categorical_and_numerical_variables(df, "City") == (["City"], [])
