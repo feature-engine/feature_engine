@@ -1,5 +1,6 @@
 """Functions to select certain types of variables."""
 
+import warnings
 from typing import List, Tuple, Union
 
 import pandas as pd
@@ -14,7 +15,7 @@ from feature_engine.variable_handling._variable_type_checks import (
 from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
 
-def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
+def find_numerical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the numerical variables in a dataframe.
 
@@ -24,6 +25,10 @@ def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
         The dataset.
+
+    allow_empty : bool, default = False
+        Whether to allow the function to return an empty list when no numerical
+        variables are found. If False, the function raises an error.
 
     Returns
     -------
@@ -45,10 +50,18 @@ def find_numerical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     """
     variables = list(X.select_dtypes(include="number").columns)
     if len(variables) == 0:
-        raise TypeError(
-            "No numerical variables found in this dataframe. Please check "
-            "variable format with pandas dtypes."
-        )
+        if allow_empty is False:
+            raise TypeError(
+                "No numerical variables found in this dataframe. Please check "
+                "variable format with pandas dtypes."
+            )
+        else:
+            warnings.warn(
+       "No numerical variables found in this dataframe. "
+                "Returning an empty list.",
+                UserWarning,
+            )
+
     return variables
 
 

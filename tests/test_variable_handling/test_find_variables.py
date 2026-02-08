@@ -19,13 +19,29 @@ def test_numerical_variables_raises_error_when_no_numerical_variables(df, df_int
         "No numerical variables found in this dataframe. Please check "
         "variable format with pandas dtypes."
     )
-    with pytest.raises(TypeError) as record:
+    with pytest.raises(TypeError, match=msg):
         assert find_numerical_variables(df.drop(["Age", "Marks"], axis=1))
-    assert str(record.value) == msg
 
-    with pytest.raises(TypeError) as record:
+    with pytest.raises(TypeError, match=msg):
         assert find_numerical_variables(df_int.drop([3, 4], axis=1))
-    assert str(record.value) == msg
+
+def test_numerical_variables_warns_when_allow_empty(df, df_int):
+    msg = "No numerical variables found in this dataframe."
+
+    # Test with a regular DataFrame
+    with pytest.warns(UserWarning, match=msg):
+        result = find_numerical_variables(df.drop(["Age", "Marks"], axis=1), allow_empty=True)
+        assert result == []
+
+    # Test with integer-only DataFrame
+    with pytest.warns(UserWarning, match=msg):
+        result = find_numerical_variables(df_int.drop([3, 4], axis=1), allow_empty=True)
+        assert result == []
+
+
+def test_numerical_variables_returns_empty_list_when_no_numerical_variables(df, df_int):
+    assert find_numerical_variables(df.drop(["Age", "Marks"], axis=1), allow_empty=True) == []
+    assert find_numerical_variables(df_int.drop([3, 4], axis=1), allow_empty=True) == []
 
 
 def test_categorical_variables_finds_categorical_variables(df, df_int):
