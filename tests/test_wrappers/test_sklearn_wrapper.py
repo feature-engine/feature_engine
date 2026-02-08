@@ -33,7 +33,7 @@ from sklearn.preprocessing import (
 from feature_engine.wrappers import SklearnTransformerWrapper
 
 
-if skl_version < "1.6.0":
+if skl_version < "1.7.0":
     kbd = KBinsDiscretizer(n_bins=3, encode="ordinal")
 else:
     kbd = KBinsDiscretizer(
@@ -89,7 +89,7 @@ def test_error_when_transformer_is_estimator(transformer, df_na):
         SklearnTransformerWrapper(transformer=transformer)
 
 
-if skl_version < "1.6.0":
+if skl_version < "1.7.0":
     kbd = KBinsDiscretizer(encode="one_hot")
 else:
     kbd = KBinsDiscretizer(encode="one_hot", quantile_method="averaged_inverted_cdf")
