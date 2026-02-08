@@ -464,18 +464,6 @@ def test_sklearn_ohe_all_features(df_vartypes):
         transformer=_OneHotEncoder(sparse=False, dtype=np.int64)
     )
 
-    # Get the expected dob column names dynamically to handle varying precision
-    # across pandas/sklearn versions.
-    dob_names = [
-        f"dob_{val.isoformat()}" for val in df_vartypes["dob"]
-    ]
-    # If isoformat doesn't have microseconds, sklearn might still add .000...
-    # OneHotEncoder uses categories_ which are often strings.
-    # Let's use a more robust way:
-    ohe = _OneHotEncoder(sparse=False)
-    ohe.fit(df_vartypes[["dob"]])
-    dob_names = ohe.get_feature_names_out(["dob"]).tolist()
-
     ref = pd.DataFrame(
         {
             "Name_jack": [0, 0, 0, 1],
@@ -494,10 +482,12 @@ def test_sklearn_ohe_all_features(df_vartypes):
             "Marks_0.7": [0, 0, 1, 0],
             "Marks_0.8": [0, 1, 0, 0],
             "Marks_0.9": [1, 0, 0, 0],
+            "dob_2020-02-24T00:00:00.000000000": [1, 0, 0, 0],
+            "dob_2020-02-24T00:01:00.000000000": [0, 1, 0, 0],
+            "dob_2020-02-24T00:02:00.000000000": [0, 0, 1, 0],
+            "dob_2020-02-24T00:03:00.000000000": [0, 0, 0, 1],
         }
     )
-    for i, name in enumerate(dob_names):
-        ref[name] = [1 if j == i else 0 for j in range(4)]
 
     transformed_df = transformer.fit_transform(df_vartypes)
 
@@ -567,10 +557,6 @@ def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
     ohe_wrap = SklearnTransformerWrapper(transformer=_OneHotEncoder(sparse=False))
     ohe_wrap.fit(df_vartypes)
 
-    ohe = _OneHotEncoder(sparse=False)
-    ohe.fit(df_vartypes[["dob"]])
-    dob_names = ohe.get_feature_names_out(["dob"]).tolist()
-
     expected_features_all = [
         "Name_jack",
         "Name_krish",
@@ -588,7 +574,11 @@ def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
         "Marks_0.7",
         "Marks_0.8",
         "Marks_0.9",
-    ] + dob_names
+        "dob_2020-02-24T00:00:00.000000000",
+        "dob_2020-02-24T00:01:00.000000000",
+        "dob_2020-02-24T00:02:00.000000000",
+        "dob_2020-02-24T00:03:00.000000000",
+    ]
 
     # TODO: Remove pandas < 3 support when dropping older pandas versions
     if pd.__version__ >= "3":
