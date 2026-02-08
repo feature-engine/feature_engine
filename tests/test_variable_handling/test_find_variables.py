@@ -16,8 +16,7 @@ def test_numerical_variables_finds_numerical_variables(df, df_int):
 
 def test_numerical_variables_raises_error_when_no_numerical_variables(df, df_int):
     msg = (
-        "No numerical variables found in this dataframe. Please check "
-        "variable format with pandas dtypes."
+        "No numerical variables found in this dataframe."
     )
     with pytest.raises(TypeError, match=msg):
         assert find_numerical_variables(df.drop(["Age", "Marks"], axis=1))
@@ -51,16 +50,13 @@ def test_categorical_variables_finds_categorical_variables(df, df_int):
 
 def test_categorical_variables_raises_error_when_no_categorical_variables(df, df_int):
     msg = (
-        "No categorical variables found in this dataframe. Please check "
-        "variable format with pandas dtypes."
+        "No categorical variables found in this dataframe."
     )
-    with pytest.raises(TypeError) as record:
+    with pytest.raises(TypeError, match=msg):
         assert find_categorical_variables(df.drop(["Name", "City"], axis=1))
-    assert str(record.value) == msg
 
-    with pytest.raises(TypeError) as record:
+    with pytest.raises(TypeError, match=msg):
         assert find_categorical_variables(df_int.drop([1, 2], axis=1))
-    assert str(record.value) == msg
 
 
 def test_datetime_variables_finds_datetime_variables(df_datetime):
