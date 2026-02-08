@@ -28,8 +28,7 @@ def find_numerical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List
 
     allow_empty : bool, default=False
         Whether to allow the function to return an empty list when no numerical
-        variables are found. If False, the function raises an error. If True, a
-        warning is issued.
+        variables are found. If False, the function raises an error.
 
     Returns
     -------
@@ -51,10 +50,11 @@ def find_numerical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List
     """
     variables = list(X.select_dtypes(include="number").columns)
     if len(variables) == 0:
-        if not allow_empty:
+        if allow_empty is False:
             raise TypeError(
-                "No numerical variables found in this dataframe. Please check "
-                "variable format with pandas dtypes."
+                "No numerical variables found in this dataframe. Check "
+                "variable format with pandas dtypes or set allow_empty to True "
+                "to return an empty list instead."
             )
         else:
             warnings.warn(
@@ -106,10 +106,11 @@ def find_categorical_variables(X: pd.DataFrame, allow_empty: bool = False) -> Li
         if _is_categorical_and_is_not_datetime(X[column])
     ]
     if len(variables) == 0:
-        if not allow_empty:
+        if allow_empty is False:
             raise TypeError(
-                "No categorical variables found in this dataframe. Please check "
-                "variable format with pandas dtypes."
+                "No categorical variables found in this dataframe. Check variable "
+                "format with pandas dtypes or set allow_empty to True to return an "
+                "empty list instead."
             )
         else:
             warnings.warn(
@@ -124,6 +125,9 @@ def find_datetime_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[
     """
     Returns a list with the names of the variables that are or can be parsed as
     datetime.
+
+    Note that this function will select variables cast as object if they can be cast as
+    datetime as well.
 
     More details in the :ref:`User Guide <find_datetime_vars>`.
 
@@ -161,7 +165,7 @@ def find_datetime_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[
         if is_datetime(X[column]) or _is_categorical_and_is_datetime(X[column])
     ]
     if len(variables) == 0:
-        if not allow_empty:
+        if allow_empty is False:
             raise ValueError("No datetime variables found in this dataframe.")
         else:
             warnings.warn(
@@ -177,8 +181,8 @@ def find_all_variables(
     allow_empty: bool = False,
 ) -> List[Union[str, int]]:
     """
-    Returns a list with the names of all the variables in the dataframe.
-    Optionally excludes variables that can be parsed as datetime.
+    Returns a list with the names of all the variables in the dataframe. It has the
+    option to exlcude variables that can be parsed as datetime or datetimetz.
 
     More details in the :ref:`User Guide <find_all_vars>`.
 
@@ -222,7 +226,7 @@ def find_all_variables(
     else:
         variables = X.columns.to_list()
     if len(variables) == 0:
-        if not allow_empty:
+        if allow_empty is False:
             raise ValueError("No variables found in this dataframe.")
         else:
             warnings.warn(
@@ -251,8 +255,9 @@ def find_categorical_and_numerical_variables(
         The dataset.
 
     variables : list, default=None
-        If `None`, all categorical and numerical variables in X are found.
-        Otherwise, only variables in the given list are considered.
+        If `None`, the function will find all categorical and numerical variables in X.
+        Alternatively, it will find categorical and numerical variables in X, selecting
+        from the given list.
 
     allow_empty : bool, default=False
         Whether to allow the function to return empty lists when no variables
@@ -267,8 +272,9 @@ def find_categorical_and_numerical_variables(
     Examples
     --------
     >>> import pandas as pd
-    >>> from feature_engine.variable_handling import find_categorical_and_numerical_variables
-    >>> X = pd.DataFrame({
+    >>> from feature_engine.variable_handling import (
+    >>>   find_categorical_and_numerical_variables
+    >>>)    >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
     >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
@@ -285,7 +291,7 @@ def find_categorical_and_numerical_variables(
             variables_num = [variables]
             variables_cat = []
         else:
-            if not allow_empty:
+            if allow_empty is False:
                 raise TypeError(
                     "The variable entered is neither numerical nor categorical."
                 )
@@ -296,6 +302,7 @@ def find_categorical_and_numerical_variables(
                 )
                 variables_cat = []
                 variables_num = []
+
     elif variables is None:
         variables_cat = [
             column
@@ -317,7 +324,7 @@ def find_categorical_and_numerical_variables(
                 variables_num = []
     else:
         if len(variables) == 0:
-            if not allow_empty:
+            if allow_empty is False:
                 raise ValueError("The list of variables is empty.")
             else:
                 warnings.warn(
