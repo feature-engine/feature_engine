@@ -32,14 +32,22 @@ from sklearn.preprocessing import (
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 
+
+if skl_version < "1.7.0":
+    kbd = KBinsDiscretizer(n_bins=3, encode="ordinal")
+else:
+    kbd = KBinsDiscretizer(
+        n_bins=3, encode="ordinal", quantile_method="averaged_inverted_cdf"
+    )
+
 _transformers = [
     Binarizer(threshold=2),
-    KBinsDiscretizer(n_bins=3, encode="ordinal"),
+    kbd,
     StandardScaler(),
     MinMaxScaler(),
     Normalizer(),
     PowerTransformer(),
-    FunctionTransformer(np.log, validate=True),
+    FunctionTransformer(np.cbrt, validate=True),
     OrdinalEncoder(),
 ]
 
@@ -81,13 +89,19 @@ def test_error_when_transformer_is_estimator(transformer, df_na):
         SklearnTransformerWrapper(transformer=transformer)
 
 
+if skl_version < "1.7.0":
+    kbd = KBinsDiscretizer(encode="one_hot")
+else:
+    kbd = KBinsDiscretizer(encode="one_hot", quantile_method="averaged_inverted_cdf")
+
+
 @pytest.mark.parametrize(
     "transformer",
     [
         PCA(),
         VotingClassifier(RandomForestClassifier()),
         MissingIndicator(),
-        KBinsDiscretizer(encode="one_hot"),
+        kbd,
         SimpleImputer(add_indicator=True),
         _OneHotEncoder(sparse=True),
     ],
@@ -353,8 +367,7 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     else:
         # Pandas 2 uses nanoseconds format
@@ -363,8 +376,7 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     pd.testing.assert_frame_equal(ref, transformed_df)
 
@@ -400,8 +412,7 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     else:
         # Pandas 2 uses nanoseconds format
@@ -410,8 +421,7 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     pd.testing.assert_frame_equal(ref, transformed_df)
 
@@ -443,8 +453,7 @@ def test_sklearn_ohe_numeric(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     else:
         # Pandas 2 uses nanoseconds format
@@ -453,8 +462,7 @@ def test_sklearn_ohe_numeric(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     pd.testing.assert_frame_equal(ref, transformed_df)
 
@@ -499,8 +507,7 @@ def test_sklearn_ohe_all_features(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     else:
         # Pandas 2 uses nanoseconds format
@@ -509,8 +516,7 @@ def test_sklearn_ohe_all_features(df_vartypes):
             for c in transformed_df.columns
         ]
         ref.columns = [
-            c.replace(".000000000", "").replace(".000000", "")
-            for c in ref.columns
+            c.replace(".000000000", "").replace(".000000", "") for c in ref.columns
         ]
     pd.testing.assert_frame_equal(ref, transformed_df)
 

@@ -71,6 +71,9 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
                 "if it contains a single sample.".format(X)
             )
 
+        if np.any(np.iscomplex(X)):
+            raise TypeError("Complex data not supported by this transformer.")
+
         X = pd.DataFrame(X)
         X.columns = [f"x{i}" for i in range(X.shape[1])]
 
