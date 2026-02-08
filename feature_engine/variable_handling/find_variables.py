@@ -292,7 +292,8 @@ def find_categorical_and_numerical_variables(
     >>> import pandas as pd
     >>> from feature_engine.variable_handling import (
     >>>   find_categorical_and_numerical_variables
-    >>>)    >>> X = pd.DataFrame({
+    >>>)
+    >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
     >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
@@ -301,6 +302,8 @@ def find_categorical_and_numerical_variables(
     >>> var_cat, var_num
     (['var_cat'], ['var_num'])
     """
+
+    # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
         if X[variables].dtype.name == "category" or is_object(X[variables]):
             variables_cat = [variables]
@@ -312,7 +315,7 @@ def find_categorical_and_numerical_variables(
             if allow_empty is False:
                 raise TypeError(
                     "The variable entered is neither numerical nor categorical. "
-                    "Set allow_empty to True to return an empty list instead."
+                    "Set allow_empty to True to return empty lists instead."
                 )
             else:
                 warnings.warn(
@@ -323,6 +326,7 @@ def find_categorical_and_numerical_variables(
                 variables_cat = []
                 variables_num = []
 
+    # If user leaves default None parameter.
     elif variables is None:
         variables_cat = [
             column
@@ -330,12 +334,12 @@ def find_categorical_and_numerical_variables(
             if _is_categorical_and_is_not_datetime(X[column])
         ]
         variables_num = list(X.select_dtypes(include="number").columns)
+
         if len(variables_num) == 0 and len(variables_cat) == 0:
             if not allow_empty:
                 raise TypeError(
-                    "There are no numerical or categorical variables in the "
-                    "dataframe. Set allow_empty to True to return if you want "
-                    "to return an empty list instead."
+                    "There are no numerical or categorical variables in the dataframe. "
+                    "Set allow_empty to True to return empty lists instead."
                 )
             else:
                 warnings.warn(
@@ -345,28 +349,25 @@ def find_categorical_and_numerical_variables(
                 )
                 variables_cat = []
                 variables_num = []
+
+    # If user passes variable list.
+    #TODO: this is a variable check more than a variable find function, so I leave this
+    # for later when we modify the check functions to allow nans
     else:
         if len(variables) == 0:
-            if allow_empty is False:
-                raise ValueError(
-                    "The list of variables is empty. Set allow_empty to True if you "
-                    "want to return an empty list instead.")
-            else:
-                warnings.warn(
-                    "The list of variables is empty. Returning empty lists.",
-                    UserWarning,
-                )
-                variables_cat = []
-                variables_num = []
+            raise ValueError("The list of variables is empty.")
 
-        else:
-            variables_cat = list(
-                X[variables].select_dtypes(include=["O", "category", "string"]).columns
+        # find categorical variables
+        variables_cat = list(
+            X[variables].select_dtypes(include=["O", "category", "string"]).columns
+        )
+
+        # find numerical variables
+        variables_num = list(X[variables].select_dtypes(include="number").columns)
+
+        if any(v for v in variables if v not in variables_cat + variables_num):
+            raise TypeError(
+                "Some of the variables are neither numerical nor categorical."
             )
-            variables_num = list(X[variables].select_dtypes(include="number").columns)
-            if any(v for v in variables if v not in variables_cat + variables_num):
-                raise TypeError(
-                    "Some of the variables are neither numerical nor categorical."
-                )
 
     return variables_cat, variables_num
