@@ -15,7 +15,9 @@ from feature_engine.variable_handling._variable_type_checks import (
 from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
 
-def find_numerical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[Union[str, int]]:
+def find_numerical_variables(
+    X: pd.DataFrame, allow_empty: bool = False
+) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the numerical variables in a dataframe.
 
@@ -65,7 +67,9 @@ def find_numerical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List
     return variables
 
 
-def find_categorical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[Union[str, int]]:
+def find_categorical_variables(
+    X: pd.DataFrame, allow_empty: bool = False
+) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the categorical variables in a dataframe.
     Variables cast as object that can be parsed to datetime will be excluded.
@@ -121,7 +125,9 @@ def find_categorical_variables(X: pd.DataFrame, allow_empty: bool = False) -> Li
     return variables
 
 
-def find_datetime_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[Union[str, int]]:
+def find_datetime_variables(
+    X: pd.DataFrame, allow_empty: bool = False
+) -> List[Union[str, int]]:
     """
     Returns a list with the names of the variables that are or can be parsed as
     datetime.
