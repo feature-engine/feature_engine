@@ -26,9 +26,10 @@ def find_numerical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List
     X : pandas dataframe of shape = [n_samples, n_features]
         The dataset.
 
-    allow_empty : bool, default = False
+    allow_empty : bool, default=False
         Whether to allow the function to return an empty list when no numerical
-        variables are found. If False, the function raises an error.
+        variables are found. If False, the function raises an error. If True, a
+        warning is issued.
 
     Returns
     -------
@@ -50,33 +51,36 @@ def find_numerical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List
     """
     variables = list(X.select_dtypes(include="number").columns)
     if len(variables) == 0:
-        if allow_empty is False:
+        if not allow_empty:
             raise TypeError(
                 "No numerical variables found in this dataframe. Please check "
                 "variable format with pandas dtypes."
             )
         else:
             warnings.warn(
-       "No numerical variables found in this dataframe. "
+                "No numerical variables found in this dataframe. "
                 "Returning an empty list.",
                 UserWarning,
             )
-
     return variables
 
 
-def find_categorical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
+def find_categorical_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the categorical variables in a dataframe.
-    Note that variables cast as object that can be parsed to datetime will be
-    excluded.
+    Variables cast as object that can be parsed to datetime will be excluded.
 
     More details in the :ref:`User Guide <find_cat_vars>`.
 
     Parameters
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+        The dataset.
+
+    allow_empty : bool, default=False
+        Whether to allow the function to return an empty list when no categorical
+        variables are found. If False, the function raises an error. If True, a
+        warning is issued.
 
     Returns
     -------
@@ -98,26 +102,28 @@ def find_categorical_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     """
     variables = [
         column
-        for column in X.select_dtypes(
-            include=["O", "category", "string"]
-        ).columns
+        for column in X.select_dtypes(include=["O", "category", "string"]).columns
         if _is_categorical_and_is_not_datetime(X[column])
     ]
     if len(variables) == 0:
-        raise TypeError(
-            "No categorical variables found in this dataframe. Please check "
-            "variable format with pandas dtypes."
-        )
+        if not allow_empty:
+            raise TypeError(
+                "No categorical variables found in this dataframe. Please check "
+                "variable format with pandas dtypes."
+            )
+        else:
+            warnings.warn(
+                "No categorical variables found in this dataframe. "
+                "Returning an empty list.",
+                UserWarning,
+            )
     return variables
 
 
-def find_datetime_variables(X: pd.DataFrame) -> List[Union[str, int]]:
+def find_datetime_variables(X: pd.DataFrame, allow_empty: bool = False) -> List[Union[str, int]]:
     """
     Returns a list with the names of the variables that are or can be parsed as
     datetime.
-
-    Note that this function will select variables cast as object if they can be cast as
-    datetime as well.
 
     More details in the :ref:`User Guide <find_datetime_vars>`.
 
@@ -125,6 +131,11 @@ def find_datetime_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
         The dataset.
+
+    allow_empty : bool, default=False
+        Whether to allow the function to return an empty list when no datetime
+        variables are found. If False, the function raises an error. If True, a
+        warning is issued.
 
     Returns
     -------
@@ -144,36 +155,44 @@ def find_datetime_variables(X: pd.DataFrame) -> List[Union[str, int]]:
     >>> var_date
     ['var_date']
     """
-
     variables = [
         column
         for column in X.select_dtypes(exclude="number").columns
         if is_datetime(X[column]) or _is_categorical_and_is_datetime(X[column])
     ]
-
     if len(variables) == 0:
-        raise ValueError("No datetime variables found in this dataframe.")
-
+        if not allow_empty:
+            raise ValueError("No datetime variables found in this dataframe.")
+        else:
+            warnings.warn(
+                "No datetime variables found in this dataframe. Returning an empty list.",
+                UserWarning,
+            )
     return variables
 
 
 def find_all_variables(
     X: pd.DataFrame,
     exclude_datetime: bool = False,
+    allow_empty: bool = False,
 ) -> List[Union[str, int]]:
     """
-    Returns a list with the names of all the variables in the dataframe. It has the
-    option to exlcude variables that can be parsed as datetime or datetimetz.
+    Returns a list with the names of all the variables in the dataframe.
+    Optionally excludes variables that can be parsed as datetime.
 
     More details in the :ref:`User Guide <find_all_vars>`.
 
     Parameters
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+        The dataset.
 
     exclude_datetime: bool, default=False
         Whether to exclude datetime variables.
+
+    allow_empty : bool, default=False
+        Whether to allow the function to return an empty list when no variables
+        are found. If False, the function raises an error. If True, a warning is issued.
 
     Returns
     -------
@@ -202,44 +221,53 @@ def find_all_variables(
         ]
     else:
         variables = X.columns.to_list()
+    if len(variables) == 0:
+        if not allow_empty:
+            raise ValueError("No variables found in this dataframe.")
+        else:
+            warnings.warn(
+                "No variables found in this dataframe. Returning an empty list.",
+                UserWarning,
+            )
     return variables
 
 
 def find_categorical_and_numerical_variables(
     X: pd.DataFrame,
     variables: Union[None, int, str, List[Union[str, int]]] = None,
+    allow_empty: bool = False,
 ) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
     """
     Find numerical and categorical variables in a dataframe or from a list.
 
-    The function returns two lists; the first one with the names of the variables of
-    type object or categorical and the second list with the names of the numerical
-    variables.
+    The function returns two lists: the first with categorical variables and
+    the second with numerical variables.
 
     More details in the :ref:`User Guide <find_cat_and_num_vars>`.
 
     Parameters
     ----------
     X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+        The dataset.
 
     variables : list, default=None
-        If `None`, the function will find all categorical and numerical variables in X.
-        Alternatively, it will find categorical and numerical variables in X, selecting
-        from the given list.
+        If `None`, all categorical and numerical variables in X are found.
+        Otherwise, only variables in the given list are considered.
+
+    allow_empty : bool, default=False
+        Whether to allow the function to return empty lists when no variables
+        are found. If False, the function raises an error. If True, a warning is issued.
 
     Returns
     -------
     variables: tuple
-        Tupe containing a list with the categorical variables, and a List with the
+        Tuple containing a list with the categorical variables and a list with the
         numerical variables.
 
     Examples
     --------
     >>> import pandas as pd
-    >>> from feature_engine.variable_handling import (
-    >>>   find_categorical_and_numerical_variables
-    >>>)
+    >>> from feature_engine.variable_handling import find_categorical_and_numerical_variables
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
@@ -249,8 +277,6 @@ def find_categorical_and_numerical_variables(
     >>> var_cat, var_num
     (['var_cat'], ['var_num'])
     """
-
-    # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
         if X[variables].dtype.name == "category" or is_object(X[variables]):
             variables_cat = [variables]
@@ -259,44 +285,64 @@ def find_categorical_and_numerical_variables(
             variables_num = [variables]
             variables_cat = []
         else:
-            raise TypeError(
-                "The variable entered is neither numerical nor categorical."
-            )
-
-    # If user leaves default None parameter.
+            if not allow_empty:
+                raise TypeError(
+                    "The variable entered is neither numerical nor categorical."
+                )
+            else:
+                warnings.warn(
+                    "The variable entered is neither numerical nor categorical. Returning empty lists.",
+                    UserWarning,
+                )
+                variables_cat = []
+                variables_num = []
     elif variables is None:
-        # find categorical variables
         variables_cat = [
             column
-            for column in X.select_dtypes(
-                include=["O", "category", "string"]
-            ).columns
+            for column in X.select_dtypes(include=["O", "category", "string"]).columns
             if _is_categorical_and_is_not_datetime(X[column])
         ]
-        # find numerical variables in dataset
         variables_num = list(X.select_dtypes(include="number").columns)
-
         if len(variables_num) == 0 and len(variables_cat) == 0:
-            raise TypeError(
-                "There are no numerical or categorical variables in the dataframe"
-            )
-
-    # If user passes variable list.
+            if not allow_empty:
+                raise TypeError(
+                    "There are no numerical or categorical variables in the dataframe"
+                )
+            else:
+                warnings.warn(
+                    "There are no numerical or categorical variables in the dataframe. Returning empty lists.",
+                    UserWarning,
+                )
+                variables_cat = []
+                variables_num = []
     else:
         if len(variables) == 0:
-            raise ValueError("The list of variables is empty.")
+            if not allow_empty:
+                raise ValueError("The list of variables is empty.")
+            else:
+                warnings.warn(
+                    "The list of variables is empty. Returning empty lists.",
+                    UserWarning,
+                )
+                variables_cat = []
+                variables_num = []
 
-        # find categorical variables
-        variables_cat = list(
-            X[variables].select_dtypes(include=["O", "category", "string"]).columns
-        )
-
-        # find numerical variables
-        variables_num = list(X[variables].select_dtypes(include="number").columns)
-
-        if any(v for v in variables if v not in variables_cat + variables_num):
-            raise TypeError(
-                "Some of the variables are neither numerical nor categorical."
+        else:
+            variables_cat = list(
+                X[variables].select_dtypes(include=["O", "category", "string"]).columns
             )
+            variables_num = list(X[variables].select_dtypes(include="number").columns)
+            if any(v for v in variables if v not in variables_cat + variables_num):
+                if not allow_empty:
+                    raise TypeError(
+                        "Some of the variables are neither numerical nor categorical."
+                    )
+                else:
+                    warnings.warn(
+                        "Some of the variables are neither numerical nor categorical. Returning empty lists.",
+                        UserWarning,
+                    )
+                    variables_cat = []
+                    variables_num = []
 
     return variables_cat, variables_num
