@@ -12,6 +12,7 @@ from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_not_datetime,
     is_object,
 )
+from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
 
 def find_numerical_variables(
@@ -228,7 +229,6 @@ def find_all_variables(
     ['var_num', 'var_cat', 'var_date']
     """
     if exclude_datetime is True:
-        DATETIME_TYPES = ("datetimetz", "datetime")
         variables = X.select_dtypes(exclude=DATETIME_TYPES).columns.to_list()
         variables = [
             var
