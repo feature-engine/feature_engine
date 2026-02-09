@@ -175,8 +175,8 @@ def find_datetime_variables(
     if len(variables) == 0:
         if return_empty is False:
             raise TypeError(
-                "No datetime variables found in this dataframe. Set return_empty to "
-                "True to return an empty list instead."
+                "No datetime variables found in this dataframe. To return an empty "
+                "list instead of the error set return_empty to True."
             )
         else:
             warnings.warn(
@@ -242,11 +242,11 @@ def find_all_variables(
         if return_empty is False:
             raise TypeError(
                 "No variables found in this dataframe. Set return_empty to "
-                "True to return an empty list instead."
+                "True to return an empty list instead of the error."
             )
         else:
             warnings.warn(
-                "No variables found in this dataframe. " "Returning an empty list.",
+                "No variables found in this dataframe. Returning an empty list.",
                 UserWarning,
             )
     return variables
@@ -313,7 +313,8 @@ def find_categorical_and_numerical_variables(
             if return_empty is False:
                 raise TypeError(
                     "The variable entered is neither numerical nor categorical. "
-                    "Set return_empty to True to return empty lists instead."
+                    "Set return_empty to True to return empty lists instead of the "
+                    "error."
                 )
             else:
                 warnings.warn(
@@ -337,7 +338,8 @@ def find_categorical_and_numerical_variables(
             if return_empty is False:
                 raise TypeError(
                     "There are no numerical or categorical variables in the dataframe. "
-                    "Set return_empty to True to return empty lists instead."
+                    "Set return_empty to True to return empty lists instead of the "
+                    "error"
                 )
             else:
                 warnings.warn(
