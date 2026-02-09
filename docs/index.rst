@@ -237,6 +237,7 @@ like anova, and machine learning models, like linear regression. Feature-engine 
 - :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables
 - :doc:`api_doc/transformation/YeoJohnsonTransformer`: performs Yeo-Johnson transformation of numerical variables
 - :doc:`api_doc/transformation/ArcsinTransformer`: performs arcsin transformation of numerical variables
+- :doc:`api_doc/transformation/ArcSinhTransformer`: applies arcsinh (pseudo-logarithm) transformation of numerical variables
 
 Feature Creation:
 ~~~~~~~~~~~~~~~~~

@@ -326,7 +326,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 f"base can take only '10' or 'e' as values. Got {base} instead."
             )
 
-        if not isinstance(C, (int, float, dict)) and not C == "auto":
+        if not isinstance(C, (int, float, dict)) and C != "auto":
             raise ValueError(
                 f"C can take only 'auto', integers or floats. Got {C} instead."
             )
