@@ -334,10 +334,7 @@ def test_extract_features_from_different_timezones():
         pd.DataFrame({"time_hour": [7, 8, 9, 14, 15, 16]}),
         check_dtype=False,
     )
-    exp_err_msg = (
-        "Tz-aware datetime.datetime cannot be converted to datetime64 "
-        "unless utc=True"
-    )
+    exp_err_msg = "cannot be converted to datetime64 unless utc=True"
     with pytest.raises(ValueError) as errinfo:
         assert DatetimeFeatures(
             variables="time", features_to_extract=["hour"], utc=False
@@ -373,13 +370,13 @@ def test_extract_features_from_localized_tz_variables():
     tz_df = pd.DataFrame(
         {
             "date_var": [
-                "2018-10-28 01:30:00",
-                "2018-10-28 02:00:00",
-                "2018-10-28 02:30:00",
-                "2018-10-28 02:00:00",
-                "2018-10-28 02:30:00",
-                "2018-10-28 03:00:00",
-                "2018-10-28 03:30:00",
+                "2018-06-15 01:30:00",
+                "2018-06-15 02:00:00",
+                "2018-06-15 02:30:00",
+                "2018-06-15 02:00:00",
+                "2018-06-15 02:30:00",
+                "2018-06-15 03:00:00",
+                "2018-06-15 03:30:00",
             ]
         }
     )
