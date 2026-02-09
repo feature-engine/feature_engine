@@ -209,8 +209,12 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         # Find or validate text variables
         if self.variables is None:
-            # Select object/string columns
-            self.variables_ = [col for col in X.columns if X[col].dtype == "object"]
+            # Select object/string columns (handles both object dtype and StringDtype)
+            self.variables_ = [
+                col for col in X.columns
+                if pd.api.types.is_string_dtype(X[col])
+                or pd.api.types.is_object_dtype(X[col])
+            ]
             if len(self.variables_) == 0:
                 raise ValueError(
                     "No object/string columns found in the dataframe. "
