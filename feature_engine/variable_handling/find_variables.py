@@ -246,8 +246,7 @@ def find_all_variables(
             )
         else:
             warnings.warn(
-                "No variables found in this dataframe. "
-                "Returning an empty list.",
+                "No variables found in this dataframe. " "Returning an empty list.",
                 UserWarning,
             )
     return variables
@@ -352,19 +351,27 @@ def find_categorical_and_numerical_variables(
     # If user passes variable list.
     else:
         if len(variables) == 0:
-            raise ValueError("The list of variables is empty.")
+            if return_empty is False:
+                raise ValueError(
+                    "The list of variables provided is empty. If this was intentional "
+                    "and you want to return empty lists set return_empty to True."
+                )
+            else:
+                warnings.warn(
+                    "There are no numerical or categorical variables in the list "
+                    "provided. Returning empty lists.",
+                    UserWarning,
+                )
+                variables_cat = []
+                variables_num = []
 
-        # find categorical variables
-        variables_cat = list(
-            X[variables].select_dtypes(include=["O", "category", "string"]).columns
-        )
-
-        # find numerical variables
-        variables_num = list(X[variables].select_dtypes(include="number").columns)
-
-        if any(v for v in variables if v not in variables_cat + variables_num):
-            raise TypeError(
-                "Some of the variables are neither numerical nor categorical."
+        else:
+            # find categorical variables
+            variables_cat = list(
+                X[variables].select_dtypes(include=["O", "category", "string"]).columns
             )
+
+            # find numerical variables
+            variables_num = list(X[variables].select_dtypes(include="number").columns)
 
     return variables_cat, variables_num

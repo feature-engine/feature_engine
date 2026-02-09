@@ -134,9 +134,7 @@ def test_datetime_variables_raises_warning(df_datetime):
     vars_nondt = ["Marks", "Age", "Name"]
 
     with pytest.warns(UserWarning, match=msg):
-        find_datetime_variables(
-            df_datetime.loc[:, vars_nondt], return_empty=True
-        )
+        find_datetime_variables(df_datetime.loc[:, vars_nondt], return_empty=True)
 
 
 def test_datetime_variables_returns_empty_list(df_datetime):
@@ -204,7 +202,7 @@ def find_all_variables_returns_empty(df):
 # --- find_categorical_and_numerical_variables --- #
 
 
-def test_find_categorical_and_numerical_variables(df_vartypes):
+def test_numcat_user_passes_varlist(df_vartypes):
     # Case 1: user passes 1 variable that is categorical
     assert find_categorical_and_numerical_variables(df_vartypes, ["Name"]) == (
         ["Name"],
@@ -231,6 +229,8 @@ def test_find_categorical_and_numerical_variables(df_vartypes):
         ["Age"],
     )
 
+
+def test_numcat_when_var_is_none(df_vartypes):
     # Case 4: automatically identify variables
     assert find_categorical_and_numerical_variables(df_vartypes, None) == (
         ["Name", "City"],
@@ -243,49 +243,49 @@ def test_find_categorical_and_numerical_variables(df_vartypes):
         df_vartypes[["Age", "Marks"]], None
     ) == ([], ["Age", "Marks"])
 
+
+def test_numcat_raises_no_var_error(df_vartypes):
+    df = df_vartypes["dob"].to_frame()
+
     # Case 5: error when no variable is numerical or categorical
     with pytest.raises(TypeError):
-        find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), None)
+        find_categorical_and_numerical_variables(df, None)
 
-    with pytest.raises(TypeError):
-        find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), ["dob"])
 
-    with pytest.raises(TypeError):
-        find_categorical_and_numerical_variables(df_vartypes["dob"].to_frame(), "dob")
-
+def test_numcat_raises_no_var_warn(df_vartypes):
+    df = df_vartypes["dob"].to_frame()
     # Case 6: warning when no variable is numerical or categorical
     with pytest.warns(UserWarning):
         find_categorical_and_numerical_variables(
-            df_vartypes["dob"].to_frame(), None, return_empty=True
+            df,
+            None,
+            return_empty=True,
         )
 
-    with pytest.warns(UserWarning):
-        find_categorical_and_numerical_variables(
-            df_vartypes["dob"].to_frame(), ["dob"], return_empty=True
-        )
 
-    with pytest.warns(UserWarning):
-        find_categorical_and_numerical_variables(
-            df_vartypes["dob"].to_frame(), "dob", return_empty=True
-        )
-
-    # Case 6=bis: empty lists when no variable is numerical or categorical
+def test_numcat_returns_empty_lists(df_vartypes):
+    df = df_vartypes["dob"].to_frame()
     assert find_categorical_and_numerical_variables(
-        df_vartypes["dob"].to_frame(), None, return_empty=True
+        df,
+        None,
+        return_empty=True,
     ) == ([], [])
 
-    assert find_categorical_and_numerical_variables(
-        df_vartypes["dob"].to_frame(), ["dob"], return_empty=True
-    ) == ([], [])
 
-    assert find_categorical_and_numerical_variables(
-        df_vartypes["dob"].to_frame(), "dob", return_empty=True
-    ) == ([], [])
-
+def test_numcat_on_user_empty_list(df_vartypes):
     # Case 7: user passes empty list
     with pytest.raises(ValueError):
         find_categorical_and_numerical_variables(df_vartypes, [])
 
+    with pytest.warns(UserWarning):
+        find_categorical_and_numerical_variables(df_vartypes, [], return_empty=True)
+
+    assert find_categorical_and_numerical_variables(
+        df_vartypes, [], return_empty=True
+    ) == ([], [])
+
+
+def test_numcat_when_dt_as_object(df_vartypes):
     # Case 8: datetime cast as object
     df = df_vartypes.copy()
     df["dob"] = df["dob"].astype("O")
@@ -301,6 +301,8 @@ def test_find_categorical_and_numerical_variables(df_vartypes):
         ["Marks"],
     )
 
+
+def test_numcat_vars_as_category(df_vartypes):
     # Case 9: variables cast as category
     df = df_vartypes.copy()
     df["City"] = df["City"].astype("category")
