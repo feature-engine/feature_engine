@@ -124,7 +124,7 @@ def test_datetime_variables_raises_error(df_datetime):
 
     vars_nondt = ["Marks", "Age", "Name"]
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         assert find_datetime_variables(df_datetime.loc[:, vars_nondt])
 
 

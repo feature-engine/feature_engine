@@ -19,7 +19,7 @@ def find_numerical_variables(
     return_empty: bool = False,
 ) -> List[Union[str, int]]:
     """
-    Returns a list with the names of all numerical variables in a dataframe.
+    Returns a list with the names of all the numerical variables in a dataframe.
 
     More details in the :ref:`User Guide <find_num_vars>`.
 
@@ -173,7 +173,7 @@ def find_datetime_variables(
     ]
     if len(variables) == 0:
         if return_empty is False:
-            raise ValueError(
+            raise TypeError(
                 "No datetime variables found in this dataframe. Set return_empty to "
                 "True to return an empty list instead."
             )
@@ -240,7 +240,7 @@ def find_all_variables(
 
     if len(variables) == 0:
         if return_empty is False:
-            raise ValueError(
+            raise TypeError(
                 "No variables found in this dataframe. Set return_empty to "
                 "True to return an empty list instead."
             )
