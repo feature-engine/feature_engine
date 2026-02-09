@@ -8,7 +8,6 @@ from pandas.api.types import is_numeric_dtype as is_numeric
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
 )
-from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
 Variables = Union[int, str, List[Union[str, int]]]
 
@@ -149,6 +148,7 @@ def check_datetime_variables(
 
     # find non datetime variables, if any:
     non_datetime_vars = []
+    DATETIME_TYPES = ("datetimetz", "datetime")
     for column in X[variables].select_dtypes(exclude=DATETIME_TYPES):
         if is_numeric(X[column]) or not _is_categorical_and_is_datetime(X[column]):
             non_datetime_vars.append(column)
