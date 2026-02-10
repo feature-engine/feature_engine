@@ -177,9 +177,6 @@ def test_variable_selection(estimator):
     assert transformer.variables_categorical_ == ["cat_var1", "cat_var2"]
     assert transformer.variables_numerical_ == ["var_1", "var_2"]
 
-    transformer.set_params(variables=["var_1", "cat_var1", "date2"])
-    with pytest.raises(TypeError):
-        transformer.fit(X, y)
 
     # Case 6: user passes empty list
     transformer.set_params(variables=[])

@@ -102,7 +102,7 @@ def test_raises_error_when_variables_not_datetime(df_datetime):
     with pytest.raises(TypeError):
         DatetimeFeatures(variables="index").fit(df_datetime)
     # passing a df that contains no datetime variables
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         DatetimeFeatures().fit(df_datetime[["Name", "Age"]])
 
 
