@@ -33,8 +33,8 @@ Let's create a toy dataset with numerical, categorical and datetime variables:
     X["cat_var1"] = ["Hello"] * 1000
     X["cat_var2"] = ["Bye"] * 1000
 
-    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="T")
-    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="H")
+    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="min")
+    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="h")
     X["date3"] = ["2020-02-24"] * 1000
 
     print(X.head())
@@ -57,7 +57,7 @@ Below we see the resulting dataframe:
     3 2020-02-24 00:03:00 2021-09-29 03:00:00  2020-02-24
     4 2020-02-24 00:04:00 2021-09-29 04:00:00  2020-02-24
 
-We can now use :class:`find_categorical_and_numerical_variables()` to capture categorical
+We can use :class:`find_categorical_and_numerical_variables()` to capture categorical
 and numerical variables in separate lists. So let's do that and then display the lists:
 
 .. code:: python
@@ -91,15 +91,34 @@ We see the resulting lists below:
 
     (['cat_var1'], ['num_var_1'])
 
-If we pass a variable that is not of type numerical or categorical, :class:`find_categorical_and_numerical_variables()`
-will return an error:
+We can also select from a list of variables those that are numerical or categorical:
 
 .. code:: python
 
     find_categorical_and_numerical_variables(X, ["num_var_1", "cat_var1", "date1"])
 
-Below the error message:
+    var_cat, var_num
+
+We see the resulting lists below:
 
 .. code:: python
 
-    TypeError: Some of the variables are neither numerical nor categorical.
+    (['cat_var1'], ['num_var_1'])
+
+If there are no numerical or categorical variables, :class:`find_categorical_and_numerical_variables()`
+will raise an error:
+
+.. code:: python
+
+    find_categorical_and_numerical_variables(
+        X[[ 'date1', 'date2', 'date3']],
+    )
+
+To return empty lists instead, we set `return_empty` to `True`:
+
+.. code:: python
+
+    find_categorical_and_numerical_variables(
+        X[[ 'date1', 'date2', 'date3']],
+        return_empty = True
+    )
