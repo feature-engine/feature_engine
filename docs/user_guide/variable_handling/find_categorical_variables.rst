@@ -6,7 +6,7 @@ find_categorical_variables
 ==========================
 
 With :class:`find_categorical_variables()` you can capture in a list the names of all
-the variables of type object or categorical in the dataset.
+the variables of type object, string or categorical in the dataset.
 
 Let's create a toy dataset with numerical, categorical and datetime variables:
 
@@ -32,8 +32,8 @@ Let's create a toy dataset with numerical, categorical and datetime variables:
     X["cat_var1"] = ["Hello"] * 1000
     X["cat_var2"] = ["Bye"] * 1000
 
-    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="T")
-    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="H")
+    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="min")
+    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="h")
     X["date3"] = ["2020-02-24"] * 1000
 
     print(X.head())
@@ -57,7 +57,7 @@ We see the resulting dataframe below:
     4 2020-02-24 00:04:00 2021-09-29 04:00:00  2020-02-24
 
 We can use :class:`find_categorical_variables()` to capture the names of all
-variables of type object or categorical in a list.
+variables of type object, string or categorical in a list.
 
 So let's do that and then display the list:
 
@@ -76,8 +76,17 @@ We see the variable names in the list below:
     ['cat_var1', 'cat_var2']
 
 Note that :class:`find_categorical_variables()` will not return variables cast as
-object or categorical that could be parsed as datetime. That's why, the variable
+object or categorical that can be parsed as datetime. That's why, the variable
 `date3` was excluded from the returned list.
 
 If there are no categorical variables in the dataset, this function will raise an
-error.
+error. For example, this command: `find_categorical_variables(X[colnames])` raises
+a `TypeError` because the subset of the dataset contains only numerical variables.
+
+To return an empty list instead of the error we need to set `return_empty` to `True` as
+follows:
+
+.. code:: python
+    find_categorical_variables(X[colnames], return_empty=True)
+
+The previous commands returns an empty list: `[]`.
