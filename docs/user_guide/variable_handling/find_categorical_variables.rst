@@ -87,6 +87,7 @@ To return an empty list instead of the error we need to set `return_empty` to `T
 follows:
 
 .. code:: python
+
     find_categorical_variables(X[colnames], return_empty=True)
 
 The previous commands returns an empty list: `[]`.
