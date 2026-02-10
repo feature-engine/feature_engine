@@ -84,10 +84,6 @@ error. For example, this command: `find_categorical_variables(X[colnames])` rais
 a `TypeError` because the subset of the dataset contains only numerical variables.
 
 To return an empty list instead of the error we need to set `return_empty` to `True` as
-follows:
-
-.. code:: python
-
-    find_categorical_variables(X[colnames], return_empty=True)
+follows: `find_categorical_variables(X[colnames], return_empty=True)`.
 
 The previous commands returns an empty list: `[]`.
