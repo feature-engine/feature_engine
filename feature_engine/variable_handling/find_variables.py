@@ -10,7 +10,6 @@ from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
-    is_object,
 )
 from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
