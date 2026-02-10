@@ -154,12 +154,12 @@ def test_find_all_variables(df):
     assert find_all_variables(df, exclude_datetime=False) == all_vars
 
 
-def find_all_variables_excludes_dt(df):
+def test_find_all_variables_excludes_dt(df):
     all_vars_no_dt = ["Name", "City", "Age", "Marks"]
     assert find_all_variables(df, exclude_datetime=True) == all_vars_no_dt
 
 
-def find_all_variables_raises_error(df):
+def test_find_all_variables_raises_error(df):
     dt_vars = [
         "date_range",
         "date_obj0",
@@ -167,11 +167,11 @@ def find_all_variables_raises_error(df):
     ]
     df = df[dt_vars]
     msg = "No variables found in this dataframe"
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         find_all_variables(df, exclude_datetime=True)
 
 
-def find_all_variables_raises_warning(df):
+def test_find_all_variables_raises_warning(df):
     dt_vars = [
         "date_range",
         "date_obj0",
@@ -183,7 +183,7 @@ def find_all_variables_raises_warning(df):
         find_all_variables(df, exclude_datetime=True, return_empty=True)
 
 
-def find_all_variables_returns_empty(df):
+def test_find_all_variables_returns_empty(df):
     dt_vars = [
         "date_range",
         "date_obj0",
