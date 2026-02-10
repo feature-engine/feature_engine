@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from feature_engine.variable_handling import (
@@ -30,15 +31,11 @@ def test_numerical_variables_raises_warning(df, df_int):
 
     # Test with a regular DataFrame
     with pytest.warns(UserWarning, match=msg):
-        find_numerical_variables(
-            df.drop(["Age", "Marks"], axis=1), return_empty=True
-        )
+        find_numerical_variables(df.drop(["Age", "Marks"], axis=1), return_empty=True)
 
     # Test with integer-only DataFrame
     with pytest.warns(UserWarning, match=msg):
-        find_numerical_variables(
-            df_int.drop([3, 4], axis=1), return_empty=True
-        )
+        find_numerical_variables(df_int.drop([3, 4], axis=1), return_empty=True)
 
 
 def test_numerical_variables_returns_empty_list(df, df_int):
@@ -73,15 +70,11 @@ def test_categorical_variables_raises_warning(df, df_int):
 
     # Test with a regular DataFrame
     with pytest.warns(UserWarning, match=msg):
-        find_categorical_variables(
-            df.drop(["Name", "City"], axis=1), return_empty=True
-        )
+        find_categorical_variables(df.drop(["Name", "City"], axis=1), return_empty=True)
 
     # Test with integer-only DataFrame
     with pytest.warns(UserWarning, match=msg):
-        find_categorical_variables(
-            df_int.drop([1, 2], axis=1), return_empty=True
-        )
+        find_categorical_variables(df_int.drop([1, 2], axis=1), return_empty=True)
 
 
 def test_categorical_variables_returns_empty_list(df, df_int):
@@ -238,30 +231,50 @@ def test_numcat_when_var_is_none(df_vartypes):
     ) == ([], ["Age", "Marks"])
 
 
-def test_numcat_raises_no_var_error(df_vartypes):
-    df = df_vartypes["dob"].to_frame()
+@pytest.fixture(scope="module")
+def dfdt():
+    X = pd.DataFrame()
+    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="min")
+    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="h")
+    X["date3"] = ["2020-02-24"] * 1000
+    return X
 
+
+def test_numcat_raises_no_var_error(dfdt):
     # Case 5: error when no variable is numerical or categorical
-    with pytest.raises(TypeError):
-        find_categorical_and_numerical_variables(df, None)
+    msg = "There are no numerical or categorical variables"
+    with pytest.raises(TypeError, match=msg):
+        find_categorical_and_numerical_variables(dfdt, None)
+    msg = "The variable entered is neither numerical nor categorical."
+    with pytest.raises(TypeError, match=msg):
+        find_categorical_and_numerical_variables(dfdt, "date1")
 
 
-def test_numcat_raises_no_var_warn(df_vartypes):
-    df = df_vartypes["dob"].to_frame()
+def test_numcat_raises_no_var_warn(dfdt):
     # Case 6: warning when no variable is numerical or categorical
-    with pytest.warns(UserWarning):
+    msg = "There are no numerical or categorical variables"
+    with pytest.warns(UserWarning, match=msg):
         find_categorical_and_numerical_variables(
-            df,
+            dfdt,
             None,
             return_empty=True,
         )
+    msg = "The variable entered is neither numerical nor"
+    with pytest.warns(UserWarning, match=msg):
+        find_categorical_and_numerical_variables(
+            dfdt, variables="date1", return_empty=True
+        )
 
 
-def test_numcat_returns_empty_lists(df_vartypes):
-    df = df_vartypes["dob"].to_frame()
+def test_numcat_returns_empty_lists(dfdt):
     assert find_categorical_and_numerical_variables(
-        df,
+        dfdt,
         None,
+        return_empty=True,
+    ) == ([], [])
+    assert find_categorical_and_numerical_variables(
+        dfdt,
+        "date1",
         return_empty=True,
     ) == ([], [])
 

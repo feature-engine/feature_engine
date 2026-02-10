@@ -303,7 +303,9 @@ def find_categorical_and_numerical_variables(
 
     # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
-        if X[variables].dtype.name == "category" or is_object(X[variables]):
+        if X[variables].dtype.name == "category" or _is_categorical_and_is_not_datetime(
+            X[variables]
+        ):
             variables_cat = [variables]
             variables_num = []
         elif is_numeric(X[variables]):
