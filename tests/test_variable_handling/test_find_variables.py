@@ -1,3 +1,5 @@
+from nis import match
+
 import pandas as pd
 import pytest
 
@@ -281,10 +283,12 @@ def test_numcat_returns_empty_lists(dfdt):
 
 def test_numcat_on_user_empty_list(df_vartypes):
     # Case 7: user passes empty list
-    with pytest.raises(ValueError):
+    msg = "The list of variables provided is empty. If this was"
+    with pytest.raises(ValueError, match=msg):
         find_categorical_and_numerical_variables(df_vartypes, [])
 
-    with pytest.warns(UserWarning):
+    msg = "The list of variables provided is empty. Returning "
+    with pytest.warns(UserWarning, match=msg):
         find_categorical_and_numerical_variables(df_vartypes, [], return_empty=True)
 
     assert find_categorical_and_numerical_variables(
@@ -297,14 +301,13 @@ def test_numcat_when_dt_as_object(df_vartypes):
     df = df_vartypes.copy()
     df["dob"] = df["dob"].astype("O")
 
-    # datetime variable is skipped when automatically finding variables, but
-    # selected if user passes it in list
+    # datetime variable is skipped when automatically finding variables,
     assert find_categorical_and_numerical_variables(df, None) == (
         ["Name", "City"],
         ["Age", "Marks"],
     )
     assert find_categorical_and_numerical_variables(df, ["Name", "Marks", "dob"]) == (
-        ["Name", "dob"],
+        ["Name"],
         ["Marks"],
     )
 

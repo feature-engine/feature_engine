@@ -362,8 +362,8 @@ def find_categorical_and_numerical_variables(
                 )
             else:
                 warnings.warn(
-                    "There are no numerical or categorical variables in the list "
-                    "provided. Returning empty lists.",
+                    "The list of variables provided is empty. Returning "
+                    "empty lists.",
                     UserWarning,
                 )
                 variables_cat = []
@@ -371,10 +371,13 @@ def find_categorical_and_numerical_variables(
 
         else:
             # find categorical variables
-            variables_cat = list(
-                X[variables].select_dtypes(include=["O", "category", "string"]).columns
-            )
-
+            variables_cat = [
+                column
+                for column in X[variables]
+                .select_dtypes(include=["O", "category", "string"])
+                .columns
+                if _is_categorical_and_is_not_datetime(X[column])
+            ]
             # find numerical variables
             variables_num = list(X[variables].select_dtypes(include="number").columns)
 
