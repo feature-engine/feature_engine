@@ -55,8 +55,8 @@ will raise an error. For example, the command
 `find_numerical_variables(df[["Name", "City", "dob"]])` results in a `TypeError` because
 there are no numerical variables in that subset of the data.
 
-From version 1.10.0, we can now return an empty list when no variables are found. To
-return an empty list, we need to set `return_empty` to `True`:
+We can return an empty list when no variables are found. To return an empty list, we
+need to set `return_empty` to `True`:
 
 .. code:: python
 

@@ -81,9 +81,7 @@ We see the variable names in the list below:
      'date2',
      'date3']
 
-We have the option to return the name of the variables of type categorical, object,
-string and numerical only, or in other words, to exclude datetime variables. We can do
-so as follows:
+We have the option to exclude datetime variables as follows:
 
 .. code:: python
 
