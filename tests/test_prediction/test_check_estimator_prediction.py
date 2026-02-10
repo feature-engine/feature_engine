@@ -163,7 +163,7 @@ def test_variable_selection(estimator):
 
     transformer.fit(X, y)
     assert transformer.variables == ["var_1", "var_2", "cat_var1", "cat_var2", "date1"]
-    assert transformer.variables_categorical_ == ["cat_var1", "cat_var2", "date1"]
+    assert transformer.variables_categorical_ == ["cat_var1", "cat_var2"]
     assert transformer.variables_numerical_ == ["var_1", "var_2"]
 
     # Case 6: automatically select variables
