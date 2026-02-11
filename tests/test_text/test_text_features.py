@@ -165,3 +165,80 @@ class TestTextFeatures:
         assert "text" not in feature_names
         assert "other" in feature_names
         assert "text_char_count" in feature_names
+
+    def test_string_variable_input(self):
+        """Test that passing a single string variable works (auto-converted to list)."""
+        X = pd.DataFrame({"text": ["Hello", "World"], "other": ["A", "B"]})
+        transformer = TextFeatures(variables="text", features=["char_count"])
+        X_tr = transformer.fit_transform(X)
+
+        assert "text_char_count" in X_tr.columns
+        assert "other_char_count" not in X_tr.columns
+        assert X_tr["text_char_count"].tolist() == [5, 5]
+
+    def test_invalid_features_type_raises_error(self):
+        """Test that invalid features type raises ValueError."""
+        with pytest.raises(ValueError, match="features must be"):
+            TextFeatures(features="char_count")
+
+    def test_multiple_text_columns(self):
+        """Test extracting features from multiple text columns."""
+        X = pd.DataFrame({"a": ["Hello", "World"], "b": ["Foo", "Bar"]})
+        transformer = TextFeatures(features=["char_count", "word_count"])
+        X_tr = transformer.fit_transform(X)
+
+        assert "a_char_count" in X_tr.columns
+        assert "b_char_count" in X_tr.columns
+        assert "a_word_count" in X_tr.columns
+        assert "b_word_count" in X_tr.columns
+
+    def test_transform_on_new_data(self):
+        """Test transform works on new data after fit."""
+        X_train = pd.DataFrame({"text": ["Hello World", "Foo Bar"]})
+        X_test = pd.DataFrame({"text": ["New Data", "Test 123"]})
+
+        transformer = TextFeatures(features=["char_count", "has_digits"])
+        transformer.fit(X_train)
+        X_tr = transformer.transform(X_test)
+
+        assert X_tr["text_char_count"].tolist() == [8, 8]
+        assert X_tr["text_has_digits"].tolist() == [0, 1]
+
+    def test_punctuation_features(self):
+        """Test punctuation-related features."""
+        X = pd.DataFrame({"text": ["Hello.", "World", "Hi!"]})
+        transformer = TextFeatures(
+            features=["ends_with_punctuation", "special_char_count"]
+        )
+        X_tr = transformer.fit_transform(X)
+
+        assert X_tr["text_ends_with_punctuation"].tolist() == [1, 0, 1]
+        assert X_tr["text_special_char_count"].tolist() == [1, 0, 1]
+
+    def test_ratio_features(self):
+        """Test ratio features with known values."""
+        X = pd.DataFrame({"text": ["AB12", "abcd"]})
+        transformer = TextFeatures(
+            features=["digit_ratio", "uppercase_ratio", "whitespace_ratio"]
+        )
+        X_tr = transformer.fit_transform(X)
+
+        assert X_tr["text_digit_ratio"].tolist() == [0.5, 0.0]
+        assert X_tr["text_uppercase_ratio"].tolist() == [0.5, 0.0]
+        assert X_tr["text_whitespace_ratio"].tolist() == [0.0, 0.0]
+
+    def test_avg_word_length(self):
+        """Test average word length feature."""
+        X = pd.DataFrame({"text": ["ab cd", "a"]})
+        transformer = TextFeatures(features=["avg_word_length"])
+        X_tr = transformer.fit_transform(X)
+
+        assert X_tr["text_avg_word_length"].tolist() == [2.0, 1.0]
+
+    def test_lowercase_count(self):
+        """Test lowercase count feature."""
+        X = pd.DataFrame({"text": ["Hello", "WORLD"]})
+        transformer = TextFeatures(features=["lowercase_count"])
+        X_tr = transformer.fit_transform(X)
+
+        assert X_tr["text_lowercase_count"].tolist() == [4, 0]
