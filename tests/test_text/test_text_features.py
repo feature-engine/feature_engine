@@ -242,3 +242,31 @@ class TestTextFeatures:
         X_tr = transformer.fit_transform(X)
 
         assert X_tr["text_lowercase_count"].tolist() == [4, 0]
+
+    def test_variables_list_non_strings_raises_error(self):
+        """Test that a list of non-string variables raises ValueError."""
+        with pytest.raises(ValueError, match="variables must be"):
+            TextFeatures(variables=[1, 2])
+
+    def test_features_list_non_strings_raises_error(self):
+        """Test that a list of non-string features raises ValueError."""
+        with pytest.raises(ValueError, match="features must be"):
+            TextFeatures(features=[1, 2])
+
+    def test_more_tags(self):
+        """Test _more_tags returns expected tags."""
+        transformer = TextFeatures()
+        tags = transformer._more_tags()
+        assert tags["allow_nan"] is True
+        assert tags["variables"] == "categorical"
+
+    def test_sklearn_tags(self):
+        """Test __sklearn_tags__ returns expected tags."""
+        import sklearn
+
+        if hasattr(sklearn, "__version__") and tuple(
+            int(x) for x in sklearn.__version__.split(".")[:2]
+        ) >= (1, 6):
+            transformer = TextFeatures()
+            tags = transformer.__sklearn_tags__()
+            assert tags.input_tags.allow_nan is True
