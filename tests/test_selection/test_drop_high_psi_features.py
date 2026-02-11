@@ -348,14 +348,9 @@ def test_confirm_variables(variables, variable, expected_psi, df):
 
 def test_error_if_variables_is_none_and_no_numerical_in_df(df):
     transformer = DropHighPSIFeatures(variables=None)
-    msg = (
-        "No numerical variables found in this dataframe. Please check "
-        "variable format with pandas dtypes."
-    )
-    with pytest.raises(TypeError) as record:
+    msg = "No numerical variables found in this dataframe. "
+    with pytest.raises(TypeError, match=msg):
         transformer.fit(df[["cat_1", "drift_cat_1"]])
-
-    assert str(record.value) == msg
 
 
 def test_error_if_confirm_variables_returns_empty_list(df):

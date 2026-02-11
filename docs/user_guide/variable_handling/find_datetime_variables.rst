@@ -33,8 +33,8 @@ Let's create a toy dataset with numerical, categorical and datetime variables:
     X["cat_var1"] = ["Hello"] * 1000
     X["cat_var2"] = ["Bye"] * 1000
 
-    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="T")
-    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="H")
+    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="min")
+    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="h")
     X["date3"] = ["2020-02-24"] * 1000
 
     print(X.head())
@@ -60,7 +60,7 @@ We see the resulting dataframe below:
 The dataframe has 3 datetime variables, two of them are of type datetime and one of type
 object.
 
-We can now use :class:`find_datetime_variables()` to capture all datetime variables
+We can use :class:`find_datetime_variables()` to capture all datetime variables
 regardless of their data type. So let's do that and then display the list:
 
 .. code:: python
@@ -80,3 +80,6 @@ Below we see the variable names in the list:
 Note that :class:`find_datetime_variables()` captures all 3 datetime variables.
 The first 2 are of type datetime, whereas the third variable is of type object. But as it
 can be parsed as datetime, it will be captured in the list as well.
+
+If there are no datetime variables, :class:`find_datetime_variables()` will raise an error.
+To return an empty list instead, use the argument `return_empty` to `True`.

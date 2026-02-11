@@ -18,7 +18,7 @@ Let's create a toy dataset with numerical, categorical and datetime variables:
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
         "Age": [20, 21, 19, 18],
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
     })
 
     print(df.head())
@@ -33,7 +33,7 @@ We see the resulting dataframe below:
     2  krish   Liverpool   19    0.7 2020-02-24 00:02:00
     3   jack     Bristol   18    0.6 2020-02-24 00:03:00
 
-With :class:`find_numerical_variables()` we capture the names of all numerical
+With :class:`find_numerical_variables()` we capture the names of all the numerical
 variables in a list. So let's do that and then display the list:
 
 .. code:: python
@@ -51,4 +51,15 @@ We see the names of the numerical variables in the list below:
     ['Age', 'Marks']
 
 If there are no numerical variables in the dataset, :class:`find_numerical_variables()`
-will raise an error.
+will raise an error. For example, the command
+`find_numerical_variables(df[["Name", "City", "dob"]])` results in a `TypeError` because
+there are no numerical variables in that subset of the data.
+
+We can return an empty list when no variables are found. To return an empty list, we
+need to set `return_empty` to `True`:
+
+.. code:: python
+
+    find_numerical_variables(df[["Name", "City", "dob"]], return_empty=True)
+
+The previous commands returns an empty list: `[]`.

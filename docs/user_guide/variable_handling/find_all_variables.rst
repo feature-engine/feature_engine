@@ -32,8 +32,8 @@ Let's create a toy dataset with numerical, categorical and datetime variables:
     X["cat_var1"] = ["Hello"] * 1000
     X["cat_var2"] = ["Bye"] * 1000
 
-    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="T")
-    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="H")
+    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="min")
+    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="h")
     X["date3"] = ["2020-02-24"] * 1000
 
     print(X.head())
@@ -81,9 +81,7 @@ We see the variable names in the list below:
      'date2',
      'date3']
 
-We have the option to return the name of the variables of type categorical, object and
-numerical only, or in other words, to exclude datetime variables. We can do so as
-follows:
+We have the option to exclude datetime variables as follows:
 
 .. code:: python
 
@@ -102,3 +100,25 @@ In the list below, we can see that variables of type datetime were ignored:
      'cat_var1',
      'cat_var2',
      'date3']
+
+If :class:`find_all_variables()` does not find suitable variables, it will raise an error.
+To return an empty list instead, set `return_empty` to `True`.
+
+For example, this command raises an error:
+
+.. code:: python
+
+    find_all_variables(
+        X[[ 'date1', 'date2', 'date3']],
+        exclude_datetime=True,
+    )
+
+However, this command returns an empty list:
+
+.. code:: python
+
+    find_all_variables(
+        X[[ 'date1', 'date2', 'date3']],
+        exclude_datetime=True,
+        return_empty=True,
+    )
