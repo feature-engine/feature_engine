@@ -47,7 +47,7 @@ The transformer can extract the following features from a text piece:
 - **starts_with_uppercase**: Binary indicator if text starts with uppercase
 - **ends_with_punctuation**: Binary indicator if text ends with .!?
 - **unique_word_count**: Number of unique words (case-insensitive)
-- **lexical_diversity**: Ratio of total words to unique words
+- **unique_word_ratio**: Ratio of unique words to total words
 
 The **number of sentences** is inferred by :class:`TextFeatures()` by counting blocks of
 sentence-ending punctuation (., !, ?) as a proxy for sentence boundaries. This means that
@@ -58,7 +58,7 @@ However, this is still a simple heuristic. It won't handle edge cases like abbre
 (e.g., 'Dr.', 'U.S.', 'e.g.', 'i.e.') or text without punctuation. These abbreviations
 will be counted as sentence endings, resulting in an overestimate of the actual sentence count.
 
-The features **number of unique words** and **lexical diversity** are intended to capture the complexity of the text. Simpler texts have few unique words and tend to repeat them. More complex texts use a wider array of words and tend not to repeat them. Hence, in more complex texts, both the number of unique words and the lexical diversity are greater.
+The features **number of unique words** and **unique word ratio** are intended to capture the complexity of the text. Simpler texts have few unique words and tend to repeat them. More complex texts use a wider array of words and tend not to repeat them. Hence, in more complex texts, both the number of unique words and the unique word ratio are greater.
 
 Handling missing values
 -----------------------
@@ -153,7 +153,7 @@ Output:
     3                     TERRIBLE!!! DO NOT BUY!          Awful                  4                 23                      2                  0                0.608696
 
 Extracting all features
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 By default, if no text features are specified, all available features will be extracted:
 

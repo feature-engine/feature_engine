@@ -10,7 +10,7 @@ class TestTextFeatures:
     def test_default_all_features(self):
         """Test extracting all features with default parameters."""
         X = pd.DataFrame({"text": ["Hello World!", "Python 123", "AI"]})
-        transformer = TextFeatures()
+        transformer = TextFeatures(variables=["text"])
         X_tr = transformer.fit_transform(X)
 
         # Check that new columns were added
@@ -30,7 +30,7 @@ class TestTextFeatures:
     def test_specific_features(self):
         """Test extracting specific features only."""
         X = pd.DataFrame({"text": ["Hello", "World"]})
-        transformer = TextFeatures(features=["char_count", "word_count"])
+        transformer = TextFeatures(variables=["text"], features=["char_count", "word_count"])
         X_tr = transformer.fit_transform(X)
 
         # Check only specified features are extracted
@@ -54,7 +54,7 @@ class TestTextFeatures:
     def test_drop_original(self):
         """Test drop_original parameter."""
         X = pd.DataFrame({"text": ["Hello", "World"], "other": [1, 2]})
-        transformer = TextFeatures(features=["char_count"], drop_original=True)
+        transformer = TextFeatures(variables=["text"], features=["char_count"], drop_original=True)
         X_tr = transformer.fit_transform(X)
 
         assert "text" not in X_tr.columns
@@ -64,7 +64,9 @@ class TestTextFeatures:
     def test_empty_string_handling(self):
         """Test handling of empty strings."""
         X = pd.DataFrame({"text": ["", "Hello", ""]})
-        transformer = TextFeatures(features=["char_count", "word_count", "is_empty"])
+        transformer = TextFeatures(
+            variables=["text"], features=["char_count", "word_count", "is_empty"]
+        )
         X_tr = transformer.fit_transform(X)
 
         assert X_tr["text_char_count"].tolist() == [0, 5, 0]
@@ -73,17 +75,34 @@ class TestTextFeatures:
     def test_nan_handling(self):
         """Test handling of NaN values."""
         X = pd.DataFrame({"text": ["Hello", None, "World"]})
-        transformer = TextFeatures(features=["char_count"])
+        transformer = TextFeatures(variables=["text"], features=["char_count"])
         X_tr = transformer.fit_transform(X)
 
         # NaN should be filled with empty string, resulting in char_count of 0
         assert X_tr["text_char_count"].tolist() == [5, 0, 5]
 
+    def test_letter_count(self):
+        """Test letter count feature."""
+        X = pd.DataFrame({"text": ["Hello 123", "WORLD!", "abc..."]})
+        transformer = TextFeatures(features=["letter_count"])
+        X_tr = transformer.fit_transform(X)
+
+        assert X_tr["text_letter_count"].tolist() == [5, 5, 3]
+
+    def test_letter_count(self):
+        """Test letter count feature."""
+        X = pd.DataFrame({"text": ["Hello 123", "WORLD!", "abc..."]})
+        transformer = TextFeatures(variables=["text"], features=["letter_count"])
+        X_tr = transformer.fit_transform(X)
+
+        assert X_tr["text_letter_count"].tolist() == [5, 5, 3]
+
     def test_uppercase_features(self):
         """Test uppercase-related features."""
         X = pd.DataFrame({"text": ["HELLO", "hello", "HeLLo"]})
         transformer = TextFeatures(
-            features=["uppercase_count", "has_uppercase", "starts_with_uppercase"]
+            variables=["text"],
+            features=["uppercase_count", "has_uppercase", "starts_with_uppercase"],
         )
         X_tr = transformer.fit_transform(X)
 
@@ -94,7 +113,7 @@ class TestTextFeatures:
     def test_sentence_count(self):
         """Test sentence counting."""
         X = pd.DataFrame({"text": ["Hello. World!", "One sentence", "A? B! C."]})
-        transformer = TextFeatures(features=["sentence_count"])
+        transformer = TextFeatures(variables=["text"], features=["sentence_count"])
         X_tr = transformer.fit_transform(X)
 
         assert X_tr["text_sentence_count"].tolist() == [2, 0, 3]
@@ -102,7 +121,9 @@ class TestTextFeatures:
     def test_unique_word_features(self):
         """Test unique word features."""
         X = pd.DataFrame({"text": ["the the the", "a b c", "x"]})
-        transformer = TextFeatures(features=["unique_word_count", "unique_word_ratio"])
+        transformer = TextFeatures(
+            variables=["text"], features=["unique_word_count", "unique_word_ratio"]
+        )
         X_tr = transformer.fit_transform(X)
 
         assert X_tr["text_unique_word_count"].tolist() == [1, 3, 1]
@@ -111,7 +132,7 @@ class TestTextFeatures:
     def test_invalid_feature_raises_error(self):
         """Test that invalid feature name raises ValueError."""
         with pytest.raises(ValueError, match="Invalid features"):
-            TextFeatures(features=["invalid_feature"])
+            TextFeatures(variables=["text"], features=["invalid_feature"])
 
     def test_invalid_variables_raises_error(self):
         """Test that invalid variables parameter raises ValueError."""
@@ -126,16 +147,16 @@ class TestTextFeatures:
             transformer.fit(X)
 
     def test_no_text_columns_raises_error(self):
-        """Test that no text columns raises error when variables=None."""
+        """Test that no text columns raises error."""
         X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-        transformer = TextFeatures()
-        with pytest.raises(ValueError, match="No object/string columns found"):
+        transformer = TextFeatures(variables=["a"])
+        with pytest.raises(ValueError, match="not object or string"):
             transformer.fit(X)
 
     def test_fit_stores_attributes(self):
         """Test that fit stores expected attributes."""
         X = pd.DataFrame({"text": ["Hello"]})
-        transformer = TextFeatures()
+        transformer = TextFeatures(variables=["text"])
         transformer.fit(X)
 
         assert hasattr(transformer, "variables_")
@@ -146,7 +167,7 @@ class TestTextFeatures:
     def test_get_feature_names_out(self):
         """Test get_feature_names_out returns correct names."""
         X = pd.DataFrame({"text": ["Hello"], "other": [1]})
-        transformer = TextFeatures(features=["char_count", "word_count"])
+        transformer = TextFeatures(variables=["text"], features=["char_count", "word_count"])
         transformer.fit(X)
 
         feature_names = transformer.get_feature_names_out()
@@ -158,7 +179,7 @@ class TestTextFeatures:
     def test_get_feature_names_out_with_drop(self):
         """Test get_feature_names_out with drop_original=True."""
         X = pd.DataFrame({"text": ["Hello"], "other": [1]})
-        transformer = TextFeatures(features=["char_count"], drop_original=True)
+        transformer = TextFeatures(variables=["text"], features=["char_count"], drop_original=True)
         transformer.fit(X)
 
         feature_names = transformer.get_feature_names_out()
@@ -179,12 +200,12 @@ class TestTextFeatures:
     def test_invalid_features_type_raises_error(self):
         """Test that invalid features type raises ValueError."""
         with pytest.raises(ValueError, match="features must be"):
-            TextFeatures(features="char_count")
+            TextFeatures(variables=["text"], features="char_count")
 
     def test_multiple_text_columns(self):
         """Test extracting features from multiple text columns."""
         X = pd.DataFrame({"a": ["Hello", "World"], "b": ["Foo", "Bar"]})
-        transformer = TextFeatures(features=["char_count", "word_count"])
+        transformer = TextFeatures(variables=["a", "b"], features=["char_count", "word_count"])
         X_tr = transformer.fit_transform(X)
 
         assert "a_char_count" in X_tr.columns
@@ -197,7 +218,7 @@ class TestTextFeatures:
         X_train = pd.DataFrame({"text": ["Hello World", "Foo Bar"]})
         X_test = pd.DataFrame({"text": ["New Data", "Test 123"]})
 
-        transformer = TextFeatures(features=["char_count", "has_digits"])
+        transformer = TextFeatures(variables=["text"], features=["char_count", "has_digits"])
         transformer.fit(X_train)
         X_tr = transformer.transform(X_test)
 
@@ -208,6 +229,7 @@ class TestTextFeatures:
         """Test punctuation-related features."""
         X = pd.DataFrame({"text": ["Hello.", "World", "Hi!"]})
         transformer = TextFeatures(
+            variables=["text"],
             features=["ends_with_punctuation", "special_char_count"]
         )
         X_tr = transformer.fit_transform(X)
@@ -219,6 +241,7 @@ class TestTextFeatures:
         """Test ratio features with known values."""
         X = pd.DataFrame({"text": ["AB12", "abcd"]})
         transformer = TextFeatures(
+            variables=["text"],
             features=["digit_ratio", "uppercase_ratio", "whitespace_ratio"]
         )
         X_tr = transformer.fit_transform(X)
@@ -230,7 +253,7 @@ class TestTextFeatures:
     def test_avg_word_length(self):
         """Test average word length feature."""
         X = pd.DataFrame({"text": ["ab cd", "a"]})
-        transformer = TextFeatures(features=["avg_word_length"])
+        transformer = TextFeatures(variables=["text"], features=["avg_word_length"])
         X_tr = transformer.fit_transform(X)
 
         assert X_tr["text_avg_word_length"].tolist() == [2.0, 1.0]
@@ -238,7 +261,7 @@ class TestTextFeatures:
     def test_lowercase_count(self):
         """Test lowercase count feature."""
         X = pd.DataFrame({"text": ["Hello", "WORLD"]})
-        transformer = TextFeatures(features=["lowercase_count"])
+        transformer = TextFeatures(variables=["text"], features=["lowercase_count"])
         X_tr = transformer.fit_transform(X)
 
         assert X_tr["text_lowercase_count"].tolist() == [4, 0]
@@ -251,11 +274,11 @@ class TestTextFeatures:
     def test_features_list_non_strings_raises_error(self):
         """Test that a list of non-string features raises ValueError."""
         with pytest.raises(ValueError, match="features must be"):
-            TextFeatures(features=[1, 2])
+            TextFeatures(variables=["text"], features=[1, 2])
 
     def test_more_tags(self):
         """Test _more_tags returns expected tags."""
-        transformer = TextFeatures()
+        transformer = TextFeatures(variables=["text"])
         tags = transformer._more_tags()
         assert tags["allow_nan"] is True
         assert tags["variables"] == "categorical"
@@ -267,6 +290,6 @@ class TestTextFeatures:
         if hasattr(sklearn, "__version__") and tuple(
             int(x) for x in sklearn.__version__.split(".")[:2]
         ) >= (1, 6):
-            transformer = TextFeatures()
+            transformer = TextFeatures(variables=["text"])
             tags = transformer.__sklearn_tags__()
             assert tags.input_tags.allow_nan is True

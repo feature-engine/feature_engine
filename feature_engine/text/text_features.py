@@ -19,10 +19,12 @@ TEXT_FEATURES = {
     "char_count": lambda x: x.str.len(),
     "word_count": lambda x: x.str.split().str.len(),
     "sentence_count": lambda x: x.str.count(r"[.!?]+"),
-    "avg_word_length": lambda x: x.apply(
-        lambda s: sum(len(w) for w in str(s).split()) / max(len(str(s).split()), 1)
-    ),
+    "avg_word_length": lambda x: (
+        x.str.replace(r"\s+", "", regex=True).str.len() /
+        x.str.split().str.len()
+    ).fillna(0),
     "digit_count": lambda x: x.str.count(r"\d"),
+    "letter_count": lambda x: x.str.count(r"[a-zA-Z]"),
     "uppercase_count": lambda x: x.str.count(r"[A-Z]"),
     "lowercase_count": lambda x: x.str.count(r"[a-z]"),
     "special_char_count": lambda x: x.str.count(r"[^a-zA-Z0-9\s]"),
@@ -35,10 +37,13 @@ TEXT_FEATURES = {
     "is_empty": lambda x: (x.str.len() == 0).astype(int),
     "starts_with_uppercase": lambda x: x.str.match(r"^[A-Z]").astype(int),
     "ends_with_punctuation": lambda x: x.str.match(r".*[.!?]$").astype(int),
-    "unique_word_count": lambda x: x.apply(lambda s: len(set(str(s).lower().split()))),
-    "unique_word_ratio": lambda x: x.apply(
-        lambda s: len(set(str(s).lower().split())) / max(len(str(s).split()), 1)
+    "unique_word_count": lambda x: (
+        x.str.lower().str.split().apply(lambda s: len(set(s)) if isinstance(s, list) else 0)
     ),
+    "unique_word_ratio": lambda x: (
+        x.str.lower().str.split().apply(lambda s: len(set(s)) if isinstance(s, list) else 0) /
+        x.str.split().str.len()
+    ).fillna(0),
 }
 
 
@@ -48,19 +53,14 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     transformer is useful for extracting basic text statistics that can be used
     as features in machine learning models.
 
-    The transformer can extract various text features including character counts,
-    word counts, sentence counts, and various ratios and indicators.
-
-    A list of variables can be passed as an argument. Alternatively, the transformer
-    will automatically select and transform all variables of type object (string).
+    A list of variables must be passed as an argument.
 
     More details in the :ref:`User Guide <text_features>`.
 
     Parameters
     ----------
-    variables: list, default=None
-        The list of text/string variables to extract features from. If None, the
-        transformer will automatically select all object (string) columns.
+    variables: list
+        The list of text/string variables to extract features from.
 
     features: list, default=None
         List of text features to extract. Available features are:
@@ -70,6 +70,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         - 'sentence_count': Number of sentences (based on .!? punctuation)
         - 'avg_word_length': Average length of words
         - 'digit_count': Number of digit characters
+        - 'letter_count': Number of alphabetic characters (a-z, A-Z)
         - 'uppercase_count': Number of uppercase letters
         - 'lowercase_count': Number of lowercase letters
         - 'special_char_count': Number of special characters (non-alphanumeric)
@@ -132,7 +133,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     >>> X = pd.DataFrame({
     ...     'text': ['Hello World!', 'Python is GREAT.', 'ML rocks 123']
     ... })
-    >>> tf = TextFeatures(features=['char_count', 'word_count', 'has_digits'])
+    >>> tf = TextFeatures(variables=['text'], features=['char_count', 'word_count', 'has_digits'])
     >>> tf.fit(X)
     >>> X = tf.transform(X)
     >>> X
@@ -144,22 +145,21 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
     def __init__(
         self,
-        variables: Union[None, str, List[str]] = None,
+        variables: Union[str, List[str]],
         features: Union[None, List[str]] = None,
         drop_original: bool = False,
     ) -> None:
 
         # Validate variables
-        if variables is not None:
-            if isinstance(variables, str):
-                variables = [variables]
-            elif not isinstance(variables, list) or not all(
-                isinstance(v, str) for v in variables
-            ):
-                raise ValueError(
-                    "variables must be None, a string, or a list of strings. "
-                    f"Got {type(variables).__name__} instead."
-                )
+        if isinstance(variables, str):
+            variables = [variables]
+        if not isinstance(variables, list) or not all(
+            isinstance(v, str) for v in variables
+        ):
+            raise ValueError(
+                "variables must be a string or a list of strings. "
+                f"Got {type(variables).__name__} instead."
+            )
 
         # Validate features
         if features is not None:
@@ -207,27 +207,27 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # check input dataframe
         X = check_X(X)
 
-        # Find or validate text variables
-        if self.variables is None:
-            # Select object/string columns (handles both object dtype and StringDtype)
-            self.variables_ = [
-                col for col in X.columns
-                if pd.api.types.is_string_dtype(X[col])
+        # Validate user-specified variables exist
+        missing = set(self.variables) - set(X.columns)
+        if missing:
+            raise ValueError(f"Variables {missing} are not present in the dataframe.")
+
+        # Validate that the variables are object or string
+        non_text = [
+            col
+            for col in self.variables
+            if not (
+                pd.api.types.is_string_dtype(X[col])
                 or pd.api.types.is_object_dtype(X[col])
-            ]
-            if len(self.variables_) == 0:
-                raise ValueError(
-                    "No object/string columns found in the dataframe. "
-                    "Please specify variables explicitly."
-                )
-        else:
-            # Validate user-specified variables exist
-            missing = set(self.variables) - set(X.columns)
-            if missing:
-                raise ValueError(
-                    f"Variables {missing} are not present in the dataframe."
-                )
-            self.variables_ = self.variables
+            )
+        ]
+        if non_text:
+            raise ValueError(
+                f"Variables {non_text} are not object or string. "
+                "Please provide text variables only."
+            )
+
+        self.variables_ = self.variables
 
         # Set features to extract
         if self.features is None:
