@@ -38,11 +38,14 @@ TEXT_FEATURES = {
     "starts_with_uppercase": lambda x: x.str.match(r"^[A-Z]").astype(int),
     "ends_with_punctuation": lambda x: x.str.match(r".*[.!?]$").astype(int),
     "unique_word_count": lambda x: (
-        x.str.lower().str.split().apply(lambda s: len(set(s)) if isinstance(s, list) else 0)
+        x.str.lower().str.split().apply(
+            lambda s: len(set(s)) if isinstance(s, list) else 0
+        )
     ),
     "unique_word_ratio": lambda x: (
-        x.str.lower().str.split().apply(lambda s: len(set(s)) if isinstance(s, list) else 0) /
-        x.str.split().str.len()
+        x.str.lower().str.split().apply(
+            lambda s: len(set(s)) if isinstance(s, list) else 0
+        ) / x.str.split().str.len()
     ).fillna(0),
 }
 
@@ -133,7 +136,10 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     >>> X = pd.DataFrame({
     ...     'text': ['Hello World!', 'Python is GREAT.', 'ML rocks 123']
     ... })
-    >>> tf = TextFeatures(variables=['text'], features=['char_count', 'word_count', 'has_digits'])
+    >>> tf = TextFeatures(
+    ...     variables=['text'],
+    ...     features=['char_count', 'word_count', 'has_digits']
+    ... )
     >>> tf.fit(X)
     >>> X = tf.transform(X)
     >>> X
@@ -146,7 +152,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     def __init__(
         self,
         variables: Union[str, List[str]],
-        features: Union[None, List[str]] = None,
+        features: Optional[List[str]] = None,
         drop_original: bool = False,
     ) -> None:
 

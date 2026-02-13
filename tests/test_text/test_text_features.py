@@ -30,7 +30,10 @@ class TestTextFeatures:
     def test_specific_features(self):
         """Test extracting specific features only."""
         X = pd.DataFrame({"text": ["Hello", "World"]})
-        transformer = TextFeatures(variables=["text"], features=["char_count", "word_count"])
+        transformer = TextFeatures(
+            variables=["text"],
+            features=["char_count", "word_count"]
+        )
         X_tr = transformer.fit_transform(X)
 
         # Check only specified features are extracted
@@ -54,7 +57,11 @@ class TestTextFeatures:
     def test_drop_original(self):
         """Test drop_original parameter."""
         X = pd.DataFrame({"text": ["Hello", "World"], "other": [1, 2]})
-        transformer = TextFeatures(variables=["text"], features=["char_count"], drop_original=True)
+        transformer = TextFeatures(
+            variables=["text"],
+            features=["char_count"],
+            drop_original=True
+        )
         X_tr = transformer.fit_transform(X)
 
         assert "text" not in X_tr.columns
@@ -80,14 +87,6 @@ class TestTextFeatures:
 
         # NaN should be filled with empty string, resulting in char_count of 0
         assert X_tr["text_char_count"].tolist() == [5, 0, 5]
-
-    def test_letter_count(self):
-        """Test letter count feature."""
-        X = pd.DataFrame({"text": ["Hello 123", "WORLD!", "abc..."]})
-        transformer = TextFeatures(features=["letter_count"])
-        X_tr = transformer.fit_transform(X)
-
-        assert X_tr["text_letter_count"].tolist() == [5, 5, 3]
 
     def test_letter_count(self):
         """Test letter count feature."""
@@ -167,7 +166,10 @@ class TestTextFeatures:
     def test_get_feature_names_out(self):
         """Test get_feature_names_out returns correct names."""
         X = pd.DataFrame({"text": ["Hello"], "other": [1]})
-        transformer = TextFeatures(variables=["text"], features=["char_count", "word_count"])
+        transformer = TextFeatures(
+            variables=["text"],
+            features=["char_count", "word_count"]
+        )
         transformer.fit(X)
 
         feature_names = transformer.get_feature_names_out()
@@ -179,7 +181,11 @@ class TestTextFeatures:
     def test_get_feature_names_out_with_drop(self):
         """Test get_feature_names_out with drop_original=True."""
         X = pd.DataFrame({"text": ["Hello"], "other": [1]})
-        transformer = TextFeatures(variables=["text"], features=["char_count"], drop_original=True)
+        transformer = TextFeatures(
+            variables=["text"],
+            features=["char_count"],
+            drop_original=True
+        )
         transformer.fit(X)
 
         feature_names = transformer.get_feature_names_out()
@@ -205,7 +211,10 @@ class TestTextFeatures:
     def test_multiple_text_columns(self):
         """Test extracting features from multiple text columns."""
         X = pd.DataFrame({"a": ["Hello", "World"], "b": ["Foo", "Bar"]})
-        transformer = TextFeatures(variables=["a", "b"], features=["char_count", "word_count"])
+        transformer = TextFeatures(
+            variables=["a", "b"],
+            features=["char_count", "word_count"]
+        )
         X_tr = transformer.fit_transform(X)
 
         assert "a_char_count" in X_tr.columns
@@ -218,7 +227,10 @@ class TestTextFeatures:
         X_train = pd.DataFrame({"text": ["Hello World", "Foo Bar"]})
         X_test = pd.DataFrame({"text": ["New Data", "Test 123"]})
 
-        transformer = TextFeatures(variables=["text"], features=["char_count", "has_digits"])
+        transformer = TextFeatures(
+            variables=["text"],
+            features=["char_count", "has_digits"]
+        )
         transformer.fit(X_train)
         X_tr = transformer.transform(X_test)
 
