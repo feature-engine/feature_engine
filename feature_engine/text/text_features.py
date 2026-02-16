@@ -42,7 +42,7 @@ TEXT_FEATURES = {
             lambda s: len(set(s)) if isinstance(s, list) else 0
         )
     ),
-    "unique_word_ratio": lambda x: (
+    "lexical_diversity": lambda x: (
         x.str.lower().str.split().apply(
             lambda s: len(set(s)) if isinstance(s, list) else 0
         ) / x.str.split().str.len()
@@ -62,7 +62,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
     Parameters
     ----------
-    variables: list
+    variables: string, list
         The list of text/string variables to extract features from.
 
     features: list, default=None
@@ -87,7 +87,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         - 'starts_with_uppercase': Binary indicator if text starts with uppercase
         - 'ends_with_punctuation': Binary indicator if text ends with .!?
         - 'unique_word_count': Number of unique words (case-insensitive)
-        - 'unique_word_ratio': Ratio of unique words to total words
+        - 'lexical_diversity': Ratio of unique words to total words
 
         If None, extracts all available features.
 
@@ -111,8 +111,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     Methods
     -------
     fit:
-        This transformer does not learn parameters. It stores the feature names
-        and validates input.
+        This transformer does not learn parameters.
 
     fit_transform:
         Fit to data, then transform it.
@@ -191,8 +190,6 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
-        This transformer does not learn parameters.
-
         Stores feature names and validates that the specified variables are
         present and are of string/object type.
 
@@ -276,15 +273,15 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # reorder variables to match train set
         X = X[self.feature_names_in_]
 
+        # Fill NaN with empty string for feature extraction
+        X[self.variables_] = X[self.variables_].fillna("")
+
         # Extract features for each text variable
         for var in self.variables_:
-            # Fill NaN with empty string for feature extraction
-            text_col = X[var].fillna("")
-
             for feature_name in self.features_:
                 new_col_name = f"{var}_{feature_name}"
                 feature_func = TEXT_FEATURES[feature_name]
-                X[new_col_name] = feature_func(text_col)
+                X[new_col_name] = feature_func(X[var])
 
                 # Fill any NaN values resulting from computation with 0
                 X[new_col_name] = X[new_col_name].fillna(0)

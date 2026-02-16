@@ -12,7 +12,7 @@ While text data as such can't be used to train machine learning models, we can e
 Feature-engine allows you to quickly extract numerical features from short pieces of text, to complement your predictive models. These features aim to capture a piece of text’s complexity by looking at some statistical parameters of the text, such as the word length and count, the number of words and unique words used, the number of sentences, and so on. :class:`TextFeatures()` extracts many numerical features from text out-of-the-box.
 
 TextFeatures
-============
+------------
 
 :class:`TextFeatures()` extracts numerical features from text/string variables.
 This transformer is useful for extracting basic text statistics that can be used
@@ -26,7 +26,7 @@ and can be easily combined with other Feature-engine or sklearn transformers in 
 Text Features
 -------------
 
-The transformer can extract the following features from a text piece:
+:class:`TextFeatures()` can extract the following features from a text piece:
 
 - **char_count**: Number of characters in the text
 - **word_count**: Number of words (whitespace-separated tokens)
@@ -47,7 +47,7 @@ The transformer can extract the following features from a text piece:
 - **starts_with_uppercase**: Binary indicator if text starts with uppercase
 - **ends_with_punctuation**: Binary indicator if text ends with .!?
 - **unique_word_count**: Number of unique words (case-insensitive)
-- **unique_word_ratio**: Ratio of unique words to total words
+- **lexical_diversity**: Ratio of unique words to total words
 
 The **number of sentences** is inferred by :class:`TextFeatures()` by counting blocks of
 sentence-ending punctuation (., !, ?) as a proxy for sentence boundaries. This means that
@@ -58,7 +58,7 @@ However, this is still a simple heuristic. It won't handle edge cases like abbre
 (e.g., 'Dr.', 'U.S.', 'e.g.', 'i.e.') or text without punctuation. These abbreviations
 will be counted as sentence endings, resulting in an overestimate of the actual sentence count.
 
-The features **number of unique words** and **unique word ratio** are intended to capture the complexity of the text. Simpler texts have few unique words and tend to repeat them. More complex texts use a wider array of words and tend not to repeat them. Hence, in more complex texts, both the number of unique words and the unique word ratio are greater.
+The features **number of unique words** and **lexical diversity** are intended to capture the complexity of the text. Simpler texts have few unique words and tend to repeat them. More complex texts use a wider array of words and tend not to repeat them. Hence, in more complex texts, both the number of unique words and the lexical diversity are greater.
 
 Handling missing values
 -----------------------
@@ -66,7 +66,7 @@ Handling missing values
 By default, :class:`TextFeatures()` raises an error if the variables contain missing values.
 This behavior can be changed by setting the parameter ``missing_values`` to ``'ignore'``.
 In this case, missing values will be treated as empty strings, and the numerical features
-will be calculated accordingly (e.g., word count and character count will be 0).
+will be calculated accordingly (e.g., word count and character count will be 0) as shown in the following example:
 
 .. code:: python
 
@@ -91,7 +91,7 @@ will be calculated accordingly (e.g., word count and character count will be 0).
 
     print(X_transformed)
 
-Output:
+In the resulting dataframe, we see that the row with NaN returned 0 in the character count:
 
 .. code-block:: none
 
@@ -126,7 +126,19 @@ Let's create a dataframe with text data and extract features:
         ]
     })
 
-Now let's extract 5 specific text features, the number of words, the number of characters, the number of sentences, whether the text has digits, and the ratio of upper- to lowercase:
+    print(X)
+
+The input dataframe looks like this:
+
+.. code-block:: none
+
+                                           review          title
+    0  This product is AMAZING! Best purchase ever.  Great Product
+    1             Not great. Would not recommend.   Disappointed
+    2       OK for the price. 3 out of 5 stars.        Average
+    3                     TERRIBLE!!! DO NOT BUY!          Awful
+
+Now let's extract 5 specific text features: the number of words, the number of characters, the number of sentences, whether the text has digits, and the ratio of upper- to lowercase:
 
 .. code:: python
 
@@ -142,18 +154,24 @@ Now let's extract 5 specific text features, the number of words, the number of c
 
     print(X_transformed)
 
-Output:
+In the following output, we see the resulting dataframe containing the numerical features extracted from the pieces of text:
 
 .. code-block:: none
 
-                                           review          title  review_word_count  review_char_count  review_sentence_count  review_has_digits  review_uppercase_ratio
-    0  This product is AMAZING! Best purchase ever.  Great Product                  7                 45                      2                  0                0.066667
-    1             Not great. Would not recommend.   Disappointed                  5                 31                      2                  0                0.032258
-    2       OK for the price. 3 out of 5 stars.        Average                  8                 35                      2                  3                0.057143
-    3                     TERRIBLE!!! DO NOT BUY!          Awful                  4                 23                      2                  0                0.608696
+       review                                         title          review_word_count  review_char_count
+    0  This product is AMAZING! Best purchase ever.    Great Product                  7                 45
+    1  Not great. Would not recommend.                Disappointed                   5                 31
+    2  OK for the price. 3 out of 5 stars.            Average                        8                 35
+    3  TERRIBLE!!! DO NOT BUY!                        Awful                          4                 23
+
+       review_sentence_count  review_has_digits  review_uppercase_ratio
+    0                      2                  0                0.066667
+    1                      2                  0                0.032258
+    2                      2                  3                0.057143
+    3                      2                  0                0.608696
 
 Extracting all features
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, if no text features are specified, all available features will be extracted:
 
@@ -166,6 +184,45 @@ By default, if no text features are specified, all available features will be ex
 
     print(X_transformed.head())
 
+The output dataframe contains all 20 text features extracted from the ``review`` column:
+
+.. code-block:: none
+
+       review_char_count  review_word_count  review_sentence_count  review_avg_word_length
+    0                 45                  7                      2                5.428571
+    1                 31                  5                      2                5.200000
+    2                 35                  8                      2                3.375000
+    3                 23                  4                      2                4.750000
+
+       review_digit_count  review_letter_count  review_uppercase_count  review_lowercase_count
+    0                   0                   38                       3                      35
+    1                   0                   26                       1                      25
+    2                   2                   25                       2                      23
+    3                   0                   14                      14                       0
+
+       review_special_char_count  review_whitespace_count  review_whitespace_ratio
+    0                          1                        6                 0.133333
+    1                          2                        4                 0.129032
+    2                          2                        7                 0.200000
+    3                          3                        3                 0.130435
+
+       review_digit_ratio  review_uppercase_ratio  review_has_digits  review_has_uppercase
+    0            0.000000                0.066667                  0                     1
+    1            0.000000                0.032258                  0                     1
+    2            0.057143                0.057143                  1                     1
+    3            0.000000                0.608696                  0                     1
+
+       review_is_empty  review_starts_with_uppercase  review_ends_with_punctuation
+    0                0                             1                             1
+    1                0                             1                             1
+    2                0                             1                             1
+    3                0                             1                             1
+
+       review_unique_word_count  review_lexical_diversity
+    0                         7                  1.000000
+    1                         4                  0.800000
+    2                         8                  1.000000
+    3                         4                  1.000000
 Dropping original columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -184,6 +241,16 @@ You can drop the original text columns after extracting features, by setting the
 
     print(X_transformed)
 
+The original ``review`` column has been removed, and only the ``title`` column and the extracted features remain:
+
+.. code-block:: none
+
+              title  review_word_count  review_char_count
+    0  Great Product                  7                 45
+    1  Disappointed                   5                 31
+    2       Average                   8                 35
+    3         Awful                   4                 23
+
 Combining with scikit-learn Bag-of-Words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -196,11 +263,6 @@ In the following example, we compare a baseline model using only TF-IDF with a m
     import pandas as pd
     from sklearn.datasets import fetch_20newsgroups
     from sklearn.model_selection import train_test_split
-    from sklearn.pipeline import Pipeline
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.compose import ColumnTransformer
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.preprocessing import StandardScaler
 
     from feature_engine.text import TextFeatures
 
@@ -210,6 +272,29 @@ In the following example, we compare a baseline model using only TF-IDF with a m
     X_train, X_test, y_train, y_test = train_test_split(
         df[['text']], df['target'], test_size=0.3, random_state=42
     )
+
+    print(X_train.head())
+
+The input dataframe contains the raw text of newsgroup posts:
+
+.. code-block:: none
+
+                                                     text
+    562  From: xxx@yyy.zzz (John Smith)\nSubject: Re:...
+    459  From: aaa@bbb.ccc (Jane Doe)\nSubject: Shutt...
+    21   From: ddd@eee.fff\nSubject: Space Station Fr...
+    892  From: ggg@hhh.iii\nSubject: NHL Scores\nOrga...
+    317  From: jjj@kkk.lll (Bob Wilson)\nSubject: Re:...
+
+Now let's set up two pipelines to compare a baseline model using only TF-IDF with a model that combines TF-IDF and :class:`TextFeatures()` metadata:
+
+.. code:: python
+
+    from sklearn.pipeline import Pipeline
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.compose import ColumnTransformer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
 
     # 1. Baseline: TF-IDF only
     tfidf_pipe = Pipeline([
@@ -233,7 +318,7 @@ In the following example, we compare a baseline model using only TF-IDF with a m
     combined_pipe.fit(X_train, y_train)
     print(f"Combined Accuracy: {combined_pipe.score(X_test, y_test):.3f}")
 
-Output:
+Below we see the accuracy of a model trained using only the bag of words, respect to a model trained using both the bag of words and the additional meta data:
 
 .. code-block:: none
 
