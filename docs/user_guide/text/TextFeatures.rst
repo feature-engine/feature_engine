@@ -223,6 +223,7 @@ The output dataframe contains all 20 text features extracted from the ``review``
     1                         4                  0.800000
     2                         8                  1.000000
     3                         4                  1.000000
+
 Dropping original columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
