@@ -70,6 +70,7 @@ Please share your story by answering 1 quick question
 * Variable Creation
 * Variable Selection
 * Datetime Features
+* Text Features
 * Time Series
 * Preprocessing
 * Scaling
@@ -146,6 +147,9 @@ Please share your story by answering 1 quick question
  * DatetimeFeatures
  * DatetimeSubtraction
  * DatetimeOrdinal
+
+### Text Features
+ * TextFeatures
  
 ### Time Series
  * LagFeatures
