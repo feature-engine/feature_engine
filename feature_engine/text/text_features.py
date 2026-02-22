@@ -206,7 +206,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             variables to transform.
 
         y: pandas Series, or np.array. Defaults to None.
-            It is not needed in this transformer. You can pass y or None.
+            The target. It is not needed in this transformer. You can pass y or None.
         """
 
         # check input dataframe
