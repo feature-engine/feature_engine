@@ -10,18 +10,23 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
+    _check_param_missing_values,
 )
-from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.dataframe_checks import (
+    _check_contains_na,
+    _check_X_matches_training_df,
+    check_X,
+)
 from feature_engine.tags import _return_tags
 
 # Available text features and their computation functions
 TEXT_FEATURES = {
-    "char_count": lambda x: x.str.len(),
-    "word_count": lambda x: x.str.split().str.len(),
+    "char_count": lambda x: x.str.replace(r"\s+", "", regex=True).str.len(),
+    "word_count": lambda x: x.str.strip().str.split().str.len(),
     "sentence_count": lambda x: x.str.count(r"[.!?]+"),
     "avg_word_length": lambda x: (
-        x.str.replace(r"\s+", "", regex=True).str.len() /
-        x.str.split().str.len()
+        x.str.strip().str.len() /
+        x.str.strip().str.split().str.len()
     ).fillna(0),
     "digit_count": lambda x: x.str.count(r"\d"),
     "letter_count": lambda x: x.str.count(r"[a-zA-Z]"),
@@ -30,22 +35,18 @@ TEXT_FEATURES = {
     "special_char_count": lambda x: x.str.count(r"[^a-zA-Z0-9\s]"),
     "whitespace_count": lambda x: x.str.count(r"\s"),
     "whitespace_ratio": lambda x: x.str.count(r"\s") / x.str.len().replace(0, 1),
-    "digit_ratio": lambda x: x.str.count(r"\d") / x.str.len().replace(0, 1),
-    "uppercase_ratio": lambda x: x.str.count(r"[A-Z]") / x.str.len().replace(0, 1),
+    "digit_ratio": lambda x: x.str.count(r"\d") / x.str.replace(r"\s+", "", regex=True).str.len().replace(0, 1),
+    "uppercase_ratio": lambda x: x.str.count(r"[A-Z]") / x.str.replace(r"\s+", "", regex=True).str.len().replace(0, 1),
     "has_digits": lambda x: x.str.contains(r"\d", regex=True).astype(int),
     "has_uppercase": lambda x: x.str.contains(r"[A-Z]", regex=True).astype(int),
     "is_empty": lambda x: (x.str.len() == 0).astype(int),
     "starts_with_uppercase": lambda x: x.str.match(r"^[A-Z]").astype(int),
     "ends_with_punctuation": lambda x: x.str.match(r".*[.!?]$").astype(int),
     "unique_word_count": lambda x: (
-        x.str.lower().str.split().apply(
-            lambda s: len(set(s)) if isinstance(s, list) else 0
-        )
+        x.str.lower().str.split().apply(set).str.len()
     ),
     "lexical_diversity": lambda x: (
-        x.str.lower().str.split().apply(
-            lambda s: len(set(s)) if isinstance(s, list) else 0
-        ) / x.str.split().str.len()
+        x.str.strip().str.split().str.len() / x.str.lower().str.split().apply(set).str.len()
     ).fillna(0),
 }
 
@@ -90,6 +91,11 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         - 'lexical_diversity': Ratio of unique words to total words
 
         If None, extracts all available features.
+
+    missing_values: string, default='ignore'
+        If 'ignore', NaNs will be filled with an empty string before feature
+        extraction. If 'raise', the transformer will raise an error if missing data
+        is found.
 
     drop_original: bool, default=False
         Whether to drop the original text columns after transformation.
@@ -140,18 +146,22 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     ...     features=['char_count', 'word_count', 'has_digits']
     ... )
     >>> tf.fit(X)
+    TextFeatures(features=['char_count', 'word_count', 'has_digits'],
+                 variables=['text'])
     >>> X = tf.transform(X)
-    >>> X
+    >>> pd.options.display.max_columns = 10
+    >>> print(X)
                    text  text_char_count  text_word_count  text_has_digits
-    0      Hello World!               12                2                0
-    1  Python is GREAT.               16                3                0
-    2       ML rocks 123               12                3                1
+    0      Hello World!               11                2                0
+    1  Python is GREAT.               14                3                0
+    2      ML rocks 123               10                3                1
     """
 
     def __init__(
         self,
         variables: Union[str, List[str]],
         features: Optional[List[str]] = None,
+        missing_values: str = "ignore",
         drop_original: bool = False,
     ) -> None:
 
@@ -183,28 +193,28 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 )
 
         _check_param_drop_original(drop_original)
+        _check_param_missing_values(missing_values)
 
         self.variables = variables
         self.features = features
+        self.missing_values = missing_values
         self.drop_original = drop_original
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
+        This transformer does not learn any parameters.
+
         Stores feature names and validates that the specified variables are
-        present and are of string/object type.
+        present.
 
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
+            The training input samples. Can be the entire dataframe, not just the
+            variables to transform.
 
         y: pandas Series, or np.array. Defaults to None.
             It is not needed in this transformer. You can pass y or None.
-
-        Returns
-        -------
-        self: TextFeatures
-            The fitted transformer.
         """
 
         # check input dataframe
@@ -231,6 +241,10 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             )
 
         self.variables_ = self.variables
+
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
 
         # Set features to extract
         if self.features is None:
@@ -270,10 +284,17 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
 
+        # check if dataset contains na
+        if self.missing_values == "raise":
+            _check_contains_na(X, self.variables_)
+
         # reorder variables to match train set
         X = X[self.feature_names_in_]
 
         # Fill NaN with empty string for feature extraction
+        # This is safe because if missing_values is 'raise', it would have 
+        # raised an error above. So any remaining NaNs are either intended to
+        # be filled or there are none.
         X[self.variables_] = X[self.variables_].fillna("")
 
         # Extract features for each text variable

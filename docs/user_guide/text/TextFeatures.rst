@@ -9,7 +9,8 @@ Short pieces of text are often found among the variables in our datasets. For ex
 
 While text data as such can't be used to train machine learning models, we can extract a lot of numerical information from these texts, which can provide predictive features to train machine learning models. 
 
-Feature-engine allows you to quickly extract numerical features from short pieces of text, to complement your predictive models. These features aim to capture a piece of text’s complexity by looking at some statistical parameters of the text, such as the word length and count, the number of words and unique words used, the number of sentences, and so on. :class:`TextFeatures()` extracts many numerical features from text out-of-the-box.
+Feature-engine allows you to quickly extract numerical features from short pieces of text, to complement your predictive models. These features aim to capture a piece of text’s complexity by looking at some statistical parameters of the text, such as the word length and count, the number of words and unique words used, the number of sentences, and so on. 
+:class:`TextFeatures()` extracts many numerical features from text out-of-the-box.
 
 TextFeatures
 ------------
@@ -17,7 +18,7 @@ TextFeatures
 :class:`TextFeatures()` extracts numerical features from text/string variables.
 This transformer is useful for extracting basic text statistics that can be used
 as features in machine learning models. Users must explicitly specify which columns
-contain text data via the ``variables`` parameter.
+contain text data via the `variables` parameter.
 
 Unlike scikit-learn's CountVectorizer or TfidfVectorizer which create sparse matrices,
 :class:`TextFeatures()` extracts metadata features that remain in DataFrame format
@@ -63,8 +64,7 @@ The features **number of unique words** and **lexical diversity** are intended t
 Handling missing values
 -----------------------
 
-By default, :class:`TextFeatures()` raises an error if the variables contain missing values.
-This behavior can be changed by setting the parameter ``missing_values`` to ``'ignore'``.
+By default, :class:`TextFeatures()` ignores missing values by treating them as empty strings (`missing_values='ignore'`). You can change this behavior by setting the parameter to `'raise'` if you prefer the transformer to raise an error when encountering missing data.
 In this case, missing values will be treated as empty strings, and the numerical features
 will be calculated accordingly (e.g., word count and character count will be 0) as shown in the following example:
 
@@ -79,11 +79,10 @@ will be calculated accordingly (e.g., word count and character count will be 0) 
         'text': ['Hello', np.nan, 'World']
     })
 
-    # Set up the transformer to ignore missing values
+    # Set up the transformer (defaults to ignore missing values)
     tf = TextFeatures(
         variables=['text'],
-        features=['char_count'],
-        missing_values='ignore'
+        features=['char_count']
     )
 
     # Transform
@@ -103,7 +102,8 @@ In the resulting dataframe, we see that the row with NaN returned 0 in the chara
 Python demo
 -----------
 
-Let's create a dataframe with text data and extract features:
+In this section, we'll show how to use :class:`TextFeatures()`.
+Let's create a dataframe with text data:
 
 .. code:: python
 
@@ -149,8 +149,7 @@ Now let's extract 5 specific text features: the number of words, the number of c
     )
 
     # Fit and transform
-    tf.fit(X)
-    X_transformed = tf.transform(X)
+    X_transformed = tf.fit_transform(X)
 
     print(X_transformed)
 
@@ -158,17 +157,17 @@ In the following output, we see the resulting dataframe containing the numerical
 
 .. code-block:: none
 
-       review                                         title          review_word_count  review_char_count
-    0  This product is AMAZING! Best purchase ever.    Great Product                  7                 45
-    1  Not great. Would not recommend.                Disappointed                   5                 31
-    2  OK for the price. 3 out of 5 stars.            Average                        8                 35
-    3  TERRIBLE!!! DO NOT BUY!                        Awful                          4                 23
+                                             review          title  review_word_count  review_char_count
+    0  This product is AMAZING! Best purchase ever.  Great Product                  7                 38
+    1               Not great. Would not recommend.   Disappointed                  5                 27
+    2           OK for the price. 3 out of 5 stars.        Average                  9                 27
+    3                       TERRIBLE!!! DO NOT BUY!          Awful                  4                 20
 
        review_sentence_count  review_has_digits  review_uppercase_ratio
-    0                      2                  0                0.066667
-    1                      2                  0                0.032258
-    2                      2                  3                0.057143
-    3                      2                  0                0.608696
+    0                      2                  0                0.236842
+    1                      2                  0                0.074074
+    2                      2                  1                0.074074
+    3                      2                  0                0.800000
 
 Extracting all features
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,55 +178,54 @@ By default, if no text features are specified, all available features will be ex
 
     # Extract all features from a single text column
     tf = TextFeatures(variables=['review'])
-    tf.fit(X)
-    X_transformed = tf.transform(X)
+    X_transformed = tf.fit_transform(X)
 
     print(X_transformed.head())
 
-The output dataframe contains all 20 text features extracted from the ``review`` column:
+The output dataframe contains all 20 text features extracted from the `review` column:
 
 .. code-block:: none
 
-       review_char_count  review_word_count  review_sentence_count  review_avg_word_length
-    0                 45                  7                      2                5.428571
-    1                 31                  5                      2                5.200000
-    2                 35                  8                      2                3.375000
-    3                 23                  4                      2                4.750000
+                                             review          title  review_char_count  review_word_count
+    0  This product is AMAZING! Best purchase ever.  Great Product                 38                  7
+    1               Not great. Would not recommend.   Disappointed                 27                  5
+    2           OK for the price. 3 out of 5 stars.        Average                 27                  9
+    3                       TERRIBLE!!! DO NOT BUY!          Awful                 20                  4
 
-       review_digit_count  review_letter_count  review_uppercase_count  review_lowercase_count
-    0                   0                   38                       3                      35
-    1                   0                   26                       1                      25
-    2                   2                   25                       2                      23
-    3                   0                   14                      14                       0
+       review_sentence_count  review_avg_word_length  review_digit_count  review_letter_count
+    0                      2                6.285714                   0                   36
+    1                      2                6.200000                   0                   25
+    2                      2                3.888889                   2                   23
+    3                      2                5.750000                   0                   16
 
-       review_special_char_count  review_whitespace_count  review_whitespace_ratio
-    0                          1                        6                 0.133333
-    1                          2                        4                 0.129032
-    2                          2                        7                 0.200000
-    3                          3                        3                 0.130435
+       review_uppercase_count  review_lowercase_count  review_special_char_count  review_whitespace_count
+    0                       9                      27                          2                        6
+    1                       2                      23                          2                        4
+    2                       2                      21                          2                        8
+    3                      16                       0                          4                        3
 
-       review_digit_ratio  review_uppercase_ratio  review_has_digits  review_has_uppercase
-    0            0.000000                0.066667                  0                     1
-    1            0.000000                0.032258                  0                     1
-    2            0.057143                0.057143                  1                     1
-    3            0.000000                0.608696                  0                     1
+       review_whitespace_ratio  review_digit_ratio  review_uppercase_ratio  review_has_digits
+    0                 0.136364            0.000000                0.236842                  0
+    1                 0.129032            0.000000                0.074074                  0
+    2                 0.228571            0.074074                0.074074                  1
+    3                 0.130435            0.000000                0.800000                  0
 
-       review_is_empty  review_starts_with_uppercase  review_ends_with_punctuation
-    0                0                             1                             1
-    1                0                             1                             1
-    2                0                             1                             1
-    3                0                             1                             1
+       review_has_uppercase  review_is_empty  review_starts_with_uppercase  review_ends_with_punctuation
+    0                     1                0                             1                             1
+    1                     1                0                             1                             1
+    2                     1                0                             1                             1
+    3                     1                0                             1                             1
 
        review_unique_word_count  review_lexical_diversity
-    0                         7                  1.000000
-    1                         4                  0.800000
-    2                         8                  1.000000
-    3                         4                  1.000000
+    0                         7                       1.0
+    1                         4                      1.25
+    2                         9                       1.0
+    3                         4                       1.0
 
 Dropping original columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can drop the original text columns after extracting features, by setting the parameter ``drop_original`` to ``True``:
+You can drop the original text columns after extracting features, by setting the parameter `drop_original` to `True`:
 
 .. code:: python
 
@@ -237,25 +235,24 @@ You can drop the original text columns after extracting features, by setting the
         drop_original=True
     )
 
-    tf.fit(X)
-    X_transformed = tf.transform(X)
+    X_transformed = tf.fit_transform(X)
 
     print(X_transformed)
 
-The original ``review`` column has been removed, and only the ``title`` column and the extracted features remain:
+The original `'review'` column has been removed, and only the `'title'` column and the extracted features remain:
 
 .. code-block:: none
 
               title  review_word_count  review_char_count
-    0  Great Product                  7                 45
-    1  Disappointed                   5                 31
-    2       Average                   8                 35
-    3         Awful                   4                 23
+    0  Great Product                  7                 38
+    1  Disappointed                   5                 27
+    2       Average                   9                 27
+    3         Awful                   4                 20
 
 Combining with scikit-learn Bag-of-Words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In most NLP tasks, it is common to use bag-of-words (e.g., ``CountVectorizer``) or TF-IDF (e.g., ``TfidfVectorizer``) to represent the text. :class:`TextFeatures()` can be used alongside these methods to provide additional metadata that might improve model performance.
+In most NLP tasks, it is common to use bag-of-words (e.g., `CountVectorizer`) or TF-IDF (e.g., `TfidfVectorizer`) to represent the text. :class:`TextFeatures()` can be used alongside these transformers to provide additional metadata that might improve model performance.
 
 In the following example, we compare a baseline model using only TF-IDF with a model that combines TF-IDF and :class:`TextFeatures()` metadata:
 
