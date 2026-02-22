@@ -24,8 +24,7 @@ TEXT_FEATURES = {
     "word_count": lambda x: x.str.strip().str.split().str.len(),
     "sentence_count": lambda x: x.str.count(r"[.!?]+"),
     "avg_word_length": lambda x: (
-        x.str.strip().str.len() /
-        x.str.strip().str.split().str.len()
+        x.str.strip().str.len() / x.str.strip().str.split().str.len()
     ).fillna(0),
     "digit_count": lambda x: x.str.count(r"\d"),
     "letter_count": lambda x: x.str.count(r"[a-zA-Z]"),
@@ -34,18 +33,19 @@ TEXT_FEATURES = {
     "special_char_count": lambda x: x.str.count(r"[^a-zA-Z0-9\s]"),
     "whitespace_count": lambda x: x.str.count(r"\s"),
     "whitespace_ratio": lambda x: x.str.count(r"\s") / x.str.len().replace(0, 1),
-    "digit_ratio": lambda x: x.str.count(r"\d") / x.str.replace(r"\s+", "", regex=True).str.len().replace(0, 1),
-    "uppercase_ratio": lambda x: x.str.count(r"[A-Z]") / x.str.replace(r"\s+", "", regex=True).str.len().replace(0, 1),
+    "digit_ratio": lambda x: x.str.count(r"\d")
+    / x.str.replace(r"\s+", "", regex=True).str.len().replace(0, 1),
+    "uppercase_ratio": lambda x: x.str.count(r"[A-Z]")
+    / x.str.replace(r"\s+", "", regex=True).str.len().replace(0, 1),
     "has_digits": lambda x: x.str.contains(r"\d", regex=True).astype(int),
     "has_uppercase": lambda x: x.str.contains(r"[A-Z]", regex=True).astype(int),
     "is_empty": lambda x: (x.str.len() == 0).astype(int),
     "starts_with_uppercase": lambda x: x.str.match(r"^[A-Z]").astype(int),
     "ends_with_punctuation": lambda x: x.str.match(r".*[.!?]$").astype(int),
-    "unique_word_count": lambda x: (
-        x.str.lower().str.split().apply(set).str.len()
-    ),
+    "unique_word_count": lambda x: (x.str.lower().str.split().apply(set).str.len()),
     "lexical_diversity": lambda x: (
-        x.str.strip().str.split().str.len() / x.str.lower().str.split().apply(set).str.len()
+        x.str.strip().str.split().str.len()
+        / x.str.lower().str.split().apply(set).str.len()
     ).fillna(0),
 }
 
@@ -291,7 +291,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         X = X[self.feature_names_in_]
 
         # Fill NaN with empty string for feature extraction
-        # This is safe because if missing_values is 'raise', it would have 
+        # This is safe because if missing_values is 'raise', it would have
         # raised an error above. So any remaining NaNs are either intended to
         # be filled or there are none.
         X[self.variables_] = X[self.variables_].fillna("")
