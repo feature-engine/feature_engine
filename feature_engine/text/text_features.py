@@ -199,9 +199,6 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         """
         This transformer does not learn any parameters.
 
-        Stores feature names and validates that the specified variables are
-        present.
-
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features]
