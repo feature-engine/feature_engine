@@ -234,7 +234,8 @@ def test_whitespace_features():
                 "Hello. World",
                 "Hello. World.",
                 "Hello... World!?!",
-                "This is a proper sentence containing supercalifragilisticexpialidocious and exceptionally long words.",
+                "This is a proper sentence containing "
+                "supercalifragilisticexpialidocious and exceptionally long words.",
             ]
         }
     )
@@ -312,7 +313,8 @@ def test_digit_features():
                 "Hello. World",
                 "Hello. World.",
                 "Hello... World!?!",
-                "This is a proper sentence containing supercalifragilisticexpialidocious and exceptionally long words.",
+                "This is a proper sentence containing "
+                "supercalifragilisticexpialidocious and exceptionally long words.",
             ]
         }
     )
@@ -412,7 +414,8 @@ def test_uppercase_features():
                 "Hello. World",
                 "Hello. World.",
                 "Hello... World!?!",
-                "This is a proper sentence containing supercalifragilisticexpialidocious and exceptionally long words.",
+                "This is a proper sentence containing "
+                "supercalifragilisticexpialidocious and exceptionally long words.",
             ]
         }
     )
@@ -540,7 +543,8 @@ def test_punctuation_features():
                 "Hello. World",
                 "Hello. World.",
                 "Hello... World!?!",
-                "This is a proper sentence containing supercalifragilisticexpialidocious and exceptionally long words.",
+                "This is a proper sentence containing "
+                "supercalifragilisticexpialidocious and exceptionally long words.",
             ]
         }
     )
@@ -618,7 +622,8 @@ def test_word_features():
                 "Hello. World",
                 "Hello. World.",
                 "Hello... World!?!",
-                "This is a proper sentence containing supercalifragilisticexpialidocious and exceptionally long words.",
+                "This is a proper sentence containing "
+                "supercalifragilisticexpialidocious and exceptionally long words.",
             ]
         }
     )
@@ -746,7 +751,8 @@ def test_basic_features():
                 "Hello. World",
                 "Hello. World.",
                 "Hello... World!?!",
-                "This is a proper sentence containing supercalifragilisticexpialidocious and exceptionally long words.",
+                "This is a proper sentence containing "
+                "supercalifragilisticexpialidocious and exceptionally long words.",
             ]
         }
     )
