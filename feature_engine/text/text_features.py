@@ -22,9 +22,8 @@ TEXT_FEATURES = {
     "char_count": lambda x: x.str.replace(r"\s+", "", regex=True).str.len(),
     "word_count": lambda x: x.str.strip().str.split().str.len(),
     "sentence_count": lambda x: x.str.count(r"[.!?]+"),
-    "avg_word_length": lambda x: (
-        x.str.strip().str.len() / x.str.strip().str.split().str.len()
-    ).fillna(0),
+    "avg_word_length": lambda x: x.str.strip().str.len()
+    / x.str.strip().str.split().str.len(),
     "digit_count": lambda x: x.str.count(r"\d"),
     "letter_count": lambda x: x.str.count(r"[a-zA-Z]"),
     "uppercase_count": lambda x: x.str.count(r"[A-Z]"),
@@ -42,10 +41,8 @@ TEXT_FEATURES = {
     "starts_with_uppercase": lambda x: x.str.match(r"^[A-Z]").astype(int),
     "ends_with_punctuation": lambda x: x.str.match(r".*[.!?]$").astype(int),
     "unique_word_count": lambda x: (x.str.lower().str.split().apply(set).str.len()),
-    "lexical_diversity": lambda x: (
-        x.str.strip().str.split().str.len()
-        / x.str.lower().str.split().apply(set).str.len()
-    ).fillna(0),
+    "lexical_diversity": lambda x: x.str.strip().str.split().str.len()
+    / x.str.lower().str.split().apply(set).str.len(),
 }
 
 
