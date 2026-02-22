@@ -52,7 +52,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     transformer is useful for extracting basic text statistics that can be used
     as features in machine learning models.
 
-    A list of variables must be passed as an argument.
+    A list with the text variables must be passed as an argument.
 
     More details in the :ref:`User Guide <text_features>`.
 
