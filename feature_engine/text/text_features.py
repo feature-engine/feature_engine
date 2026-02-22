@@ -285,15 +285,11 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, cast(list[Union[str, int]], self.variables_))
+        else:
+            X[self.variables_] = X[self.variables_].fillna("")
 
         # reorder variables to match train set
         X = X[self.feature_names_in_]
-
-        # Fill NaN with empty string for feature extraction
-        # This is safe because if missing_values is 'raise', it would have
-        # raised an error above. So any remaining NaNs are either intended to
-        # be filled or there are none.
-        X[self.variables_] = X[self.variables_].fillna("")
 
         # Extract features for each text variable
         for var in self.variables_:
