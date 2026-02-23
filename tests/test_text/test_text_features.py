@@ -20,8 +20,7 @@ from feature_engine.text.text_features import TEXT_FEATURES
     ],
 )
 def test_invalid_variables_raises_error(invalid_variables):
-    """Test that invalid variables parameter raises ValueError."""
-    with pytest.raises(ValueError, match="variables must be"):
+    with pytest.raises(ValueError, match="variables must be a string or a list of"):
         TextFeatures(variables=invalid_variables)
 
 
