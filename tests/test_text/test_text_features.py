@@ -56,7 +56,6 @@ def test_invalid_features_raises_error(invalid_features, err_msg):
     ],
 )
 def test_fit_stores_attributes(variables, features):
-    """Test that fit stores expected attributes."""
     X = pd.DataFrame({"text": ["Hello"], "string": ["Bye"]})
     transformer = TextFeatures(variables=variables, features=features)
     transformer.fit(X)
@@ -76,19 +75,17 @@ def test_fit_stores_attributes(variables, features):
 
 
 def test_missing_variable_raises_error():
-    """Test that missing variable raises ValueError on fit."""
     X = pd.DataFrame({"text": ["Hello"]})
     transformer = TextFeatures(variables=["nonexistent"])
     with pytest.raises(ValueError, match="not present in the dataframe"):
         transformer.fit(X)
 
 
-def test_no_text_columns_raises_error():
-    """Test that no text columns raises error."""
-    X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-    transformer = TextFeatures(variables=["a"])
+@pytest.mark.parametrize("variables", ["Age","Marks", "dob"])
+def test_no_text_columns_raises_error(df_vartypes, variables):
+    transformer = TextFeatures(variables=variables)
     with pytest.raises(ValueError, match="not object or string"):
-        transformer.fit(X)
+        transformer.fit(df_vartypes)
 
 
 def test_nan_handling_raise_error_fit():
