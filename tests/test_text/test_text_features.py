@@ -103,7 +103,6 @@ def test_nan_handling_raise_error_fit(df_na):
 
 
 def test_transform_on_new_data():
-    """Test transform works on new data after fit."""
     X_train = pd.DataFrame({"text": ["Hello World", "Foo Bar"]})
     X_test = pd.DataFrame({"text": ["New Data", "Test 123"]})
 
@@ -118,14 +117,14 @@ def test_transform_on_new_data():
 
 
 def test_nan_handling_raise_error_transform():
-    """Test handling of NaN values when missing_values is 'raise' on transform."""
     X_train = pd.DataFrame({"text": ["Hello", "World"]})
     X_test = pd.DataFrame({"text": ["Hello", None, "World"]})
     transformer = TextFeatures(
         variables=["text"], features=["char_count"], missing_values="raise"
     )
     transformer.fit(X_train)
-    with pytest.raises(ValueError):
+    msg = "`missing_values='ignore'` when initialising this transformer"
+    with pytest.raises(ValueError, match=msg):
         transformer.transform(X_test)
 
 
