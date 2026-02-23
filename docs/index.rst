@@ -65,6 +65,7 @@ Feature-engine includes transformers for:
 - Creation of new features
 - Feature selection
 - Datetime features
+- Text features
 - Time series
 - Preprocessing
 - Scaling
@@ -259,6 +260,11 @@ extract many new features from the date and time parts of the datetime variable:
 - :doc:`api_doc/datetime/DatetimeFeatures`: extract features from datetime variables
 - :doc:`api_doc/datetime/DatetimeSubtraction`: computes subtractions between datetime variables
 - :doc:`api_doc/datetime/DatetimeOrdinal`: converts datetime variables into ordinal numbers
+
+Text:
+~~~~~
+
+- :doc:`api_doc/text/TextFeatures`: extracts numerical features from text/string variables
 
 Feature Selection:
 ~~~~~~~~~~~~~~~~~~
