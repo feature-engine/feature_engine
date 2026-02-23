@@ -1,6 +1,6 @@
 # Authors: Ankit Hemant Lade (contributor)
 # License: BSD 3 clause
-from typing import List, Optional, Union, cast
+from typing import List, Optional, Union
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
