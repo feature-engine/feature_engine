@@ -129,7 +129,6 @@ def test_nan_handling_raise_error_transform():
 
 
 def test_nan_handling():
-    """Test handling of NaN values."""
     X = pd.DataFrame({"text": ["Hello", None, "World"]})
     transformer = TextFeatures(variables=["text"], features=["char_count"])
     X_tr = transformer.fit_transform(X)
@@ -215,13 +214,12 @@ def test_multiple_text_columns():
 
 
 # ==============================================================================
-# TRANSFORM TESTS - INDIVIDUAL FEATURES
+# TRANSFORM - TEST TEXT FEATURES
 # ==============================================================================
 
-
-def test_whitespace_features():
-    """Test whitespace_features."""
-    X = pd.DataFrame(
+@pytest.fixture(scope="module")
+def df_text():
+    df = pd.DataFrame(
         {
             "text": [
                 "Hello World!",
@@ -248,10 +246,12 @@ def test_whitespace_features():
             ]
         }
     )
-    transformer = TextFeatures(
-        variables=["text"], features=["whitespace_count", "whitespace_ratio"]
-    )
-    X_tr = transformer.fit_transform(X)
+    return df
+
+def test_whitespace_features(df_text):
+    text_features = ["whitespace_count", "whitespace_ratio"]
+    transformer = TextFeatures(variables=["text"], features=text_features)
+    X_tr = transformer.fit_transform(df_text)
     assert X_tr["text_whitespace_count"].tolist() == [
         1,
         0,
@@ -298,39 +298,11 @@ def test_whitespace_features():
     ]
 
 
-def test_digit_features():
-    """Test digit_features."""
-    X = pd.DataFrame(
-        {
-            "text": [
-                "Hello World!",
-                "HELLO",
-                "12345",
-                "e.g. i.e.",
-                "   ",
-                " trailing ",
-                "abc...",
-                "",
-                None,
-                "A? B! C.",
-                "HeLLo",
-                "Hi! @#",
-                "A1b2 C3d4!@#$",
-                "???",
-                "i.e., this is wrong",
-                "Is 1 > 2? No, 100%!",
-                "Hello. World",
-                "Hello. World.",
-                "Hello... World!?!",
-                "This is a proper sentence containing "
-                "supercalifragilisticexpialidocious and exceptionally long words.",
-            ]
-        }
-    )
+def test_digit_features(df_text):
     transformer = TextFeatures(
         variables=["text"], features=["digit_count", "digit_ratio", "has_digits"]
     )
-    X_tr = transformer.fit_transform(X)
+    X_tr = transformer.fit_transform(df_text)
     assert X_tr["text_digit_count"].tolist() == [
         0,
         0,
@@ -399,35 +371,7 @@ def test_digit_features():
     ]
 
 
-def test_uppercase_features():
-    """Test uppercase_features."""
-    X = pd.DataFrame(
-        {
-            "text": [
-                "Hello World!",
-                "HELLO",
-                "12345",
-                "e.g. i.e.",
-                "   ",
-                " trailing ",
-                "abc...",
-                "",
-                None,
-                "A? B! C.",
-                "HeLLo",
-                "Hi! @#",
-                "A1b2 C3d4!@#$",
-                "???",
-                "i.e., this is wrong",
-                "Is 1 > 2? No, 100%!",
-                "Hello. World",
-                "Hello. World.",
-                "Hello... World!?!",
-                "This is a proper sentence containing "
-                "supercalifragilisticexpialidocious and exceptionally long words.",
-            ]
-        }
-    )
+def test_uppercase_features(df_text):
     transformer = TextFeatures(
         variables=["text"],
         features=[
@@ -437,7 +381,7 @@ def test_uppercase_features():
             "starts_with_uppercase",
         ],
     )
-    X_tr = transformer.fit_transform(X)
+    X_tr = transformer.fit_transform(df_text)
     assert X_tr["text_uppercase_count"].tolist() == [
         2,
         5,
@@ -528,39 +472,11 @@ def test_uppercase_features():
     ]
 
 
-def test_punctuation_features():
-    """Test punctuation_features."""
-    X = pd.DataFrame(
-        {
-            "text": [
-                "Hello World!",
-                "HELLO",
-                "12345",
-                "e.g. i.e.",
-                "   ",
-                " trailing ",
-                "abc...",
-                "",
-                None,
-                "A? B! C.",
-                "HeLLo",
-                "Hi! @#",
-                "A1b2 C3d4!@#$",
-                "???",
-                "i.e., this is wrong",
-                "Is 1 > 2? No, 100%!",
-                "Hello. World",
-                "Hello. World.",
-                "Hello... World!?!",
-                "This is a proper sentence containing "
-                "supercalifragilisticexpialidocious and exceptionally long words.",
-            ]
-        }
-    )
+def test_punctuation_features(df_text):
     transformer = TextFeatures(
         variables=["text"], features=["special_char_count", "ends_with_punctuation"]
     )
-    X_tr = transformer.fit_transform(X)
+    X_tr = transformer.fit_transform(df_text)
     assert X_tr["text_special_char_count"].tolist() == [
         1,
         0,
@@ -607,35 +523,7 @@ def test_punctuation_features():
     ]
 
 
-def test_word_features():
-    """Test word_features."""
-    X = pd.DataFrame(
-        {
-            "text": [
-                "Hello World!",
-                "HELLO",
-                "12345",
-                "e.g. i.e.",
-                "   ",
-                " trailing ",
-                "abc...",
-                "",
-                None,
-                "A? B! C.",
-                "HeLLo",
-                "Hi! @#",
-                "A1b2 C3d4!@#$",
-                "???",
-                "i.e., this is wrong",
-                "Is 1 > 2? No, 100%!",
-                "Hello. World",
-                "Hello. World.",
-                "Hello... World!?!",
-                "This is a proper sentence containing "
-                "supercalifragilisticexpialidocious and exceptionally long words.",
-            ]
-        }
-    )
+def test_word_features(df_text):
     transformer = TextFeatures(
         variables=["text"],
         features=[
@@ -645,7 +533,7 @@ def test_word_features():
             "avg_word_length",
         ],
     )
-    X_tr = transformer.fit_transform(X)
+    X_tr = transformer.fit_transform(df_text)
     assert X_tr["text_word_count"].tolist() == [
         2,
         1,
@@ -736,35 +624,7 @@ def test_word_features():
     ]
 
 
-def test_basic_features():
-    """Test basic_features."""
-    X = pd.DataFrame(
-        {
-            "text": [
-                "Hello World!",
-                "HELLO",
-                "12345",
-                "e.g. i.e.",
-                "   ",
-                " trailing ",
-                "abc...",
-                "",
-                None,
-                "A? B! C.",
-                "HeLLo",
-                "Hi! @#",
-                "A1b2 C3d4!@#$",
-                "???",
-                "i.e., this is wrong",
-                "Is 1 > 2? No, 100%!",
-                "Hello. World",
-                "Hello. World.",
-                "Hello... World!?!",
-                "This is a proper sentence containing "
-                "supercalifragilisticexpialidocious and exceptionally long words.",
-            ]
-        }
-    )
+def test_basic_features(df_text):
     transformer = TextFeatures(
         variables=["text"],
         features=[
@@ -775,7 +635,7 @@ def test_basic_features():
             "is_empty",
         ],
     )
-    X_tr = transformer.fit_transform(X)
+    X_tr = transformer.fit_transform(df_text)
     assert X_tr["text_char_count"].tolist() == [
         11,
         5,
