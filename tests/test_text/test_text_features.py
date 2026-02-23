@@ -81,7 +81,7 @@ def test_missing_variable_raises_error():
         transformer.fit(X)
 
 
-@pytest.mark.parametrize("variables", ["Age","Marks", "dob"])
+@pytest.mark.parametrize("variables", ["Age", "Marks", "dob"])
 def test_no_text_columns_raises_error(df_vartypes, variables):
     transformer = TextFeatures(variables=variables)
     with pytest.raises(ValueError, match="not object or string"):
@@ -217,6 +217,7 @@ def test_multiple_text_columns():
 # TRANSFORM - TEST TEXT FEATURES
 # ==============================================================================
 
+
 @pytest.fixture(scope="module")
 def df_text():
     df = pd.DataFrame(
@@ -247,6 +248,7 @@ def df_text():
         }
     )
     return df
+
 
 def test_whitespace_features(df_text):
     text_features = ["whitespace_count", "whitespace_ratio"]
@@ -754,7 +756,6 @@ def test_basic_features(df_text):
 
 
 def test_get_feature_names_out():
-    """Test get_feature_names_out returns correct names."""
     X = pd.DataFrame({"text": ["Hello"], "other": [1]})
     transformer = TextFeatures(
         variables=["text"], features=["char_count", "word_count"]
