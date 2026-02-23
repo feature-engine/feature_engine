@@ -47,16 +47,32 @@ def test_invalid_features_raises_error(invalid_features, err_msg):
 # ==============================================================================
 
 
-def test_fit_stores_attributes():
+@pytest.mark.parametrize(
+    "variables, features",
+    [
+        ("text", None),
+        (["string"], ["char_count"]),
+        (["text", "string"], ["sentence_count", "avg_word_length"]),
+    ],
+)
+def test_fit_stores_attributes(variables, features):
     """Test that fit stores expected attributes."""
-    X = pd.DataFrame({"text": ["Hello"]})
-    transformer = TextFeatures(variables=["text"])
+    X = pd.DataFrame({"text": ["Hello"], "string": ["Bye"]})
+    transformer = TextFeatures(variables=variables, features=features)
     transformer.fit(X)
 
-    assert transformer.variables_ == ["text"]
-    assert transformer.features_ == list(TEXT_FEATURES.keys())
-    assert transformer.feature_names_in_ == ["text"]
-    assert transformer.n_features_in_ == 1
+    assert (
+        transformer.variables_ == variables
+        if isinstance(variables, list)
+        else transformer.variables_ == [variables]
+    )
+    assert (
+        transformer.features_ == list(TEXT_FEATURES.keys())
+        if features is None
+        else transformer.features_ == features
+    )
+    assert transformer.feature_names_in_ == ["text", "string"]
+    assert transformer.n_features_in_ == 2
 
 
 def test_missing_variable_raises_error():
