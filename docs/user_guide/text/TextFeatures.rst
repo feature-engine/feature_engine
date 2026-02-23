@@ -5,11 +5,20 @@
 Extracting Features from Text
 =============================
 
-Short pieces of text are often found among the variables in our datasets. For example, in insurance, a text variable can describe the circumstances of an accident. Customer feedback is also stored as a text variable. 
+Short pieces of text are often found among the variables in our datasets. For example,
+in insurance, a text variable can describe the circumstances of an accident. Customer
+feedback is also stored as a text variable.
 
-While text data as such can't be used to train machine learning models, we can extract a lot of numerical information from these texts, which can provide predictive features to train machine learning models. 
+While text data as such can't be used to train machine learning models, we can extract
+a lot of numerical information from these texts, which can provide predictive features
+to train machine learning models.
 
-Feature-engine allows you to quickly extract numerical features from short pieces of text, to complement your predictive models. These features aim to capture a piece of text’s complexity by looking at some statistical parameters of the text, such as the word length and count, the number of words and unique words used, the number of sentences, and so on. 
+Feature-engine allows you to quickly extract numerical features from short pieces of
+text, to complement your predictive models. These features aim to capture a piece of
+text’s complexity by looking at some statistical parameters of the text, such as the
+word length and count, the number of words and unique words used, the number of
+sentences, and so on.
+
 :class:`TextFeatures()` extracts many numerical features from text out-of-the-box.
 
 TextFeatures
@@ -57,16 +66,26 @@ sentence-ending, which avoids overestimating the count in emphatic text.
 
 However, this is still a simple heuristic. It won't handle edge cases like abbreviations
 (e.g., 'Dr.', 'U.S.', 'e.g.', 'i.e.') or text without punctuation. These abbreviations
-will be counted as sentence endings, resulting in an overestimate of the actual sentence count.
+will be counted as sentence endings, resulting in an overestimate of the actual sentence
+count.
 
-The features **number of unique words** and **lexical diversity** are intended to capture the complexity of the text. Simpler texts have few unique words and tend to repeat them. More complex texts use a wider array of words and tend not to repeat them. Hence, in more complex texts, both the number of unique words and the lexical diversity are greater.
+The features **number of unique words** and **lexical diversity** are intended to
+capture the complexity of the text. Simpler texts have few unique words and tend to
+repeat them. More complex texts use a wider array of words and tend not to repeat them.
+Hence, in more complex texts, both the number of unique words and the lexical diversity
+are greater.
 
 Handling missing values
 -----------------------
 
-By default, :class:`TextFeatures()` ignores missing values by treating them as empty strings (`missing_values='ignore'`). You can change this behavior by setting the parameter to `'raise'` if you prefer the transformer to raise an error when encountering missing data.
+By default, :class:`TextFeatures()` ignores missing values by treating them as empty
+strings (`missing_values='ignore'`). You can change this behavior by setting the
+parameter to `'raise'` if you prefer the transformer to raise an error when encountering
+missing data.
+
 In this case, missing values will be treated as empty strings, and the numerical features
-will be calculated accordingly (e.g., word count and character count will be 0) as shown in the following example:
+will be calculated accordingly (e.g., word count and character count will be 0) as shown
+in the following example:
 
 .. code:: python
 
@@ -90,7 +109,8 @@ will be calculated accordingly (e.g., word count and character count will be 0) 
 
     print(X_transformed)
 
-In the resulting dataframe, we see that the row with NaN returned 0 in the character count:
+In the resulting dataframe, we see that the row with NaN returned 0 in the character
+count:
 
 .. code-block:: none
 
@@ -138,22 +158,30 @@ The input dataframe looks like this:
     2       OK for the price. 3 out of 5 stars.        Average
     3                     TERRIBLE!!! DO NOT BUY!          Awful
 
-Now let's extract 5 specific text features: the number of words, the number of characters, the number of sentences, whether the text has digits, and the ratio of upper- to lowercase:
+Now let's extract 5 specific text features: the number of words, the number of
+characters, the number of sentences, whether the text has digits, and the ratio of
+upper- to lowercase:
 
 .. code:: python
 
     # Set up the transformer with specific features
     tf = TextFeatures(
         variables=['review'],
-        features=['word_count', 'char_count', 'sentence_count', 'has_digits', 'uppercase_ratio']
-    )
+        features=[
+            'word_count',
+            'char_count',
+            'sentence_count',
+            'has_digits',
+            'uppercase_ratio',
+        ])
 
     # Fit and transform
     X_transformed = tf.fit_transform(X)
 
     print(X_transformed)
 
-In the following output, we see the resulting dataframe containing the numerical features extracted from the pieces of text:
+In the following output, we see the resulting dataframe containing the numerical
+features extracted from the pieces of text:
 
 .. code-block:: none
 
@@ -225,7 +253,8 @@ The output dataframe contains all 20 text features extracted from the `review` c
 Dropping original columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can drop the original text columns after extracting features, by setting the parameter `drop_original` to `True`:
+You can drop the original text columns after extracting features, by setting the
+parameter `drop_original` to `True`:
 
 .. code:: python
 
@@ -239,7 +268,8 @@ You can drop the original text columns after extracting features, by setting the
 
     print(X_transformed)
 
-The original `'review'` column has been removed, and only the `'title'` column and the extracted features remain:
+The original `'review'` column has been removed, and only the `'title'` column and the
+extracted features remain:
 
 .. code-block:: none
 
@@ -252,9 +282,13 @@ The original `'review'` column has been removed, and only the `'title'` column a
 Combining with scikit-learn Bag-of-Words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In most NLP tasks, it is common to use bag-of-words (e.g., `CountVectorizer`) or TF-IDF (e.g., `TfidfVectorizer`) to represent the text. :class:`TextFeatures()` can be used alongside these transformers to provide additional metadata that might improve model performance.
+In most NLP tasks, it is common to use bag-of-words (e.g., `CountVectorizer`) or TF-IDF
+(e.g., `TfidfVectorizer`) to represent the text. :class:`TextFeatures()` can be used
+alongside these transformers to provide additional metadata that might improve model
+performance.
 
-In the following example, we compare a baseline model using only TF-IDF with a model that combines TF-IDF and :class:`TextFeatures()` metadata:
+In the following example, we compare a baseline model using only TF-IDF with a model
+that combines TF-IDF and :class:`TextFeatures()` metadata:
 
 .. code:: python
 
@@ -284,7 +318,8 @@ The input dataframe contains the raw text of newsgroup posts:
     892  From: ggg@hhh.iii\nSubject: NHL Scores\nOrga...
     317  From: jjj@kkk.lll (Bob Wilson)\nSubject: Re:...
 
-Now let's set up two pipelines to compare a baseline model using only TF-IDF with a model that combines TF-IDF and :class:`TextFeatures()` metadata:
+Now let's set up two pipelines to compare a baseline model using only TF-IDF with a
+model that combines TF-IDF and :class:`TextFeatures()` metadata:
 
 .. code:: python
 
@@ -316,11 +351,15 @@ Now let's set up two pipelines to compare a baseline model using only TF-IDF wit
     combined_pipe.fit(X_train, y_train)
     print(f"Combined Accuracy: {combined_pipe.score(X_test, y_test):.3f}")
 
-Below we see the accuracy of a model trained using only the bag of words, respect to a model trained using both the bag of words and the additional meta data:
+Below we see the accuracy of a model trained using only the bag of words, respect to a
+model trained using both the bag of words and the additional meta data:
 
 .. code-block:: none
 
     TF-IDF Accuracy: 0.957
     Combined Accuracy: 0.963
 
-By adding statistical metadata through :class:`TextFeatures()`, we provided the model with information about text length, complexity, and style that is not explicitly captured by a word-count-based approach like TF-IDF, leading to a small but noticeable improvement in performance.
+By adding statistical metadata through :class:`TextFeatures()`, we provided the model
+with information about text length, complexity, and style that is not explicitly
+captured by a word-count-based approach like TF-IDF, leading to a small but noticeable
+improvement in performance.
