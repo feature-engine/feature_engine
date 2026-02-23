@@ -88,14 +88,13 @@ def test_no_text_columns_raises_error(df_vartypes, variables):
         transformer.fit(df_vartypes)
 
 
-def test_nan_handling_raise_error_fit():
-    """Test handling of NaN values when missing_values is 'raise' on fit."""
-    X = pd.DataFrame({"text": ["Hello", None, "World"]})
+def test_nan_handling_raise_error_fit(df_na):
     transformer = TextFeatures(
-        variables=["text"], features=["char_count"], missing_values="raise"
+        variables=["City"], features=["char_count"], missing_values="raise"
     )
-    with pytest.raises(ValueError):
-        transformer.fit(X)
+    msg = "`missing_values='ignore'` when initialising this transformer"
+    with pytest.raises(ValueError, match=msg):
+        transformer.fit(df_na)
 
 
 # ==============================================================================
