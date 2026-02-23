@@ -1,6 +1,6 @@
 # Authors: Ankit Hemant Lade (contributor)
 # License: BSD 3 clause
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -236,7 +236,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_optional_contains_na(X, self.variables_)
+            _check_optional_contains_na(X, cast(list[Union[str, int]], self.variables_))
 
         # Set features to extract
         if self.features is None:
@@ -278,7 +278,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_optional_contains_na(X, self.variables_)
+            _check_optional_contains_na(X, cast(list[Union[str, int]], self.variables_))
         else:
             X[self.variables_] = X[self.variables_].fillna("")
 
