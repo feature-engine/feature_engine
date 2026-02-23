@@ -38,7 +38,6 @@ def test_invalid_variables_raises_error(invalid_variables):
     ],
 )
 def test_invalid_features_raises_error(invalid_features, err_msg):
-    """Test that invalid features parameter raises ValueError."""
     with pytest.raises(ValueError, match=err_msg):
         TextFeatures(variables=["text"], features=invalid_features)
 
