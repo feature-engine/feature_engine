@@ -17,20 +17,20 @@ Contributors
 In this release, we add 4 new transformers including a new module to Feature-engine! What
 a release!
 
-First great news: you can now extract metadata to capture text complexity from texts.
+**First great news**: you can now extract metadata to capture text complexity from texts.
 This will allow you to enrich your bag of words when creating predictive models based
 on short pieces of text.
 
-Second awesome news for those working with geodata: you can now calculate distances by using
+**Awesome news for those working with geodata**: you can now calculate distances by using
 latitude and longitude pairs and add them as features for your predictive models.
 
 You can now also apply the inverse hyperbolic sine transformation to those left skewed
 variables that contain zeros as values.
 
-Good news for those using datetime variables: you can now convert them to ordinal numbers.
+**Good news for those using datetime variables**: you can now convert them to ordinal numbers.
 
 Last but not least: when searching for variables in your dataframe, when variables of the
-indicated type are not found, our functions now can return empty lists.
+indicated type are not found, our functions can now return empty lists.
 
 Special thanks to `Ankit Hemant Lade <https://github.com/ankitlade12>`_ for adding 3
 new transformers to Feature-engine and also updating the code base to make
@@ -58,14 +58,14 @@ Enhancements
 BUG
 ~~~
 
-- Fix dataframe fragmentation warning in `AddMissingIndicator`. (`Fathy  <https://github.com/mo1998>`_)
+- Fixed dataframe fragmentation warning in `AddMissingIndicator`. (`Fathy  <https://github.com/mo1998>`_)
 
 Code maintenance
 ~~~~~~~~~~~~~~~~
 
 - Added support for pandas 3 (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
 - Added support for Python 3.14. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
-- Removed future and performance warnings during tests. (`Soledad Galli <https://github.com/solegalli>`_)
+- Removed performance and other warnings during tests. (`Soledad Galli <https://github.com/solegalli>`_)
 
 Version 1.9.0
 -------------
