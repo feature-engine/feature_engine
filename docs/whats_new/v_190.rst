@@ -10,7 +10,7 @@ Contributors
 ~~~~~~~~~~~~
 
 - `Ankit Hemant Lade <https://github.com/ankitlade12>`_
-- `Bermuchin  <https://github.com/bermuchin>`_
+- `Beom-jin Kim  <https://github.com/bermuchin>`_
 - `Fathy  <https://github.com/mo1998>`_
 - `Soledad Galli <https://github.com/solegalli>`_
 
@@ -35,7 +35,7 @@ indicated type are not found, our functions can now return empty lists.
 Special thanks to `Ankit Hemant Lade <https://github.com/ankitlade12>`_ for adding 3
 new transformers to Feature-engine and also updating the code base to make
 Feature-engine compatible with pandas 3 and Python 3.14. Special thanks also to
-`Bermuchin  <https://github.com/bermuchin>`_ for adding the new datetime transformer.
+`Beom-jin Kim  <https://github.com/bermuchin>`_ for adding the new datetime transformer.
 
 In addition, thanks to all contributors who made this possible either by contributing
 code or raising issues.
@@ -47,7 +47,7 @@ New transformers
 
 - `TextFeatures()`: extracts metadata from text pieces, like number of characters, digits, sentences, lower and uppercase and much more. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
 - `GeoDistanceFeatures()`: calculates distances between latitude and longitude coordinate pairs. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
-- `DatetimeOrdinal()`: transforms datetime variables into ordinal numbers. (`Bermuchin  <https://github.com/bermuchin>`_)
+- `DatetimeOrdinal()`: transforms datetime variables into ordinal numbers. (`Beom-jin Kim  <https://github.com/bermuchin>`_)
 - `ArcSinhTransformer()`: applies the inverse hyperbolic sine transformation. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
 
 Enhancements
