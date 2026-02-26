@@ -100,7 +100,8 @@ Please share your story by answering 1 quick question
 * EqualWidthDiscretiser
 * GeometricWidthDiscretiser
 * DecisionTreeDiscretiser
-* ArbitraryDiscreriser
+* ArbitraryDiscretiser
+* BinaryDiscretiser
 
 ### Outlier Handling methods
 * Winsorizer

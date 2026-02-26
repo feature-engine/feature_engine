@@ -18,6 +18,7 @@ into continuous intervals.
 :class:`ArbitraryDiscretiser()`          Sorts values into intervals predefined by the user.
 :class:`DecisionTreeDiscretiser()`       Replaces values by predictions of a decision tree, which are discrete.
 :class:`GeometricWidthDiscretiser()`     Sorts variable into geometrical intervals.
+:class:`BinaryDiscretiser()`             Sorts variable into two intervals determined by a threshold.
 =====================================  ========================================================================
 
 
