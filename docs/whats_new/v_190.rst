@@ -1,6 +1,72 @@
 Version 1.9.X
 =============
 
+Version 1.9.4
+-------------
+
+Deployed: 27th Feb 2026
+
+Contributors
+~~~~~~~~~~~~
+
+- `Ankit Hemant Lade <https://github.com/ankitlade12>`_
+- `Beom-jin Kim  <https://github.com/bermuchin>`_
+- `Fathy  <https://github.com/mo1998>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+
+In this release, we add 4 new transformers including a new module to Feature-engine! What
+a release!
+
+**First great news**: you can now extract metadata to capture text complexity from texts.
+This will allow you to enrich your bag of words when creating predictive models based
+on short pieces of text.
+
+**Awesome news for those working with geodata**: you can now calculate distances by using
+latitude and longitude pairs and add them as features for your predictive models.
+
+You can now also apply the inverse hyperbolic sine transformation to those left skewed
+variables that contain zeros as values.
+
+**Good news for those using datetime variables**: you can now convert them to ordinal numbers.
+
+Last but not least: when searching for variables in your dataframe, when variables of the
+indicated type are not found, our functions can now return empty lists.
+
+Special thanks to `Ankit Hemant Lade <https://github.com/ankitlade12>`_ for adding 3
+new transformers to Feature-engine and also updating the code base to make
+Feature-engine compatible with pandas 3 and Python 3.14. Special thanks also to
+`Beom-jin Kim  <https://github.com/bermuchin>`_ for adding the new datetime transformer.
+
+In addition, thanks to all contributors who made this possible either by contributing
+code or raising issues.
+
+Check out the full release changelog below.
+
+New transformers
+~~~~~~~~~~~~~~~~
+
+- `TextFeatures()`: extracts metadata from text pieces, like number of characters, digits, sentences, lower and uppercase and much more. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
+- `GeoDistanceFeatures()`: calculates distances between latitude and longitude coordinate pairs. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
+- `DatetimeOrdinal()`: transforms datetime variables into ordinal numbers. (`Beom-jin Kim  <https://github.com/bermuchin>`_)
+- `ArcSinhTransformer()`: applies the inverse hyperbolic sine transformation. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
+
+Enhancements
+~~~~~~~~~~~~
+
+- Our variable handling functions now return empty lists when no variables of the desired type are found. (`Soledad Galli <https://github.com/solegalli>`_)
+
+BUG
+~~~
+
+- Fixed dataframe fragmentation warning in `AddMissingIndicator`. (`Fathy  <https://github.com/mo1998>`_)
+
+Code maintenance
+~~~~~~~~~~~~~~~~
+
+- Added support for pandas 3 (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
+- Added support for Python 3.14. (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
+- Removed performance and other warnings during tests. (`Soledad Galli <https://github.com/solegalli>`_)
+
 Version 1.9.0
 -------------
 
@@ -22,7 +88,7 @@ combine the probes using the mean, max or mean plus standard deviation.
 
 `RecursiveFeatureAddition()` and `RecursiveFeatureElimination()` now work with all sklearn
 estimators, regardless of whether they return feature importance or coefficients. For those
-without these features, importance is determined by feature permutaton.
+without these features, importance is determined by feature permutation.
 
 Thanks to all contributors who made this possible either by contributing code or raising issues.
 
@@ -48,4 +114,4 @@ Code maintenance
 Docs
 ~~~~
 
-- Updated doscstings for `DropHighPSIFeatures` to reflect the fact that the PSI is symmetric but our implementation is not. (`Sancho Luijten  <https://github.com/sancholp>`_)
+- Updated docstrings for `DropHighPSIFeatures` to reflect the fact that the PSI is symmetric but our implementation is not. (`Sancho Luijten  <https://github.com/sancholp>`_)
