@@ -7,6 +7,10 @@ DatetimeOrdinal
 
 :class:`DatetimeOrdinal()` converts datetime variables into ordinal numbers, that is, a numerical representation of the date.
 
+Datetime variables cannot be used directly by machine learning algorithms because they are not numerical. However, they contain valuable information about sequences of events or elapsed time. 
+
+By converting datetime variables into ordinal numbers, we can capture this information while discarding the complexities of raw datetime formats. Ordinal numbers preserve the relative distances between dates (e.g., the number of days between events), allowing algorithms to capture linear trends, calculate temporal distances naturally, and handle time consistently without needing to parse or split the datetime into multiple separate features like year, month, or day.
+
 By default, :class:`DatetimeOrdinal()` returns the proleptic Gregorian ordinal, where January 1 of year 1 has ordinal 1.
 
 Optionally, :class:`DatetimeOrdinal()` can compute the number of days relative to a user-defined `start_date`.
@@ -119,12 +123,6 @@ Missing timestamps
 If `missing_values="raise"`, the transformer will raise an error if NaT values are found in the datetime variables during `fit()` or `transform()`.
 
 If `missing_values="ignore"`, the transformer will ignore NaT values, and the resulting ordinal feature will contain `NaN` (or `pd.NA`) in their place.
-
-
-.. autoclass:: DatetimeOrdinal
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 
 Additional resources
