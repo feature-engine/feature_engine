@@ -2,23 +2,30 @@
 
 .. currentmodule:: feature_engine.datetime
 
+
 DatetimeOrdinal
-================
+===============
 
-:class:`DatetimeOrdinal()` converts datetime variables into ordinal numbers, that is, a numerical representation of the date.
+:class:`DatetimeOrdinal()` converts datetime variables into ordinal numbers, thereby
+providing a numerical representation of the date. By default, it returns the proleptic
+Gregorian ordinal of the date, where 1st January of year 1 has ordinal 1.
 
-Datetime variables cannot be used directly by machine learning algorithms because they are not numerical. However, they contain valuable information about sequences of events or elapsed time. 
+If 1st January of year 1 has ordinal number 1 then, 2nd January of year 1 will have ordinal
+number 2, and so on.
 
-By converting datetime variables into ordinal numbers, we can capture this information while discarding the complexities of raw datetime formats. Ordinal numbers preserve the relative distances between dates (e.g., the number of days between events), allowing algorithms to capture linear trends, calculate temporal distances naturally, and handle time consistently without needing to parse or split the datetime into multiple separate features like year, month, or day.
+Optionally, :class:`DatetimeOrdinal()` can compute the number of days relative to a
+user-defined `start_date`. This can be useful for reducing the magnitude of the ordinal
+values and for aligning them to a specific project timeline.
 
-By default, :class:`DatetimeOrdinal()` returns the proleptic Gregorian ordinal, where January 1 of year 1 has ordinal 1.
+Ordinal numbers preserve the relative distances between dates (e.g., the number of days
+between events), allowing algorithms to capture linear trends and temporal distances.
 
-Optionally, :class:`DatetimeOrdinal()` can compute the number of days relative to a user-defined `start_date`.
 
 Datetime ordinals with pandas
 -----------------------------
 
-In Python, we can get the Gregorian ordinal of a date using the `toordinal()` method from a datetime object.
+In Python, we can get the Gregorian ordinal of a date using the `toordinal()` method
+from a datetime object as follows:
 
 .. code:: python
 
@@ -38,13 +45,18 @@ The output shows the new ordinal feature:
     0 2023-01-01    738521
     1 2023-01-10    738530
 
+In the variable `ordinal`, the value `738521` means that `2023-01-01` is 738521 days
+*after* the 1st of January of the year 1.
 
-Datetime ordinals with Feature-engine
--------------------------------------
+Datetime ordinal with Feature-engine
+------------------------------------
 
-:class:`DatetimeOrdinal()` automatically converts one or more datetime variables into ordinal numbers. It works with variables whose dtype is datetime, as well as with object-type variables, provided that they can be parsed into datetime format.
+:class:`DatetimeOrdinal()` automatically converts one or more datetime variables into
+ordinal numbers. It works with variables whose dtype is datetime, as well as with
+object-type variables, provided that they can be parsed into datetime format.
 
-:class:`DatetimeOrdinal()` uses pandas `toordinal()` under the hood. The main functionalities are:
+:class:`DatetimeOrdinal()` uses pandas `toordinal()` under the hood. The main
+functionalities are:
 
 - It can convert multiple datetime variables at once.
 - It can compute the ordinal number relative to a `start_date`.
@@ -86,12 +98,14 @@ We see the new ordinal feature in the output:
     2    Jan-1999          3             733987
     3    Feb-2002          4             737729
 
-By default, :class:`DatetimeOrdinal()` drops the original datetime variable. To keep it, you can set `drop_original=False`.
+By default, :class:`DatetimeOrdinal()` drops the original datetime variable. To keep
+it, you can set `drop_original=False`.
 
 Calculate days from a start date
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`DatetimeOrdinal()` can also calculate the number of days elapsed since a specific `start_date`.
+:class:`DatetimeOrdinal()` can also calculate the number of days elapsed since a
+specific `start_date`.
 
 .. code:: python
 
@@ -104,7 +118,8 @@ Calculate days from a start date
 
     df_transf
 
-The new feature now represents the number of days between `var_date2` and January 1st, 2010. Note that dates before the `start_date` will result in negative numbers.
+The new feature now represents the number of days between `var_date2` and January 1st,
+2010. Note that dates before the `start_date` will result in negative numbers.
 
 .. code:: python
 
@@ -118,11 +133,14 @@ The new feature now represents the number of days between `var_date2` and Januar
 Missing timestamps
 ------------------
 
-:class:`DatetimeOrdinal()` handles missing values (NaT) in datetime variables through the `missing_values` parameter, which can be set to `"raise"` or `"ignore"`.
+:class:`DatetimeOrdinal()` handles missing values (NaT) in datetime variables through
+the `missing_values` parameter, which can be set to `"raise"` or `"ignore"`.
 
-If `missing_values="raise"`, the transformer will raise an error if NaT values are found in the datetime variables during `fit()` or `transform()`.
+If `missing_values="raise"`, the transformer will raise an error if NaT values are
+found in the datetime variables during `fit()` or `transform()`.
 
-If `missing_values="ignore"`, the transformer will ignore NaT values, and the resulting ordinal feature will contain `NaN` (or `pd.NA`) in their place.
+If `missing_values="ignore"`, the transformer will ignore NaT values, and the resulting
+ordinal feature will contain `NaN` (or `pd.NA`) in their place.
 
 
 Additional resources
@@ -141,11 +159,19 @@ For tutorials on how to create and use features from datetime columns, check the
 .. figure::  ../../images/fetsf.png
    :width: 300
    :figclass: align-center
-   :align: right
+   :align: left
    :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
 
    Feature Engineering for Time Series Forecasting
 
+|
+|
+|
+|
+|
+|
+|
+|
 |
 |
 |

@@ -40,38 +40,38 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     since January 1, 0001 in the Gregorian calendar.
 
     Optionally, a `start_date` can be provided to set a custom reference point,
-    making the ordinal values relative to this date (starting from 1). This can be
-    useful for reducing the magnitude of the ordinal values and for aligning them
-    to a specific project timeline.
+    making the ordinal values relative to this date (starting from 1).
+
+    More details in the :ref:`User Guide <datetime_ordinal>`.
 
     Parameters
     ----------
     variables: str, list, default=None
-        List with the variables from which date and time information will be extracted.
-        If None, the transformer will find and select all datetime variables,
-        including variables of type object that can be converted to datetime.
+        List of the variables to convert into ordinal. If None, the transformer will
+        find and select all datetime variables, including variables of type object that
+        can be converted to datetime.
 
     missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. If 'raise' the
-        transformer will return an error if the datasets to `fit` or `transform`
+        transformer will return an error if the datasets passed to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when
-        performing the feature extraction.
+        performing the transformation.
 
     start_date: str, datetime.datetime, default=None
         A reference date from which the ordinal values will be calculated.
-        If provided, the ordinal value of `start_date` will be subtracted from
-        each datetime variable's ordinal value, and 1 will be added, so the
-        `start_date` itself corresponds to an ordinal value of 1.
-        If None, the standard `datetime.toordinal()` value will be used.
-        The `start_date` can be a string (e.g., "YYYY-MM-DD") or a datetime object.
+        If provided, the ordinal value of `start_date` will be 1, the day after will be
+        2, and so on. Days before `start_date` will take negative values.
+        If None, the transformation will represent the number of days since January 1, 0001.
+        `start_date` can be a string (e.g., "YYYY-MM-DD") or a datetime object.
 
     drop_original: bool, default=True
-        If True, the original datetime variables will be dropped from the dataframe.
+        If True, the original datetime variables will be dropped from the dataframe
+        after the transformation.
 
     Attributes
     ----------
     variables_:
-        List of variables from which date and time features will be extracted.
+        List of variables to convert into ordinals.
 
     start_date_ordinal_:
         The ordinal value of the provided `start_date`, if applicable.
@@ -91,8 +91,8 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
     See also
     --------
-    pandas.to_datetime
-    datetime.toordinal
+    feature_engine.datetime.DatetimeFeatures
+    feature_engine.datetime.DatetimeSubtraction
 
     Examples
     --------
@@ -186,7 +186,8 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Extract the ordinal datetime features and add them to the dataframe.
+        Calculate ordinal representation of datetime features and add them to the
+        dataframe.
 
         Parameters
         ----------
@@ -196,7 +197,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         Returns
         -------
         X_new: Pandas dataframe, shape = [n_samples, n_features x n_df_features]
-            The dataframe with the original variables plus the new variables.
+            The dataframe with the original variables plus the new features.
         """
 
         # Check method fit has been called
