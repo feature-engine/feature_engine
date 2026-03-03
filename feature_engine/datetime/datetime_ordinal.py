@@ -61,8 +61,9 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         A reference date from which the ordinal values will be calculated.
         If provided, the ordinal value of `start_date` will be 1, the day after will be
         2, and so on. Days before `start_date` will take negative values.
-        If None, the transformation will represent the number of days since January 1, 0001.
-        `start_date` can be a string (e.g., "YYYY-MM-DD") or a datetime object.
+        If None, the transformation will represent the number of days since
+        January 1, 0001. `start_date` can be a string (e.g., "YYYY-MM-DD")
+        or a datetime object.
 
     drop_original: bool, default=True
         If True, the original datetime variables will be dropped from the dataframe
