@@ -1,6 +1,6 @@
 DatetimeOrdinal
 ===============
 
-.. automodule:: feature_engine.datetime.datetime_ordinal
+.. autoclass:: feature_engine.datetime.DatetimeOrdinal
    :members:
 
