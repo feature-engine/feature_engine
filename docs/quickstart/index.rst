@@ -4,114 +4,125 @@
 Quick Start
 ===========
 
-If you're new to Feature-engine this guide will get you started. Feature-engine
+If you're new to feature-engine this guide will get you started. Feature-engine
 transformers have the methods `fit()` and `transform()` to learn parameters from the
-data and then modify the data. They work just like any Scikit-learn transformer.
+data and then modify the data. They work just like any scikit-learn transformer.
 
 
 Installation
 ------------
 
-Feature-engine is a Python 3 package and works well with 3.7 or later. Earlier versions
-are not compatible with the latest versions of Python numerical computing libraries.
+Feature-engine is a Python 3 package and works well with 3.9 or later. You can install
+feature-engine with `pip`:
 
 .. code-block:: bash
 
     $ pip install feature-engine
 
 
-Note, you can also install it with a _ as follows:
+Note you can also install it with a _ as follows:
 
 .. code-block:: bash
 
     $ pip install feature_engine
 
 
-Note that Feature-engine is an active project and routinely publishes new releases. In
-order to upgrade Feature-engine to the latest version, use ``pip`` as follows.
+Feature-engine is an active project and routinely publishes new releases. To upgrade
+feature-engine to the latest version, use `pip` as follows:
 
 .. code-block:: bash
 
     $ pip install -U feature-engine
 
 If you’re using Anaconda, you can install the
-`Anaconda Feature-engine package <https://anaconda.org/conda-forge/feature_engine>`_:
+`Anaconda feature-engine package <https://anaconda.org/conda-forge/feature_engine>`_:
 
 .. code-block:: bash
 
     $ conda install -c conda-forge feature_engine
 
-Once installed, you should be able to import Feature-engine without an error, both in
+Once installed, you should be able to import feature-engine without an error, both in
 Python and in Jupyter notebooks.
 
 
 Example Use
 -----------
-This is an example of how to use Feature-engine's transformers to perform missing data
+This is an example of how to use feature-engine's transformers to perform missing data
 imputation.
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
-	from sklearn.model_selection import train_test_split
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from sklearn.datasets import fetch_openml
+    from sklearn.model_selection import train_test_split
 
-	from feature_engine.imputation import MeanMedianImputer
+    from feature_engine.imputation import MeanMedianImputer
 
-	# Load dataset
-	data = pd.read_csv('houseprice.csv')
+    # Load dataset
+    X, y = fetch_openml(
+        name="house_prices",
+        version=1,
+        as_frame=True,
+        return_X_y=True
+    )
 
-	# Separate into train and test sets
-	X_train, X_test, y_train, y_test = train_test_split(
-    	    data.drop(['Id', 'SalePrice'], axis=1),
-            data['SalePrice'],
-            test_size=0.3,
-            random_state=0
-        )
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.3,
+        random_state=0,
+    )
 
-	# set up the imputer
-	median_imputer = MeanMedianImputer(
-            imputation_method='median', variables=['LotFrontage', 'MasVnrArea']
-            )
+    # set up the imputer
+    median_imputer = MeanMedianImputer(
+        imputation_method='median',
+        variables=['LotFrontage', 'MasVnrArea']
+    )
 
-	# fit the imputer
-	median_imputer.fit(X_train)
+    # fit the imputer
+    median_imputer.fit(X_train)
 
-	# transform the data
-	train_t = median_imputer.transform(X_train)
-	test_t = median_imputer.transform(X_test)
+    # transform the data
+    train_t = median_imputer.transform(X_train)
+    test_t = median_imputer.transform(X_test)
 
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
-	X_train['LotFrontage'].plot(kind='kde', ax=ax)
-	train_t['LotFrontage'].plot(kind='kde', ax=ax, color='red')
-	lines, labels = ax.get_legend_handles_labels()
-	ax.legend(lines, labels, loc='best')
+    # plot a variable distribution before and after imputation
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    X_train['LotFrontage'].plot(kind='kde', ax=ax)
+    train_t['LotFrontage'].plot(kind='kde', ax=ax, color='red')
+    lines, _ = ax.get_legend_handles_labels()
+    labels = ["original", "imputed"]
+    ax.legend(lines, labels, loc='best')
+    plt.title("Variable LotFrontAge before and after the imputation")
+    plt.show()
+
+In the following output, we see the distribution of one of the imputed variables, before
+and after the imputation:
 
 .. image:: ../images/medianimputation.png
 
 
-Feature-engine with the Scikit-learn's pipeline
------------------------------------------------
+Feature-engine within scikit-learn's pipeline
+---------------------------------------------
 
-Feature-engine's transformers can be assembled within a Scikit-learn pipeline. This
+Feature-engine's transformers can be assembled within a scikit-learn pipeline. This
 way, we can store our entire feature engineering pipeline in one single object or
 pickle (.pkl). Here is an example of how to do it:
 
 .. code:: python
 
-    from math import sqrt
-    import pandas as pd
     import numpy as np
-    import matplotlib.pyplot as plt
 
+    from sklearn.datasets import fetch_openml
     from sklearn.linear_model import Lasso
     from sklearn.metrics import mean_squared_error
     from sklearn.model_selection import train_test_split
     from sklearn.pipeline import Pipeline as pipe
     from sklearn.preprocessing import MinMaxScaler
-    
+
     from feature_engine.encoding import RareLabelEncoder, MeanEncoder
     from feature_engine.discretisation import DecisionTreeDiscretiser
     from feature_engine.imputation import (
@@ -120,83 +131,84 @@ pickle (.pkl). Here is an example of how to do it:
         CategoricalImputer,
     )
 
-    # load dataset
-    data = pd.read_csv('houseprice.csv')
-
-    # drop some variables
-    data.drop(
-        labels=['YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'Id'],
-        axis=1,
-        inplace=True
+    # Load dataset
+    X, y = fetch_openml(
+        name="house_prices",
+        version=1,
+        as_frame=True,
+        return_X_y=True
     )
 
-    # make a list of categorical variables
-    categorical = [var for var in data.columns if data[var].dtype == 'O']
+    # Drop some variables
+    X.drop(
+        labels=['YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'Id'],
+        axis=1,
+        inplace=True,
+    )
 
-    # make a list of numerical variables
-    numerical = [var for var in data.columns if data[var].dtype != 'O']
+    # Make a list of categorical variables
+    categorical = [var for var in X.columns if X[var].dtype == 'O']
 
-    # make a list of discrete variables
-    discrete = [ var for var in numerical if len(data[var].unique()) < 20]
+    # Make a list of numerical variables
+    numerical = [var for var in X.columns if X[var].dtype != 'O']
 
-    # categorical encoders work only with object type variables
-    # to treat numerical variables as categorical, we need to re-cast them
-    data[discrete]= data[discrete].astype('O')
+    # Make a list of discrete variables
+    discrete = [var for var in numerical if len(X[var].unique()) < 20]
 
-    # continuous variables
-    numerical = [
-        var for var in numerical if var not in discrete
-        and var not in ['Id', 'SalePrice']
-        ]
+    # Make a list of continuous variables
+    numerical = [var for var in numerical if var not in discrete]
 
-    # separate into train and test sets
+    # Separate data into training and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-                                            data.drop(labels=['SalePrice'], axis=1),
-                                            data.SalePrice,
-                                            test_size=0.1,
-                                            random_state=0
-                                            )
+        X,
+        y,
+        test_size=0.1,
+        random_state=0
+    )
 
-    # set up the pipeline
+    # Set up the pipeline
     price_pipe = pipe([
-        # add a binary variable to indicate missing information for the 2 variables below
+        # Add a binary variable to flag NA in one variable
         ('continuous_var_imputer', AddMissingIndicator(variables=['LotFrontage'])),
 
-        # replace NA by the median in the 2 variables below, they are numerical
+        # Replace NA with the median in 2 variables
         ('continuous_var_median_imputer', MeanMedianImputer(
             imputation_method='median', variables=['LotFrontage', 'MasVnrArea']
         )),
 
-        # replace NA by adding the label "Missing" in categorical variables
+        # Replace NA by adding the label "Missing" in categorical variables
         ('categorical_imputer', CategoricalImputer(variables=categorical)),
 
-        # disretise continuous variables using trees
+        # Disretise continuous variables using decision trees
         ('numerical_tree_discretiser', DecisionTreeDiscretiser(
             cv=3,
             scoring='neg_mean_squared_error',
             variables=numerical,
             regression=True)),
 
-        # remove rare labels in categorical and discrete variables
+        # Group rare labels in categorical and discrete variables
         ('rare_label_encoder', RareLabelEncoder(
-            tol=0.03, n_categories=1, variables=categorical+discrete
+            tol=0.03,
+            n_categories=1,
+            variables=categorical+discrete,
+            ignore_format=True,
         )),
 
-        # encode categorical and discrete variables using the target mean
-        ('categorical_encoder', MeanEncoder(variables=categorical+discrete)),
+        # Encode categorical and discrete variables using the target mean
+        ('categorical_encoder', MeanEncoder(variables=categorical+discrete, ignore_format=True)),
 
-        # scale features
+        # Scale features
         ('scaler', MinMaxScaler()),
 
-        # Lasso
+        # Lasso regression
         ('lasso', Lasso(random_state=2909, alpha=0.005))
 
     ])
 
-    # train feature engineering transformers and Lasso
+    # Fit feature engineering transformers and Lasso
     price_pipe.fit(X_train, np.log(y_train))
 
-    # predict
+    # Predict
     pred_train = price_pipe.predict(X_train)
     pred_test = price_pipe.predict(X_test)
 
@@ -204,43 +216,44 @@ pickle (.pkl). Here is an example of how to do it:
     print('Lasso Linear Model train mse: {}'.format(
         mean_squared_error(y_train, np.exp(pred_train))))
     print('Lasso Linear Model train rmse: {}'.format(
-        sqrt(mean_squared_error(y_train, np.exp(pred_train)))))
+        np.sqrt(mean_squared_error(y_train, np.exp(pred_train)))))
     print()
     print('Lasso Linear Model test mse: {}'.format(
         mean_squared_error(y_test, np.exp(pred_test))))
     print('Lasso Linear Model test rmse: {}'.format(
-        sqrt(mean_squared_error(y_test, np.exp(pred_test)))))
+        np.sqrt(mean_squared_error(y_test, np.exp(pred_test)))))
 
+In the following output, we see the mean squared error and RMSE of the LASSO on the training
+and test sets:
 
 .. code:: python
 
     Lasso Linear Model train mse: 949189263.8948538
     Lasso Linear Model train rmse: 30808.9153313591
 
-    Lasso Linear Model test mse: 1344649485.0641894
-    Lasso Linear Model train rmse: 36669.46256852136
+    Lasso Linear Model test mse: 1344649485.0641973
+    Lasso Linear Model test rmse: 36669.46256852147
+
+Let's now plot the predictions vs the actuals:
 
 .. code:: python
+
+    import matplotlib.pyplot as plt
 
     plt.scatter(y_test, np.exp(pred_test))
     plt.xlabel('True Price')
     plt.ylabel('Predicted Price')
     plt.show()
 
+In the following output, we see the predictions vs the actuals:
+
 .. image:: ../images/pipelineprediction.png
 
 
 More examples
-~~~~~~~~~~~~~
+-------------
 
 More examples can be found in:
 
 - :ref:`User Guide <user_guide>`
 - :ref:`Learning Resources <learning_resources>`
-- `Jupyter notebooks <https://nbviewer.jupyter.org/github/feature-engine/feature-engine-examples/tree/main/>`_
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-
-   datasets
