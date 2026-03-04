@@ -3,8 +3,8 @@
 
 .. currentmodule:: feature_engine.scaling
 
-Scaling
-=======
+Feature Scaling
+===============
 
 `Feature scaling <https://www.blog.trainindata.com/feature-scaling-in-machine-learning/>`_
 is the process of transforming the range of numerical features so that they fit within a

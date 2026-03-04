@@ -4,7 +4,7 @@
 User Guide
 ==========
 
-In this section you will find additional information about Feature-engine's transformers
+In this section you will find additional information about feature-engine's transformers
 and feature engineering transformations in general, as well as additional examples.
 
 Transformation
