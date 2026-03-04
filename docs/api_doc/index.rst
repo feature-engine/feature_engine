@@ -3,7 +3,7 @@
 API
 ===
 
-Full API documentation for Feature-engine transformers.
+Full API documentation for feature-engine transformers.
 
 Transformation
 --------------
@@ -16,6 +16,7 @@ Transformation
    discretisation/index
    outliers/index
    transformation/index
+   scaling/index
 
 Creation
 --------
@@ -49,7 +50,6 @@ Other
    :maxdepth: 1
 
    preprocessing/index
-   scaling/index
    wrappers/index
 
 Pipeline
