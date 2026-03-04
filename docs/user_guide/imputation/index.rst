@@ -333,7 +333,7 @@ alike. By purchasing them you are supporting Sole, the main developer of Feature
 
 
 Imputers
-~~~~~~~~
+--------
 
 .. toctree::
    :maxdepth: 1
