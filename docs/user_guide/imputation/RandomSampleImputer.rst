@@ -7,19 +7,18 @@ RandomSampleImputer
 
 The :class:`RandomSampleImputer()` replaces missing data with a random sample extracted from the
 variable. It works with both numerical and categorical variables. A list of variables
-can be indicated, or the imputer will automatically select all variables in the train
-set.
+can be indicated, or the imputer will automatically impute all variables in the dataset.
 
-**Note**
+.. note::
 
-The random samples used to replace missing values may vary from execution to
-execution. This may affect the results of your work. Thus, it is advisable to set a
-seed.
+    The random samples used to replace missing values may vary from execution to
+    execution. This may affect the results of your work. Thus, it is advisable to set a
+    seed.
 
 Setting the seed
 ----------------
 
-There are 2 ways in which the seed can be set in the :class:`RandomSampleImputer()`:
+There are 2 ways in which the seed can be set in :class:`RandomSampleImputer()`:
 
 If `seed = 'general'` then the random_state can be either `None` or an integer.
 The `random_state` then provides the seed to use in the imputation. All observations will
@@ -41,9 +40,11 @@ and we set the imputer as:
 
 .. code:: python
 
-	RandomSampleImputer(random_state=['height', 'weight'],
-                                  seed='observation',
-                                  seeding_method='add'))
+    RandomSampleImputer(
+        random_state=['height', 'weight'],
+        seed='observation',
+        seeding_method='add',
+    )
 
 the np.nan in the variable colour will be replaced using pandas sample as follows:
 
@@ -51,15 +52,11 @@ the np.nan in the variable colour will be replaced using pandas sample as follow
 
 	observation.sample(1, random_state=int(152+52))
 
-For more details on why this functionality is important refer to the course
-`Feature Engineering for Machine Learning <https://www.udemy.com/feature-engineering-for-machine-learning/>`_.
+.. note::
 
-You can also find more details about this imputation in the following
-`notebook <https://github.com/solegalli/feature-engineering-for-machine-learning/blob/master/Section-04-Missing-Data-Imputation/04.07-Random-Sample-Imputation.ipynb>`_.
-
-Note, if the variables indicated in the `random_state` list are not numerical
-the imputer will return an error. In addition, the variables indicated as seed
-should not contain missing values themselves.
+    Note, if the variables indicated in the `random_state` list are not numerical
+    the imputer will return an error. In addition, the variables indicated as seed
+    should not contain missing values themselves.
 
 Important for GDPR
 ------------------
@@ -69,34 +66,36 @@ called. Therefore, the object can become quite heavy. Also, it may not be GDPR
 compliant if your training data set contains Personal Information. Please check
 if this behaviour is allowed within your organisation.
 
-Below a code example using the House Prices Dataset (more details about the dataset
-:ref:`here <datasets>`).
+Python implementation
+---------------------
+
+Below a code example using the house prices dataset.
 
 First, let's load the data and separate it into train and test:
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
-	from sklearn.model_selection import train_test_split
+    import matplotlib.pyplot as plt
+    from sklearn.datasets import fetch_openml
+    from sklearn.model_selection import train_test_split
 
-	from feature_engine.imputation import RandomSampleImputer
+    from feature_engine.imputation import RandomSampleImputer
 
-	# Load dataset
-	data = pd.read_csv('houseprice.csv')
+    # Load dataset
+    data = fetch_openml(name='house_prices', as_frame=True)
+    data = data.frame
 
-	# Separate into train and test sets
-	X_train, X_test, y_train, y_test = train_test_split(
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
             data.drop(['Id', 'SalePrice'], axis=1),
             data['SalePrice'],
             test_size=0.3,
             random_state=0
-        )
+    )
 
 In this example, we sample values at random, observation per observation, using as seed
 the value of the variable 'MSSubClass' plus the value of the variable 'YrSold'. Note
-that this value might be different for each observation.
+that the seed's value is different for each observation.
 
 The :class:`RandomSampleImputer()` will impute all variables in the data, as we left the
 default value of the parameter `variables` to `None`.
@@ -113,9 +112,9 @@ default value of the parameter `variables` to `None`.
 	# fit the imputer
 	imputer.fit(X_train)
 
-With `fit()` the imputer stored a copy of the X_train. And with transform, it will extract
-values at random from this X_train to replace NA in the datasets indicated in the `transform()`
-methods.
+With `fit()` the imputer stored a copy of X_train. And with transform, it will extract
+values at random from X_train to replace NA in the datasets indicated in the `transform()`
+method.
 
 .. code:: python
 
@@ -123,7 +122,9 @@ methods.
 	train_t = imputer.transform(X_train)
 	test_t = imputer.transform(X_test)
 
-The beauty of the random sampler is that it preserves the original variable distribution:
+The beauty of the random sampler is that it preserves the original variable distribution.
+
+Let's check that out by creating a density plot:
 
 .. code:: python
 
@@ -134,64 +135,20 @@ The beauty of the random sampler is that it preserves the original variable dist
 	lines, labels = ax.get_legend_handles_labels()
 	ax.legend(lines, labels, loc='best')
 
+In the following image we see the distribution of LotFrontage before and after the
+imputation (in red the imputed variable):
+
 .. image:: ../../images/randomsampleimputation.png
 
 Additional resources
 --------------------
 
-In the following Jupyter notebook you will find more details on the functionality of the
-:class:`RandomSampleImputer()`, including how to set the different types of seeds.
+For tutorials about missing data imputation methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/RandomSampleImputer.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-All Feature-engine notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
-
-And finally, there is also a lot of information about this and other imputation techniques
-in this online course:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of Feature-engine.
