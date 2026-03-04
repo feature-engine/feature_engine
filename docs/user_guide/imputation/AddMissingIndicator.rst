@@ -12,7 +12,7 @@ variables.
 
 You can select the variables for which the missing indicators should be created passing
 a variable list to the `variables` parameter. Alternatively, the imputer will
-automatically add indicators all variables.
+automatically add indicators to all variables.
 
 The imputer has the option to add missing indicators to all variables or only to those
 that have missing data in the train set. You can change the behaviour using the
@@ -38,6 +38,7 @@ First, let's load the data and separate it into train and test:
 
 .. code:: python
 
+    from sklearn.datasets import fetch_openml
     from sklearn.model_selection import train_test_split
     from feature_engine.imputation import AddMissingIndicator
 
@@ -57,13 +58,13 @@ Now we set up the imputer to add missing indicators to the 4 indicated variables
 
 .. code:: python
 
-	# set up the imputer
-	addBinary_imputer = AddMissingIndicator(
+    # set up the imputer
+    addBinary_imputer = AddMissingIndicator(
         variables=['Alley', 'MasVnrType', 'LotFrontage', 'MasVnrArea'],
-        )
+    )
 
-	# fit the imputer
-	addBinary_imputer.fit(X_train)
+    # fit the imputer
+    addBinary_imputer.fit(X_train)
 
 Because we left the default value for `missing_only`, :class:`AddMissingIndicator()`
 will check if the variables indicated above have missing data in X_train. If they do,

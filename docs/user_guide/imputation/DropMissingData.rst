@@ -544,7 +544,7 @@ Dropna or fillna?
 
 :class:`DropMissingData()` has the same functionality than `pandas.series.dropna` or
 `pandas.dataframe.dropna``. If you want functionality compatible with `pandas.fillna`
-instead, check our :ref:`missing data imputation <imputation_user_guide>` transformers.
+instead, check out our :ref:`missing data imputation <imputation_user_guide>` transformers.
 
 
 Drop columns with nan

@@ -250,7 +250,7 @@ we haven't specified the `variables` parameter.
 Distribution change after imputation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's analyze how the imputation changes the distribution of the variables.
+Let's analyse how the imputation changes the distribution of the variables.
 
 First, let's see how much missing data we have for LotFrontage in the training data:
 
