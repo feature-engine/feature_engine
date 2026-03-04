@@ -1,4 +1,5 @@
 .. -*- mode: rst -*-
+.. _imputation_user_guide:
 
 .. currentmodule:: feature_engine.imputation
 
