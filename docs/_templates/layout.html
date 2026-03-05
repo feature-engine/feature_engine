@@ -4,81 +4,234 @@
 
     <!-- Cookie banner -->
     <style>
-        /* Style for the cookie banner */
-        #cookie-banner {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            background-color: #ffe4e1; /* Light Pink */
-            color: #333;
-            padding: 15px;
-            max-width: 400px;
-            display: none;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000; /* Set a higher z-index value */
-        }
-
-        #cookie-banner p {
-        font-size: 16px; /* Font size for the text */
-        color: #333 !important; /* Set link color to black */
-        line-height: 1.5; /* Increase line height for added spacing between sentences */
-        }
-
-        #cookie-banner a {
-            color: #333;
-            text-decoration: underline;
-        }
+       /* Cookie banner container */
+       #cookie-banner {
+       position: fixed;
+       bottom: 20px;
+       right: 20px;
+       background-color: #19194e; /* Dark blue */
+       color: #ffffff;
+       padding: 20px;
+       max-width: 380px;
+       display: none;
+       border-radius: 12px;
+       box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+       z-index: 1000;
+       font-family: Arial, sans-serif;
+       }
+       /* Title */
+       #cookie-banner h2 {
+       font-size: 20px;
+       margin-bottom: 10px;
+       color: #ffffff;
+       }
+       /* Text */
+       #cookie-banner p {
+       font-size: 15px;
+       line-height: 1.6;
+       color: #e6edf7;
+       }
+       /* Links */
+       #cookie-banner a {
+       color: #9ecbff;
+       text-decoration: underline;
+       }
+       /* Buttons container spacing */
+       #cookie-banner button {
+       margin-top: 12px;
+       margin-right: 8px;
+       }
+       /* Accept button */
+       #cookie-accept {
+       background-color: #f2740d;
+       color: white;
+       border: none;
+       padding: 9px 16px;
+       border-radius: 8px;
+       font-weight: 600;
+       cursor: pointer;
+       }
+       /* Decline button */
+       #cookie-decline {
+       background-color: transparent;
+       color: #ffffff;
+       border: 1px solid #ffffff;
+       padding: 9px 16px;
+       border-radius: 8px;
+       font-weight: 600;
+       cursor: pointer;
+       }
+       /* Hover effects */
+       #cookie-accept:hover {
+       background-color: #f9994b;
+       }
+       #cookie-decline:hover {
+       background-color: rgba(255,255,255,0.1);
+       }
     </style>
-
     <div id="cookie-banner">
-        <h2 style="font-size: 20px; margin-bottom: 10px;">This site uses cookies</h2>
-        <p style="font-size: 16px;">We use cookies to recognize your visits and preferences, to measure the effectiveness of the documentation, and discover how people find us. With your consent, you're helping us make our documentation better. <br><a href="https://www.trainindata.com/p/privacy" target="_blank">Learn More</a>.</p>
-        <button id="cookie-accept">Accept</button>
-        <button id="cookie-decline">Decline</button>
+       <h2 style="font-size: 20px; margin-bottom: 10px;">This site uses cookies</h2>
+       <p style="font-size: 16px;">We use cookies to recognize your visits and preferences, to measure the effectiveness of the documentation, and discover how people find us. With your consent, you're helping us make our documentation better. <br><a href="https://www.trainindata.com/p/privacy" target="_blank">Learn More</a>.</p>
+       <button id="cookie-accept">Accept</button>
+       <button id="cookie-decline">Decline</button>
     </div>
-
     <script>
-        // JavaScript to show the cookie banner and handle the accept button
-        document.addEventListener('DOMContentLoaded', function () {
-            var cookieBanner = document.getElementById('cookie-banner');
-            var acceptButton = document.getElementById('cookie-accept');
-            var declineButton = document.getElementById('cookie-decline');
+       // JavaScript to show the cookie banner and handle the accept button
+       document.addEventListener('DOMContentLoaded', function () {
 
-            // Check if the user has already accepted or declined cookies
-            var cookiesAccepted = localStorage.getItem('cookiesAccepted');
+         var cookieBanner = document.getElementById('cookie-banner');
+         var acceptButton = document.getElementById('cookie-accept');
+         var declineButton = document.getElementById('cookie-decline');
 
-            if (!cookiesAccepted) {
-                cookieBanner.style.display = 'block';
+         var cookiesAccepted = localStorage.getItem('cookiesAccepted');
 
-                acceptButton.addEventListener('click', function () {
-                    localStorage.setItem('cookiesAccepted', 'true');
-                    loadGoogleAnalytics();
-                    cookieBanner.style.display = 'none';
-                });
+         if (!cookiesAccepted) {
+           cookieBanner.style.display = 'block';
 
-                declineButton.addEventListener('click', function () {
-                    localStorage.setItem('cookiesAccepted', 'false');
-                    cookieBanner.style.display = 'none';
-                });
-            } else if (cookiesAccepted === 'true') {
-                loadGoogleAnalytics();
-            }
-        });
+           acceptButton.addEventListener('click', function () {
+             localStorage.setItem('cookiesAccepted', 'true');
+             loadGoogleAnalytics();
+             cookieBanner.style.display = 'none';
+             triggerTrainingBanner();
+           });
 
-        function loadGoogleAnalytics() {
-            // Load Google Analytics only if consent is given
-            var script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z6MPCG673G';
-            document.head.appendChild(script);
+           declineButton.addEventListener('click', function () {
+             localStorage.setItem('cookiesAccepted', 'false');
+             cookieBanner.style.display = 'none';
+             triggerTrainingBanner();
+           });
 
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-Z6MPCG673G');
-        }
+         } else if (cookiesAccepted === 'true') {
+           loadGoogleAnalytics();
+           triggerTrainingBanner();
+         } else {
+           triggerTrainingBanner();
+         }
+
+       });
+
+       function loadGoogleAnalytics() {
+           // Load Google Analytics only if consent is given
+           var script = document.createElement('script');
+           script.async = true;
+           script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z6MPCG673G';
+           document.head.appendChild(script);
+
+           window.dataLayer = window.dataLayer || [];
+           function gtag(){dataLayer.push(arguments);}
+           gtag('js', new Date());
+           gtag('config', 'G-Z6MPCG673G');
+       }
     </script>
     <!-- Cookie banner -->
+
+    <!-- Training Data Skills Banner -->
+    <div id="training-banner">
+       <button id="banner-close">&times;</button>
+       <div class="banner-logo" style="text-align:center; margin-bottom:25px;">
+          <a href="https://www.trainindata.com" target="_blank">
+          <img src="https://ucaf5272cfac5e07245eb21e610c.previews.dropboxusercontent.com/p/thumb/AC7GFrXCM9G_Mm3BGVHAhD4g9wAJ5iK_OD3e6ZkEZstZATiaKbGxz47u4cI2vSICxyN9asEsMogzYk5BLqVRbnvySW669QR2STiUQrhrXn22syHGo7n47ZlbD49xP4dNb9yaHASK5Te2PKUkcMtBQy0pPD6ECJedWo-jVPZ1T0Z33tNEz37TM4lpssDhw9WZPGsjzNI_jNQ2cOVTLL_4xuqXqTg5MXn_ckCmx8se7x-cZRam7yYXWfEwdFLzs-cwucLxwGKeBSu4d6OLmyDqeA1VADHIUjHstSXZqSZaiNq9MohlTbFiuW9Rr83yGBe3jxjpCCGc3AEj8BDCJ445PR4gqq1ygreiW1OwVcNVVfnwfPaHln9_JSXvv4BThoen68k/p.png?is_prewarmed=true"
+             alt="Train in Data"
+             width="200"
+             >
+          </a>
+       </div>
+       <h3>Boost Your Data Science Skills</h3>
+       <p>
+          Become the expert companies are desperate to hire.
+       </p>
+       <p>
+          Learn feature engineering, selection, forecasting and much more.
+       </p>
+       <p class="discount">
+          <strong>10% discount for feature-engine users</strong><br>
+          Use code <b>FEATUREENGINE26</b> at checkout.
+       </p>
+       <a href="https://www.trainindata.com/courses" class="banner-btn" target="_blank">
+       View Course Catalog
+       </a>
+    </div>
+    <style>
+       #training-banner {
+       position: fixed;
+       bottom: 20px;
+       right: 20px;
+       width: 320px;
+       background: #19194e;
+       color: white;
+       border-radius: 10px;
+       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+       padding: 20px;
+       font-family: Arial, sans-serif;
+       z-index: 9999;
+       display: none;
+       }
+       #training-banner h3 {
+       margin-top: 0;
+       font-size: 18px;
+       }
+       #training-banner p {
+       font-size: 14px;
+       line-height: 1.4;
+       }
+       .discount {
+       margin-top: 10px;
+       }
+       .banner-btn {
+       display: inline-block;
+       margin-top: 12px;
+       background: #f2740d;
+       color: white;
+       padding: 10px 14px;
+       border-radius: 6px;
+       text-decoration: none;
+       font-weight: bold;
+       }
+       .banner-btn:hover {
+       background: #f9994b;
+       }
+       #banner-close {
+       position: absolute;
+       top: 6px;
+       right: 8px;
+       background: none;
+       border: none;
+       font-size: 20px;
+       cursor: pointer;
+       color: white;
+       }
+    </style>
+    <script>
+       function triggerTrainingBanner() {
+
+         if (!sessionStorage.getItem("bannerClosed")) {
+
+           setTimeout(function () {
+
+             var banner = document.getElementById("training-banner");
+
+             if (banner) {
+               banner.style.display = "block";
+             }
+
+           }, 5000);
+
+         }
+
+       }
+
+       document.addEventListener("DOMContentLoaded", function () {
+
+         var closeBtn = document.getElementById("banner-close");
+
+         if (closeBtn) {
+           closeBtn.onclick = function () {
+             document.getElementById("training-banner").style.display = "none";
+             sessionStorage.setItem("bannerClosed", "true");
+           };
+         }
+
+       });
+    </script>
 
 {% endblock %}
