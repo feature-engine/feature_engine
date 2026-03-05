@@ -12,9 +12,9 @@ frequent category. The second method consists of replacing missing values with a
 string, for example, "Missing."
 
 Scikit-learn's machine learning algorithms can neither handle missing data nor categorical
-variables out of the box. Hence, during data preprocessing, we need to use imputation
+variables out-of-the-box. Hence, during data preprocessing, we need to use imputation
 techniques to replace the nan values by any permitted value and then proceed with
-categorical encoding, before training classification or regression models.
+:ref:`categorical encoding <encoding_user_guide>`, before training classification or regression models.
 
 Handling missing values
 -----------------------
@@ -25,7 +25,7 @@ category.
 
 You can impute a subset of the categorical variables by passing their names to
 :class:`CategoricalImputer()` in a list. Alternatively, the categorical imputer automatically
-finds and imputes all variables of type object and categorical found in the training dataframe.
+finds and imputes all variables of type object and categorical in the training dataframe.
 
 Originally, we designed this imputer to work only with categorical variables. In version
 1.1.0, we introduced the parameter `ignore_format` to allow the imputer to also impute
@@ -117,11 +117,13 @@ string 'missing':
 During fit, the transformer corroborates that the 2 variables are of type object or
 categorical and creates a dictionary of variable to replacement value.
 
-We can check the value that will be use to "fillna" as follows:
+We can check the value that will be use to replace NA as follows:
 
 .. code:: python
 
     imputer.fill_value
+
+The previous command returns the string `"missing"` as a result.
 
 We can check the dictionary with the replacement values per variable like this:
 
@@ -131,15 +133,15 @@ We can check the dictionary with the replacement values per variable like this:
 
 The dictionary contains the names of the variables in its keys and the imputation
 value among its values. In this case, the result is not super exciting because we
-are replacing nan values in all variables with the same value:
+are replacing nan values in all variables with the same string:
 
 .. code:: python
 
     {'Alley': 'missing', 'MasVnrType': 'missing'}
 
 
-We can now go ahead and impute the missing data and then plot the categories in the
-resulting variable after the imputation:
+We can now go ahead and impute the missing data and then plot the categories' frequency
+after the imputation:
 
 .. code:: python
 
@@ -258,11 +260,11 @@ impute the variable ‘PoolQC` with the most frequent value:
 
 .. code:: python
 
-        196     self.imputer_dict_ = {var: mode_vals[0]}
-        198 # imputing multiple variables:
-        199 else:
-        200     # Returns a dataframe with 1 row if there is one mode per
-        201     # variable, or more rows if there are more modes:
+    196     self.imputer_dict_ = {var: mode_vals[0]}
+    198 # imputing multiple variables:
+    199 else:
+    200     # Returns a dataframe with 1 row if there is one mode per
+    201     # variable, or more rows if there are more modes:
 
     ValueError: The variable PoolQC contains multiple frequent categories.
 
@@ -285,66 +287,38 @@ Considerations
 --------------
 
 Replacing missing values in categorical features with a bespoke category is standard
-practice and perhaps the more natural thing to do. We'll probably want to impute with
-the most frequent category when the percentage of missing values is small and the
-cardinality of the variable is low, not to introduce unnecessary noise.
+practice and perhaps the more natural thing to do. Like this, we don't make assumptions
+about the data and treat missing data as a category itself.
+
+We'll probably want to impute with the most frequent category when the percentage of
+missing values is small and the cardinality of the variable is low, not to introduce
+unnecessary noise.
+
+.. tip::
+
+    Imputation with the most frequent category will blend the missing values with the most
+    common values of the variable. Hence, it is common practice to add dummy variables to
+    indicate that the values were originally missing. See :class:`AddMissingIndicator`.
 
 Combining imputation with data analysis is useful to decide the most convenient imputation
-method as well as the impact of the imputation on the variable distribution. Note that the
-variable distribution and its cardinality will affect the performance and workings of
-machine learning models.
+method as well as the impact of the imputation on the variable distribution.
 
-Imputation with the most frequent category will blend the missing values with the most
-common values of the variable. Hence, it is common practice to add dummy variables to
-indicate that the values were originally missing. See :class:`AddMissingIndicator`.
+.. note::
+
+    Note that the variable distribution and its cardinality will affect the performance
+    and workings of machine learning models.
+
+
 
 Additional resources
 --------------------
 
-For more details about this and other feature engineering methods check out these resources:
+For tutorials about missing data imputation methods check out these resources:
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of Feature-engine.

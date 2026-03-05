@@ -40,30 +40,37 @@ with 99 like this:
     Xt = transformer.fit_transform(X)
 
 
-Below a code example using the House Prices Dataset (more details about the dataset
-:ref:`here <datasets>`).
+Python implementation
+---------------------
+
+Below a code example using the house prices dataset.
 
 First, let's load the data and separate it into train and test:
 
 .. code:: python
 
-	import numpy as np
-	import pandas as pd
-	import matplotlib.pyplot as plt
-	from sklearn.model_selection import train_test_split
+    import matplotlib.pyplot as plt
+    from sklearn.datasets import fetch_openml
+    from sklearn.model_selection import train_test_split
 
-	from feature_engine.imputation import ArbitraryNumberImputer
+    from feature_engine.imputation import ArbitraryNumberImputer
 
-	# Load dataset
-	data = pd.read_csv('houseprice.csv')
+    # Load dataset
+    X, y = fetch_openml(
+        name='house_prices',
+        version=1,
+        return_X_y=True,
+        as_frame=True,
+        parser='auto',
+    )
 
-	# Separate into train and test sets
-	X_train, X_test, y_train, y_test = train_test_split(
-                                    data.drop(['Id', 'SalePrice'], axis=1),
-                                    data['SalePrice'],
-                                    test_size=0.3,
-                                    random_state=0,
-                                    )
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.3,
+        random_state=0,
+    )
 
 Now we set up the :class:`ArbitraryNumberImputer()` to impute 2 variables from the
 dataset with the number -999:
@@ -88,12 +95,13 @@ test sets:
 .. code:: python
 
 	# transform the data
-	train_t= arbitrary_imputer.transform(X_train)
-	test_t= arbitrary_imputer.transform(X_test)
+	train_t = arbitrary_imputer.transform(X_train)
+	test_t = arbitrary_imputer.transform(X_test)
 
-Note that after the imputation, if the percentage of missing values is relatively big,
-the variable distribution will differ from the original one (in red the imputed
-variable):
+Note that after the imputation, if the percentage of missing values is relatively large,
+the variable distribution will differ from the original one.
+
+Let's create a density plot to observe the change in the distribution:
 
 .. code:: python
 
@@ -104,62 +112,20 @@ variable):
 	lines, labels = ax.get_legend_handles_labels()
 	ax.legend(lines, labels, loc='best')
 
+In the following image, we see the distribution of LotFrontage before and after the
+imputation (in red the imputed variable):
+
 .. image:: ../../images/arbitraryvalueimputation.png
 
 Additional resources
 --------------------
 
-In the following Jupyter notebook you will find more details on the functionality of the
-:class:`ArbitraryNumberImputer()`, including how to select numerical variables automatically.
-You will also see how to navigate the different attributes of the transformer.
+For tutorials about missing data imputation methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/ArbitraryNumberImputer.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For more details about this and other feature engineering methods check out these resources:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of Feature-engine.

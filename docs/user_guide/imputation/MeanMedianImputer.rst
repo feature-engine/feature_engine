@@ -105,31 +105,36 @@ from OpenML:
 
 .. code:: python
 
-	# Load dataset
-	X, y = fetch_openml(name='house_prices', version=1, return_X_y=True, as_frame=True, parser='auto')	
+    X, y = fetch_openml(
+        name='house_prices',
+        version=1,
+        return_X_y=True,
+        as_frame=True,
+        parser='auto',
+    )
 
 In the following code chunk, we'll split the dataset into train and test retaining
 only three features, and we'll set aside 4 observations with missing data from the test set:
 
 .. code:: python
 
-	target_features = ['Neighborhood','LotFrontage','MasVnrArea']
-	X = X[target_features]
+	X = X[['Neighborhood','LotFrontage','MasVnrArea']]
 
-	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+	X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42)
 
 	# Select specific houses with missing data from the test set
-	target_idx = [113,292,650, 1018]
+	target_idx = [113, 292, 650, 1018]
 	X_test_subset = X_test.loc[target_idx]
 
-Let's visualize the subset of the test set with missing values:
+Let's display the subset of the test set with missing values:
 
 .. code:: python
 
 	print(X_test_subset)
 
-In the following output, we see five houses; three of them with missing values for 
-either LotFrontage or MasVnrArea:
+In the following output, we see 4 houses; three of them with missing values for
+either **LotFrontage** or **MasVnrArea**:
 
 .. code:: text
 
@@ -140,7 +145,7 @@ either LotFrontage or MasVnrArea:
 	1018      Gilbert          NaN        76.0
 
 
-Let's now set up and fit :class:`MeanMedianImputer()` with the strategy to mean, 
+Let's now set up and fit :class:`MeanMedianImputer()` with the strategy set to mean,
 so we can impute the variables `LotFrontage` and `MasVnrArea`:
 
 .. code:: python
@@ -154,16 +159,18 @@ so we can impute the variables `LotFrontage` and `MasVnrArea`:
 	# Fit transformer with training data
 	mmi.fit(X_train)
 
-It's worth noting that we have the flexibility to omit the `variables` parameter, 
-in which case, :class:`MeanMedianImputer()` will automatically find and impute all 
-numeric features.
+.. note::
+
+    It's worth noting that we have the flexibility to omit the `variables` parameter,
+    in which case, :class:`MeanMedianImputer()` will automatically find and impute all
+    numeric features.
 
 After fitting :class:`MeanMedianImputer()`, we can check out the statistics 
-(either mean or median; mean in this scenario) for each of the variables to impute:
+(either mean or median; mean in this case) for each of the variables to impute:
 
 .. code:: python
 
-	# Show mean values learned with the training data
+	# Show mean values learned from the training data
 	mmi.imputer_dict_
 
 The `imputer_dict_` attribute shows the learned statistics:
@@ -174,7 +181,7 @@ The `imputer_dict_` attribute shows the learned statistics:
 
 This dictionary is used internally to impute the missing values.
 
-Let's transform the subset of the test data with the missing data we previewed earlier:
+Let's transform the subset of the test data with the missing data:
 
 .. code:: python
 
@@ -202,12 +209,12 @@ We can add missing indicators with :class:`AddMissingIndicator()` from Feature-e
 We can chain :class:`AddMissingIndicator()` with :class:`MeanMedianImputer()` using a 
 `scikit-learn pipeline <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html>`_.
 
-For example, let's create an imputer pipeline to add missing indicators and then and 
+For example, let's create an imputation pipeline to add missing indicators and then
 impute the missing values:
 
 .. code:: python
 
-	# Create imputer pipeline
+	# Create imputation pipeline
 	imputer = make_pipeline(
 		AddMissingIndicator(),
 		MeanMedianImputer()
@@ -224,7 +231,7 @@ Now, we can transform the data:
 
 If we now execute `X_test_subset_t.head()`, we'll see a dataframe where `LotFrontage` 
 and `MasVnrArea` are now complete, that is, missing values were replaced with the mean 
-of the observed data, and additional columns with the missing indicators:
+of the observed data, and the additional columns with the missing indicators:
 
 .. code:: text
 
@@ -243,7 +250,7 @@ we haven't specified the `variables` parameter.
 Distribution change after imputation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's analyze how the imputation might change the distribution of the variables.
+Let's analyse how the imputation changes the distribution of the variables.
 
 First, let's see how much missing data we have for LotFrontage in the training data:
 
@@ -257,7 +264,7 @@ As a result, we can see nearly 19% of missing data:
 
 	0.19
 
-In the following code, we'll create a plot with the raw variable distribution on the 
+In the following code, we'll create a plot with the original variable distribution on the
 left panel and the distribution after imputation on the right panel:
 
 .. code:: python
@@ -295,59 +302,12 @@ the variable decreases, and the kurtosis coefficient increases.
 Additional resources
 --------------------
 
-In the following python Jupyter notebook you will find more details on the functionality
-of the :class:`MeanMedianImputer()`, including how to select numerical variables
-automatically. You will also see how to navigate the different attributes of the 
-transformer to find the mean or median values of the variables.
+For tutorials about missing data imputation methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/MeanMedianImputer.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For more details about this and other feature engineering methods check out
-these resources:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of Feature-engine.

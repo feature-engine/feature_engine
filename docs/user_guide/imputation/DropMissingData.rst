@@ -8,8 +8,8 @@ DropMissingData
 Removing rows with nan values from a dataset is a common practice in data science and
 machine learning projects.
 
-You are probably familiar with the use of pandas dropna. You basically take a pandas
-dataframe or a pandas series, apply dropna, and eliminate those rows that contain nan
+You are probably familiar with the use of pandas `dropna`. You basically take a pandas
+dataframe or a pandas series, apply `dropna`, and eliminate those rows that contain nan
 values in one or more columns.
 
 Here, we have an example of that syntax:
@@ -35,7 +35,7 @@ The previous code returns a dataframe without missing values:
     2  1.0  b
 
 Feature-engine's :class:`DropMissingData()` wraps pandas dropna in a transformer that
-will remove rows with na values while adhering to scikit-learn's `fit` and `transform`
+will remove rows with nan values while adhering to scikit-learn's `fit` and `transform`
 functionality.
 
 Here we have a snapshot of :class:`DropMissingData()`'s syntax:
@@ -83,8 +83,8 @@ nan values.
 
 Let's better illustrate :class:`DropMissingData()`'s functionality through code examples.
 
-Dropna
-^^^^^^
+Python implementation
+---------------------
 
 Let's start by importing pandas and numpy, and creating a toy dataframe with nan values
 in 2 columns:
@@ -141,6 +141,8 @@ missing data during fit, that is, in the training set. They are stored here:
 
     dmd.variables_
 
+Below we see the variables that contained NAN values in the training set:
+
 .. code:: python
 
     ['x1', 'x2']
@@ -162,6 +164,8 @@ train set are stored, and hence, will be used to remove nan values:
 .. code:: python
 
     dmd.variables_
+
+Below we see the variables seen in the training set, regardless of whether they had NAN:
 
 .. code:: python
 
@@ -190,11 +194,13 @@ Below we see the dataframe without nan:
     0  2.0  a   2
     2  1.0  b   4
 
+Let's now display the transformed target:
+
 .. code:: python
 
     yt
 
-And here we see the target with those rows corresponing to the remaining rows in the
+Here we see the target with those rows corresponding to the rows in the
 transformed dataframe:
 
 .. code:: python
@@ -244,7 +250,7 @@ Dropna from subset of variables
 We can choose to remove missing data only from a specific column or group of columns.
 We just need to pass the column name or names to the `variables` parameter:
 
-Here, we'll dropna from the variables "x1", "x3".
+Here, we'll dropna from the variables "x1" and "x3".
 
 .. code:: python
 
@@ -274,12 +280,12 @@ the `variables_` parameter:
 
     ['x1', 'x3']
 
-**Important**
+.. note::
 
-When you indicate which variables should be examined to remove rows with nan, make sure
-you set the parameter `missing_only` to the boolean `False`. Otherwise,
-:class:`DropMissingData()` will select from your list only those variables that showed
-nan values in the train set.
+    When you indicate which variables should be examined to remove rows with nan, make sure
+    you set the parameter `missing_only` to the boolean `False`. Otherwise,
+    :class:`DropMissingData()` will select from your list only those variables that showed
+    nan values in the train set.
 
 See for example what happens when we set up the class like this:
 
@@ -289,7 +295,7 @@ See for example what happens when we set up the class like this:
     Xt = dmd.fit_transform(X)
     dmd.variables_
 
-Note, that we indicated that we wanted to remove nan from "x1", "x3". Yet, only "x1"
+Note, that we indicated that we wanted to remove nan from "x1" and "x3". Yet, only "x1"
 has nan in X. So the transformer learns that nan should be only dropped from "x1":
 
 .. code:: python
@@ -335,6 +341,7 @@ of non-nan values in every row.
             x3=[2, 3, 4, 5, np.nan],
         )
     )
+
     X
 
 We see that the bottom row has nan in all columns, row 3 has nan in 2 of 3 columns,
@@ -480,18 +487,20 @@ Here we see the transformed training set:
     0  2.0   0   2
     2  1.0   1   4
 
+Let's now display the transformed target:
+
 .. code:: python
 
     yt
 
-And here we see the re-aligned target variable:
+Here we see the re-aligned target variable:
 
 .. code:: python
 
     0    1
     2    3
 
-And to wrap up, let's add an estimator to the pipeline:
+To wrap up, let's add an estimator to the pipeline:
 
 .. code:: python
 
@@ -524,6 +533,8 @@ And to wrap up, let's add an estimator to the pipeline:
     pipe.fit(df, y)
     pipe.predict(df)
 
+In the following output we see the predictions made by the pipeline:
+
 .. code:: python
 
     array([2., 2.])
@@ -533,7 +544,7 @@ Dropna or fillna?
 
 :class:`DropMissingData()` has the same functionality than `pandas.series.dropna` or
 `pandas.dataframe.dropna``. If you want functionality compatible with `pandas.fillna`
-instead, check our other imputation transformers.
+instead, check out our :ref:`missing data imputation <imputation_user_guide>` transformers.
 
 
 Drop columns with nan
@@ -551,58 +562,15 @@ Check out our tutorials on `LagFeatures` and `WindowFeatures` to see how to comb
 forecasting.
 
 
-Tutorials, books and courses
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Additional resources
+--------------------
 
-In the following Jupyter notebook, in our accompanying Github repository, you will find
-more examples using :class:`DropMissingData()`.
+For tutorials about missing data imputation methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/imputation/DropMissingData.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For tutorials about this and other feature engineering methods check out our online course:
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of Feature-engine.
