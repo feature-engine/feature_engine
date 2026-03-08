@@ -45,15 +45,14 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         will check missing data in all variables in the dataframe. Alternatively, the
         imputer will evaluate missing data only in the variables in the list.
 
-        Note that if `missing_only=True`, missing data will be removed from variables
-        that had missing data in the train set. These might be a subset of the
-        variables indicated in the list.
+        If a list of variables is provided, ``missing_only`` must be set to ``False``.
 
     missing_only: bool, default=True
         If `True`, rows will be dropped when they show missing data in variables that
-        had missing data during `fit()`. If `False`, rows will be dropped if there is
-        missing data in any of the variables. This parameter only works when
-        `threshold=None`, otherwise it is ignored.
+        had missing data during `fit()`. Only valid when ``variables=None``. If
+        `False`, rows will be dropped if there is missing data in any of the
+        variables. This parameter only works when `threshold=None`, otherwise it is
+        ignored.
 
     threshold: int or float, default=None
         Require that percentage of non-NA values in a row to keep it. If
@@ -130,6 +129,13 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
         self.threshold = threshold
+
+        if self.variables is not None and missing_only is True:
+            raise ValueError(
+                "variables and missing_only cannot be used together. "
+                "Set variables=None to use missing_only=True, or set "
+                "missing_only=False to pass a list of variables."
+            )
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
