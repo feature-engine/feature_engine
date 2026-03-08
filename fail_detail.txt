@@ -1,0 +1,77 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.2, pluggy-1.6.0
+rootdir: F:\feature_engine
+configfile: pyproject.toml
+plugins: anyio-4.12.1, dash-4.0.0, cov-7.0.0, timeout-2.4.0
+collected 1 item
+
+tests\test_encoding\test_count_frequency_encoder.py F
+
+================================== FAILURES ===================================
+______________________ test_unseen_invalid_value_raises _______________________
+
+    def test_unseen_invalid_value_raises():
+        """Invalid unseen value should raise ValueError at init."""
+        with pytest.raises(ValueError, match="unseen takes only values"):
+>           CountFrequencyEncoder(unseen="bad_value")
+
+tests\test_encoding\test_count_frequency_encoder.py:537: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <[AttributeError("'CountFrequencyEncoder' object has no attribute 'encoding_method'") raised in repr()] CountFrequencyEncoder object at 0x11445ccaf90>
+encoding_method = 'count', variables = None, missing_values = 'raise'
+ignore_format = False, unseen = 'bad_value'
+
+    def __init__(
+        self,
+        encoding_method: str = "count",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        missing_values: str = "raise",
+        ignore_format: bool = False,
+        unseen: str = "ignore",
+    ) -> None:
+    
+        if encoding_method not in ["count", "frequency"]:
+            raise ValueError(
+                "encoding_method takes only values 'count' and 'frequency'. "
+                f"Got {encoding_method} instead."
+            )
+    
+>       check_parameter_unseen(unseen, ["ignore", "raise", "encode", "warn"])
+
+feature_engine\encoding\count_frequency.py:171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+unseen = 'bad_value', accepted_values = ['ignore', 'raise', 'encode', 'warn']
+
+    def check_parameter_unseen(unseen, accepted_values):
+        if not isinstance(accepted_values, list) or not all(
+            isinstance(item, str) for item in accepted_values
+        ):
+            raise ValueError(
+                "accepted_values should be a list of strings. "
+                f" Got {accepted_values} instead."
+            )
+        if unseen not in accepted_values:
+>           raise ValueError(
+                f"Parameter `unseen` takes only values {', '.join(accepted_values)}."
+                f" Got {unseen} instead."
+            )
+E           ValueError: Parameter `unseen` takes only values ignore, raise, encode, warn. Got bad_value instead.
+
+feature_engine\encoding\_helper_functions.py:10: ValueError
+
+During handling of the above exception, another exception occurred:
+
+    def test_unseen_invalid_value_raises():
+        """Invalid unseen value should raise ValueError at init."""
+>       with pytest.raises(ValueError, match="unseen takes only values"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'unseen takes only values'
+E         Actual message: 'Parameter `unseen` takes only values ignore, raise, encode, warn. Got bad_value instead.'
+
+tests\test_encoding\test_count_frequency_encoder.py:536: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_encoding/test_count_frequency_encoder.py::test_unseen_invalid_value_raises
+============================== 1 failed in 0.28s ==============================

@@ -54,6 +54,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 - Added `errors` parameter to `CategoricalImputer` to handle categorical variables with multiple frequent categories instead of automatically raising a `ValueError`. (`DirekKakkar <https://github.com/DirekKakkar>`_)
+- Added ``unseen='warn'`` option to `CountFrequencyEncoder`: unseen categories are encoded as ``NaN`` and a ``UserWarning`` is raised listing the unseen categories per variable. (`DirekKakkar <https://github.com/DirekKakkar>`_)
 - Our variable handling functions now return empty lists when no variables of the desired type are found. (`Soledad Galli <https://github.com/solegalli>`_)
 
 BUG
