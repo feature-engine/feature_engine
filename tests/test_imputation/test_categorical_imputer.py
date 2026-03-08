@@ -6,13 +6,16 @@ import warnings
 
 from feature_engine.imputation import CategoricalImputer
 
+
 # --- Shared fixture: perfectly multimodal variable ---
 @pytest.fixture
 def multimodal_df():
-    return pd.DataFrame({
-        "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"],
-        "country": ["UK", "UK", "FR", "FR", "DE", "DE"],
-    })
+    return pd.DataFrame(
+        {
+            "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"],
+            "country": ["UK", "UK", "FR", "FR", "DE", "DE"],
+        }
+    )
 
 
 def test_impute_with_string_missing_and_automatically_find_variables(df_na):

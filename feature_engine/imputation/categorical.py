@@ -212,15 +212,16 @@ class CategoricalImputer(BaseImputer):
                 if len(mode_vals) > 1:
                     if self.errors == "raise":
                         raise ValueError(
-                            f"The variable {var} contains multiple frequent categories. "
-                            f"Set errors='warn' or errors='ignore' to allow imputation "
-                            f"using the first most frequent category found."
+                            f"The variable {var} contains multiple "
+                            f"frequent categories. Set errors='warn' or "
+                            f"errors='ignore' to allow imputation using "
+                            f"the first most frequent category found."
                         )
                     elif self.errors == "warn":
                         warnings.warn(
-                            f"Variable {var} has multiple frequent categories. "
-                            f"The first category found, {mode_vals[0]}, will be used "
-                            f"for imputation.",
+                            f"Variable {var} has multiple frequent "
+                            f"categories. The first category found, "
+                            f"{mode_vals[0]}, will be used for imputation.",
                             UserWarning,
                         )
 
@@ -242,14 +243,17 @@ class CategoricalImputer(BaseImputer):
 
                     if self.errors == "raise":
                         raise ValueError(
-                            f"The variable(s) {varnames_str} contain(s) multiple frequent "
-                            f"categories. Set errors='warn' or errors='ignore' to allow "
-                            f"imputation using the first most frequent category found."
+                            f"The variable(s) {varnames_str} contain(s) "
+                            f"multiple frequent categories. Set "
+                            f"errors='warn' or errors='ignore' to allow "
+                            f"imputation using the first most frequent "
+                            f"category found."
                         )
                     elif self.errors == "warn":
                         warnings.warn(
-                            f"Variable(s) {varnames_str} have multiple frequent categories. "
-                            f"The first category found will be used for imputation.",
+                            f"Variable(s) {varnames_str} have multiple "
+                            f"frequent categories. The first category "
+                            f"found will be used for imputation.",
                             UserWarning,
                         )
 
