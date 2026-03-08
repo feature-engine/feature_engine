@@ -2,6 +2,7 @@
 # License: BSD 3 clause
 
 from typing import List, Optional, Union
+import warnings
 
 import pandas as pd
 
@@ -88,6 +89,18 @@ class CategoricalImputer(BaseImputer):
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    errors : str, default='raise'
+        Indicates what to do when the selected imputation_method='frequent'
+        and a variable has more than 1 mode.
+
+        If 'raise', raises a ValueError and stops the fit.
+
+        If 'warn', raises a UserWarning and continues, imputing using the
+        first most frequent category found.
+
+        If 'ignore', continues without warnings, imputing using the first
+        most frequent category found.
+
     Attributes
     ----------
     {imputer_dict_}
@@ -135,6 +148,7 @@ class CategoricalImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_object: bool = False,
         ignore_format: bool = False,
+        errors: str = "raise",
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -144,11 +158,18 @@ class CategoricalImputer(BaseImputer):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
+        if errors not in ("raise", "warn", "ignore"):
+            raise ValueError(
+                "errors takes only values 'raise', 'warn', or 'ignore'. "
+                f"Got {errors} instead."
+            )
+
         self.imputation_method = imputation_method
         self.fill_value = fill_value
         self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -189,9 +210,19 @@ class CategoricalImputer(BaseImputer):
 
                 # Some variables may contain more than 1 mode:
                 if len(mode_vals) > 1:
-                    raise ValueError(
-                        f"The variable {var} contains multiple frequent categories."
-                    )
+                    if self.errors == "raise":
+                        raise ValueError(
+                            f"The variable {var} contains multiple frequent categories. "
+                            f"Set errors='warn' or errors='ignore' to allow imputation "
+                            f"using the first most frequent category found."
+                        )
+                    elif self.errors == "warn":
+                        warnings.warn(
+                            f"Variable {var} has multiple frequent categories. "
+                            f"The first category found, {mode_vals[0]}, will be used "
+                            f"for imputation.",
+                            UserWarning,
+                        )
 
                 self.imputer_dict_ = {var: mode_vals[0]}
 
@@ -208,10 +239,19 @@ class CategoricalImputer(BaseImputer):
                         varnames_str = ", ".join(varnames)
                     else:
                         varnames_str = varnames[0]
-                    raise ValueError(
-                        f"The variable(s) {varnames_str} contain(s) multiple frequent "
-                        f"categories."
-                    )
+
+                    if self.errors == "raise":
+                        raise ValueError(
+                            f"The variable(s) {varnames_str} contain(s) multiple frequent "
+                            f"categories. Set errors='warn' or errors='ignore' to allow "
+                            f"imputation using the first most frequent category found."
+                        )
+                    elif self.errors == "warn":
+                        warnings.warn(
+                            f"Variable(s) {varnames_str} have multiple frequent categories. "
+                            f"The first category found will be used for imputation.",
+                            UserWarning,
+                        )
 
                 self.imputer_dict_ = mode_vals.iloc[0].to_dict()
 
