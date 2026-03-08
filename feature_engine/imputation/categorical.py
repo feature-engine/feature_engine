@@ -1,34 +1,26 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
 import warnings
+from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
+from feature_engine._check_init_parameters.check_variables import \
+    _check_variables_input_value
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _imputer_dict_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-)
-from feature_engine._docstrings.methods import (
-    _fit_transform_docstring,
-    _transform_imputers_docstring,
-)
+    _feature_names_in_docstring, _imputer_dict_docstring,
+    _n_features_in_docstring, _variables_attribute_docstring)
+from feature_engine._docstrings.methods import (_fit_transform_docstring,
+                                                _transform_imputers_docstring)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_all_variables,
-    check_categorical_variables,
-    find_all_variables,
-    find_categorical_variables,
-)
+from feature_engine.variable_handling import (check_all_variables,
+                                              check_categorical_variables,
+                                              find_all_variables,
+                                              find_categorical_variables)
 
 
 @Substitution(
