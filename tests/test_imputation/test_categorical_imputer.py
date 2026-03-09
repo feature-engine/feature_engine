@@ -403,3 +403,50 @@ def test_errors_ignore_multiple_variables():
     imputer.fit(X)
     assert imputer.imputer_dict_["city"] == X["city"].mode()[0]
     assert imputer.imputer_dict_["country"] == X["country"].mode()[0]
+
+
+# =============================================================================
+# NEW TESTS — added to fix codecov patch coverage (1 missing + 1 partial line)
+# =============================================================================
+
+def test_errors_warn_single_variable_emits_userwarning():
+    """
+    Covers the warnings.warn() inside the SINGLE-VARIABLE block of fit().
+
+    The existing test_errors_warn_emits_userwarning uses multimodal_df (2 columns),
+    which goes through the multi-variable code path. This test uses variables='city'
+    (a single variable) to hit the separate single-variable warn branch.
+    """
+    X = pd.DataFrame(
+        {"city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"]}
+    )
+    imputer = CategoricalImputer(
+        imputation_method="frequent", variables="city", errors="warn"
+    )
+    with pytest.warns(UserWarning, match="multiple frequent categories"):
+        imputer.fit(X)
+    # First mode is used
+    assert imputer.imputer_dict_["city"] == X["city"].mode()[0]
+
+
+def test_errors_raise_one_multimodal_among_multiple_variables():
+    """
+    Covers the `varnames_str = varnames[0]` else-branch in the MULTI-VARIABLE block.
+
+    This branch is reached when multiple variables are selected but only ONE of them
+    turns out to have multiple modes. The existing tests either raise on all-multimodal
+    datasets (len(varnames) > 1) or use errors='ignore'/'warn' (skipping the raise).
+    Here we select two variables where only 'city' is multimodal, triggering the
+    singular else-branch before the ValueError is raised.
+    """
+    X = pd.DataFrame(
+        {
+            # 'city': 3 equally frequent values → multimodal
+            "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"],
+            # 'country': clear single mode (UK appears 3×, others once)
+            "country": ["UK", "UK", "UK", "FR", "DE", "SE"],
+        }
+    )
+    imputer = CategoricalImputer(imputation_method="frequent", errors="raise")
+    with pytest.raises(ValueError, match="city"):
+        imputer.fit(X)
