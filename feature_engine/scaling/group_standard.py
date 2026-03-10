@@ -25,8 +25,8 @@ from feature_engine.variable_handling import (
 
 class GroupStandardScaler(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """
-    GroupStandardScaler() scales numerical variables relative to a group (e.g., 
-    by standardizing them to have a mean of 0 and a standard deviation of 1 
+    GroupStandardScaler() scales numerical variables relative to a group (e.g.,
+    by standardizing them to have a mean of 0 and a standard deviation of 1
     within each group).
 
     The transformer takes a list of numerical `variables` to standardise and a list
@@ -34,7 +34,7 @@ class GroupStandardScaler(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     standard deviation of each variable per group. During transform, it scales the
     variables applying the standard z-score formula per group.
 
-    Unseen groups during `transform` will be scaled using the global mean and 
+    Unseen groups during `transform` will be scaled using the global mean and
     standard deviation learned during `fit`.
 
     More details in the :ref:`User Guide <group_standard_scaler>`.
@@ -55,13 +55,12 @@ class GroupStandardScaler(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     barycenter_:
         Dictionary with the mean value per group for each variable.
         e.g. `{'var1': {grp1: 1.5, grp2: 3.0}}`
-        
     scale_:
         Dictionary with the standard deviation per group for each variable.
         e.g. `{'var1': {grp1: 0.5, grp2: 1.0}}`
 
     global_mean_:
-        Dictionary with the global mean value for each variable (used for unseen groups).
+        Dictionary with the global mean value for each variable (for unseen groups).
 
     global_std_:
         Dictionary with the global standard deviation for each variable.
@@ -112,7 +111,7 @@ class GroupStandardScaler(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        reference: Union[int, str, List[Union[str, int]]] = None,
+        reference: Optional[Union[int, str, List[Union[str, int]]]] = None,
     ) -> None:
 
         if reference is None:
@@ -161,7 +160,7 @@ class GroupStandardScaler(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         # Calculate group means and standard deviations
         grouped = X.groupby(self.reference_)[self.variables_]
-        
+
         self.barycenter_ = grouped.mean().to_dict()
         self.scale_ = grouped.std(ddof=1).to_dict()
 
@@ -171,7 +170,7 @@ class GroupStandardScaler(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
                 if pd.isna(val):
                     self.scale_[var][grp] = 0.0
                 elif val == 0:
-                    self.scale_[var][grp] = 0.0 # Just making sure for consistency
+                    self.scale_[var][grp] = 0.0  # Just making sure for consistency
 
         # Calculate global parameters for unseen groups
         self.global_mean_ = X[self.variables_].mean().to_dict()
