@@ -431,6 +431,7 @@ Encoders
    :maxdepth: 1
 
    OneHotEncoder
+   StringListBinarizer
    OrdinalEncoder
    CountFrequencyEncoder
    MeanEncoder
