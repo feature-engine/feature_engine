@@ -151,7 +151,8 @@ class GroupStandardScaler(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         overlapping = set(self.variables_).intersection(set(self.reference_))
         if overlapping:
             raise ValueError(
-                f"Variables {overlapping} are specified in both `variables` and `reference`. "
+                f"Variables {overlapping} are specified in both `variables` "
+                f"and `reference`. "
                 f"A variable cannot be both scaled and used as a grouping key."
             )
 
