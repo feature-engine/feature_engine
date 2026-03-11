@@ -4,7 +4,6 @@ from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import StringListBinarizer
 
-
 def test_string_list_binarizer_delimited_strings():
     df = pd.DataFrame(
         {
@@ -28,7 +27,6 @@ def test_string_list_binarizer_delimited_strings():
     assert encoder.variables_ == ["tags"]
     assert encoder.encoder_dict_ == {"tags": ["action", "comedy", "thriller"]}
     pd.testing.assert_frame_equal(X, expected_df)
-
 
 
 def test_string_list_binarizer_python_lists():
@@ -56,7 +54,6 @@ def test_string_list_binarizer_python_lists():
     pd.testing.assert_frame_equal(X, expected_df)
 
 
-
 def test_find_categorical_variables():
     df = pd.DataFrame({"tags": ["A,B", "C"], "num": [1, 2]})
 
@@ -64,7 +61,6 @@ def test_find_categorical_variables():
     encoder.fit(df)
 
     assert encoder.variables_ == ["tags"]
-
 
 
 def test_ignore_format():
@@ -82,13 +78,11 @@ def test_ignore_format():
     assert encoder.encoder_dict_ == {"num": ["1", "2"]}
 
 
-
 def test_error_if_not_categorical():
     df = pd.DataFrame({"num": [1, 2]})
     encoder = StringListBinarizer(variables=["num"])
     with pytest.raises(TypeError):
         encoder.fit(df)
-
 
 
 def test_missing_values_error():
@@ -98,13 +92,11 @@ def test_missing_values_error():
         encoder.fit(df)
 
 
-
 def test_not_fitted_error():
     df = pd.DataFrame({"tags": ["A,B"]})
     encoder = StringListBinarizer()
     with pytest.raises(NotFittedError):
         encoder.transform(df)
-
 
 
 def test_unseen_categories():
