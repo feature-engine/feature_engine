@@ -6,6 +6,7 @@ from numpy import nan
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import CountFrequencyEncoder
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 
 
 # init parameters
@@ -554,8 +555,6 @@ def test_check_parameter_unseen_raises_when_accepted_values_is_not_a_list():
     calls it with a hardcoded valid list, so the guard is never triggered through
     normal usage — it must be tested by importing and calling the function directly.
     """
-    from feature_engine.encoding._helper_functions import check_parameter_unseen
-
     # accepted_values is not a list at all
     with pytest.raises(ValueError, match="accepted_values should be a list of strings"):
         check_parameter_unseen("raise", "raise")
