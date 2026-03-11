@@ -29,7 +29,7 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     StringListBinarizer() takes categorical variables that contain a list of strings
     or a delimited string, and creates binary variables representing each of the
     unique categories across all observations.
-    
+
     This is especially useful for columns containing multiple tags per row, such as
     `["action", "comedy"]` or `"action, comedy"`.
 
@@ -137,7 +137,7 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
             None.
         """
         X = check_X(X)
-        
+
         # select variables to encode
         if self.ignore_format is True:
             if self.variables is None:
@@ -160,20 +160,23 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
                     )
             else:
                 self.variables_ = _check_variables_input_value(self.variables)
-                
+
                 # Check that specified variables exist and are object/categorical
                 non_cat = [
-                    var for var in self.variables_ 
-                    if var in X.columns and not (
-                        pd.api.types.is_object_dtype(X[var]) or 
-                        isinstance(X[var].dtype, pd.CategoricalDtype)
+                    var
+                    for var in self.variables_
+                    if var in X.columns
+                    and not (
+                        pd.api.types.is_object_dtype(X[var])
+                        or isinstance(X[var].dtype, pd.CategoricalDtype)
                     )
                 ]
                 if non_cat:
                     raise TypeError(
-                        f"Some of the variables are not categorical. Please cast them "
-                        f"as object or categorical before calling fit, or set "
-                        f"`ignore_format=True`. Variables: {non_cat}"
+                        "Some of the variables are not categorical. Please cast them "
+                        "as object or categorical before calling fit, or set "
+                        "`ignore_format=True`. Variables: "
+                        f"{non_cat}"
                     )
 
         _check_optional_contains_na(X, self.variables_)
@@ -190,10 +193,10 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
                 else:
                     tags = [str(row).strip()]
                 unique_tags.update(tags)
-            
+
             # Remove empty strings from tags (often caused by trailing separators)
             unique_tags.discard("")
-            
+
             self.encoder_dict_[var] = sorted(list(unique_tags))
 
         self.feature_names_in_ = X.columns.tolist()
@@ -227,10 +230,13 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         for feature in self.variables_:
             categories = self.encoder_dict_[feature]
-            
+
             # Use faster numpy processing for dummies
-            dummy_data = {f"{feature}_{category}": np.zeros(len(X), dtype=int) for category in categories}
-            
+            dummy_data = {
+                f"{feature}_{category}": np.zeros(len(X), dtype=int)
+                for category in categories
+            }
+
             for i, row in enumerate(X[feature]):
                 if isinstance(row, str):
                     tags = [t.strip() for t in row.split(self.separator)]
@@ -238,7 +244,7 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
                     tags = [str(t).strip() for t in row]
                 else:
                     tags = [str(row).strip()]
-                    
+
                 for t in tags:
                     if t in categories:
                         dummy_data[f"{feature}_{t}"][i] = 1
@@ -254,10 +260,10 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     def get_feature_names_out(self, input_features=None) -> List[str]:
         """Get output feature names for transformation."""
         check_is_fitted(self)
-        
+
         feature_names = list(self.feature_names_in_)
         feature_names = [f for f in feature_names if f not in self.variables_]
-        
+
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
                 feature_names.append(f"{feature}_{category}")
