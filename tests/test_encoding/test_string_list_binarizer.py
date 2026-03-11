@@ -114,3 +114,73 @@ def test_unseen_categories():
     )
 
     pd.testing.assert_frame_equal(X, expected_df)
+
+
+def test_init_separator_not_str():
+    with pytest.raises(ValueError, match="separator takes only strings"):
+        StringListBinarizer(variables=["tags"], separator=123)
+
+
+def test_init_ignore_format_not_bool():
+    with pytest.raises(ValueError, match="ignore_format takes only booleans"):
+        StringListBinarizer(variables=["tags"], ignore_format="yes")
+
+
+def test_ignore_format_true_variables_none():
+    """Fit with ignore_format=True and variables=None uses find_all_variables."""
+    df = pd.DataFrame(
+        {"tags": ["a,b", "c"], "num": [1, 2], "other": ["x", "y"]}
+    )
+    encoder = StringListBinarizer(separator=",", ignore_format=True)
+    encoder.fit(df)
+    assert set(encoder.variables_) == {"tags", "num", "other"}
+    X = encoder.transform(df)
+    assert list(X.columns) == encoder.get_feature_names_out()
+
+
+def test_no_categorical_variables_raises():
+    """Raise when variables=None and no object/category/string columns."""
+    df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+    encoder = StringListBinarizer(variables=None)
+    with pytest.raises(ValueError, match="No categorical variables found"):
+        encoder.fit(df)
+
+
+def test_fit_row_not_str_or_list():
+    """Fit with a row that is neither str nor list (e.g. number) uses else branch."""
+    df = pd.DataFrame({"tags": ["A,B", 42]})
+    encoder = StringListBinarizer(variables=["tags"], separator=",")
+    encoder.fit(df)
+    assert "A" in encoder.encoder_dict_["tags"]
+    assert "B" in encoder.encoder_dict_["tags"]
+    assert "42" in encoder.encoder_dict_["tags"]
+
+
+def test_transform_row_not_str_or_list():
+    """Transform with non-str non-list row uses else branch."""
+    df_train = pd.DataFrame({"tags": ["A", "B"]})
+    encoder = StringListBinarizer(variables=["tags"])
+    encoder.fit(df_train)
+    df_test = pd.DataFrame({"tags": [123]})
+    X = encoder.transform(df_test)
+    assert "tags_A" in X.columns
+    assert "tags_B" in X.columns
+
+
+def test_get_feature_names_out():
+    """get_feature_names_out returns binarized feature names in order."""
+    df = pd.DataFrame(
+        {"x": [1, 2], "tags": ["a,b", "c"], "y": [3, 4]}
+    )
+    encoder = StringListBinarizer(variables=["tags"], separator=",")
+    encoder.fit(df)
+    names = encoder.get_feature_names_out()
+    assert names == ["x", "y", "tags_a", "tags_b", "tags_c"]
+
+
+def test_more_tags():
+    """_more_tags returns expected sklearn config."""
+    encoder = StringListBinarizer(variables=["tags"])
+    tags = encoder._more_tags()
+    assert tags["variables"] == "categorical"
+    assert "check_estimators_nan_inf" in tags["_xfail_checks"]
