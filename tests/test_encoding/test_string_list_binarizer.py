@@ -4,6 +4,7 @@ from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import StringListBinarizer
 
+
 def test_string_list_binarizer_delimited_strings():
     df = pd.DataFrame(
         {
