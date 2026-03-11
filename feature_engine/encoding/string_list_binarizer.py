@@ -51,8 +51,9 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         select all categorical variables.
 
     separator : str, default=","
-        The separator used to split the strings in the variable. If the variable contains
-        Python lists instead of strings, this parameter is ignored.
+        The separator used to split the strings in the variable.
+        If the variable contains Python lists instead of strings,
+        this parameter is ignored.
 
     ignore_format : bool, default=False
         Whether to format check the variables in `fit`. If `True`, the encoder will
@@ -146,13 +147,10 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
                 self.variables_ = check_all_variables(X, self.variables)
         else:
             if self.variables is None:
-                # Need to use built-in categorical finder logic
-                self.variables_ = [
-                    var
-                    for var in X.columns
-                    if pd.api.types.is_object_dtype(X[var])
-                    or isinstance(X[var].dtype, pd.CategoricalDtype)
-                ]
+                # Select typical categorical/string-like variables
+                self.variables_ = X.select_dtypes(
+                    include=["object", "category", "string"]
+                ).columns.to_list()
                 if len(self.variables_) == 0:
                     raise ValueError(
                         "No categorical variables found in the dataframe. Please check "
@@ -169,6 +167,7 @@ class StringListBinarizer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
                     and not (
                         pd.api.types.is_object_dtype(X[var])
                         or isinstance(X[var].dtype, pd.CategoricalDtype)
+                        or pd.api.types.is_string_dtype(X[var])
                     )
                 ]
                 if non_cat:
