@@ -535,3 +535,31 @@ def test_unseen_invalid_value_raises():
     """Invalid unseen value should raise ValueError at init."""
     with pytest.raises(ValueError, match="takes only values"):
         CountFrequencyEncoder(unseen="bad_value")
+
+
+# =============================================================================
+# NEW TESTS — added to fix codecov patch coverage
+# =============================================================================
+
+def test_check_parameter_unseen_raises_when_accepted_values_is_not_a_list():
+    """
+    Covers the first raise ValueError in check_parameter_unseen():
+
+        if not isinstance(accepted_values, list) or not all(
+            isinstance(item, str) for item in accepted_values
+        ):
+            raise ValueError("accepted_values should be a list of strings ...")
+
+    check_parameter_unseen() is an internal helper. CountFrequencyEncoder always
+    calls it with a hardcoded valid list, so the guard is never triggered through
+    normal usage — it must be tested by importing and calling the function directly.
+    """
+    from feature_engine.encoding._helper_functions import check_parameter_unseen
+
+    # accepted_values is not a list at all
+    with pytest.raises(ValueError, match="accepted_values should be a list of strings"):
+        check_parameter_unseen("raise", "raise")
+
+    # accepted_values is a list but contains a non-string element
+    with pytest.raises(ValueError, match="accepted_values should be a list of strings"):
+        check_parameter_unseen("raise", ["raise", "ignore", 42])
