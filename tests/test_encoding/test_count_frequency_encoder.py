@@ -562,4 +562,3 @@ def test_check_parameter_unseen_raises_when_accepted_values_is_not_a_list():
     # accepted_values is a list but contains a non-string element
     with pytest.raises(ValueError, match="accepted_values should be a list of strings"):
         check_parameter_unseen("raise", ["raise", "ignore", 42])
-        
