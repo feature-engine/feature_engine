@@ -403,3 +403,16 @@ def test_errors_ignore_multiple_variables():
     imputer.fit(X)
     assert imputer.imputer_dict_["city"] == X["city"].mode()[0]
     assert imputer.imputer_dict_["country"] == X["country"].mode()[0]
+
+    
+def test_errors_warn_single_variable():
+    """errors='warn' on single multimodal variable — warns, uses first mode."""
+    X = pd.DataFrame(
+        {"city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"]}
+    )
+    imputer = CategoricalImputer(
+        imputation_method="frequent", variables="city", errors="warn"
+    )
+    with pytest.warns(UserWarning, match="Variable city has multiple frequent"):
+        imputer.fit(X)
+    assert imputer.imputer_dict_["city"] == X["city"].mode()[0]
