@@ -97,3 +97,4 @@ def test_raises_non_fitted_error_when_error_during_fit(estimator):
 
     with pytest.raises(NotFittedError):
         estimator.transform(X)
+        
