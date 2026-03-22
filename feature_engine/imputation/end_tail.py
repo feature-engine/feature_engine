@@ -177,35 +177,37 @@ class EndTailImputer(BaseImputer):
 
         # find or check for numerical variables
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
+            variables_ = find_numerical_variables(X)
         else:
-            self.variables_ = check_numerical_variables(X, self.variables)
+            variables_ = check_numerical_variables(X, self.variables)
 
         # estimate imputation values
         if self.imputation_method == "max":
-            self.imputer_dict_ = (X[self.variables_].max() * self.fold).to_dict()
+            imputer_dict_ = (X[variables_].max() * self.fold).to_dict()
 
         elif self.imputation_method == "gaussian":
             if self.tail == "right":
-                self.imputer_dict_ = (
-                    X[self.variables_].mean() + self.fold * X[self.variables_].std()
+                imputer_dict_ = (
+                    X[variables_].mean() + self.fold * X[variables_].std()
                 ).to_dict()
             elif self.tail == "left":
-                self.imputer_dict_ = (
-                    X[self.variables_].mean() - self.fold * X[self.variables_].std()
+                imputer_dict_ = (
+                    X[variables_].mean() - self.fold * X[variables_].std()
                 ).to_dict()
 
         elif self.imputation_method == "iqr":
-            IQR = X[self.variables_].quantile(0.75) - X[self.variables_].quantile(0.25)
+            IQR = X[variables_].quantile(0.75) - X[variables_].quantile(0.25)
             if self.tail == "right":
-                self.imputer_dict_ = (
-                    X[self.variables_].quantile(0.75) + (IQR * self.fold)
+                imputer_dict_ = (
+                    X[variables_].quantile(0.75) + (IQR * self.fold)
                 ).to_dict()
             elif self.tail == "left":
-                self.imputer_dict_ = (
-                    X[self.variables_].quantile(0.25) - (IQR * self.fold)
+                imputer_dict_ = (
+                    X[variables_].quantile(0.25) - (IQR * self.fold)
                 ).to_dict()
 
+        self.variables_ = variables_
+        self.imputer_dict_ = imputer_dict_
         self._get_feature_names_in(X)
 
         return self

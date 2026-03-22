@@ -28,6 +28,26 @@ class BaseNumericalTransformer(
     variable transformers, discretisers, math combination.
     """
 
+    def _fit_setup(self, X: pd.DataFrame):
+        """
+        Check dataframe, find numerical variables, check for NA and Inf.
+        Returns the checked dataframe and the correctly identified numerical variables.
+        """
+        # check input dataframe
+        X = check_X(X)
+
+        # find or check for numerical variables
+        if self.variables is None:
+            variables_ = find_numerical_variables(X)
+        else:
+            variables_ = check_numerical_variables(X, self.variables)
+
+        # check if dataset contains na or inf
+        _check_contains_na(X, variables_)
+        _check_contains_inf(X, variables_)
+
+        return X, variables_
+
     def fit(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Checks that input is a dataframe, finds numerical variables, or alternatively
@@ -55,18 +75,9 @@ class BaseNumericalTransformer(
             The same dataframe entered as parameter
         """
 
-        # check input dataframe
-        X = check_X(X)
+        X, variables_ = self._fit_setup(X)
 
-        # find or check for numerical variables
-        if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
-        else:
-            self.variables_ = check_numerical_variables(X, self.variables)
-
-        # check if dataset contains na or inf
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
+        self.variables_ = variables_
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()

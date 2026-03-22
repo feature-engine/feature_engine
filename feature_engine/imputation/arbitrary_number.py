@@ -149,17 +149,19 @@ class ArbitraryNumberImputer(BaseImputer):
         # find or check for numerical variables
         # create the imputer dictionary
         if self.imputer_dict:
-            self.variables_ = check_numerical_variables(
+            variables_ = check_numerical_variables(
                 X, list(self.imputer_dict.keys())
             )
-            self.imputer_dict_ = self.imputer_dict
+            imputer_dict_ = self.imputer_dict
         else:
             if self.variables is None:
-                self.variables_ = find_numerical_variables(X)
+                variables_ = find_numerical_variables(X)
             else:
-                self.variables_ = check_numerical_variables(X, self.variables)
-            self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
+                variables_ = check_numerical_variables(X, self.variables)
+            imputer_dict_ = {var: self.arbitrary_number for var in variables_}
 
+        self.variables_ = variables_
+        self.imputer_dict_ = imputer_dict_
         self._get_feature_names_in(X)
 
         return self

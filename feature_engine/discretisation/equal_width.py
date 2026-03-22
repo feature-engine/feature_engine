@@ -168,12 +168,12 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
 
         # fit
-        self.binner_dict_ = {}
+        binner_dict_ = {}
 
-        for var in self.variables_:
+        for var in variables_:
             tmp, bins = pd.cut(
                 x=X[var],
                 bins=self.bins,
@@ -186,6 +186,10 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             bins = list(bins)
             bins[0] = float("-inf")
             bins[len(bins) - 1] = float("inf")
-            self.binner_dict_[var] = bins
+            binner_dict_[var] = bins
 
+        self.binner_dict_ = binner_dict_
+        self.variables_ = variables_
+        self.feature_names_in_ = X.columns.tolist()
+        self.n_features_in_ = X.shape[1]
         return self
