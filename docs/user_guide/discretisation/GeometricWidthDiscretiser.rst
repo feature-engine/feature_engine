@@ -54,12 +54,11 @@ Let's load the house prices dataset and separate it into train and test sets:
 	from sklearn.model_selection import train_test_split
 
 	from feature_engine.discretisation import GeometricWidthDiscretiser
-    
+
     from sklearn.datasets import fetch_california_housing
     data = fetch_california_housing(as_frame=True).frame
-
-# Separate into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
         data.drop(['MedHouseVal'], axis=1),
         data['MedHouseVal'], test_size=0.3, random_state=0)
 	
