@@ -54,15 +54,15 @@ Let's load the house prices dataset and separate it into train and test sets:
 	from sklearn.model_selection import train_test_split
 
 	from feature_engine.discretisation import GeometricWidthDiscretiser
+    
+    from sklearn.datasets import fetch_california_housing
+    data = fetch_california_housing(as_frame=True).frame
 
-	# Load dataset
-	data = pd.read_csv('houseprice.csv')
-
-	# Separate into train and test sets
-	X_train, X_test, y_train, y_test =  train_test_split(
-		    data.drop(['Id', 'SalePrice'], axis=1),
-		    data['SalePrice'], test_size=0.3, random_state=0)
-
+# Separate into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(
+        data.drop(['MedHouseVal'], axis=1),
+        data['MedHouseVal'], test_size=0.3, random_state=0)
+	
 
 Now, we want to discretise the 2 variables indicated below into 10 intervals of increasing
 width:
@@ -70,7 +70,7 @@ width:
 .. code:: python
 
 	# set up the discretisation transformer
-	disc = GeometricWidthDiscretiser(bins=10, variables=['LotArea', 'GrLivArea'])
+    disc = GeometricWidthDiscretiser(bins=10, variables=['MedInc', 'AveRooms'])
 
 	# fit the transformer
 	disc.fit(X_train)
