@@ -12,9 +12,13 @@ from feature_engine.imputation import CategoricalImputer
 def multimodal_df():
     return pd.DataFrame(
         {
-            "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin", "Madrid"],
+            "city": [
+                "London", "London", "Paris", "Paris", "Berlin", "Berlin", "Madrid"
+            ],
             "country": ["UK", "UK", "FR", "FR", "DE", "DE", "ES"],
-            "one_mode": ["London", "London", "London", "Paris", "Paris", "Berlin", "Berlin"],
+            "one_mode": [
+                "London", "London", "London", "Paris", "Paris", "Berlin", "Berlin"
+            ],
         }
     )
 
