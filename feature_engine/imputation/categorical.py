@@ -6,21 +6,29 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine._check_init_parameters.check_variables import \
-    _check_variables_input_value
+from 
+feature_engine._check_init_parameters.check_variables
+import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring, _imputer_dict_docstring,
-    _n_features_in_docstring, _variables_attribute_docstring)
+    _feature_names_in_docstring,
+    _imputer_dict_docstring,
+    _n_features_in_docstring,
+    _variables_attribute_docstring
+)
 from feature_engine._docstrings.methods import (_fit_transform_docstring,
                                                 _transform_imputers_docstring)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (check_all_variables,
-                                              check_categorical_variables,
-                                              find_all_variables,
-                                              find_categorical_variables)
+from feature_engine.variable_handling import (
+    check_all_variables,
+    check_categorical_variables,
+    find_all_variables,
+    find_categorical_variables
+)
 
 
 @Substitution(
@@ -81,8 +89,8 @@ class CategoricalImputer(BaseImputer):
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
-    errors : str, default='raise'
-        Indicates what to do when the selected imputation_method='frequent'
+    multimodal : str, default='raise'
+        Indicates what to do when imputation_method='frequent'
         and a variable has more than 1 mode.
 
         If 'raise', raises a ValueError and stops the fit.
@@ -150,7 +158,7 @@ class CategoricalImputer(BaseImputer):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
-        if errors not in ("raise", "warn", "ignore"):
+        if not isinstance(errors, str):
             raise ValueError(
                 "errors takes only values 'raise', 'warn', or 'ignore'. "
                 f"Got {errors} instead."
