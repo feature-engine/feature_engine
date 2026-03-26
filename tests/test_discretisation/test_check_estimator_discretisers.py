@@ -1,3 +1,6 @@
+from sklearn import clone
+from sklearn.exceptions import NotFittedError
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -63,3 +66,17 @@ def test_transformers_within_pipeline(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    estimator = clone(estimator)
+
+    X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+    y = pd.Series([0, 1, 0, 1, 0])
+
+    with pytest.raises((ValueError, TypeError, KeyError)):
+        estimator.fit(X, y)
+
+    with pytest.raises(NotFittedError):
+        estimator.transform(X)
