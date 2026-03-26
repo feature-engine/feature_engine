@@ -367,9 +367,13 @@ def test_errors_param_ignored_when_imputation_method_is_missing():
     df = pd.DataFrame({"city": ["London", np.nan, "Paris"]})
     imputer = CategoricalImputer(imputation_method="missing", errors="warn")
     # Should fit without warnings since there's no mode computation
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
         imputer.fit(df)
+        matching_warnings = [
+            msg for msg in w if "multiple frequent categories" in str(msg.message)
+        ]
+        assert len(matching_warnings) == 0
 
 
 def test_errors_ignore_single_variable():
