@@ -7,7 +7,6 @@ import pytest
 from feature_engine.imputation import CategoricalImputer
 
 
-# --- Shared fixture: perfectly multimodal variable ---
 @pytest.fixture
 def multimodal_df():
     return pd.DataFrame(
