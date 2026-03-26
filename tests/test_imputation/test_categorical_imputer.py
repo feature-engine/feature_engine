@@ -345,9 +345,10 @@ def test_multimodal_imputation_result(multimodal_df, errors):
         with pytest.warns(UserWarning, match="multiple frequent categories"):
             imputer.fit(multimodal_df)
     else:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
             imputer.fit(multimodal_df)
+            assert len(w) == 0
 
     assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
     assert imputer.imputer_dict_["country"] == multimodal_df["country"].mode()[0]
