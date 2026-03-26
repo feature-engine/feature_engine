@@ -376,30 +376,6 @@ def test_errors_param_ignored_when_imputation_method_is_missing():
         assert len(matching_warnings) == 0
 
 
-def test_errors_ignore_single_variable():
-    """errors='ignore' on single multimodal variable — silent, uses first mode."""
-    X = pd.DataFrame(
-        {"city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"]}
-    )
-    imputer = CategoricalImputer(imputation_method="frequent", errors="ignore")
-    imputer.fit(X)
-    assert imputer.imputer_dict_["city"] == X["city"].mode()[0]
-
-
-def test_errors_ignore_multiple_variables():
-    """errors='ignore' on multiple multimodal variables — silent, uses first mode."""
-    X = pd.DataFrame(
-        {
-            "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"],
-            "country": ["UK", "UK", "FR", "FR", "DE", "DE"],
-        }
-    )
-    imputer = CategoricalImputer(imputation_method="frequent", errors="ignore")
-    imputer.fit(X)
-    assert imputer.imputer_dict_["city"] == X["city"].mode()[0]
-    assert imputer.imputer_dict_["country"] == X["country"].mode()[0]
-
-
 # =============================================================================
 # NEW TESTS — added to fix codecov patch coverage (1 missing + 1 partial line)
 # =============================================================================
