@@ -374,8 +374,13 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
             if non_positive_vars:
                 c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
             C_ = c_dict
-        else:
+        elif isinstance(self.C, (int, float, dict)):
             C_ = self.C
+        else:
+            raise ValueError(
+                f"C can take only 'auto', integers, floats or dicts. "
+                f"Got {self.C} instead."
+            )
 
         self.variables_ = variables_
         self.C_ = C_
