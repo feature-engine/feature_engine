@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -45,6 +45,9 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     majority of the observations in the dataset. This behaviour can be specified with
     the parameter `top_categories`.
 
+    OneHotEncoder can also encode a user defined subset of categories for each variable.
+    See parameter `custom_categories`.
+
     The encoder will encode only categorical variables by default (type 'object' or
     'categorical'). You can pass a list of variables to encode. Alternatively, the
     encoder will find and encode all categorical variables (type 'object' or
@@ -81,6 +84,17 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         those popular categories and the rest will be ignored, i.e., they will show the
         value 0 in all the binary variables. Note that if `top_categories` is not None,
         the parameter `drop_last` is ignored.
+
+        If `top_categories` is being used, `custom_categories` must equal None.
+
+    custom_categories: dict, default=None
+        Accepts a dictionary in which the keys are the variables that the use would like
+        to transform. The keys must match the values of `variables` param.
+
+        The dicitonary values are lists of the categories for each selected variable
+        that are to be one-hot encoded.
+
+        If `custom_categories` is being used, `top_categories` must equal None.
 
     drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
@@ -160,9 +174,12 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     def __init__(
         self,
         top_categories: Optional[int] = None,
+        custom_categories: Optional[Dict] = None,
         drop_last: bool = False,
         drop_last_binary: bool = False,
-        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        variables: Union[
+            None, int, str, List[Union[str, int]], Iterable[Union[str, int]]
+        ] = None,
         ignore_format: bool = False,
     ) -> None:
 
@@ -173,6 +190,40 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 "top_categories takes only positive integers. "
                 f"Got {top_categories} instead"
             )
+
+        if top_categories is not None and custom_categories is not None:
+            raise ValueError(
+                "Both top_cagetories and custom_categories have values. "
+                "Only one of the two parameters may be used at a time. "
+                f"Got {top_categories} for top_categories. "
+                f"Got {custom_categories} for custom_categories."
+            )
+
+        if custom_categories is not None and not isinstance(custom_categories, dict):
+            raise ValueError(
+                "custom_categories must be a dictionary. "
+                f"Got {custom_categories} instead."
+            )
+
+        if custom_categories:
+            # check that all values of custom_categories key-value pairs are lists
+            non_lists_custom_categories = [
+                val for val in custom_categories.values() if not isinstance(val, list)
+            ]
+            if len(non_lists_custom_categories) > 0:
+                raise ValueError(
+                    "custom_categories must be a dictionary that has lists as "
+                    f"its values. Got {custom_categories} instead."
+                )
+
+            # check that custom_categories variable match variables
+            cust_cat_vars = sorted(list(custom_categories.keys()))
+            if cust_cat_vars != sorted(variables):
+                raise ValueError(
+                    "Variables listed in custom_categories must match features "
+                    f"listed in the variables param. Got {cust_cat_vars} for "
+                    f"custom_categories and {sorted(variables)} for variables."
+                )
 
         if not isinstance(drop_last, bool):
             raise ValueError(
@@ -187,6 +238,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
+        self.custom_categories = custom_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
 
@@ -212,6 +264,9 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
+        if self.custom_categories:
+            self._check_custom_categories_in_dataset(X)
+
         self.encoder_dict_ = {}
 
         for var in variables_:
@@ -226,6 +281,9 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                     .head(self.top_categories)
                     .index
                 ]
+            # assign custom_categories to encoder_dict_
+            elif self.custom_categories:
+                self.encoder_dict_ = self.custom_categories
 
             else:
                 category_ls = list(X[var].unique())
@@ -306,3 +364,17 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         feature_names = [f for f in feature_names if f not in self.variables_]
 
         return feature_names
+
+    def _check_custom_categories_in_dataset(self, X: pd.DataFrame) -> None:
+        """
+        Raise an error if user entered categories in custom_categories that do
+        not exist within dataset.
+
+        """
+        for var, categories in self.custom_categories.items():
+            unique_values = set(X[var].unique())
+            if not set(categories).issubset(unique_values):
+                raise ValueError(
+                    f"All categorical values provided in {var} of custom_categories "
+                    "do not exist within the dataset."
+                )
