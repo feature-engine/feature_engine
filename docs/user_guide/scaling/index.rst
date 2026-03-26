@@ -57,3 +57,4 @@ Scalers
    :maxdepth: 1
 
    MeanNormalizationScaler
+   GroupStandardScaler
