@@ -127,7 +127,6 @@ class LogTransformer(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
         X, variables_ = self._fit_setup(X)
         self.variables_ = variables_
         self._get_feature_names_in(X)
@@ -363,13 +362,17 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
             X, variables_ = self._fit_setup(X)
 
         # calculate C to add to each variable
+        C_: Union[int, float, Dict[Union[str, int], Union[float, int]]]
         if self.C == "auto":
             # we add 0 to positive variables
-            c_dict = {var: 0 for var in variables_ if X[var].min() > 0}
+            c_dict: Dict[Union[str, int], Union[float, int]] = {
+                var: 0.0 for var in variables_ if X[var].min() > 0
+            }
 
             # we add the minimum plus 1 to non-positive variables
             non_positive_vars = [var for var in variables_ if var not in c_dict.keys()]
-            c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
+            if non_positive_vars:
+                c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
             C_ = c_dict
         else:
             C_ = self.C
