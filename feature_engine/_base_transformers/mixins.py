@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 import pandas as pd
 from numpy import ndarray
@@ -46,7 +46,9 @@ class TransformXyMixin:
 
 
 class FitFromDictMixin:
-    def _fit_from_dict(self, X: pd.DataFrame, user_dict_: Dict) -> pd.DataFrame:
+    def _fit_from_dict(
+        self, X: pd.DataFrame, user_dict_: Dict
+    ) -> Tuple[pd.DataFrame, List[Union[str, int]]]:
         """
         Checks that input is a dataframe, checks that variables in the dictionary
         entered by the user are of type numerical.
@@ -71,6 +73,9 @@ class FitFromDictMixin:
         -------
         X : Pandas DataFrame
             The same dataframe entered as parameter
+
+        variables_ : List
+            The variables in the dictionary.
         """
         # check input dataframe
         X = check_X(X)
@@ -83,10 +88,7 @@ class FitFromDictMixin:
         _check_contains_na(X, variables_)
         _check_contains_inf(X, variables_)
 
-        self.variables_ = variables_
-        self._get_feature_names_in(X)
-
-        return X
+        return X, variables_
 
 
 class GetFeatureNamesOutMixin:

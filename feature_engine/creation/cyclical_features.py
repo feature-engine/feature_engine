@@ -146,13 +146,11 @@ class CyclicalFeatures(
         y: pandas Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-        variables_: List[Union[str, int]]
         if self.max_values is None:
             X, variables_ = self._fit_setup(X)
             max_values_ = X[variables_].max().to_dict()
         else:
-            X = super()._fit_from_dict(X, self.max_values)
-            variables_ = self.variables  # type: ignore
+            X, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values
 
         self.variables_ = variables_
