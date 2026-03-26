@@ -376,37 +376,22 @@ def test_errors_param_ignored_when_imputation_method_is_missing():
         assert len(matching_warnings) == 0
 
 
-def test_errors_warn_single_variable_emits_userwarning():
-    X = pd.DataFrame(
-        {"city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"]}
-    )
+def test_warning_when_single_variable_is_multimodal(multimodal_df):
     imputer = CategoricalImputer(
         imputation_method="frequent", variables="city", errors="warn"
     )
     with pytest.warns(UserWarning, match="multiple frequent categories"):
-        imputer.fit(X)
-    # First mode is used
-    assert imputer.imputer_dict_["city"] == X["city"].mode()[0]
+        imputer.fit(multimodal_df)
+    assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
 
 
-def test_errors_raise_one_multimodal_among_multiple_variables():
+def test_errors_raise_when_only_one_variable_is_multimodal(multimodal_df):
     """
-    Covers the `varnames_str = varnames[0]` else-branch in the MULTI-VARIABLE block.
-
     This branch is reached when multiple variables are selected but only ONE of them
-    turns out to have multiple modes. The existing tests either raise on all-multimodal
-    datasets (len(varnames) > 1) or use errors='ignore'/'warn' (skipping the raise).
-    Here we select two variables where only 'city' is multimodal, triggering the
-    singular else-branch before the ValueError is raised.
+    turns out to have multiple modes.
     """
-    X = pd.DataFrame(
-        {
-            # 'city': 3 equally frequent values → multimodal
-            "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"],
-            # 'country': clear single mode (UK appears 3×, others once)
-            "country": ["UK", "UK", "UK", "FR", "DE", "SE"],
-        }
+    imputer = CategoricalImputer(
+        imputation_method="frequent", variables=["city", "one_mode"], errors="raise"
     )
-    imputer = CategoricalImputer(imputation_method="frequent", errors="raise")
     with pytest.raises(ValueError, match="city"):
-        imputer.fit(X)
+        imputer.fit(multimodal_df)
