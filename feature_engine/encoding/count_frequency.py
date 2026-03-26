@@ -6,34 +6,26 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-)
+    _feature_names_in_docstring, _n_features_in_docstring,
+    _variables_attribute_docstring)
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _missing_values_docstring,
-    _variables_categorical_docstring,
-)
+    _missing_values_docstring, _variables_categorical_docstring)
 from feature_engine._docstrings.init_parameters.encoders import (
-    _ignore_format_docstring,
-    _unseen_docstring,
-)
-from feature_engine._docstrings.methods import (
-    _fit_transform_docstring,
-    _inverse_transform_docstring,
-    _transform_encoders_docstring,
-)
+    _ignore_format_docstring, _unseen_docstring)
+from feature_engine._docstrings.methods import (_fit_transform_docstring,
+                                                _inverse_transform_docstring,
+                                                _transform_encoders_docstring)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding._helper_functions import check_parameter_unseen
-from feature_engine.encoding.base_encoder import (
-    CategoricalInitMixinNA,
-    CategoricalMethodsMixin,
-)
+from feature_engine.encoding.base_encoder import (CategoricalInitMixinNA,
+                                                  CategoricalMethodsMixin)
 
 _unseen_docstring = (
     _unseen_docstring
     + """ If `'encode'`, unseen categories will be encoded as 0 (zero)."""
+    + """ If `'warn'`, unseen categories will be encoded as NaN and a"""
+    + """ UserWarning is raised listing the unseen categories per variable."""
 )
 
 
@@ -166,7 +158,7 @@ class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 f"Got {encoding_method} instead."
             )
 
-        check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
+        check_parameter_unseen(unseen, ["ignore", "raise", "encode", "warn"])
         super().__init__(variables, missing_values, ignore_format)
         self.encoding_method = encoding_method
         self.unseen = unseen
