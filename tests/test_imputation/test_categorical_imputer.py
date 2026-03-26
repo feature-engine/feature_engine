@@ -355,10 +355,11 @@ def test_multimodal_imputation_result(multimodal_df, errors):
             assert len(matching_warnings) == 0
 
 
-def test_errors_invalid_value_raises():
+@pytest.mark.parametrize("errors", ["bad_value", 1, True])
+def test_errors_invalid_value_raises(errors):
     """Passing an unsupported value for errors should raise ValueError at init."""
     with pytest.raises(ValueError, match="errors takes only values"):
-        CategoricalImputer(imputation_method="frequent", errors="bad_value")
+        CategoricalImputer(imputation_method="frequent", errors=errors)
 
 
 def test_errors_param_ignored_when_imputation_method_is_missing():
