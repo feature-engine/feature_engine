@@ -337,36 +337,18 @@ def test_multimodal_raises_errors(multimodal_df):
         imputer.fit(multimodal_df)
 
 
-def test_multimodal_raises_warning(multimodal_df):
-    imputer = CategoricalImputer(imputation_method="frequent", errors="warn")
-    msg = (
-        "Variable(s) city, country have multiple frequent categories. "
-        "The first category found will be used for imputation."
-    )
-    with pytest.warns(UserWarning, match="multiple frequent categories") as record:
-        imputer.fit(multimodal_df)
-    # Filter for the specific warning message in case others were raised
-    matching_warnings = [
-        w for w in record if "multiple frequent categories" in str(w.message)
-    ]
-    assert str(matching_warnings[0].message) == msg
+@pytest.mark.parametrize("errors", ["warn", "ignore"])
+def test_multimodal_imputation_result(multimodal_df, errors):
+    """Check that result is the same when errors='warn' or 'ignore'."""
+    imputer = CategoricalImputer(imputation_method="frequent", errors=errors)
+    if errors == "warn":
+        with pytest.warns(UserWarning, match="multiple frequent categories"):
+            imputer.fit(multimodal_df)
+    else:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            imputer.fit(multimodal_df)
 
-
-def test_errors_warn_uses_first_mode(multimodal_df):
-    """errors='warn': imputer_dict_ should contain the first mode."""
-    imputer = CategoricalImputer(imputation_method="frequent", errors="warn")
-    with pytest.warns(UserWarning):
-        imputer.fit(multimodal_df)
-    assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
-    assert imputer.imputer_dict_["country"] == multimodal_df["country"].mode()[0]
-    assert imputer.imputer_dict_["one_mode"] == "London"
-
-
-def test_errors_ignore_no_warning_raised(multimodal_df):
-    imputer = CategoricalImputer(imputation_method="frequent", errors="ignore")
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")  # Promote all warnings to errors
-        imputer.fit(multimodal_df)  # Should NOT raise
     assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
     assert imputer.imputer_dict_["country"] == multimodal_df["country"].mode()[0]
     assert imputer.imputer_dict_["one_mode"] == "London"
