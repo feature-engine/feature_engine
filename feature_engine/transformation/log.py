@@ -128,7 +128,9 @@ class LogTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
 
         # check contains zero or negative values
         if (X[self.variables_] <= 0).any().any():
@@ -358,7 +360,9 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         if isinstance(self.C, dict):
             X = super()._fit_from_dict(X, self.C)
         else:
-            X = super().fit(X)
+            X, variables_ = self._fit_setup(X)
+            self.variables_ = variables_
+            self._get_feature_names_in(X)
 
         self.C_ = self.C
 

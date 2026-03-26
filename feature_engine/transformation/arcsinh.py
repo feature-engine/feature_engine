@@ -161,7 +161,9 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe and find/check numerical variables
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
 
         return self
 

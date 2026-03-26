@@ -121,7 +121,9 @@ class ArcsinTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
 
         # check if the variables are in the correct range
         if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():

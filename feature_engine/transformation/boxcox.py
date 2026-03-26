@@ -135,12 +135,16 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
 
-        self.lambda_dict_ = {}
+        lambda_dict_ = {}
 
-        for var in self.variables_:
-            _, self.lambda_dict_[var] = stats.boxcox(X[var])
+        for var in variables_:
+            _, lambda_dict_[var] = stats.boxcox(X[var])
+
+        self.variables_ = variables_
+        self.lambda_dict_ = lambda_dict_
+        self._get_feature_names_in(X)
 
         return self
 
