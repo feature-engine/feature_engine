@@ -1,3 +1,4 @@
+import re
 import warnings
 
 import numpy as np
@@ -159,7 +160,8 @@ def test_imputation_of_numerical_vars_cast_as_object_and_returned_as_object(df_n
 
 
 def test_error_when_imputation_method_not_frequent_or_missing():
-    with pytest.raises(ValueError):
+    msg = "imputation_method takes only values 'missing' or 'frequent'"
+    with pytest.raises(ValueError, match=msg):
         CategoricalImputer(imputation_method="arbitrary")
 
 
@@ -170,10 +172,8 @@ def test_error_when_variable_contains_multiple_modes(df_na):
         "using the first most frequent category found."
     )
     imputer = CategoricalImputer(imputation_method="frequent", variables="Name")
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=re.escape(msg)):
         imputer.fit(df_na)
-    # check that error message matches
-    assert str(record.value) == msg
 
     msg = (
         "The variable(s) Name contain(s) multiple frequent categories. "
@@ -181,10 +181,8 @@ def test_error_when_variable_contains_multiple_modes(df_na):
         "using the first most frequent category found."
     )
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=re.escape(msg)):
         imputer.fit(df_na)
-    # check that error message matches
-    assert str(record.value) == msg
 
     df_ = df_na.copy()
     df_["Name_dup"] = df_["Name"]
@@ -194,10 +192,8 @@ def test_error_when_variable_contains_multiple_modes(df_na):
         "using the first most frequent category found."
     )
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=re.escape(msg)):
         imputer.fit(df_)
-    # check that error message matches
-    assert str(record.value) == msg
 
 
 def test_impute_numerical_variables(df_na):
@@ -326,11 +322,8 @@ def test_variables_cast_as_category_frequent(df_na):
 )
 def test_error_when_ignore_format_is_not_boolean(ignore_format):
     msg = "ignore_format takes only booleans True and False"
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=msg):
         CategoricalImputer(imputation_method="missing", ignore_format=ignore_format)
-
-    # check that error message matches
-    assert str(record.value) == msg
 
 
 def test_multimodal_raises_errors(multimodal_df):
@@ -340,9 +333,8 @@ def test_multimodal_raises_errors(multimodal_df):
         "Set errors='warn' or errors='ignore' to allow imputation "
         "using the first most frequent category found."
     )
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=re.escape(msg)):
         imputer.fit(multimodal_df)
-    assert str(record.value) == msg
 
 
 def test_multimodal_raises_warning(multimodal_df):
