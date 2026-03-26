@@ -50,14 +50,15 @@ class AddMissingIndicator(BaseImputer):
         data or to all variables.
 
         **True**: indicators will be created only for those variables that showed
-        missing data during `fit()`.
+        missing data during `fit()`. Only valid when ``variables=None``.
 
-        **False**: indicators will be created for all variables
+        **False**: indicators will be created for all variables passed in
+        ``variables``, or all variables in the dataset if ``variables=None``.
 
     variables: list, default=None
         The list of variables to impute. If None, the imputer will find and
-        select all variables.
-
+        select all variables. If a list of variables is provided,
+        ``missing_only`` must be set to ``False``.
 
     Attributes
     ----------
@@ -110,6 +111,13 @@ class AddMissingIndicator(BaseImputer):
 
         self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
+
+        if self.variables is not None and missing_only is True:
+            raise ValueError(
+                "variables and missing_only cannot be used together. "
+                "Set variables=None to use missing_only=True, or set "
+                "missing_only=False to pass a list of variables."
+            )
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

@@ -1,8 +1,8 @@
 import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
-
 from sklearn.pipeline import Pipeline
 
 from feature_engine.imputation import AddMissingIndicator
@@ -35,7 +35,7 @@ def test_add_indicators_to_all_variables_when_variables_is_none(df_na):
 
 
 def test_add_indicators_to_one_variable(df_na):
-    imputer = AddMissingIndicator(variables="Name")
+    imputer = AddMissingIndicator(missing_only=False, variables="Name")
     X_transformed = imputer.fit_transform(df_na)
     assert imputer.variables_ == ["Name"]
     assert X_transformed.shape == (8, 7)
@@ -45,14 +45,14 @@ def test_add_indicators_to_one_variable(df_na):
 
 def test_detect_variables_with_missing_data_in_variables_entered_by_user(df_na):
     imputer = AddMissingIndicator(
-        missing_only=True, variables=["City", "Studies", "Age", "dob"]
+        missing_only=False, variables=["City", "Studies", "Age", "dob"]
     )
     X_transformed = imputer.fit_transform(df_na)
     assert imputer.variables == ["City", "Studies", "Age", "dob"]
-    assert imputer.variables_ == ["City", "Studies", "Age"]
-    assert X_transformed.shape == (8, 9)
+    assert imputer.variables_ == ["City", "Studies", "Age", "dob"]
+    assert X_transformed.shape == (8, 10)
     assert "City_na" in X_transformed.columns
-    assert "dob_na" not in X_transformed.columns
+    assert "dob_na" in X_transformed.columns
     assert X_transformed["City_na"].sum() == 2
 
 
@@ -123,3 +123,25 @@ def test_no_performance_warning_with_many_variables():
         issubclass(w.category, pd.errors.PerformanceWarning)
         for w in captured
     ), "PerformanceWarning was raised during transform"
+
+
+# ---------------------------------------------------------------------------
+# Tests for variables + missing_only mutual exclusivity
+# ---------------------------------------------------------------------------
+
+def test_error_when_variables_and_missing_only_true():
+    """Passing both variables and missing_only=True should raise ValueError."""
+    with pytest.raises(ValueError, match="variables and missing_only"):
+        AddMissingIndicator(missing_only=True, variables=["Age", "Name"])
+
+
+def test_no_error_when_variables_and_missing_only_false():
+    """variables + missing_only=False is valid — should not raise."""
+    imputer = AddMissingIndicator(missing_only=False, variables=["Age"])
+    assert imputer.variables is not None
+
+
+def test_no_error_when_variables_none_and_missing_only_true():
+    """variables=None + missing_only=True is valid — default case."""
+    imputer = AddMissingIndicator(missing_only=True, variables=None)
+    assert imputer.missing_only is True
