@@ -77,17 +77,14 @@ class FitFromDictMixin:
 
         # find or check for numerical variables
         variables = list(user_dict_.keys())
-        self.variables_ = check_numerical_variables(X, variables)
+        variables_ = check_numerical_variables(X, variables)
 
         # check if dataset contains na or inf
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
+        _check_contains_na(X, variables_)
+        _check_contains_inf(X, variables_)
 
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        # save train set shape
-        self.n_features_in_ = X.shape[1]
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
 
         return X
 

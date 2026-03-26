@@ -48,44 +48,14 @@ class BaseNumericalTransformer(
 
         return X, variables_
 
-    def fit(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Checks that input is a dataframe, finds numerical variables, or alternatively
-        checks that variables entered by the user are of type numerical.
+    def _get_feature_names_in(self, X):
+        """Get the names and number of features in the train set (the dataframe
+        used during fit)."""
 
-        Parameters
-        ----------
-        X : Pandas DataFrame
-
-        y : Pandas Series, np.array. Default = None
-            Parameter is necessary for compatibility with sklearn Pipeline.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame or a numpy array
-            If any of the user provided variables are not numerical
-        ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
-
-        Returns
-        -------
-        X : Pandas DataFrame
-            The same dataframe entered as parameter
-        """
-
-        X, variables_ = self._fit_setup(X)
-
-        self.variables_ = variables_
-
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        # save train set shape
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
-        return X
+        return self
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """
