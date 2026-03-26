@@ -11,8 +11,9 @@ from feature_engine.imputation import CategoricalImputer
 def multimodal_df():
     return pd.DataFrame(
         {
-            "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"],
-            "country": ["UK", "UK", "FR", "FR", "DE", "DE"],
+            "city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin", "Madrid"],
+            "country": ["UK", "UK", "FR", "FR", "DE", "DE", "ES"],
+            "one_mode": ["London", "London", "London", "Paris", "Paris", "Berlin", "Berlin"],
         }
     )
 
@@ -332,18 +333,31 @@ def test_error_when_ignore_format_is_not_boolean(ignore_format):
     assert str(record.value) == msg
 
 
-def test_errors_raise_on_multimodal_is_default(multimodal_df):
-    """Default behaviour: raise ValueError on multimodal variable."""
+def test_multimodal_raises_errors(multimodal_df):
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError, match="multiple frequent categories"):
+    msg = (
+        "The variable(s) city, country contain(s) multiple frequent categories. "
+        "Set errors='warn' or errors='ignore' to allow imputation "
+        "using the first most frequent category found."
+    )
+    with pytest.raises(ValueError) as record:
         imputer.fit(multimodal_df)
+    assert str(record.value) == msg
 
 
-def test_errors_warn_emits_userwarning(multimodal_df):
-    """errors='warn': UserWarning must be emitted."""
+def test_multimodal_raises_warning(multimodal_df):
     imputer = CategoricalImputer(imputation_method="frequent", errors="warn")
-    with pytest.warns(UserWarning, match="multiple frequent categories"):
+    msg = (
+        "Variable(s) city, country have multiple frequent categories. "
+        "The first category found will be used for imputation."
+    )
+    with pytest.warns(UserWarning, match="multiple frequent categories") as record:
         imputer.fit(multimodal_df)
+    # Filter for the specific warning message in case others were raised
+    matching_warnings = [
+        w for w in record if "multiple frequent categories" in str(w.message)
+    ]
+    assert str(matching_warnings[0].message) == msg
 
 
 def test_errors_warn_uses_first_mode(multimodal_df):
@@ -351,17 +365,19 @@ def test_errors_warn_uses_first_mode(multimodal_df):
     imputer = CategoricalImputer(imputation_method="frequent", errors="warn")
     with pytest.warns(UserWarning):
         imputer.fit(multimodal_df)
-    expected = multimodal_df["city"].mode()[0]
-    assert imputer.imputer_dict_["city"] == expected
+    assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
+    assert imputer.imputer_dict_["country"] == multimodal_df["country"].mode()[0]
+    assert imputer.imputer_dict_["one_mode"] == "London"
 
 
 def test_errors_ignore_no_warning_raised(multimodal_df):
-    """errors='ignore': no warnings should be emitted."""
     imputer = CategoricalImputer(imputation_method="frequent", errors="ignore")
     with warnings.catch_warnings():
         warnings.simplefilter("error")  # Promote all warnings to errors
         imputer.fit(multimodal_df)  # Should NOT raise
     assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
+    assert imputer.imputer_dict_["country"] == multimodal_df["country"].mode()[0]
+    assert imputer.imputer_dict_["one_mode"] == "London"
 
 
 def test_errors_invalid_value_raises():
@@ -409,13 +425,6 @@ def test_errors_ignore_multiple_variables():
 # =============================================================================
 
 def test_errors_warn_single_variable_emits_userwarning():
-    """
-    Covers the warnings.warn() inside the SINGLE-VARIABLE block of fit().
-
-    The existing test_errors_warn_emits_userwarning uses multimodal_df (2 columns),
-    which goes through the multi-variable code path. This test uses variables='city'
-    (a single variable) to hit the separate single-variable warn branch.
-    """
     X = pd.DataFrame(
         {"city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"]}
     )

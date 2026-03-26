@@ -6,9 +6,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
-from 
-feature_engine._check_init_parameters.check_variables
-import (
+from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine._docstrings.fit_attributes import (
@@ -158,7 +156,7 @@ class CategoricalImputer(BaseImputer):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
-        if not isinstance(errors, str):
+        if errors not in ["raise", "warn", "ignore"]:
             raise ValueError(
                 "errors takes only values 'raise', 'warn', or 'ignore'. "
                 f"Got {errors} instead."
