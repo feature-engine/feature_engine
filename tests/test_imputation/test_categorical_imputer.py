@@ -376,10 +376,6 @@ def test_errors_param_ignored_when_imputation_method_is_missing():
         assert len(matching_warnings) == 0
 
 
-# =============================================================================
-# NEW TESTS — added to fix codecov patch coverage (1 missing + 1 partial line)
-# =============================================================================
-
 def test_errors_warn_single_variable_emits_userwarning():
     X = pd.DataFrame(
         {"city": ["London", "London", "Paris", "Paris", "Berlin", "Berlin"]}
