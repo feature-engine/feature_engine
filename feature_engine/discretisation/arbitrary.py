@@ -155,6 +155,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
 
         # for consistency wit the rest of the discretisers, we add this attribute
         self.binner_dict_ = self.binning_dict
+        self._get_feature_names_in(X)
 
         return self
 

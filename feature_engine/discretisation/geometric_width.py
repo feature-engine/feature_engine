@@ -159,12 +159,12 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         """
 
         # check input dataframe
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
 
         # fit
-        self.binner_dict_ = {}
+        binner_dict_ = {}
 
-        for var in self.variables_:
+        for var in variables_:
             min_, max_ = X[var].min(), X[var].max()
             increment = np.power(max_ - min_, 1.0 / self.bins)
             bins = np.r_[
@@ -172,6 +172,10 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
             ]
             bins = np.sort(bins)
             bins = list(bins)
-            self.binner_dict_[var] = bins
+            binner_dict_[var] = bins
+
+        self.variables_ = variables_
+        self.binner_dict_ = binner_dict_
+        self._get_feature_names_in(X)
 
         return self

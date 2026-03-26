@@ -190,6 +190,5 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
         self.binner_dict_ = binner_dict_
         self.variables_ = variables_
-        self.feature_names_in_ = X.columns.tolist()
-        self.n_features_in_ = X.shape[1]
+        self._get_feature_names_in(X)
         return self
