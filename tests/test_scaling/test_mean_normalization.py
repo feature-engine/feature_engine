@@ -2,7 +2,6 @@ import re
 
 import pandas as pd
 import pytest
-from sklearn import clone
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.scaling import MeanNormalizationScaler
