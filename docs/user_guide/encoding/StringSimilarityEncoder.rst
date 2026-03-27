@@ -264,11 +264,15 @@ Below, we see the resulting dataframe:
     393             0.0               0.437500        0.666667        0.666667
 
 
-More details
-------------
+Additional resources
+--------------------
 
-For more details into :class:`StringSimilarityEncoder()`'s functionality visit:
+For tutorials about feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/StringSimilarityEncoder.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

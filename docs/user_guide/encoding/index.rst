@@ -399,6 +399,7 @@ Encoders
    CountFrequencyEncoder
    MeanEncoder
    WoEEncoder
+   StringSimilarityEncoder
    DecisionTreeEncoder
    RareLabelEncoder
-   StringSimilarityEncoder
+
