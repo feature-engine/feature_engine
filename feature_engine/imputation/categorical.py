@@ -15,8 +15,10 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring
 )
-from feature_engine._docstrings.methods import (_fit_transform_docstring,
-                                                _transform_imputers_docstring)
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _transform_imputers_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
