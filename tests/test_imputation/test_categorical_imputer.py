@@ -172,7 +172,7 @@ def test_error_when_imputation_method_not_frequent_or_missing():
 def test_error_when_variable_contains_multiple_modes(df_na):
     msg = (
         "The variable Name contains multiple frequent categories. "
-        "Set errors='warn' or errors='ignore' to allow imputation "
+        "Set multimodal='warn' or multimodal='ignore' to allow imputation "
         "using the first most frequent category found."
     )
     imputer = CategoricalImputer(imputation_method="frequent", variables="Name")
@@ -181,7 +181,7 @@ def test_error_when_variable_contains_multiple_modes(df_na):
 
     msg = (
         "The variable(s) Name contain(s) multiple frequent categories. "
-        "Set errors='warn' or errors='ignore' to allow imputation "
+        "Set multimodal='warn' or multimodal='ignore' to allow imputation "
         "using the first most frequent category found."
     )
     imputer = CategoricalImputer(imputation_method="frequent")
@@ -192,7 +192,7 @@ def test_error_when_variable_contains_multiple_modes(df_na):
     df_["Name_dup"] = df_["Name"]
     msg = (
         "The variable(s) Name, Name_dup contain(s) multiple frequent categories. "
-        "Set errors='warn' or errors='ignore' to allow imputation "
+        "Set multimodal='warn' or multimodal='ignore' to allow imputation "
         "using the first most frequent category found."
     )
     imputer = CategoricalImputer(imputation_method="frequent")
@@ -334,18 +334,18 @@ def test_multimodal_raises_errors(multimodal_df):
     imputer = CategoricalImputer(imputation_method="frequent")
     msg = (
         "The variable(s) city, country contain(s) multiple frequent categories. "
-        "Set errors='warn' or errors='ignore' to allow imputation "
+        "Set multimodal='warn' or multimodal='ignore' to allow imputation "
         "using the first most frequent category found."
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
         imputer.fit(multimodal_df)
 
 
-@pytest.mark.parametrize("errors", ["warn", "ignore"])
-def test_multimodal_imputation_result(multimodal_df, errors):
-    """Check that result is the same when errors='warn' or 'ignore'."""
-    imputer = CategoricalImputer(imputation_method="frequent", errors=errors)
-    if errors == "warn":
+@pytest.mark.parametrize("multimodal", ["warn", "ignore"])
+def test_multimodal_imputation_result(multimodal_df, multimodal):
+    """Check that result is the same when multimodal='warn' or 'ignore'."""
+    imputer = CategoricalImputer(imputation_method="frequent", multimodal=multimodal)
+    if multimodal == "warn":
         with pytest.warns(UserWarning, match="multiple frequent categories"):
             imputer.fit(multimodal_df)
     else:
@@ -359,17 +359,17 @@ def test_multimodal_imputation_result(multimodal_df, errors):
             assert len(matching_warnings) == 0
 
 
-@pytest.mark.parametrize("errors", ["bad_value", 1, True])
-def test_errors_invalid_value_raises(errors):
-    """Passing an unsupported value for errors should raise ValueError at init."""
-    with pytest.raises(ValueError, match="errors takes only values"):
-        CategoricalImputer(imputation_method="frequent", errors=errors)
+@pytest.mark.parametrize("multimodal", ["bad_value", 1, True])
+def test_multimodal_invalid_value_raises(multimodal):
+    """Passing an unsupported value for multimodal should raise ValueError at init."""
+    with pytest.raises(ValueError, match="multimodal takes only values"):
+        CategoricalImputer(imputation_method="frequent", multimodal=multimodal)
 
 
-def test_errors_param_ignored_when_imputation_method_is_missing():
-    """errors param has no effect for imputation_method='missing'."""
+def test_multimodal_param_ignored_when_imputation_method_is_missing():
+    """multimodal param has no effect for imputation_method='missing'."""
     df = pd.DataFrame({"city": ["London", np.nan, "Paris"]})
-    imputer = CategoricalImputer(imputation_method="missing", errors="warn")
+    imputer = CategoricalImputer(imputation_method="missing", multimodal="warn")
     # Should fit without warnings since there's no mode computation
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -382,20 +382,36 @@ def test_errors_param_ignored_when_imputation_method_is_missing():
 
 def test_warning_when_single_variable_is_multimodal(multimodal_df):
     imputer = CategoricalImputer(
-        imputation_method="frequent", variables="city", errors="warn"
+        imputation_method="frequent", variables="city", multimodal="warn"
     )
     with pytest.warns(UserWarning, match="multiple frequent categories"):
         imputer.fit(multimodal_df)
     assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
 
 
-def test_errors_raise_when_only_one_variable_is_multimodal(multimodal_df):
+def test_warning_when_single_variable_in_list_is_multimodal(multimodal_df):
+    # Test for multimodal='warn' when passing 1 variable in a list
+    # to the variables parameter.
+    imputer = CategoricalImputer(
+        imputation_method="frequent", variables=["city"], multimodal="warn"
+    )
+    with pytest.warns(UserWarning) as record:
+        imputer.fit(multimodal_df)
+
+    # check that warning was raised exactly once
+    assert len(record) == 1
+    # check that warning message is as expected
+    assert "Variable city has multiple frequent categories" in str(record[0].message)
+    assert imputer.imputer_dict_["city"] == multimodal_df["city"].mode()[0]
+
+
+def test_multimodal_raise_when_only_one_variable_is_multimodal(multimodal_df):
     """
     This branch is reached when multiple variables are selected but only ONE of them
     turns out to have multiple modes.
     """
     imputer = CategoricalImputer(
-        imputation_method="frequent", variables=["city", "one_mode"], errors="raise"
+        imputation_method="frequent", variables=["city", "one_mode"], multimodal="raise"
     )
     with pytest.raises(ValueError, match="city"):
         imputer.fit(multimodal_df)

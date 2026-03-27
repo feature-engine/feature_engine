@@ -146,7 +146,7 @@ class CategoricalImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_object: bool = False,
         ignore_format: bool = False,
-        errors: str = "raise",
+        multimodal: str = "raise",
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -156,10 +156,10 @@ class CategoricalImputer(BaseImputer):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
-        if errors not in ["raise", "warn", "ignore"]:
+        if multimodal not in ["raise", "warn", "ignore"]:
             raise ValueError(
-                "errors takes only values 'raise', 'warn', or 'ignore'. "
-                f"Got {errors} instead."
+                "multimodal takes only values 'raise', 'warn', or 'ignore'. "
+                f"Got {multimodal} instead."
             )
 
         self.imputation_method = imputation_method
@@ -167,7 +167,7 @@ class CategoricalImputer(BaseImputer):
         self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
-        self.errors = errors
+        self.multimodal = multimodal
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -208,14 +208,14 @@ class CategoricalImputer(BaseImputer):
 
                 # Some variables may contain more than 1 mode:
                 if len(mode_vals) > 1:
-                    if self.errors == "raise":
+                    if self.multimodal == "raise":
                         raise ValueError(
                             f"The variable {var} contains multiple "
-                            f"frequent categories. Set errors='warn' or "
-                            f"errors='ignore' to allow imputation using "
+                            f"frequent categories. Set multimodal='warn' or "
+                            f"multimodal='ignore' to allow imputation using "
                             f"the first most frequent category found."
                         )
-                    elif self.errors == "warn":
+                    elif self.multimodal == "warn":
                         warnings.warn(
                             f"Variable {var} has multiple frequent "
                             f"categories. The first category found, "
@@ -239,15 +239,15 @@ class CategoricalImputer(BaseImputer):
                     else:
                         varnames_str = varnames[0]
 
-                    if self.errors == "raise":
+                    if self.multimodal == "raise":
                         raise ValueError(
                             f"The variable(s) {varnames_str} contain(s) "
                             f"multiple frequent categories. Set "
-                            f"errors='warn' or errors='ignore' to allow "
+                            f"multimodal='warn' or multimodal='ignore' to allow "
                             f"imputation using the first most frequent "
                             f"category found."
                         )
-                    elif self.errors == "warn":
+                    elif self.multimodal == "warn":
                         warnings.warn(
                             f"Variable(s) {varnames_str} have multiple "
                             f"frequent categories. The first category "
