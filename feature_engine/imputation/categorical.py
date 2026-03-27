@@ -182,10 +182,8 @@ class CategoricalImputer(BaseImputer):
             y is not needed in this imputation. You can pass None or y.
         """
 
-        # check input dataframe
         X = check_X(X)
 
-        # select variables to encode
         if self.ignore_format is True:
             if self.variables is None:
                 self.variables_ = find_all_variables(X)
@@ -201,12 +199,10 @@ class CategoricalImputer(BaseImputer):
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
 
         elif self.imputation_method == "frequent":
-            # if imputing only 1 variable:
             if len(self.variables_) == 1:
                 var = self.variables_[0]
                 mode_vals = X[var].mode()
 
-                # Some variables may contain more than 1 mode:
                 if len(mode_vals) > 1:
                     if self.multimodal == "raise":
                         raise ValueError(
@@ -225,13 +221,9 @@ class CategoricalImputer(BaseImputer):
 
                 self.imputer_dict_ = {var: mode_vals[0]}
 
-            # imputing multiple variables:
             else:
-                # Returns a dataframe with 1 row if there is one mode per
-                # variable, or more rows if there are more modes:
                 mode_vals = X[self.variables_].mode()
 
-                # Careful: some variables contain multiple modes
                 if len(mode_vals) > 1:
                     varnames = mode_vals.dropna(axis=1).columns.to_list()
                     if len(varnames) > 1:
@@ -262,16 +254,14 @@ class CategoricalImputer(BaseImputer):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        # Frequent category imputation
         if self.imputation_method == "frequent":
             X = super().transform(X)
 
-        # Imputation with string
+
         else:
             X = self._transform(X)
 
-            # if variable is of type category, we need to add the new
-            # category, before filling in the nan
+
             add_cats = {}
             for variable in self.variables_:
                 if X[variable].dtype.name == "category":
@@ -285,13 +275,12 @@ class CategoricalImputer(BaseImputer):
 
             X = X.assign(**add_cats).fillna(self.imputer_dict_)
 
-        # add additional step to return variables cast as object
+
         if self.return_object:
             X[self.variables_] = X[self.variables_].astype("O")
 
         return X
 
-    # Get docstring from BaseClass
     transform.__doc__ = BaseImputer.transform.__doc__
 
     def _more_tags(self):
