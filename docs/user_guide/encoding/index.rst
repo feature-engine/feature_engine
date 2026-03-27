@@ -7,9 +7,8 @@ Categorical Encoding
 ====================
 
 Categorical encoding is the process of converting categorical variables into numeric 
-features. It is an important feature engineering step in most data science projects, 
-as it ensures that machine learning algorithms can appropriately handle and interpret 
-categorical data.
+features. It is an important feature engineering step, as it ensures that machine
+learning algorithms can appropriately handle and interpret categorical data.
 
 There are various categorical encoding methods that we can use to encode categorical 
 features. One hot encoding and ordinal encoding are the most well known, but other 
@@ -19,7 +18,7 @@ after training machine learning models.
 Feature-engine's categorical encoders replace the variables' categorical values by 
 estimated or arbitrary numerical values through various encoding methods. In this page, 
 we will discuss categorical features and the importance of categorical encoding in more 
-detail, and then introduce the various encoding techniques supported by Feature-engine.
+detail, and then introduce the various encoding techniques supported by feature-engine.
 
 Categorical features
 --------------------
@@ -116,13 +115,13 @@ Overfitting
 
 Overfitting occurs when a machine learning model learns the noise and random fluctuations 
 present in the training data in addition to the underlying relationships. This results in a 
-model that performs exceptionally well on the training data but fails to generalize on unseen 
+model that performs exceptionally well on the training data but fails to generalise on unseen
 data (i.e., the model shows low performance on the validation data set).
 
 High cardinality features can lead to overfitting, particularly in tree-based models such 
 as decision trees or random forests. Overfitting occurs because tree-based models will try 
 to perform extensive splitting on the high cardinality feature, making the final tree overly 
-complex. This often leads to poor generalization. Reducing cardinality, often helps mitigate 
+complex. This often leads to poor generalisation. Reducing cardinality, often helps mitigate
 the problem.
 
 Encoding pipeline
@@ -143,7 +142,7 @@ encoding and ordinal encoding are the most commonly used, but other methods can 
 cardinality and account for unseen categories.
 
 In the rest of this page, we'll introduce various methods for encoding categorical data, and 
-highlight the Feature-engine transformer that can carry out this transformation.
+highlight the feature-engine transformer that can carry out this transformation.
 
 One hot encoding
 ~~~~~~~~~~~~~~~~
@@ -178,7 +177,7 @@ Ordinal Encoding
 ~~~~~~~~~~~~~~~~
 
 In ordinal encoding, each category is replaced with an integer value. These numbers are, 
-in general, assigned arbitrarily. With Feature-engine's :class:`OrdinalEncoder`, we have the 
+in general, assigned arbitrarily. With feature-engine's :class:`OrdinalEncoder`, we have the
 option to assign integers arbitrarily, or alternatively, ordered based on the mean target 
 value per category.
 
@@ -311,7 +310,7 @@ blending similar categories together.
 
 Feature-engine's :class:`StringSimilarityEncoder` implements string similarity encoding.
 
-**Summary of Feature-engine's encoders characteristics**
+**Summary of fengine's encoders characteristics**
 
 =================================== ============ ================= ============== ===============================================================
     Transformer                     Regression	 Classification	   Multi-class    Description
@@ -333,7 +332,7 @@ and make the transformers also accept numerical variables as input.
 
 **Monotonicity**
 
-Most Feature-engine's encoders will return, or attempt to return monotonic relationships
+Most feature-engine's encoders will return, or attempt to return monotonic relationships
 between the encoded variable and the target. A monotonic relationship is one in which
 the variable value increases as the values in the other variable increase, or decrease.
 See the following illustration as examples:
@@ -347,13 +346,13 @@ shallower decision trees.
 
 **Regression vs Classification**
 
-Most Feature-engine's encoders are suitable for both regression and classification, with
+Most feature-engine's encoders are suitable for both regression and classification, with
 the exception of the :class:`WoEEncoder()` which is
 designed solely for **binary** classification.
 
 **Multi-class classification**
 
-Finally, some Feature-engine's encoders can handle multi-class targets off-the-shelf for
+Finally, some feature-engine's encoders can handle multi-class targets off-the-shelf for
 example the :class:`OneHotEncoder()`, the :class:`CountFrequencyEncoder()` and the
 :class:`DecisionTreeEncoder()`.
 
@@ -365,7 +364,7 @@ defeat the purpose of these encoding techniques.
 Alternative encoding techniques
 -------------------------------
 
-In addition to the categorical encoding methods supported by Feature-engine, there are 
+In addition to the categorical encoding methods supported by feature-engine, there are
 other methods like feature hashing or binary encoding. These methods are supported by the 
 Python library category encoders. For the time being, we decided not to support these 
 transformations because they return features that are not easy to interpret. And hence, 
@@ -377,52 +376,13 @@ Additional resources
 
 For tutorials about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
 
 Encoders
 --------

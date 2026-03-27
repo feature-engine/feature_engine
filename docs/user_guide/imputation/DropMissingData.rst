@@ -408,7 +408,7 @@ When we dropna from a dataframe, we then need to realign the target. We saw prev
 that we can do that by using the method `transform_x_y`.
 
 We can align the target with the resulting dataframe automatically from within a
-pipeline as well, by utilizing Feature-engine's pipeline.
+pipeline as well, by utilizing feature-engine's pipeline.
 
 Let's start by importing the necessary libraries:
 
@@ -550,7 +550,7 @@ instead, check out our :ref:`missing data imputation <imputation_user_guide>` tr
 Drop columns with nan
 ^^^^^^^^^^^^^^^^^^^^^
 
-At the moment, Feature-engine does not have transformers that will find columns with a
+At the moment, feature-engine does not have transformers that will find columns with a
 certain percentage of missing values and drop them. Instead, you can find those columns
 manually, and then drop them with the help of `DropFeatures` from the selection module.
 
@@ -573,4 +573,4 @@ For tutorials about missing data imputation methods check out these resources:
 
 Both our book and courses are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
-the main developer of Feature-engine.
+the main developer of feature-engine.
