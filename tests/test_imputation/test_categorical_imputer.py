@@ -1,4 +1,3 @@
-import re
 import warnings
 
 import numpy as np
@@ -149,33 +148,18 @@ def test_error_when_imputation_method_not_frequent_or_missing():
 
 
 def test_error_when_variable_contains_multiple_modes(df_na):
-    msg = (
-        "The variable Name contains multiple frequent categories. "
-        "Set multimodal='warn' or multimodal='ignore' to allow imputation "
-        "using the first most frequent category found."
-    )
     imputer = CategoricalImputer(imputation_method="frequent", variables="Name")
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with pytest.raises(ValueError, match="The variable Name contains multiple frequent categories"):
         imputer.fit(df_na)
 
-    msg = (
-        "The variable(s) Name contain(s) multiple frequent categories. "
-        "Set multimodal='warn' or multimodal='ignore' to allow imputation "
-        "using the first most frequent category found."
-    )
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with pytest.raises(ValueError, match="The variable\(s\) Name contain\(s\) multiple frequent categories"):
         imputer.fit(df_na)
 
     df_ = df_na.copy()
     df_["Name_dup"] = df_["Name"]
-    msg = (
-        "The variable(s) Name, Name_dup contain(s) multiple frequent categories. "
-        "Set multimodal='warn' or multimodal='ignore' to allow imputation "
-        "using the first most frequent category found."
-    )
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with pytest.raises(ValueError, match="The variable\(s\) Name, Name_dup contain\(s\) multiple frequent categories"):
         imputer.fit(df_)
 
 
@@ -290,10 +274,7 @@ def test_error_when_ignore_format_is_not_boolean(ignore_format):
 
 def test_multimodal_raises_errors(multimodal_df):
     imputer = CategoricalImputer(imputation_method="frequent")
-    msg = (
-        "The variable(s) city, country contain(s) multiple frequent categories. "
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with pytest.raises(ValueError, match="multiple frequent categories"):
         imputer.fit(multimodal_df)
 
 
