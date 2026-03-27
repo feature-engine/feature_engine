@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -12,7 +13,7 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _imputer_dict_docstring,
     _n_features_in_docstring,
-    _variables_attribute_docstring,
+    _variables_attribute_docstring
 )
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
@@ -88,6 +89,18 @@ class CategoricalImputer(BaseImputer):
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    multimodal : str, default='raise'
+        Indicates what to do when imputation_method='frequent'
+        and a variable has more than 1 mode.
+
+        If 'raise', raises a ValueError and stops the fit.
+
+        If 'warn', raises a UserWarning and continues the imputation using the
+        first most frequent category found.
+
+        If 'ignore', continues without warnings, imputing using the first
+        most frequent category found.
+
     Attributes
     ----------
     {imputer_dict_}
@@ -135,6 +148,7 @@ class CategoricalImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_object: bool = False,
         ignore_format: bool = False,
+        multimodal: str = "raise",
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -144,11 +158,18 @@ class CategoricalImputer(BaseImputer):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
+        if multimodal not in ["raise", "warn", "ignore"]:
+            raise ValueError(
+                "multimodal takes only values 'raise', 'warn', or 'ignore'. "
+                f"Got {multimodal} instead."
+            )
+
         self.imputation_method = imputation_method
         self.fill_value = fill_value
         self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
+        self.multimodal = multimodal
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -163,10 +184,8 @@ class CategoricalImputer(BaseImputer):
             y is not needed in this imputation. You can pass None or y.
         """
 
-        # check input dataframe
         X = check_X(X)
 
-        # select variables to encode
         if self.ignore_format is True:
             if self.variables is None:
                 self.variables_ = find_all_variables(X)
@@ -182,54 +201,64 @@ class CategoricalImputer(BaseImputer):
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
 
         elif self.imputation_method == "frequent":
-            # if imputing only 1 variable:
             if len(self.variables_) == 1:
                 var = self.variables_[0]
                 mode_vals = X[var].mode()
 
-                # Some variables may contain more than 1 mode:
                 if len(mode_vals) > 1:
-                    raise ValueError(
-                        f"The variable {var} contains multiple frequent categories."
-                    )
+                    if self.multimodal == "raise":
+                        raise ValueError(
+                            f"The variable {var} contains multiple "
+                            f"frequent categories. Set multimodal='warn' or "
+                            f"multimodal='ignore' to allow imputation using "
+                            f"the first most frequent category found."
+                        )
+                    elif self.multimodal == "warn":
+                        warnings.warn(
+                            f"Variable {var} has multiple frequent "
+                            f"categories. The first category found, "
+                            f"{mode_vals[0]}, will be used for imputation.",
+                            UserWarning,
+                        )
 
                 self.imputer_dict_ = {var: mode_vals[0]}
 
-            # imputing multiple variables:
             else:
-                # Returns a dataframe with 1 row if there is one mode per
-                # variable, or more rows if there are more modes:
                 mode_vals = X[self.variables_].mode()
 
-                # Careful: some variables contain multiple modes
                 if len(mode_vals) > 1:
                     varnames = mode_vals.dropna(axis=1).columns.to_list()
                     if len(varnames) > 1:
                         varnames_str = ", ".join(varnames)
                     else:
                         varnames_str = varnames[0]
-                    raise ValueError(
-                        f"The variable(s) {varnames_str} contain(s) multiple frequent "
-                        f"categories."
-                    )
+
+                    if self.multimodal == "raise":
+                        raise ValueError(
+                            f"The variable(s) {varnames_str} contain(s) "
+                            f"multiple frequent categories. Set "
+                            f"multimodal='warn' or multimodal='ignore' to allow "
+                            f"imputation using the first most frequent "
+                            f"category found."
+                        )
+                    elif self.multimodal == "warn":
+                        warnings.warn(
+                            f"Variable(s) {varnames_str} have multiple "
+                            f"frequent categories. The first category "
+                            f"found will be used for imputation.",
+                            UserWarning,
+                        )
 
                 self.imputer_dict_ = mode_vals.iloc[0].to_dict()
 
         self._get_feature_names_in(X)
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        # Frequent category imputation
         if self.imputation_method == "frequent":
             X = super().transform(X)
-
-        # Imputation with string
         else:
             X = self._transform(X)
-
-            # if variable is of type category, we need to add the new
-            # category, before filling in the nan
             add_cats = {}
             for variable in self.variables_:
                 if X[variable].dtype.name == "category":
@@ -243,13 +272,10 @@ class CategoricalImputer(BaseImputer):
 
             X = X.assign(**add_cats).fillna(self.imputer_dict_)
 
-        # add additional step to return variables cast as object
         if self.return_object:
             X[self.variables_] = X[self.variables_].astype("O")
-
         return X
 
-    # Get docstring from BaseClass
     transform.__doc__ = BaseImputer.transform.__doc__
 
     def _more_tags(self):
