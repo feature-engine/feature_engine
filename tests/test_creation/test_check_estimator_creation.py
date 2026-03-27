@@ -1,3 +1,6 @@
+from sklearn import clone
+from sklearn.exceptions import NotFittedError
+
 import pandas as pd
 import pytest
 import sklearn
@@ -97,3 +100,24 @@ def test_geo_distance_transformer_in_pipeline():
     Xtp = pipe.fit_transform(X.copy(), y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    estimator = clone(estimator)
+
+    X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+    y = pd.Series([0, 1, 0, 1, 0])
+
+    # If variables are provided, we need to ensure they are in the dataframe
+    # or handle the KeyError.
+    if hasattr(estimator, "variables") and estimator.variables:
+        X = pd.DataFrame(
+            {var: ["a", "b", "c", "a", "b"] for var in estimator.variables}
+        )
+
+    with pytest.raises((ValueError, TypeError, KeyError)):
+        estimator.fit(X, y)
+
+    with pytest.raises(NotFittedError):
+        estimator.transform(X)
