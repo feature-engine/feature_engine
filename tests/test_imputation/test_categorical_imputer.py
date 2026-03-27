@@ -24,21 +24,17 @@ def multimodal_df():
 
 
 def test_impute_with_string_missing_and_automatically_find_variables(df_na):
-    # set up transformer
     imputer = CategoricalImputer(imputation_method="missing", variables=None)
     X_transformed = imputer.fit_transform(df_na)
 
-    # set up expected output
     X_reference = df_na.copy()
     X_reference["Name"] = X_reference["Name"].fillna("Missing")
     X_reference["City"] = X_reference["City"].fillna("Missing")
     X_reference["Studies"] = X_reference["Studies"].fillna("Missing")
 
-    # test init params
     assert imputer.imputation_method == "missing"
     assert imputer.variables is None
 
-    # test fit attributes
     assert imputer.variables_ == ["Name", "City", "Studies"]
     assert imputer.n_features_in_ == 6
     assert imputer.imputer_dict_ == {
@@ -47,9 +43,6 @@ def test_impute_with_string_missing_and_automatically_find_variables(df_na):
         "Studies": "Missing",
     }
 
-    # test transform output
-    # selected columns should have no NA
-    # non selected columns should still have NA
     assert X_transformed[["Name", "City", "Studies"]].isnull().sum().sum() == 0
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() > 0
     pd.testing.assert_frame_equal(X_transformed, X_reference)

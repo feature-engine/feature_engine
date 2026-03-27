@@ -258,12 +258,8 @@ class CategoricalImputer(BaseImputer):
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.imputation_method == "frequent":
             X = super().transform(X)
-
-
         else:
             X = self._transform(X)
-
-
             add_cats = {}
             for variable in self.variables_:
                 if X[variable].dtype.name == "category":
@@ -277,10 +273,8 @@ class CategoricalImputer(BaseImputer):
 
             X = X.assign(**add_cats).fillna(self.imputer_dict_)
 
-
         if self.return_object:
             X[self.variables_] = X[self.variables_].astype("O")
-
         return X
 
     transform.__doc__ = BaseImputer.transform.__doc__
