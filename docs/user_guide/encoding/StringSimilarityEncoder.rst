@@ -6,12 +6,12 @@
 StringSimilarityEncoder
 =======================
 
-The :class:`StringSimilarityEncoder()` replaces categorical variables with a set of float
+:class:`StringSimilarityEncoder()` replaces categorical variables with a set of float
 variables that capture the similarity between the category names. The new variables
 have values between 0 and 1, where 0 indicates no similarity and 1 is an exact
 match between the names of the categories.
 
-To calculate the similarity between the categories, :class:`StringSimilarityEncoder()`
+To calculate the similarity between categories, :class:`StringSimilarityEncoder()`
 uses Gestalt pattern matching. Under the hood, :class:`StringSimilarityEncoder()` uses
 the `quick_ratio` method from the `SequanceMatcher()` from `difflib`.
 
@@ -27,8 +27,8 @@ For example, the similarity between the categories "dog" and "dig" is 0.66. T is
 total number of elements in both categories, that is 6. There are 2 matches between
 the words, the letters d and g, so: 2 * M / T = 2 * 2 / 6 = 0.66.
 
-Output of the :class:`StringSimilarityEncoder()`
-------------------------------------------------
+Understanding the output of string similarity encoding
+------------------------------------------------------
 
 Let's create a dataframe with the categories "dog", "dig" and "cat":
 
@@ -59,7 +59,6 @@ Let's now encode the variable:
 
 We see the encoded variables below:
 
-
 .. code:: python
 
        words_dog  words_dig  words_cat
@@ -67,12 +66,20 @@ We see the encoded variables below:
     1   0.666667   1.000000        0.0
     2   0.000000   0.000000        1.0
 
+In the first variable, we see the string similarity between all categories and dog, in the
+second variable we have the string similarity between all categories and dig, and in the
+final column we observe the string similarity between all categories and cat.
+
+.. note::
+
+    :class:`StringSimilarityEncoder()` returns k variables to represent 1 categorical
+    feature, where k is the number of unique categories of that variable.
 
 Note that :class:`StringSimilarityEncoder()` replaces the original variables by the
 distance variables.
 
-:class:`StringSimilarityEncoder()` vs One-hot encoding
-------------------------------------------------------
+String similarity encoding vs one-hot encoding
+----------------------------------------------
 
 String similarity encoding is similar to one-hot encoding, in the sense that each category is
 encoded as a new variable. But the values, instead of 1 or 0, are the similarity
@@ -83,26 +90,38 @@ Encoding only popular categories
 --------------------------------
 
 The :class:`StringSimilarityEncoder()` can also create similarity variables for the *n* most popular
-categories, *n* being determined by the user. For example, if we encode only the 6 more popular categories, by
+categories, *n* being determined by the user.
+
+For example, if we encode only the 6 more popular categories, by
 setting the parameter `top_categories=6`, the transformer will add variables only
-for the 6 most frequent categories. The most frequent categories are those with the largest
-number of observations. This behaviour is useful when the categorical variables are highly cardinal,
-to control the expansion of the feature space.
+for the 6 most frequent categories.
 
-Specifying how :class:`StringSimilarityEncoder()` should deal with missing values
----------------------------------------------------------------------------------
+The most frequent categories are those with the largest
+number of observations.
 
-The :class:`StringSimilarityEncoder()` has three options for dealing with missing values, which can be
+.. note::
+
+    This behaviour is useful when the categorical variables are highly cardinal,
+    to control the expansion of the feature space.
+
+Missing values
+--------------
+
+:class:`StringSimilarityEncoder()` has three options for dealing with missing values, which can be
 specified with the parameter `missing_values`:
 
-  1. Ignore NaNs (option `ignore`) - will leave the NaN in the resulting dataframe after transformation.
-     Could be useful, if the next step in the pipeline is imputation or if the machine learning algorithm
-     can handle missing data out-of-the-box.
-  2. Impute NaNs (option `impute`) - will impute NaN with an empty string, and then calculate the similarity
-     between the empty string and the variable's categories. Most of the time, the similarity value will be
-     0 in resulting dataframe. This is the default option.
-  3. Raise an error (option `raise`) - will raise an error if NaN is present during `fit`, `transform` or
-     `fit_transform`. Could be useful for debugging and monitoring purposes.
+1. Ignore NaNs (option `ignore`) - will leave the NaN in the resulting dataframe after transformation.
+
+Could be useful if the next step in the pipeline is imputation or if the machine learning algorithm
+can handle missing data out-of-the-box.
+
+2. Impute NaNs (option `impute`) - will impute NaN with an empty string, and then calculate the similarity between the empty string and the variable's categories.
+
+Most of the time, the similarity value will be 0 in resulting dataframe. This is the default option.
+
+3. Raise an error (option `raise`) - will raise an error if NaN is present during `fit`, `transform` or `fit_transform`.
+
+Could be useful for debugging and monitoring purposes.
 
 
 Important
@@ -114,12 +133,12 @@ string similarity to the seen categories.
 No text preprocessing is applied by :class:`StringSimilarityEncoder()`. Be mindful of preparing
 string categorical variables if needed.
 
-:class:`StringSimilarityEncoder()` works with categorical variables by default. And it has the option to
+:class:`StringSimilarityEncoder()` works with categorical variables by default. Tt has the option to
 encode numerical variables as well. This is useful, when the values of the numerical variables are more
 useful as strings, than as numbers. For example, for variables like barcode.
 
-Examples
---------
+Python implementation
+---------------------
 
 Let's look at an example using the Titanic Dataset. First we load the data and divide it
 into a train and a test set:
@@ -214,7 +233,9 @@ are stored in the attribute `encoder_dict_`.
 
 .. code:: python
 
-	encoder.encoder_dict_
+    encoder.encoder_dict_
+
+In the following output, we see the most frequent categories per variable:
 
 .. code:: python
 
@@ -227,8 +248,11 @@ are stored in the attribute `encoder_dict_`.
 The `encoder_dict_` contains the categories that will derive similarity variables for each
 categorical variable.
 
-With transform, we go ahead and encode the variables. Note that the
-:class:`StringSimilarityEncoder()` will drop the original variables.
+With transform, we go ahead and encode the variables:
+
+.. note::
+
+    Note that the :class:`StringSimilarityEncoder()` will drop the original variables.
 
 .. code:: python
 
