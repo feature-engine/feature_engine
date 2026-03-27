@@ -11,7 +11,7 @@ features. It is an important feature engineering step, as it ensures that machin
 learning algorithms can appropriately handle and interpret categorical data.
 
 There are various categorical encoding methods that we can use to encode categorical 
-features. One hot encoding and ordinal encoding are the most well known, but other 
+features. One-hot encoding and ordinal encoding are the most well known, but other
 encoding techniques can help tackle high cardinality and rare categories before and 
 after training machine learning models.
 
@@ -54,14 +54,14 @@ We can identify categorical features by inspecting their data types. With pandas
 we can obtain the data types of all variables in a dataframe; features with non-numeric data 
 types such as *string*, *object* or *categorical* are, in general, categorical. 
 
-Categorical features can also be numeric, however, like for example the features *Store ID*, 
+Categorical features can also be numeric, for example, the features *Store ID*,
 *SKU ID* or *Zip Code*. Although these variables have numeric values, they are categorical.
 
 Cardinality
 -----------
 
-**Cardinality** refers to the number of unique categories of a categorical variable. F
-or example, the cardinality of the variable 'size', which takes the values 'small', 
+**Cardinality** refers to the number of unique categories of a categorical variable. For
+example, the cardinality of the variable 'size', which takes the values 'small',
 'medium' and 'large' is 3. 
 
 A categorical variable is said to have a **low cardinality** when the number of distinct 
@@ -78,7 +78,7 @@ Unseen categories
 -----------------
 
 **Unseen categories** are categorical values that appear in the test or validation 
-datasets, or even in live data after model deployment, that were not present in the 
+datasets, or even in live data after model deployment, but were not present in the
 training data, and therefore were not **seen** by the machine learning model.
 
 Unseen categories are challenging for various reasons. Firstly, when we create mappings 
@@ -87,7 +87,7 @@ mappings for those categories *present* in the training set. Hence, we'd lack a 
 for a new, unseen value.
 
 We may feel tempted to replace unseen categories by 0, or an arbitrary value, or just have 
-0s in all dummy variables if we used one hot encoding, but this may make the machine learning 
+0s in all dummy variables if we used one-hot encoding, but this may make the machine learning
 model behave unexpectedly leading to inaccurate predictions.
 
 Ideally, we want to account for the potential presence of unseen categories during the 
@@ -137,41 +137,41 @@ from the **training data**.
 Encoding methods
 ----------------
 
-There are various methods to transform categorical variables into numerical features. One hot 
+There are various methods to transform categorical variables into numerical features. One-hot
 encoding and ordinal encoding are the most commonly used, but other methods can mitigate high 
 cardinality and account for unseen categories.
 
 In the rest of this page, we'll introduce various methods for encoding categorical data, and 
 highlight the feature-engine transformer that can carry out this transformation.
 
-One hot encoding
+One-hot encoding
 ~~~~~~~~~~~~~~~~
 
 One-hot encoding (OHE) consists of replacing categorical variables by a set of binary variables 
 each representing one of the unique categories in the variable. The binary variable takes the 
 value 1, if the observation shows the category, or alternatively, 0.
 
-One hot encoding is particularly suitable for linear models because it treats each category 
+One-hot encoding is particularly suitable for linear models because it treats each category
 independently, and linear models can process binary variables effectively.
 
-One hot encoding, however, increases the dimensionality of the dataset, as it adds a new 
+One-hot encoding, however, increases the dimensionality of the dataset, as it adds a new
 variable per category. Hence, OHE may not be suitable for encoding high cardinality features, 
 as it can drastically increase the dimensionality of the dataset, often leading to a set of 
 variables that are highly correlated or even identical.
 
-Feature-engine's :class:`OneHotEncoder` implements one hot encoding.
+Feature-engine's :class:`OneHotEncoder` implements one-hot encoding.
 
-One hot encoding of frequent categories
+One-hot encoding of frequent categories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To prevent a massive increase of the feature space, some data scientists create binary 
-variables through one hot encoding of the **most frequent categories** in the variable. 
+variables through one-hot encoding of the **most frequent categories** in the variable.
 Less frequent values are treated collectively and represented as 0 in all the binary 
 variables created for the frequent categories.
 
-One hot encoding of frequent categories can then help tackle high cardinality and also 
+One-hot encoding of frequent categories can then help tackle high cardinality and also
 unseen categories, because unseen categories will be also encoded as an infrequent value.
 
-Feature-engine's :class:`OneHotEncoder` can implement one hot encoding of frequent categories.
+Feature-engine's :class:`OneHotEncoder` can implement one-hot encoding of frequent categories.
 
 Ordinal Encoding
 ~~~~~~~~~~~~~~~~
@@ -268,7 +268,7 @@ tree model.
 In decision tree encoding, a decision tree is trained using the categorical feature to 
 predict the target variable. The decision tree splits the data based of each category, 
 eventually leading the observations to a final leaf. Each category is then replaced by 
-the prediction of the tree, which consists of the mean target value calculated over the 
+the prediction of the tree, which consists of the mean target value calculated using the
 observations that ended in that leaf. 
 
 Feature-engine's :class:`DecisionTreeEncoder` implements decision tree encoding.
@@ -310,7 +310,8 @@ blending similar categories together.
 
 Feature-engine's :class:`StringSimilarityEncoder` implements string similarity encoding.
 
-**Summary of fengine's encoders characteristics**
+Summary of feature-engine's encoders characteristics
+----------------------------------------------------
 
 =================================== ============ ================= ============== ===============================================================
     Transformer                     Regression	 Classification	   Multi-class    Description
@@ -330,7 +331,8 @@ Feature-engine's categorical encoders work only with categorical variables by de
 From version 1.1.0, you have the option to set the parameter `ignore_format` to `False`,
 and make the transformers also accept numerical variables as input.
 
-**Monotonicity**
+Monotonicity
+~~~~~~~~~~~~
 
 Most feature-engine's encoders will return, or attempt to return monotonic relationships
 between the encoded variable and the target. A monotonic relationship is one in which
@@ -344,13 +346,15 @@ See the following illustration as examples:
 Monotonic relationships tend to help improve the performance of linear models and build
 shallower decision trees.
 
-**Regression vs Classification**
+Regression vs Classification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most feature-engine's encoders are suitable for both regression and classification, with
 the exception of the :class:`WoEEncoder()` which is
 designed solely for **binary** classification.
 
-**Multi-class classification**
+Multi-class classification
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Finally, some feature-engine's encoders can handle multi-class targets off-the-shelf for
 example the :class:`OneHotEncoder()`, the :class:`CountFrequencyEncoder()` and the
