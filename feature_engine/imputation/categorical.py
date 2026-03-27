@@ -252,7 +252,6 @@ class CategoricalImputer(BaseImputer):
                 self.imputer_dict_ = mode_vals.iloc[0].to_dict()
 
         self._get_feature_names_in(X)
-
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -272,7 +271,7 @@ class CategoricalImputer(BaseImputer):
                     )
 
             X = X.assign(**add_cats).fillna(self.imputer_dict_)
-
+            
         if self.return_object:
             X[self.variables_] = X[self.variables_].astype("O")
         return X
