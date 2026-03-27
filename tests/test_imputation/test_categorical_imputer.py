@@ -153,13 +153,15 @@ def test_error_when_variable_contains_multiple_modes(df_na):
         imputer.fit(df_na)
 
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError, match="The variable\(s\) Name contain\(s\) multiple frequent categories"):
+    msg = r"The variable\(s\) Name contain\(s\) multiple frequent categories"
+    with pytest.raises(ValueError, match=msg):
         imputer.fit(df_na)
 
     df_ = df_na.copy()
     df_["Name_dup"] = df_["Name"]
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError, match="The variable\(s\) Name, Name_dup contain\(s\) multiple frequent categories"):
+    msg = r"The variable\(s\) Name, Name_dup contain\(s\) multiple frequent categories"
+    with pytest.raises(ValueError, match=msg):
         imputer.fit(df_)
 
 

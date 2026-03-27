@@ -271,7 +271,7 @@ class CategoricalImputer(BaseImputer):
                     )
 
             X = X.assign(**add_cats).fillna(self.imputer_dict_)
-            
+
         if self.return_object:
             X[self.variables_] = X[self.variables_].astype("O")
         return X
