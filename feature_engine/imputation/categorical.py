@@ -93,7 +93,7 @@ class CategoricalImputer(BaseImputer):
 
         If 'raise', raises a ValueError and stops the fit.
 
-        If 'warn', raises a UserWarning and continues, imputing using the
+        If 'warn', raises a UserWarning and continues the imputation using the
         first most frequent category found.
 
         If 'ignore', continues without warnings, imputing using the first
