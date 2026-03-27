@@ -25,7 +25,7 @@ from feature_engine.variable_handling import (
     check_all_variables,
     check_categorical_variables,
     find_all_variables,
-    find_categorical_variables
+    find_categorical_variables,
 )
 
 
