@@ -15,8 +15,10 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring
 )
-from feature_engine._docstrings.methods import (_fit_transform_docstring,
-                                                _transform_imputers_docstring)
+from feature_engine._docstrings.methods import (
+    _fit_transform_docstring,
+    _transform_imputers_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -25,7 +27,7 @@ from feature_engine.variable_handling import (
     check_all_variables,
     check_categorical_variables,
     find_all_variables,
-    find_categorical_variables
+    find_categorical_variables,
 )
 
 
@@ -93,7 +95,7 @@ class CategoricalImputer(BaseImputer):
 
         If 'raise', raises a ValueError and stops the fit.
 
-        If 'warn', raises a UserWarning and continues, imputing using the
+        If 'warn', raises a UserWarning and continues the imputation using the
         first most frequent category found.
 
         If 'ignore', continues without warnings, imputing using the first
