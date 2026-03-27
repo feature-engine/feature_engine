@@ -13,18 +13,21 @@ We can also replace the categories with the predictions made by a decision tree 
 on that category value.
 
 The process consists of fitting a decision tree using a single feature to predict the
-target. The decision tree will try to find a relationship between these variables, if
-one exists, and then we'll use the predictions as mappings to replace the categories.
+target. The decision tree will try to find a relationship between these variables and
+then we'll use the predictions as mappings to replace the categories.
 
 The advantage of this procedure is that it captures some information about the relationship
-between the variables during the encoding. And if there is a relationship between the
+between the variables during the encoding. If there is a relationship between the
 categorical feature and the target, the resulting encoded variable would have a monotonic
 relationship with the target, which can be useful for linear models.
 
 On the downside, it could cause overfitting, and it adds computational complexity to the
-pipeline because we are fitting a tree per feature. If you plan to encode your features
-with decision trees, make sure you have appropriate validation strategies and train the
-decision trees with regularization.
+pipeline because we are fitting a tree per feature.
+
+.. tip::
+
+    If you plan to encode your features with decision trees, make sure you have
+    appropriate validation strategies and train the decision trees with regularisation.
 
 DecisionTreeEncoder
 -------------------
@@ -54,8 +57,8 @@ of the decision tree for the category.
 The motivation for the :class:`DecisionTreeEncoder()` is to try and create monotonic
 relationships between the categorical variables and the target.
 
-Python example
---------------
+Python implementation
+---------------------
 
 Let's look at an example using the Titanic Dataset. First, let's load the data and
 separate it into train and test:
@@ -97,7 +100,7 @@ We will encode the following categorical variables:
 
 We set up the encoder to encode the variables above with 3 fold cross-validation, using
 a grid search to find the optimal depth of the decision tree (this is the default
-behaviour of the :class:`DecisionTreeEncoder()`). In this example, we optimize the
+behaviour of the :class:`DecisionTreeEncoder()`). In this example, we optimise the
 tree using the roc-auc metric.
 
 .. code:: python
@@ -265,7 +268,7 @@ Collisions
 ----------
 
 This encoder can lead to collisions. Collisions are instances where different categories
-are encoded with the same number. It is useful to reduce cardinality. On the other hand,
+are encoded with the same number. Collisions reduce cardinality. On the other hand,
 if the mappings are not meaningful we might lose the information contained in those
 categories.
 
@@ -418,51 +421,21 @@ In the following image we also see a monotonic relationship after the encoding:
 
 .. image:: ../../images/lotshape-price-per-cat-enc.png
 
-Note
-~~~~
+.. note::
 
-Not every encoding will result in monotonic relationshops. For that to occur there needs to
-be some sort of relationship between the target and the categories that can be captured by
-the decision tree. Use with caution.
+    Not every encoding will result in monotonic relationships. For that to occur there needs to
+    be some sort of relationship between the target and the categories that can be captured by
+    the decision tree. Use with caution.
 
 Additional resources
 --------------------
 
-In the following notebook, you can find more details into the :class:`DecisionTreeEncoder()`
-functionality and example plots with the encoded variables:
+For tutorials about this and other feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/DecisionTreeEncoder.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For more details about this and other feature engineering methods check out these resources:
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
