@@ -102,22 +102,28 @@ def test_geo_distance_transformer_in_pipeline():
     "estimator",
     [
         CyclicalFeatures(),
-        MathFeatures(variables=["feature_1", "feature_2"], func=["sum", "mean"]),
-        RelativeFeatures(variables=["feature_1"], reference=["feature_2"], func=["div"]),
+        MathFeatures(
+            variables=["feature_1", "feature_2"], func=["sum", "mean"]
+        ),
+        RelativeFeatures(
+            variables=["feature_1"], reference=["feature_2"], func=["div"]
+        ),
         DecisionTreeFeatures(regression=False),
-        GeoDistanceFeatures(lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"),
+        GeoDistanceFeatures(
+            lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
+        ),
     ],
 )
 def test_raises_non_fitted_error_when_error_during_fit(estimator):
     estimator = clone(estimator)
 
-
     X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
     y = pd.Series([0, 1, 0, 1, 0])
 
-
     if hasattr(estimator, "variables") and estimator.variables:
-        X = pd.DataFrame({var: ["a", "b", "c", "a", "b"] for var in estimator.variables})
+        X = pd.DataFrame(
+            {var: ["a", "b", "c", "a", "b"] for var in estimator.variables}
+        )
     elif isinstance(estimator, GeoDistanceFeatures):
         X = pd.DataFrame({
             "lat1": ["a", "b"],
