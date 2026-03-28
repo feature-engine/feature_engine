@@ -260,6 +260,8 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         y: pandas Series or np.array = [n_samples,]
             The target variable that is used to train the decision tree.
         """
+        y = pd.Series(y)
+
         # confirm model type and target variables are compatible.
         if self.regression is True:
             if type_of_target(y) == "binary":
@@ -268,9 +270,10 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                     "allowed by this transformer. Check the target values "
                     "or set regression to False."
                 )
+            is_binary = None
         else:
             check_classification_targets(y)
-            self._is_binary = type_of_target(y)
+            is_binary = type_of_target(y)
 
         X, y = check_X_y(X, y)
 
@@ -310,6 +313,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.variables_ = variables_
         self.input_features_ = input_features
         self.estimators_ = estimators_
+        self._is_binary = is_binary
         self.feature_names_in_ = X.columns.tolist()
         self.n_features_in_ = X.shape[1]
 

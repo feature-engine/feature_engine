@@ -234,8 +234,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         # check input dataframe
         X = check_X(X)
 
-        # Store coordinate variables
-        self.variables_: List[Union[str, int]] = [
+        variables = [
             self.lat1,
             self.lon1,
             self.lat2,
@@ -243,17 +242,17 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         ]
 
         # Check all coordinate columns exist
-        missing = set(self.variables_) - set(X.columns)
+        missing = set(variables) - set(X.columns)
         if missing:
             raise ValueError(
                 f"Coordinate columns {missing} are not present in the dataframe."
             )
 
         # Check coordinate columns are numerical
-        check_numerical_variables(X, self.variables_)
+        check_numerical_variables(X, variables)
 
         # Check for missing values
-        _check_contains_na(X, self.variables_)
+        _check_contains_na(X, variables)
 
         # Validate coordinate ranges if enabled
         if self.validate_ranges:
@@ -268,6 +267,9 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
                     raise ValueError(
                         f"Longitude values in '{lon_col}' must be between -180 and 180."
                     )
+
+        # save coordinate variables
+        self.variables_ = variables
 
         # save input features
         self.feature_names_in_ = X.columns.tolist()
