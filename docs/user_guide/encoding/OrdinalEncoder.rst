@@ -50,8 +50,11 @@ Ordered encoding attempts to define a monotonic relationship between the encoded
 method helps machine learning algorithms, particularly linear models (like linear regression), better capture and learn 
 the relationship between the encoded feature and the target.
 
-Keep in mind that ordered ordinal encoding will create a monotonic relationship between the encoded variable and the target 
-variable **only** when *there is* an intrinsic relationship between the categories and the target variable.
+.. note::
+
+    Keep in mind that ordered ordinal encoding will create a monotonic relationship between the encoded variable and the target
+    variable **only** when *there is* an intrinsic relationship between the categories and the target variable.
+
 
 Unseen categories
 -----------------
@@ -60,9 +63,12 @@ Ordinal encoding can't inherently deal with unseen categories.
 
 **Unseen categories** are categorical values that appear in test, validation, or live data but were not present in the 
 training data. These categories are problematic because the encoding methods generate mappings only for categories present 
-in the training data. This means that we would lack encodings for any new, unseen category values. Unseen categories cause 
-errors during inference time (the phase when the machine learning model is used to make predictions on new data) because our 
-feature engineering pipeline is unable to convert that value into a number.
+in the training data. This means that we would lack encodings for any new, unseen category values.
+
+.. note::
+
+    Unseen categories cause errors during inference time (the phase when the machine learning model is used to make predictions on new data) because our
+    feature engineering pipeline is unable to convert that value into a number.
 
 Ordinal encoding by itself does not deal with unseen categories. However, we could replace the unseen category with an 
 arbitrary value, such as -1 (remember that ordinal encoding starts at 0). This procedure might work well for linear models 
@@ -88,11 +94,14 @@ unseen categories; and it is not suitable for a large number of categories, i.e.
 Ordinal encoding vs label encoding
 ----------------------------------
 
-Ordinal encoding is sometimes also referred to as label encoding. They follow the same procedure. Scikit-learn provides 
-2 different transformers: the OrdinalEncoder and the LabelEncoder. Both replace values, that is, categories, with ordinal 
-data. The OrdinalEncoder is designed to transform the predictor variables (those in the training set), while the LabelEncoder 
-is designed to transform the target variable. The end result of both transformers is the same; the original values are 
-replaced by ordinal numbers.
+Ordinal encoding is sometimes also referred to as label encoding. They follow the same procedure.
+
+.. tip::
+
+    Scikit-learn provides 2 different transformers: the `OrdinalEncoder` and the `LabelEncoder`. Both replace categories with ordinal
+    data. However, `OrdinalEncoder` is designed to transform the predictor variables (those in the training set), while `LabelEncoder`
+    is designed to transform the target variable. The end result of both transformers is the same; the original values are
+    replaced by ordinal numbers.
 
 In our view, this has raised some confusion as to whether label encoding and ordinal encoding consist of different ways of 
 preprocessing categorical data. Some argue that label encoding consists of replacing categories with numbers assigned 
@@ -104,7 +113,7 @@ OrdinalEncoder
 
 Feature-engine's :class:`OrdinalEncoder()` implements ordinal encoding. That is, it encodes categorical features by 
 replacing each category with a unique number ranging from 0 to k-1, where 'k' is the distinct number of categories in 
-the dataset. 
+the variable.
 
 :class:`OrdinalEncoder()` supports both **arbitrary** and **ordered** encoding methods. The desired approach can be 
 specified using the `encoding_method` parameter that accepts either **"arbitrary"** or **"ordered"**. If not defined, 
@@ -125,14 +134,14 @@ category, in which case it will be encoded as `np.nan`, or encode it into -1. Yo
 Python Implementation
 ---------------------
 
-In the rest of the page, we'll show different ways how we can use ordinal encoding through Feature-engine's 
+In the rest of the page, we'll show different ways how we can use ordinal encoding through feature-engine's
 :class:`OrdinalEncoder()`.
 
 
 Arbitrary ordinal encoding
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We'll show how ordinal encoding is implemented by Feature-engine's :class:`OrdinalEncoder()` using the **Titanic Dataset**.
+We'll show how ordinal encoding is implemented by feature-engine's :class:`OrdinalEncoder()` using the **Titanic Dataset**.
 
 Let's load the dataset and split it into train and test sets:
 
@@ -168,17 +177,19 @@ We see the Titanic dataset below:
  686        3     female   22.000000      0      0      7.7250     M        Q
 
 
-Let's set up the :class:`OrdinalEncoder()` to encode the categorical variables `cabin', `embarked`, and `sex` with 
+Let's set up the :class:`OrdinalEncoder()` to encode the categorical variables cabin, embarked, and sex with
 integers assigned arbitrarily:
 
 .. code:: python
 
- encoder = OrdinalEncoder(
-          encoding_method='arbitrary',
-          variables=['cabin', 'embarked', 'sex'])
+     encoder = OrdinalEncoder(
+              encoding_method='arbitrary',
+              variables=['cabin', 'embarked', 'sex'])
 
-:class:`OrdinalEncoder()` will encode **all** categorical variables in the training set by default, unless we specify 
-which variables to encode, as we did in the previous code block.
+.. tip::
+
+    :class:`OrdinalEncoder()` will encode **all** categorical variables in the training set by default, unless we specify
+    which variables to encode, as we did in the previous code block.
 
 Let's fit the encoder so that it learns the mappings for each category:
 
@@ -304,9 +315,10 @@ If you want to see the resulting dataframe, go ahead and execute `train_t.head()
 Ordered ordinal encoding
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ordered encoding consists of assigning the integers based on the mean target.
+Ordered encoding consists of assigning the integers based on the mean target value.
+
 We will use the **California Housing Dataset** to demonstrate ordered encoding. This dataset contains numeric features 
-such as *MedInc*, *HouseAge* and *AveRooms*, among others. The target variable is *MedHouseVal* i.e., the median house 
+such as *MedInc*, *HouseAge* and *AveRooms*, among others. The target variable is *MedHouseVal*, i.e., the median house
 value for California districts, expressed in hundreds of thousands of dollars ($100,000).
 
 Let's first set up the dataset.
@@ -411,8 +423,10 @@ variable to the `fit()` method:
  X_train_t = ordered_encoder.fit_transform(X_train, y_train)
  X_test_t = ordered_encoder.transform(X_test)
 
-Note that we first fit the encoder on the training data and then transformed both the training and test data, using the 
-mappings learned from the training set.
+.. tip::
+
+    Note that we first fit the encoder on the training data and then transformed both the training and test data, using the
+    mappings learned from the training set.
 
 Let's display the resulting dataframe:
 
@@ -510,56 +524,12 @@ The power of ordinal ordered encoder resides in its intrinsic capacity of findin
 Additional resources
 --------------------
 
-In the following notebook, you can find more details into the :class:`OrdinalEncoder()`'s
-functionality and example plots with the encoded variables:
+For tutorials about this and other feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/OrdinalEncoder.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For more details about this and other feature engineering methods check out these resources and tutorials:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

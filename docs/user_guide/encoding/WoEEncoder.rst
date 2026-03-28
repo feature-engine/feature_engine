@@ -41,9 +41,12 @@ with three categories (A1, A2, and A3). The dataset has the following characteri
 - Category A3 has 5 positive cases and 50 negative cases.
 
 First, we find out the number of instances with a positive target value (1) per category,
-and then we divide that by the total number of positive cases in the data. Then we determine
-the number of instances with target value of 0 per category and divide that by the total
-number of negative instances in the dataset:
+and then we divide that by the total number of positive cases in the data (20 in our example).
+
+After that, we determine the number of instances with target value of 0 per category and
+divide that by the total number of negative instances in the dataset (80 in our example).
+
+So that:
 
 - For category A1, we have 10 positive cases and 15 negative cases, resulting in a positive ratio of 10/20 and a negative ratio of 15/80. This means that the positive ratio is 0.5 and the negative ratio is 0.1875.
 - For category A2, we have 5 positive cases out of 20 positive cases, giving us a  positive ratio of 5/20 and a negative ratio of 15/80. This results in a positive ratio of 0.25 and a negative ratio of 0.1875.
@@ -62,7 +65,7 @@ the WoE values: 0.98, 0.28, -0.91.
 Characteristics of the WoE
 --------------------------
 
-The beauty of the WoE, is that we can directly understand the impact of the category on
+The beauty of the WoE is, that we can directly understand the impact of the category on
 the probability of success (target variable being 1):
 
 - If WoE values are negative, there are more negative cases than positive cases for the category.
@@ -90,7 +93,7 @@ Uses of the WoE
 In general, we use the WoE to encode both categorical and numerical variables. For
 continuous variables, we first need to do binning, that is, sort the variables into
 discrete intervals. You can do this by preprocessing the variable using any of
-Feature-engine's discretizers.
+feature-engine's discretisers.
 
 Some authors have extended the Weight of Evidence approach to neural networks and other
 algorithms, and although they have shown good results, the predictive modeling performance
@@ -110,7 +113,7 @@ always takes 1 or 0). In practice, this happens mostly when a category has a low
 in the dataset, that is, when only very few observations show that category.
 
 To overcome this limitation, consider using a variable transformation method to group
-those categories together, for example by using Feature-engine's :class:`RareLabelEncoder()`.
+those categories together, for example by using feature-engine's :class:`RareLabelEncoder()`.
 
 Taking into account the above considerations, conducting a detailed exploratory data
 analysis (EDA) is essential as part of the data science and model-building process.
@@ -144,7 +147,7 @@ raise an error. If you want to encode numerical, for example discrete variables,
 
 :class:`WoEEncoder()` does not handle missing values automatically, so make sure to
 replace them with a suitable value before the encoding. You can impute missing values
-with Feature-engine's imputers.
+with feature-engine's imputers.
 
 :class:`WoEEncoder()` will ignore unseen categories by default, in which case, they will
 be replaced by np.nan after the encoding. You have the option to make the encoder raise
@@ -271,8 +274,8 @@ WoE in categorical and numerical variables
 
 In the previous example, we encoded only the variables 'cabin', 'pclass', 'embarked',
 and left the rest of the variables untouched. In the following example, we will use
-Feature-engine's pipeline to transform variables in sequence. We'll group rare categories
-in categorical variables. Next, we'll discretize numerical variables. And finally, we'll
+feature-engine's pipeline to transform variables in sequence. We'll group rare categories
+in categorical variables. Next, we'll discretise numerical variables. And finally, we'll
 encode them all with the WoE.
 
 First, let's load the data and separate it into train and test:
@@ -318,7 +321,7 @@ Let's define lists with the categorical and numerical variables:
     numerical_features = ['fare', 'age']
     all = categorical_features + numerical_features
 
-Now, we will set up the pipeline to first discretize the numerical variables, then group
+Now, we will set up the pipeline to first discretise the numerical variables, then group
 rare labels and low frequency intervals into a common group, and finally encode all
 variables with the WoE:
 
@@ -365,7 +368,7 @@ We see the resulting dataframe below:
     1193  0.012075
     686   0.012075
 
-Finally, we can visualize the values of the WoE encoded variables respect to the original
+Finally, we can visualise the values of the WoE encoded variables respect to the original
 values to corroborate the sigmoid function shape, which is the expected behavior of the
 WoE:
 
@@ -482,8 +485,8 @@ used for feature selection for binary classification problems.
 Weight of Evidence and Information Value within Feature-engine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you're asking yourself whether Feature-engine allows you to automate this process,
-the answer is: of course! You can utilize the :class:`SelectByInformationValue()` class
+If you're asking yourself whether feature-engine allows you to automate this process,
+the answer is: of course! You can utilise the :class:`SelectByInformationValue()` class
 and it will handle all these steps for you. Again, remember the given considerations.
 
 References
@@ -497,57 +500,12 @@ References
 Additional resources
 --------------------
 
-In the following notebooks, you can find more details into the :class:`WoEEncoder()`
-functionality and example plots with the encoded variables:
+For tutorials about this and other feature engineering methods check out these resources:
 
-- `WoE in categorical variables <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/WoEEncoder.ipynb>`_
-- `WoE in numerical variables <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser_plus_WoEEncoder.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For more details about this and other feature engineering methods check out these resources:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

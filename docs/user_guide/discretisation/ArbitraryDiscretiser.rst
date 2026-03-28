@@ -6,20 +6,21 @@ ArbitraryDiscretiser
 ====================
 
 The :class:`ArbitraryDiscretiser()` sorts the variable values into contiguous intervals
-which limits are arbitrarily defined by the user. Thus, you must provide a dictionary
-with the variable names as keys and a list with the limits of the intervals as values,
-when setting up the discretiser.
+whose limits are arbitrarily defined by the user.
 
-The :class:`ArbitraryDiscretiser()` works only with numerical variables. The discretiser
-will check that the variables entered by the user are present in the train set and cast
-as numerical.
+.. note::
+    You must provide a dictionary
+    with the variable names as keys and a list with the limits of the intervals as values,
+    when setting up the discretiser.
 
-Example
--------
 
-Let's take a look at how this transformer works. First, let's load a dataset and plot a
-histogram of a continuous variable. We use the california housing dataset that comes
+Python implementation
+---------------------
+
+Let's take a look at how this transformer works. We'll use the california housing dataset that comes
 with Scikit-learn.
+
+Let's load the dataset:
 
 .. code:: python
 
@@ -30,6 +31,10 @@ with Scikit-learn.
     from feature_engine.discretisation import ArbitraryDiscretiser
 
     X, y = fetch_california_housing( return_X_y=True, as_frame=True)
+
+Let's plot a histogram of a continuous variable.
+
+.. code:: python
 
     X['MedInc'].hist(bins=20)
     plt.xlabel('MedInc')
@@ -99,7 +104,7 @@ If we return the interval values as integers, the discretiser has the option to 
 the transformed variable as integer or as object. Why would we want the transformed
 variables as object?
 
-Categorical encoders in Feature-engine are designed to work with variables of type
+Categorical encoders in feature-engine are designed to work with variables of type
 object by default. Thus, if you wish to encode the returned bins further, say to try and
 obtain monotonic relationships between the variable and the target, you can do so
 seamlessly by setting `return_object` to True. You can find an example of how to use
@@ -108,56 +113,12 @@ this functionality `here <https://nbviewer.org/github/feature-engine/feature-eng
 Additional resources
 --------------------
 
-Check also:
-
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/ArbitraryDiscretiser.ipynb>`_
-- `Jupyter notebook - Discretiser plus Mean Encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/ArbitraryDiscretiser_plus_MeanEncoder.ipynb>`_
-
 For more details about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

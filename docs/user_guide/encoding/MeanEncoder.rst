@@ -92,7 +92,7 @@ rare categories together by using the :class:`RareLabelEncoder`.
 Alternative Python implementations of mean encoding
 ---------------------------------------------------
 
-In Feature-engine, we blend the probabilities considering the target variability and the
+In feature-engine, we blend the probabilities considering the target variability and the
 category frequency. In the original paper, there are alternative formulations to determine
 the blending. If you want to check those out, use the transformers from the Python library
 Category encoders:
@@ -137,8 +137,8 @@ Mean encoding and machine learning
 Feature-engine's :class:`MeanEncoder()` can perform mean encoding for regression and binary
 classification datasets. At the moment, we do not support multi-class targets.
 
-Python examples
----------------
+Python implementation
+---------------------
 
 In the following sections, we'll show the functionality of :class:`MeanEncoder()` using the
 Titanic Dataset.
@@ -151,9 +151,11 @@ First, let's load the libraries, functions and classes:
     from feature_engine.datasets import load_titanic
     from feature_engine.encoding import MeanEncoder
 
-To avoid data leakage, it is important to separate the data into training and test sets.
-The mean target values, with or without smoothing, will be determined using the training
-data only.
+.. note::
+
+    To avoid data leakage, it is important to separate the data into training and test sets.
+    The mean target values, with or without smoothing, will be determined using the training
+    data only.
 
 Let's load and split the data:
 
@@ -185,7 +187,7 @@ We see the resulting dataframe containing 3 categorical columns: sex, cabin and 
 
 
 Simple mean encoding
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 Let's set up the :class:`MeanEncoder()` to replace the categories in the categorical
 features with the target mean, without smoothing:
@@ -249,7 +251,7 @@ with the target mean values:
 
 
 Mean encoding with smoothing
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, :class:`MeanEncoder()` determines the mean target values without blending.
 If we want to apply smoothing to control the cardinality of the variable and avoid
@@ -325,10 +327,10 @@ Below we see the resulting dataframe with the encoded features:
 We can now use this dataframes to train machine learning models for regression or
 classification.
 
-Mean encoding variables with numerical values
----------------------------------------------
+Mean encoding numerical variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`MeanEncoder()`, and all Feature-engine encoders, have been designed to work with
+:class:`MeanEncoder()`, and all feature-engine encoders, have been designed to work with
 variables of type object or categorical by default. If you want to encode variables that
 are numeric, you need to instruct the transformer to ignore the data type:
 
@@ -344,72 +346,22 @@ are numeric, you need to instruct the transformer to ignore the data type:
 
 After encoding the features we can use the data sets to train machine learning algorithms.
 
-Last thing to note before closing in is that mean encoding does not increase the
-dimensionality of the resulting dataframes: from 1 categorical feature, we obtain 1
-encoded variable. Hence, this encoding method is suitable for predictive modeling that
-uses models that are sensitive to the size of the feature space.
+.. note::
+
+    Last thing to note before closing in is that mean encoding does not increase the
+    dimensionality of the resulting dataframes: from 1 categorical feature, we obtain 1
+    encoded variable. Hence, this encoding method is suitable for predictive modeling that
+    uses models that are sensitive to the size of the feature space.
 
 Additional resources
 --------------------
 
-In the following notebook, you can find more details into the :class:`MeanEncoder()`
-functionality and example plots with the encoded variables:
-
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/MeanEncoder.ipynb>`_
-
 For tutorials about this and other feature engineering methods check out these resources:
 
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
 Both our book and courses are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
