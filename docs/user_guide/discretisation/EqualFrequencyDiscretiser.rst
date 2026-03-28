@@ -249,7 +249,7 @@ We see that the dtype of the variable after discretisation is integer:
 Return variables as object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Categorical encoders in Feature-engine are designed to work by default with variables of type object. Therefore, to further
+Categorical encoders in feature-engine are designed to work by default with variables of type object. Therefore, to further
 encode the discretised output with feature-engine's encoders, we can set `return_object=True` instead. This will return the transformed
 variables as object.
 
