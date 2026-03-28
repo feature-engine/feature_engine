@@ -260,7 +260,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         y: pandas Series or np.array = [n_samples,]
             The target variable that is used to train the decision tree.
         """
-        # confirm model type and target variables are compatible.
+        X, y = check_X_y(X, y)
         if self.regression is True:
             if type_of_target(y) == "binary":
                 raise ValueError(
@@ -268,11 +268,10 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                     "allowed by this transformer. Check the target values "
                     "or set regression to False."
                 )
+            is_binary = None
         else:
             check_classification_targets(y)
-            self._is_binary = type_of_target(y)
-
-        X, y = check_X_y(X, y)
+            is_binary = type_of_target(y)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -280,7 +279,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         else:
             variables_ = check_numerical_variables(X, self.variables)
 
-        # check if dataset contains na or inf
         _check_contains_na(X, variables_)
         _check_contains_inf(X, variables_)
 
@@ -289,7 +287,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         else:
             param_grid = {"max_depth": [1, 2, 3, 4]}
 
-        # get the sets of variables that will be used to create new features
         input_features = self._create_variable_combinations(
             how_to_combine=self.features_to_combine, variables=variables_
         )
@@ -298,7 +295,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         for features in input_features:
             estimator = self._make_decision_tree(param_grid=param_grid)
 
-            # single feature models
             if isinstance(features, str):
                 estimator.fit(X[features].to_frame(), y)
             # multi feature models
@@ -310,6 +306,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.variables_ = variables_
         self.input_features_ = input_features
         self.estimators_ = estimators_
+        self._is_binary = is_binary
         self.feature_names_in_ = X.columns.tolist()
         self.n_features_in_ = X.shape[1]
 
@@ -330,24 +327,17 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             Either the original dataframe plus the new features or
             a dataframe of only the new features.
         """
-        # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe
         X = check_X(X)
 
-        # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
-        # reorder variables to match train set
         X = X[self.feature_names_in_]
 
-        # create new features and add them to the original dataframe
-        # if regression or multiclass, we return the output of predict()
         if self.regression is True:
             for features, estimator in zip(self.input_features_, self.estimators_):
                 if isinstance(features, str):
@@ -361,7 +351,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                         preds = np.round(preds, self.precision)
                     X.loc[:, f"tree({features})"] = preds
 
-        # if binary classification, we return the probability
         elif self._is_binary == "binary":
             for features, estimator in zip(self.input_features_, self.estimators_):
                 if isinstance(features, str):
@@ -375,7 +364,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                         preds = np.round(preds, self.precision)
                     X.loc[:, f"tree({features})"] = preds[:, 1]
 
-        # if multiclass, we return the output of predict()
         else:
             for features, estimator in zip(self.input_features_, self.estimators_):
                 if isinstance(features, str):
@@ -437,7 +425,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                 else:
                     combos.append(list(feature))
 
-        # if output_features is None, int or list.
         else:
             if how_to_combine is None:
                 if len(variables) == 1:
@@ -452,7 +439,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                     els = [list(x) for x in itertools.combinations(variables, i)]
                     combos += els
 
-            # output_feature is a list
             else:
                 for i in how_to_combine:
                     els = [list(x) for x in itertools.combinations(variables, i)]
@@ -465,7 +451,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         feature_names = [f"tree({combo})" for combo in self.input_features_]
         return feature_names
 
-    # for the check_estimator tests
     def _more_tags(self):
         tags_dict = _return_tags()
         tags_dict["requires_y"] = True

@@ -169,22 +169,22 @@ class CategoricalImputer(BaseImputer):
         # select variables to encode
         if self.ignore_format is True:
             if self.variables is None:
-                self.variables_ = find_all_variables(X)
+                variables_ = find_all_variables(X)
             else:
-                self.variables_ = check_all_variables(X, self.variables)
+                variables_ = check_all_variables(X, self.variables)
         else:
             if self.variables is None:
-                self.variables_ = find_categorical_variables(X)
+                variables_ = find_categorical_variables(X)
             else:
-                self.variables_ = check_categorical_variables(X, self.variables)
+                variables_ = check_categorical_variables(X, self.variables)
 
         if self.imputation_method == "missing":
-            self.imputer_dict_ = {var: self.fill_value for var in self.variables_}
+            imputer_dict_ = {var: self.fill_value for var in variables_}
 
         elif self.imputation_method == "frequent":
             # if imputing only 1 variable:
-            if len(self.variables_) == 1:
-                var = self.variables_[0]
+            if len(variables_) == 1:
+                var = variables_[0]
                 mode_vals = X[var].mode()
 
                 # Some variables may contain more than 1 mode:
@@ -193,13 +193,13 @@ class CategoricalImputer(BaseImputer):
                         f"The variable {var} contains multiple frequent categories."
                     )
 
-                self.imputer_dict_ = {var: mode_vals[0]}
+                imputer_dict_ = {var: mode_vals[0]}
 
             # imputing multiple variables:
             else:
                 # Returns a dataframe with 1 row if there is one mode per
                 # variable, or more rows if there are more modes:
-                mode_vals = X[self.variables_].mode()
+                mode_vals = X[variables_].mode()
 
                 # Careful: some variables contain multiple modes
                 if len(mode_vals) > 1:
@@ -213,8 +213,10 @@ class CategoricalImputer(BaseImputer):
                         f"categories."
                     )
 
-                self.imputer_dict_ = mode_vals.iloc[0].to_dict()
+                imputer_dict_ = mode_vals.iloc[0].to_dict()
 
+        self.variables_ = variables_
+        self.imputer_dict_ = imputer_dict_
         self._get_feature_names_in(X)
 
         return self
