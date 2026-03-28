@@ -5,27 +5,27 @@
 DecisionTreeDiscretiser
 =======================
 
-Discretization consists of transforming continuous variables into discrete features by creating
+Discretisation consists of transforming continuous variables into discrete features by creating
 a set of contiguous intervals, or bins, that span the range of the variable values.
 
-Discretization is a common data preprocessing step in many data science projects, as it simplifies
+Discretisation is a common data preprocessing step in many data science projects, as it simplifies
 continuous attributes and has the potential to improve model performance or speed up model training.﻿
 
-Decision tree discretization
+Decision tree discretisation
 ----------------------------
 
 Decision trees make decisions based on discrete partitions over continuous features. During
 training, a decision tree evaluates all possible feature values to find the best cut-point, that is,
-the feature value at which the split maximizes the information gain, or in other words, reduces the
+the feature value at which the split maximises the information gain, or in other words, reduces the
 impurity. It repeats the procedure at each node until it allocates all samples to certain leaf
 nodes or end nodes. Hence, classification and regression trees can naturally find the optimal limits
-of the intervals to maximize class coherence.
+of the intervals to maximise class coherence.
 
-Discretization with decision trees consists of using a decision tree algorithm to identify the optimal
+Discretisation with decision trees consists of using a decision tree algorithm to identify the optimal
 partitions for each continuous variable. After finding the optimal partitions, we sort the variable's
 values into those intervals.
 
-Discretization with decision trees is a supervised discretization method, in that, the interval
+Discretisation with decision trees is a supervised discretisation method, in that, the interval
 limits are found based on class or target coherence. In simpler words, we need the target variable
 to train the decision trees.
 
@@ -42,10 +42,10 @@ Limitations
 - We need to tune some of the decision tree parameters to obtain the optimal number of intervals.
 
 
-Decision tree discretizer
+Decision tree discretiser
 -------------------------
 
-The :class:`DecisionTreeDiscretiser()` applies discretization based on the interval limits found
+The :class:`DecisionTreeDiscretiser()` applies discretisation based on the interval limits found
 by decision trees algorithms. It uses decision trees to find the optimal interval limits. Next,
 it sorts the variable into those intervals.
 
@@ -53,14 +53,14 @@ The transformed variable can either have the limits of the intervals as values, 
 representing the interval into which the value was sorted, or alternatively, the prediction of the
 decision tree. In any case, the number of values of the variable will be finite.
 
-In theory, decision tree discretization creates discrete variables with a monotonic relationship
+In theory, decision tree discretisation creates discrete variables with a monotonic relationship
 with the target, and hence, the transformed features would be more suitable to train linear models,
 like linear or logistic regression.
 
 Original idea
 -------------
 
-The method of decision tree discretization is based on the winning solution of the KDD 2009 competition:
+The method of decision tree discretisation is based on the winning solution of the KDD 2009 competition:
 
 `Niculescu-Mizil, et al. "Winning the KDD Cup Orange Challenge with Ensemble
 Selection". JMLR: Workshop and Conference Proceedings 7: 23-34. KDD 2009
@@ -77,14 +77,14 @@ on the performance of linear models.
 Code examples
 -------------
 
-In the following sections, we will do decision tree discretization to showcase the functionality of
-the :class:`DecisionTreeDiscretiser()`. We will discretize 2 numerical variables of the Ames house
+In the following sections, we will do decision tree discretisation to showcase the functionality of
+the :class:`DecisionTreeDiscretiser()`. We will discretise 2 numerical variables of the Ames house
 prices dataset using decision trees.
 
 First, we will transform the variables using the predictions of the decision trees, next, we will
 return the interval limits, and finally, we will return the bin order.
 
-Discretization with the predictions of the decision tree
+Discretisation with the predictions of the decision tree
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we load the data and separate it into a training set and a test set:
@@ -136,9 +136,9 @@ In the following output we see the predictor variables of the house prices datas
 
 We set up the decision tree discretiser to find the optimal intervals using decision trees.
 
-The :class:`DecisionTreeDiscretiser()` will optimize the depth of the decision tree classifier
+The :class:`DecisionTreeDiscretiser()` will optimise the depth of the decision tree classifier
 or regressor by default and using cross-validation. That's why we need to select the appropriate
-metric for the optimization. In this example, we are using decision tree regression, so we select
+metric for the optimisation. In this example, we are using decision tree regression, so we select
 the mean squared error metric.
 
 We specify in the `bin_output` that we want to replace the continuous attribute values with the
@@ -211,8 +211,8 @@ The `binner_dict_` stores the details of each decision tree.
                   scoring='neg_mean_squared_error')}
 
 
-With decision tree discretization, each bin, that is, each prediction value in this case, does not
-necessarily contain the same number of observations. Let's check that out with a visualization:
+With decision tree discretisation, each bin, that is, each prediction value in this case, does not
+necessarily contain the same number of observations. Let's check that out with a visualisation:
 
 .. code:: python
 
@@ -239,7 +239,7 @@ Rounding the prediction value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes, the output of the prediction can have multiple values after the comma, which makes the
-visualization and interpretation a bit uncomfortable. Fortunately, we can round those values through
+visualisation and interpretation a bit uncomfortable. Fortunately, we can round those values through
 the `precision` parameter:
 
 .. code:: python
@@ -266,7 +266,7 @@ the `precision` parameter:
 In this example, we are predicting house prices, which is a continuous target. The procedure for
 classification models is identical, we just need to set the parameter `regression` to False.
 
-Discretization with interval limits
+Discretisation with interval limits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this section, instead of replacing the original variable values with the predictions of the
@@ -314,7 +314,7 @@ of the decision trees:
       4576.0,
       inf]}
 
-The :class:`DecisionTreeDiscretiser()` will use these limits with `pandas.cut` to discretize the
+The :class:`DecisionTreeDiscretiser()` will use these limits with `pandas.cut` to discretise the
 continuous variable values during transform:
 
 .. code:: python
@@ -337,7 +337,7 @@ In the following output we see the interval limits into which the values of the 
 
 To train machine learning algorithms we would follow that up with any categorical data encoding method.
 
-Discretization with ordinal numbers
+Discretisation with ordinal numbers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the last part of this guide, we will replace the variable values with the number of bin into
@@ -384,7 +384,7 @@ The `binner_dict_` will also contain the limits of the intervals:
       inf]}
 
 When we apply transform, :class:`DecisionTreeDiscretiser()` will use these limits with `pandas.cut` to
-discretize the continuous variable:
+discretise the continuous variable:
 
 .. code:: python
 
@@ -408,62 +408,19 @@ were sorted:
 Additional considerations
 -------------------------
 
-Decision tree discretization uses scikit-learn's DecisionTreeRegressor or DecisionTreeClassifier under
+Decision tree discretisation uses scikit-learn's DecisionTreeRegressor or DecisionTreeClassifier under
 the hood to find the optimal interval limits. These models do not support missing data. Hence, we need
-to replace missing values with numbers before proceeding with the disrcretization.
+to replace missing values with numbers before proceeding with the disrcretisation.
 
 Tutorials, books and courses
 ----------------------------
 
-Check also for more details on how to use this transformer:
+For tutorials about this and other discretisation methods and feature engineering techniques check out our online course:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/DecisionTreeDiscretiser.ipynb>`_
-- `tree_pipe in cell 21 of this Kaggle kernel <https://www.kaggle.com/solegalli/feature-engineering-and-model-stacking>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For tutorials about this and other discretization methods and feature engineering techniques check out our online course:
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

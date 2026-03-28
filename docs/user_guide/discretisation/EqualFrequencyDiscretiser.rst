@@ -5,19 +5,19 @@
 EqualFrequencyDiscretiser
 =========================
 
-Equal frequency discretization consists of dividing continuous attributes into equal-frequency bins. These bins
+Equal frequency discretisation consists of dividing continuous attributes into equal-frequency bins. These bins
 contain roughly the same number of observations, with boundaries set at specific quantile values determined by the desired
 number of bins.
 
-Equal frequency discretization ensures a uniform distribution of data points across the range of values, enhancing the
+Equal frequency discretisation ensures a uniform distribution of data points across the range of values, enhancing the
 handling of skewed data and outliers.
 
-Discretization is a common data preprocessing technique used in data science. It's also known as binning data (or simply "binning").
+Discretisation is a common data preprocessing technique used in data science. It's also known as binning data (or simply "binning").
 
 Advantages and Limitations
 --------------------------
 
-Equal frequency discretization has some advantages and shortcomings:
+Equal frequency discretisation has some advantages and shortcomings:
 
 Advantages
 ~~~~~~~~~~
@@ -29,7 +29,7 @@ Some advantages of equal frequency binning:
 - **Data Smoothing:** Helps smooth the data, reduces noise, and improves the model's ability to generalize.
 - **Improved value distribution:** Returns an uniform distribution of values across the value range.
 
-Equal frequency discretization improves the data distribution, **optimizing the spread of values**. This is particularly
+Equal frequency discretisation improves the data distribution, **optimising the spread of values**. This is particularly
 beneficial for datasets with skewed distributions (see the Python example code).
 
 Limitations
@@ -44,10 +44,10 @@ would potentially impact the model's performance in this scenario.
 EqualFrequencyDiscretiser
 -------------------------
 
-Feature-engine's :class:`EqualFrequencyDiscretiser` applies equal frequency discretization to numerical variables. It uses
+Feature-engine's :class:`EqualFrequencyDiscretiser` applies equal frequency discretisation to numerical variables. It uses
 the `pandas.qcut()` function under the hood, to determine the interval limits.
 
-You can specify the variables to be discretized by passing their names in a list when you set up the transformer. Alternatively,
+You can specify the variables to be discretised by passing their names in a list when you set up the transformer. Alternatively,
 :class:`EqualFrequencyDiscretiser` will automatically infer the data types to compute the interval limits for all numeric variables.
 
 **Optimal number of intervals:** With :class:`EqualFrequencyDiscretiser`, the user defines the number of bins. Smaller intervals
@@ -83,10 +83,10 @@ test sets:
 	X_train, X_test, y_train, y_test =  train_test_split(X, y, test_size=0.3, random_state=42)
 
 
-Equal-frequency Discretization
+Equal-frequency Discretisation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this example, let's discretize two variables, LotArea and GrLivArea, into 10 intervals of approximately equal
+In this example, let's discretise two variables, LotArea and GrLivArea, into 10 intervals of approximately equal
 number of observations.
 
 .. code:: python
@@ -94,7 +94,7 @@ number of observations.
 	# List the target numeric variables to be transformed
 	TARGET_NUMERIC_FEATURES= ['LotArea','GrLivArea']
 
-	# Set up the discretization transformer
+	# Set up the discretisation transformer
 	disc = EqualFrequencyDiscretiser(q=10, variables=TARGET_NUMERIC_FEATURES)
 
 	# Fit the transformer
@@ -104,7 +104,7 @@ number of observations.
 Note that if we do not specify the variables (default=`None`), :class:`EqualFrequencyDiscretiser` will automatically
 infer the data types to compute the interval limits for all numeric variables.
 
-With the `fit()` method, the discretizer learns the bin boundaries and saves them into a dictionary so we can use them
+With the `fit()` method, the discretiser learns the bin boundaries and saves them into a dictionary so we can use them
 to transform unseen data:
 
 .. code:: python
@@ -153,7 +153,7 @@ impute missing values before fitting the transformer.
 	test_t = disc.transform(X_test)
 
 
-Let's visualize the first rows of the raw data and the transformed data:
+Let's visualise the first rows of the raw data and the transformed data:
 
 .. code:: python
 
@@ -177,7 +177,7 @@ Here we see the original variables:
 	# Transformed data
 	print(train_t[TARGET_NUMERIC_FEATURES].head())
 
-Here we observe the variables after discretization:
+Here we observe the variables after discretisation:
 
 .. code:: python
 
@@ -192,7 +192,7 @@ Here we observe the variables after discretization:
 
 The transformed data now contains discrete values corresponding to the ordered computed buckets (0 being the first and q-1 the last).
 
-Now, let's visualize the plots for equal-width intervals with a histogram and the transformed data with equal-frequency discretiser:
+Now, let's visualise the plots for equal-width intervals with a histogram and the transformed data with equal-frequency discretiser:
 
 .. code:: python
 
@@ -248,7 +248,7 @@ If we want to output the intervals limits instead of integers, we can set `retur
 
 .. code:: python
 
-    # Set up the discretization transformer
+    # Set up the discretisation transformer
     disc = EqualFrequencyDiscretiser(
         q=10,
         variables=TARGET_NUMERIC_FEATURES,
@@ -257,16 +257,16 @@ If we want to output the intervals limits instead of integers, we can set `retur
     # Fit the transformer
     disc.fit(X_train)
 
-    # Transform test set & visualize limit
+    # Transform test set & visualise limit
     test_t = disc.transform(X_test)
 
-    # Visualize output (boundaries)
+    # Visualise output (boundaries)
     print(test_t[TARGET_NUMERIC_FEATURES].head())
 
 The transformed variables now show the interval limits in the output. We can immediately see that the bin width for these
-intervals varies. In other words, they don't have the same width, contrarily to what we see with :ref:`equal width discretization <equal_width_discretiser>`.
+intervals varies. In other words, they don't have the same width, contrarily to what we see with :ref:`equal width discretisation <equal_width_discretiser>`.
 
-Unlike the variables discretized into integers, these variables cannot be used to train machine learning models; however,
+Unlike the variables discretised into integers, these variables cannot be used to train machine learning models; however,
 they are still highly helpful for data analysis in this format, and they may be sent to any Feature-engine encoder for
 additional processing.
 
@@ -284,7 +284,7 @@ additional processing.
 Binning skewed data
 ~~~~~~~~~~~~~~~~~~~
 
-Let's now show the benefits of equal frequency discretization for skewed variables. We'll
+Let's now show the benefits of equal frequency discretisation for skewed variables. We'll
 start by importing the libraries and classes:
 
 .. code:: python
@@ -311,17 +311,17 @@ one that is skewed:
 	# Create dataframe with simulated data
 	X = pd.DataFrame({'feature1': normal_data, 'feature2': skewed_data})
 
-Let's discretize both variables into 5 equal frequency bins:
+Let's discretise both variables into 5 equal frequency bins:
 
 .. code:: python
 
-	# Instantiate discretizer
+	# Instantiate discretiser
 	disc = EqualFrequencyDiscretiser(q=5)
 
 	# Transform simulated data
 	X_transformed = disc.fit_transform(X)
 
-Let's plot the original distribution and the distribution after discretization for the variable that was normally
+Let's plot the original distribution and the distribution after discretisation for the variable that was normally
 distributed:
 
 .. code:: python
@@ -338,12 +338,12 @@ distributed:
 
 	plt.show()
 
-In the following image, we see that after the discretization there is an even distribution of the values across
+In the following image, we see that after the discretisation there is an even distribution of the values across
 the value range, hence, the variable does no look normally distributed any more.
 
 .. image:: ../../images/equalfrequencydiscretisation_gaussian.png
 
-Let's now plot the original distribution and the distribution after discretization for the variable that was skewed:
+Let's now plot the original distribution and the distribution after discretisation for the variable that was skewed:
 
 .. code:: python
 
@@ -359,7 +359,7 @@ Let's now plot the original distribution and the distribution after discretizati
 
 	plt.show()
 
-In the following image, we see that after the discretization there is an even distribution of the values across
+In the following image, we see that after the discretisation there is an even distribution of the values across
 the value range.
 
 .. image:: ../../images/equalfrequencydiscretisation_skewed.png
@@ -380,56 +380,12 @@ Check out also:
 Additional resources
 --------------------
 
-Check also for more details on how to use this transformer:
-
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser.ipynb>`_
-- `Jupyter notebook - Discretizer plus Weight of Evidence encoding <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/EqualFrequencyDiscretiser_plus_WoEEncoder.ipynb>`_
-
 For more details about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
