@@ -6,20 +6,21 @@ ArbitraryDiscretiser
 ====================
 
 The :class:`ArbitraryDiscretiser()` sorts the variable values into contiguous intervals
-which limits are arbitrarily defined by the user. Thus, you must provide a dictionary
-with the variable names as keys and a list with the limits of the intervals as values,
-when setting up the discretiser.
+whose limits are arbitrarily defined by the user.
 
-The :class:`ArbitraryDiscretiser()` works only with numerical variables. The discretiser
-will check that the variables entered by the user are present in the train set and cast
-as numerical.
+.. note::
+    You must provide a dictionary
+    with the variable names as keys and a list with the limits of the intervals as values,
+    when setting up the discretiser.
 
-Example
--------
 
-Let's take a look at how this transformer works. First, let's load a dataset and plot a
-histogram of a continuous variable. We use the california housing dataset that comes
+Python implementation
+---------------------
+
+Let's take a look at how this transformer works. We'll use the california housing dataset that comes
 with Scikit-learn.
+
+Let's load the dataset:
 
 .. code:: python
 
@@ -30,6 +31,10 @@ with Scikit-learn.
     from feature_engine.discretisation import ArbitraryDiscretiser
 
     X, y = fetch_california_housing( return_X_y=True, as_frame=True)
+
+Let's plot a histogram of a continuous variable.
+
+.. code:: python
 
     X['MedInc'].hist(bins=20)
     plt.xlabel('MedInc')
@@ -99,7 +104,7 @@ If we return the interval values as integers, the discretiser has the option to 
 the transformed variable as integer or as object. Why would we want the transformed
 variables as object?
 
-Categorical encoders in Feature-engine are designed to work with variables of type
+Categorical encoders in feature-engine are designed to work with variables of type
 object by default. Thus, if you wish to encode the returned bins further, say to try and
 obtain monotonic relationships between the variable and the target, you can do so
 seamlessly by setting `return_object` to True. You can find an example of how to use
