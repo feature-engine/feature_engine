@@ -19,10 +19,6 @@ from tests.estimator_checks.estimator_checks import check_feature_engine_estimat
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
-# Estimators for sklearn's check_estimator
-# Note: GeoDistanceFeatures is not included here because it requires 4 specific
-# named coordinate columns, but sklearn's check_estimator generates test data
-# with generic column names (x0, x1, x2) that don't match the required columns.
 _estimators = [
     MathFeatures(variables=["x0", "x1"], func="mean", missing_values="ignore"),
     RelativeFeatures(
@@ -102,19 +98,33 @@ def test_geo_distance_transformer_in_pipeline():
     pd.testing.assert_frame_equal(Xtt, Xtp)
 
 
-@pytest.mark.parametrize("estimator", _estimators)
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        CyclicalFeatures(),
+        MathFeatures(variables=["feature_1", "feature_2"], func=["sum", "mean"]),
+        RelativeFeatures(variables=["feature_1"], reference=["feature_2"], func=["div"]),
+        DecisionTreeFeatures(regression=False),
+        GeoDistanceFeatures(lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"),
+    ],
+)
 def test_raises_non_fitted_error_when_error_during_fit(estimator):
     estimator = clone(estimator)
+
 
     X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
     y = pd.Series([0, 1, 0, 1, 0])
 
-    # If variables are provided, we need to ensure they are in the dataframe
-    # or handle the KeyError.
+
     if hasattr(estimator, "variables") and estimator.variables:
-        X = pd.DataFrame(
-            {var: ["a", "b", "c", "a", "b"] for var in estimator.variables}
-        )
+        X = pd.DataFrame({var: ["a", "b", "c", "a", "b"] for var in estimator.variables})
+    elif isinstance(estimator, GeoDistanceFeatures):
+        X = pd.DataFrame({
+            "lat1": ["a", "b"],
+            "lon1": ["c", "d"],
+            "lat2": ["e", "f"],
+            "lon2": ["g", "h"],
+        })
 
     with pytest.raises((ValueError, TypeError, KeyError)):
         estimator.fit(X, y)
