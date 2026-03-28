@@ -234,7 +234,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         # check input dataframe
         X = check_X(X)
 
-        variables = [
+        variables: List[Union[str, int]] = [
             self.lat1,
             self.lon1,
             self.lat2,
