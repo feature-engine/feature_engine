@@ -129,6 +129,9 @@ In the following output, we see the interval limits determined for each variable
         2212.974,
         inf]}
 
+Interval width
+~~~~~~~~~~~~~~
+
 The interval width varies. Let's print out the width of each interval to corroborate that:
 
 .. code:: python
@@ -173,6 +176,9 @@ interval number (x-axis):
 .. tip::
 
     This transformer is suitable for variables with right skewed distributions.
+
+Observations per bin
+~~~~~~~~~~~~~~~~~~~~
 
 With increasing width discretisation, each bin does not necessarily contain the same number
 of observations.
