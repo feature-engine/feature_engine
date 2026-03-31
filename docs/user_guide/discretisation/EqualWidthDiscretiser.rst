@@ -15,11 +15,17 @@ using the following formula:
 Here, `bins` is the number of intervals specified by the user and `max(X)` and `min(X)` are the minimum and maximum values
 of the variable to discretise.
 
+In short, we determine the variable's value range and divide it into the number of desired intervals
+to get the interval size.
+
+For example, if the variable's minimum and maximum value are 0 and 100,
+the value range is 100 - 0 = 100. If we want 5 intervals, then the interval width is 100 / 5 = 20.
+The bins are then 0 - 20, 20 - 40, 40 - 60, 60 - 80 and 80 - 100.
 
 Advantages and Limitations
 --------------------------
 
-Equal binning discretisation has some advantages and also limitations.
+Equal width discretisation has some advantages and also limitations.
 
 Advantages
 ~~~~~~~~~~
@@ -50,8 +56,11 @@ You can specify the variables to be discretised by passing their names in a list
 :class:`EqualWidthDiscretiser()` will automatically infer the data types and compute the interval limits for all numeric
 variables.
 
-**Optimal number of intervals:** With :class:`EqualWidthDiscretiser()`, the user defines the number of bins. Smaller intervals	
-may be required if the variable is highly skewed or not continuous.
+**Optimal number of intervals:** With :class:`EqualWidthDiscretiser()`, the user defines the number of bins.
+
+.. tip::
+
+    Fewer intervals may be required if the variable is highly skewed or not continuous.
 
 **Integration with scikit-learn:** :class:`EqualWidthDiscretiser()` and all other Feature-engine transformers seamlessly
 integrate with scikit-learn `pipelines <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_.
@@ -101,7 +110,7 @@ In this example, let's discretise two variables, LotArea and GrLivArea, into 10 
 .. note::
 
     Note that if we do not specify the variables (default=`None`), :class:`EqualWidthDiscretiser` will automatically infer
-    the data types to compute the interval limits for all numeric variables.
+    the data types and compute the interval limits for all numeric variables.
 
 With the `fit()` method, the discretiser learns the bin boundaries and saves them into a dictionary so we can use them
 to transform new data:
@@ -206,8 +215,7 @@ Now, let's check out the number of observations per bin by creating a bar plot:
 	plt.ylabel('Number of houses')
 	plt.show()
 
-As we see in the following image, the intervals contain different number of observations.  It's a similar output to a
-histogram:
+As we see in the following image, the intervals contain different number of observations:
 
 .. image:: ../../images/equalwidthdiscretisation.png
 
@@ -280,14 +288,14 @@ In the following output we see that the transformed variables now display the in
 
 While we can't use these
 variables to train machine learning models, as opposed to the variables discretised into integers, they are very useful
-in this format for data analysis, and they can also be passed on to any Feature-engine encoder for further processing.
+in this format for data analysis, and we can use any feature-engine encoder for further processing.
 
 See Also
 --------
 
 For alternative binning techniques, check out the following resources:
 
-- Further feature-engine :ref:`discretisers / binning methods <discretization_transformers>`
+- Other feature-engine :ref:`discretisers / binning methods <discretization_transformers>`
 - Scikit-learn's `KBinsDiscretizer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html#sklearn.preprocessing.KBinsDiscretizer>`_.
 
 Check out also:
