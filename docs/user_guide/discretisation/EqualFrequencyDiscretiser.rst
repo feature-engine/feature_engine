@@ -6,7 +6,7 @@ EqualFrequencyDiscretiser
 =========================
 
 Equal frequency discretisation involves dividing continuous attributes into bins that
-each contain approximately the same number of observations. The boundaries of these
+contain approximately the same number of observations. The boundaries of these
 bins are determined by specific **quantile values**, based on the desired number of bins.
 
 .. tip::
@@ -50,10 +50,13 @@ Feature-engine's :class:`EqualFrequencyDiscretiser` applies equal frequency disc
 the `pandas.qcut()` function under the hood to determine the interval limits.
 
 You can specify the variables to be discretised by passing their names in a list when setting up the transformer. Alternatively,
-:class:`EqualFrequencyDiscretiser` will automatically infer the data types to compute the interval limits for all numeric variables.
+:class:`EqualFrequencyDiscretiser` will automatically infer the data types and compute the interval limits for all numeric variables.
 
-**Optimal number of intervals:** With :class:`EqualFrequencyDiscretiser`, the user defines the number of bins. Smaller intervals
-may be required if the variable is highly skewed or not continuous.
+**Optimal number of intervals:** With :class:`EqualFrequencyDiscretiser`, the user defines the number of bins.
+
+.. tip::
+
+    Fewer intervals may be required if the variable is highly skewed or not continuous.
 
 **Integration with scikit-learn:** :class:`EqualFrequencyDiscretiser` and all other feature-engine transformers seamlessly integrate
 with scikit-learn `pipelines <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_.
@@ -91,7 +94,7 @@ Equal-frequency Discretisation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's discretise two variables, LotArea and GrLivArea, into 10 intervals of equal
-number of observations.
+number of observations:
 
 .. code:: python
 
@@ -293,7 +296,7 @@ intervals varies. In other words, they don't have the same width, contrarily to 
 	1037  (12208.2, 14570.7]  (1601.6, 1717.7]
 
 Unlike the variables discretised into integers, these variables cannot be used to train machine learning models; however,
-they are still highly helpful for data analysis in this format, and they may be sent to any Feature-engine encoder for
+they are still highly helpful for data analysis in this format, and we can use any Feature-engine encoder with them for
 additional processing.
 
 Binning skewed data
@@ -384,7 +387,7 @@ See Also
 
 For alternative binning techniques, check out the following resources:
 
-- Further feature-engine :ref:`discretisers / binning methods <discretization_transformers>`
+- Other feature-engine :ref:`discretisers / binning methods <discretization_transformers>`
 - Scikit-learn's `KBinsDiscretizer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html#sklearn.preprocessing.KBinsDiscretizer>`_.
 
 Check out also:
