@@ -5,7 +5,7 @@
 ArbitraryDiscretiser
 ====================
 
-The :class:`ArbitraryDiscretiser()` sorts the variable values into contiguous intervals
+:class:`ArbitraryDiscretiser()` sorts the variable values into contiguous intervals
 whose limits are arbitrarily defined by the user.
 
 .. note::
@@ -30,7 +30,7 @@ Let's load the dataset:
     from sklearn.datasets import fetch_california_housing
     from feature_engine.discretisation import ArbitraryDiscretiser
 
-    X, y = fetch_california_housing( return_X_y=True, as_frame=True)
+    X, y = fetch_california_housing(return_X_y=True, as_frame=True)
 
 Let's plot a histogram of a continuous variable.
 
@@ -80,7 +80,7 @@ setting `return_boundaries` to `True`.
 
 .. code:: python
 
-    X, y = fetch_california_housing( return_X_y=True, as_frame=True)
+    X, y = fetch_california_housing(return_X_y=True, as_frame=True)
 
     user_dict = {'MedInc': [0, 2, 4, 6, np.inf]}
 
@@ -107,8 +107,8 @@ variables as object?
 Categorical encoders in feature-engine are designed to work with variables of type
 object by default. Thus, if you wish to encode the returned bins further, say to try and
 obtain monotonic relationships between the variable and the target, you can do so
-seamlessly by setting `return_object` to True. You can find an example of how to use
-this functionality `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/ArbitraryDiscretiser_plus_MeanEncoder.ipynb>`_.
+seamlessly by setting `return_object` to True. You can find an example of discretisation followed
+by encoding to obtain monotonic releationships `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/ArbitraryDiscretiser_plus_MeanEncoder.ipynb>`_.
 
 Additional resources
 --------------------
