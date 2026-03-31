@@ -5,9 +5,12 @@
 ArbitraryOutlierCapper
 ======================
 
-The :class:`ArbitraryOutlierCapper()` caps the maximum or minimum values of a variable
+:class:`ArbitraryOutlierCapper()` caps the maximum or minimum values of a variable
 at an arbitrary value indicated by the user. The maximum or minimum values should be
 entered in a dictionary with the form {feature:capping value}.
+
+Python implementation
+---------------------
 
 Let's look at this in an example. First we load the Titanic dataset, and separate it
 into a train and a test set:
@@ -62,6 +65,9 @@ dictionary to the attribute that will be used in the transformation:
 
 	capper.right_tail_caps_
 
+In the following output, we see that the dictionary we entered when setting up the transformer
+was assigned to a different attribute after fitting:
+
 .. code:: python
 
 	{'age': 50, 'fare': 200}
@@ -73,12 +79,15 @@ Now, we can go ahead and cap the variables:
 	train_t = capper.transform(X_train)
 	test_t = capper.transform(X_test)
 
-If we now check the maximum values in the transformed data, they should be those entered
+If we now check the maximum values in the transformed data -they should be those entered
 in the dictionary:
 
 .. code:: python
 
     train_t[['fare', 'age']].max()
+
+In the following output, we see that the variables were capped at the requested maximum
+values:
 
 .. code:: python
 

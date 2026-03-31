@@ -22,17 +22,18 @@ where IQR is the inter-quartile range: 75th quantile - 25th quantile.
 
 MAD limits:
 
-    - right tail: median + 3.29* MAD
-    - left tail:  median - 3.29* MAD
+- right tail: median + 3.29* MAD
+- left tail:  median - 3.29* MAD
 
 where MAD is the median absolute deviation from the median.
 
-percentiles or quantiles:
+Percentiles or quantiles:
 
 - right tail: 95th percentile
 - left tail:  5th percentile
 
-**Example**
+Python implementation
+---------------------
 
 Let's cap some outliers in the Titanic Dataset. First, let's load the data and separate
 it into train and test:
@@ -67,7 +68,7 @@ We see the resulting data below:
     1193       3    male  29.881135      0      0   7.7250  Missing        Q
     686        3  female  22.000000      0      0   7.7250  Missing        Q
 
-Now, we will set the :class:`Winsorizer()` to cap outliers at the right side of the
+Now, we will set :class:`Winsorizer()` to cap outliers at the right side of the
 distribution only (param `tail`). We want the maximum values to be determined using the
 mean value of the variable (param `capping_method`) plus 3 times the standard deviation
 (param `fold`). And we only want to cap outliers in 2 variables, which we indicate in a
@@ -82,12 +83,14 @@ list.
 
     capper.fit(X_train)
 
-With `fit()`, the :class:`Winsorizer()` finds the values at which it should cap the variables.
-These values are stored in its attribute:
+With `fit()`, :class:`Winsorizer()` finds the values at which it should cap the variables.
+These values are stored in the following attribute:
 
 .. code:: python
 
     capper.right_tail_caps_
+
+Below we see the values at which each variable will be capped:
 
 .. code:: python
 
@@ -107,6 +110,9 @@ coincide with the values observed in the attribute `right_tail_caps_`:
 .. code:: python
 
     train_t[['fare', 'age']].max()
+
+In the following output, we see that the variable's maxima now coincide with those determined
+by :class:`Winsorizer()`:
 
 .. code:: python
 
@@ -130,7 +136,7 @@ The default values for fold are as follows:
 - 'quantiles': `fold` is set to 0.05.
 
 You can manually adjust the `fold` value to make the outlier detection process more or less
-conservative, thus customizing the extent of outlier capping.
+conservative, thus customising the extent of outlier capping.
 
 Additional resources
 --------------------
