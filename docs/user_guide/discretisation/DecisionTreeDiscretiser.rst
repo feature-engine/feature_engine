@@ -45,7 +45,7 @@ Limitations
 Decision tree discretiser
 -------------------------
 
-The :class:`DecisionTreeDiscretiser()` applies discretisation based on the interval limits found
+:class:`DecisionTreeDiscretiser()` applies discretisation based on the interval limits found
 by decision trees algorithms. It uses decision trees to find the optimal interval limits. Next,
 it sorts the variable into those intervals.
 
@@ -74,10 +74,10 @@ monotonically) related with the target.
 According to the authors, the addition of these new features had a significant impact
 on the performance of linear models.
 
-Code examples
--------------
+Python implementation
+---------------------
 
-In the following sections, we will do decision tree discretisation to showcase the functionality of
+In the following sections, we will apply decision tree discretisation to showcase the functionality of
 the :class:`DecisionTreeDiscretiser()`. We will discretise 2 numerical variables of the Ames house
 prices dataset using decision trees.
 
@@ -136,10 +136,12 @@ In the following output we see the predictor variables of the house prices datas
 
 We set up the decision tree discretiser to find the optimal intervals using decision trees.
 
-The :class:`DecisionTreeDiscretiser()` will optimise the depth of the decision tree classifier
-or regressor by default and using cross-validation. That's why we need to select the appropriate
-metric for the optimisation. In this example, we are using decision tree regression, so we select
-the mean squared error metric.
+.. note::
+
+    :class:`DecisionTreeDiscretiser()` will optimise the depth of the decision tree classifier
+    or regressor by default using cross-validation. That's why we need to select the appropriate
+    metric for the optimisation. In this example, we are using decision tree regression, so we select
+    the mean squared error metric.
 
 We specify in the `bin_output` that we want to replace the continuous attribute values with the
 predictions of the decision tree.
@@ -156,8 +158,11 @@ predictions of the decision tree.
 
    disc.fit(X_train, y_train)
 
-The scoring and cv parameter work exactly as those from any scikit-learn estimator. So we can pass
-any value that is also valid for those estimators. Check scikit-learn's documentation for more information.
+.. note::
+
+    The scoring and cv parameter work exactly as those from any scikit-learn estimator. So we can pass
+    any value that is also valid for those estimators. Check scikit-learn's documentation for more information.
+
 
 With `fit()` the transformer fits a decision tree for each one of the continuous features. Then,
 we can go ahead replace the variable values by the predictions of the trees and display the transformed
@@ -188,6 +193,8 @@ transformed variables:
 
     train_t[['LotArea', 'GrLivArea']].nunique()
 
+In the following output, we see the unique number of bins per variable:
+
 .. code:: python
 
     LotArea       4
@@ -200,6 +207,7 @@ The `binner_dict_` stores the details of each decision tree.
 
    disc.binner_dict_
 
+Below the decision tree parameters per variable:
 
 .. code:: python
 
@@ -221,10 +229,12 @@ necessarily contain the same number of observations. Let's check that out with a
    plt.ylabel('Number of houses')
    plt.show()
 
+In the following image we see that there is a different number of observations on each bin:
 
 .. image:: ../../images/treediscretisation.png
 
-Finally, we can determine if we have a monotonic relationship with the target after the transformation:
+Finally, we can determine if we have a monotonic relationship with the target after the transformation.
+We'll make a scatter plot of the observations within each bin vs the target variable:
 
 .. code:: python
 
@@ -232,6 +242,8 @@ Finally, we can determine if we have a monotonic relationship with the target af
     plt.xlabel('GrLivArea')
     plt.ylabel('Sale Price')
     plt.show()
+
+In the following image we see that as GrLivArea grows, so does the house sales price:
 
 .. image:: ../../images/treemonotonicprediction.png
 
@@ -261,17 +273,24 @@ the `precision` parameter:
     plt.ylabel('Number of houses')
     plt.show()
 
+In the following image, we see the number of observations per interval after discretising the
+variable. Here, the intervals are represented as the tree predictions with only 1 decimal after
+the comma:
+
 .. image:: ../../images/treepredictionrounded.png
 
-In this example, we are predicting house prices, which is a continuous target. The procedure for
-classification models is identical, we just need to set the parameter `regression` to False.
+.. note::
+
+    In this Python implementation, we are predicting house prices, which is a continuous target. Hence, we used regression
+    trees to discretise the variables. For classification models, we must select classification trees by setting
+    the parameter `regression` to `False`.
 
 Discretisation with interval limits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this section, instead of replacing the original variable values with the predictions of the
-decision tree, we will return the limits of the intervals. When returning interval boundaries,
-we need to set the precision to a positive integer.
+decision tree, we will return the limits of the intervals. To return interval boundaries,
+we need to set the precision to a positive integer:
 
 .. code:: python
 
@@ -286,12 +305,16 @@ we need to set the precision to a positive integer.
     # fit the transformer
     disc.fit(X_train, y_train)
 
-In this case, when we explore the `binner_dict_` attribute, we will see the interval limits instead
+With `fit()`, :class:`DecisionTreeDiscretiser()` trained a decision tree per variable to
+discretise, but instead of storing the decision tree, it saves the interval limits. Hence,
+when we explore the `binner_dict_` attribute, we will see the interval limits instead
 of the decision trees:
 
 .. code:: python
 
     disc.binner_dict_
+
+In the following output we see the limits of the intervals determined with decision trees:
 
 .. code:: python
 
@@ -335,7 +358,8 @@ In the following output we see the interval limits into which the values of the 
     799      (-inf, 8637.5]  (1651.5, 1825.0]
     380      (-inf, 8637.5]  (1651.5, 1825.0]
 
-To train machine learning algorithms we would follow that up with any categorical data encoding method.
+These values per se are not suitable to train machine learning models. Instead, we can return the
+intervals as integers (see next section), or use any categorical data encoding procedure instead.
 
 Discretisation with ordinal numbers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -356,11 +380,15 @@ which the value was sorted. Here, 0 is the first bin, 1 the second, and so on.
     # fit the transformer
     disc.fit(X_train, y_train)
 
-The `binner_dict_` will also contain the limits of the intervals:
+When discretising into bin number, :class:`DecisionTreeDiscretiser()` saves the interval
+limits in the `binner_dict_` attribute:
 
 .. code:: python
 
     disc.binner_dict_
+
+In the following output, we see the limits of the intervals that were determined using
+decision trees:
 
 .. code:: python
 
@@ -408,12 +436,12 @@ were sorted:
 Additional considerations
 -------------------------
 
-Decision tree discretisation uses scikit-learn's DecisionTreeRegressor or DecisionTreeClassifier under
+Decision tree discretisation uses scikit-learn's `DecisionTreeRegressor` or `DecisionTreeClassifier` under
 the hood to find the optimal interval limits. These models do not support missing data. Hence, we need
 to replace missing values with numbers before proceeding with the disrcretisation.
 
-Tutorials, books and courses
-----------------------------
+Additional resources
+--------------------
 
 For tutorials about this and other discretisation methods and feature engineering techniques check out our online course:
 
