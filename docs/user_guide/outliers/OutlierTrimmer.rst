@@ -148,7 +148,7 @@ majority of the data distribution. The variable age also shows outlier values to
 .. figure::  ../../images/boxplot-titanic.png
    :align:   center
 
-The variables have different scales, so let's plot them individually for better visualization. Let's start by making a
+The variables have different scales, so let's plot them individually for better visualisation. Let's start by making a
 boxplot of the variable fare:
 
 .. code:: python
@@ -442,7 +442,7 @@ Pipeline
 
 The :class:`OutlierTrimmer()` removes observations from the predictor data sets. If we want to use this transformer
 within a Pipeline, we can't use Scikit-learn's pipeline because it can't readjust the target. But we can use
-Feature-engine's pipeline instead.
+feature-engine's pipeline instead.
 
 Let's start by creating a pipeline that removes outliers and then encodes categorical variables:
 
@@ -608,58 +608,15 @@ The default values for fold are as follows:
 You can manually adjust the fold value to make the outlier detection process more or less
 conservative, thus customizing the extent of outlier trimming.
 
-Tutorials, books and courses
-----------------------------
+Additional resources
+--------------------
 
-In the following Jupyter notebook, in our accompanying Github repository, you will find more examples using
-:class:`OutlierTrimmer()`.
+For more details about this and other feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/outliers/OutlierTrimmer.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For tutorials about this and other feature engineering methods check out our online course:
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
