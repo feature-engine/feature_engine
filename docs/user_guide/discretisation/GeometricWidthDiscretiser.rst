@@ -133,9 +133,9 @@ The interval width varies. Let's print out the width of each interval to corrobo
 
 .. code:: python
 
-    bin_0 = disc.binner_dict_['LotArea'][1]
+    bin_0 = X_train['LotArea'].min()
     interval = []
-    for bin_ in disc.binner_dict_['LotArea'][2:-1]:
+    for bin_ in disc.binner_dict_['LotArea'][1:-1]:
         int_ = bin_ - bin_0
         print(int_)
         interval.append(int_)
@@ -145,6 +145,7 @@ In the following output we see how the width of each interval increases:
 
 .. code:: python
 
+    3.4121664944211716
     8.230713691228857
     28.084565482384278
     95.82921334936668
