@@ -7,9 +7,9 @@ ReciprocalTransformer
 
 A reciprocal transformation involves replacing each data value x, with its reciprocal, 1/x​. This transformation is
 useful for addressing heteroscedasticity, where the variability of errors in a regression model differs across values
-of an independent variable, and for transforming skewed distributions into more symmetric ones. It can also linearize
+of an independent variable, and for transforming skewed distributions into more symmetric ones. It can also linearise
 certain nonlinear relationships, making them easier to model with linear regression, and improve the overall fit of a
-linear model by reducing the influence of outliers or normalizing residuals.
+linear model by reducing the influence of outliers or normalising residuals.
 
 
 Applications
@@ -210,7 +210,7 @@ symmetrically distributed across their value ranges:
 
 |
 
-An that's it! We've now applied different mathematical functions to stabilize the variance of the variables in the
+An that's it! We've now applied different mathematical functions to stabilise the variance of the variables in the
 dataset.
 
 Alternatives to the reciprocal function
@@ -227,10 +227,10 @@ If the variable contains counts, then the square root transformation is better s
 The Box-Cox transformation automates the process of finding the best transformation by exploring several functions
 automatically.
 
-All these functions are considered variance stabilizing transformations, and have been designed to transform data, to
+All these functions are considered variance stabilising transformations, and have been designed to transform data, to
 meet the assumptions of statistical parametric tests and linear regression models.
 
-You can apply all these functions out-of-the-box with the transformers from Feature-engine's transformation module.
+You can apply all these functions out-of-the-box with the transformers from feature-engine's transformation module.
 Remember to follow up the transformations with proper data analysis, to ensure that the transformations returned the desired effect, otherwise, we are adding complexity to the feature engineering pipeline for now added benefit.
 
 Alternatives with Feature-engine
@@ -247,56 +247,12 @@ You can apply other variance data transformation functions with the following tr
 Additional resources
 --------------------
 
-You can find more details about the :class:`ReciprocalTransformer()` here:
+For tutorials about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/transformation/ReciprocalTransformer.ipynb>`_
-
-For more details about this and other feature engineering methods check out these resources:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

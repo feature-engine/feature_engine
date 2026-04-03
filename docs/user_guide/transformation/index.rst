@@ -1,6 +1,6 @@
 .. -*- mode: rst -*-
 
-Variance Stabilizing Transformations
+Variance Stabilising Transformations
 ====================================
 
 Feature-engine's variable transformers transform numerical variables with various
@@ -16,7 +16,7 @@ over a wider value range. See the following illustration:
 Article
 -------
 
-We added a lot of information about **variance stabilizing transformations** in this
+We added a lot of information about **variance stabilising transformations** in this
 `article <https://www.blog.trainindata.com/variance-stabilizing-transformations-in-machine-learning/>`_.
 
 **Note**
