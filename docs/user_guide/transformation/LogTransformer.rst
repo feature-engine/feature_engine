@@ -7,24 +7,30 @@ LogTransformer
 
 The log transformation is used to transform skewed data so that the values are more evenly distributed across the value range.
 
-Some regression models, like linear regression, t-test and ANOVA, make assumptions about the data. When the assumptions are not met, we can't trust the results. Applying data transformations is common practice during regression analysis because it can help make the data meet those assumptions and hence obtain more reliable results.
+Some regression models, like linear regression, t-test and ANOVA, make assumptions about the data. When the assumptions are not met, we can't trust the results.
+
+Applying data transformations is common practice during regression analysis because it can help make the data meet those assumptions and hence obtain more reliable results.
 
 The logarithm function is helpful for dealing with positive data with a right-skewed distribution. That is, those variables whose observations accumulate towards lower values. A common example is the variable income, with a heavy accumulation of values toward lower salaries.
 
 More generally, when data follows a log-normal distribution, then its log-transformed version approximates a normal distribution.
 
-Other useful transformations are the square root transformation, power transformations and the box cox transformation.
+Other useful transformations are the square root transformation, power transformations and the Box-Cox transformation.
 
 In statistical analysis, we can apply the logarithmic transformation to both the dependent variable (that is, the target) and the independent variables (that is, the predictors). These can help meet the linear regression model assumptions and unmask a linear relationship between predictors and response variable.
 
 With feature-engine, we can only log transform input features. You can easily transform the target variable by applying `np.log(y)`.
 
-The LogTransformer
-------------------
+LogTransformer
+--------------
 
-The :class:`LogTransformer()` applies the natural logarithm or the logarithm in base 10 to numerical variables. Note that the logarithm can only be applied to positive values. Thus, if the variable contains 0 or negative variables, this transformer will return and error.
+:class:`LogTransformer()` applies the natural logarithm or the logarithm in base 10 to numerical variables.
 
-To transform non-positive variables you can add a constant to shift the data points towards positive values. You can do this from within the transformer by using :class:`LogCpTransformer()`.
+.. note::
+
+    Note that the logarithm can only be applied to positive values. Thus, if the variable contains 0 or negative variables, this transformer will return and error.
+
+To transform non-positive variables you can add a constant to shift the data points towards positive values. You can do this from by using :class:`LogCpTransformer()`.
 
 Python implementation
 ---------------------
@@ -101,7 +107,9 @@ We want to apply the natural logarithm to these 2 variables in the dataset using
 
 With `fit()`, this transformer does not learn any parameters, but it checks that the variables you entered are numerical, or if no variable was entered, it will automatically find all numerical variables.
 
-To apply the logarithm in base 10, pass `'10'` to the `base` parameter when setting up the transformer.
+.. note::
+
+    To apply the logarithm in base 10, pass `'10'` to the `base` parameter when setting up the transformer.
 
 Now, we can go ahead and transform the data:
 
@@ -123,7 +131,7 @@ In the following histograms we see that the natural log transformation helped ma
 
 Note that the transformed variable has a more Gaussian looking distribution.
 
-If we want to recover the original data representation, with the method `inverse_transform`, the :class:`LogTransformer()` will apply the exponential function to obtain the variable in its original scale:
+If we want to recover the original data representation, with the method `inverse_transform`, :class:`LogTransformer()` will apply the exponential function to obtain the variable in its original scale:
 
 .. code:: python
 
@@ -137,7 +145,9 @@ In the following plots we see histograms showing the variables in their original
 
 .. image:: ../../images/nonnormalvars2.png
 
-Following the transformations with scatter plots and residual analysis of the regression models helps understand if the transformations are useful in our regression analysis.
+.. tip::
+
+    Following the transformations with scatter plots and residual analysis of the regression models helps understand if the transformations are useful in our regression analysis.
 
 
 Additional resources
