@@ -49,7 +49,7 @@ Maximum absolute deviation
 - right tail: median + 3.29* MAD
 - left tail:  median - 3.29* MAD
 
-where MAD is the median absolute deviation from the median.
+where MAD is the median absolute deviation from the median:
 
 - MAD = median(abs(X-median(X)))
 
@@ -225,7 +225,7 @@ Below, we see the maximum values for each variable:
 
     {'GrLivArea': 2764.625, 'MasVnrArea': 425.0}
 
-:class:`Winsorizer()` has also a  `right_tail_caps_` attribute, which in this case should
+:class:`Winsorizer()` has also a  `left_tail_caps_` attribute, which in this case should
 be empty. Let's check that out:
 
 .. code:: python
