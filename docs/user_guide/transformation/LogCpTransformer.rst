@@ -20,12 +20,12 @@ You can enter the positive quantity to add to the variable as a dictionary, wher
 keys are the variable names, and the values are the constant to add to each variable. If you
 want to add the same value to all variables, you can pass an integer or float, instead.
 
-Alternatively, the :class:`LogCpTransformer()` will find the necessary value to make all
+Alternatively, :class:`LogCpTransformer()` will find the necessary value to make all
 values of the variable positive. For strictly positive variables, C will be 0, and the
 transformation will be log(x).
 
-Python example
---------------
+Python implementation
+---------------------
 
 Let's check out the functionality of :class:`LogCpTransformer()`.
 
@@ -37,7 +37,6 @@ into train and test sets.
 
 .. code:: python
 
-    import pandas as pd
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import fetch_california_housing
@@ -79,8 +78,10 @@ before applying the logarithm transformation:
 
     {'MedInc': 0, 'HouseAge': 0}
 
-In this case, the transformation applied by :class:`LogCpTransformer()` is the same as
-using :class:`LogTransformer()` because these variables are strictly positive.
+.. note::
+
+    In this example, the transformation applied by :class:`LogCpTransformer()` is the same as
+    using :class:`LogTransformer()` because these variables are strictly positive.
 
 We can now go ahead and transform the variables:
 
@@ -94,7 +95,7 @@ Then we can plot the original variable distribution:
 
 .. code:: python
 
-    # un-transformed variable
+    # non-transformed variable
     X_train["MedInc"].hist(bins=20)
     plt.title("MedInc - original distribution")
     plt.ylabel("Number of observations")
@@ -120,11 +121,10 @@ Transforming non-strictly positive variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's now show the functionality of :class:`LogCpTransformer()` with variables that contain
-values lower or equal to 0. Let's load the diabetes dataset:
+values lower than or equal to 0. Let's load the diabetes dataset:
 
 .. code:: python
 
-    import pandas as pd
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import load_diabetes
@@ -226,8 +226,9 @@ as follows:
     tf = LogCpTransformer(C=5)
     tf.fit(X_train)
 
-In this case, all numerical variables will be transformed. We can find the variables that
-will be transformed in the `variables_` attribute:
+In this example, as we did not specify any variable, all numerical variables will be
+transformed. We can find the variables that will be transformed in the `variables_`
+attribute:
 
 .. code:: python
 
