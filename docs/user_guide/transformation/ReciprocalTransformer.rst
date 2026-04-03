@@ -5,8 +5,9 @@
 ReciprocalTransformer
 =====================
 
-A reciprocal transformation involves replacing each data value x, with its reciprocal, 1/x​. This transformation is
-useful for addressing heteroscedasticity, where the variability of errors in a regression model differs across values
+A reciprocal transformation involves replacing each data value x, with its reciprocal, 1/x.
+
+This transformation is useful for addressing heteroscedasticity, where the variability of errors in a regression model differs across values
 of an independent variable, and for transforming skewed distributions into more symmetric ones. It can also linearise
 certain nonlinear relationships, making them easier to model with linear regression, and improve the overall fit of a
 linear model by reducing the influence of outliers or normalising residuals.
@@ -15,8 +16,8 @@ linear model by reducing the influence of outliers or normalising residuals.
 Applications
 ------------
 
-The reciprocal transformation is useful for ratios, where the values of a variable result from the division of two v
-ariables. Some examples include variables like student-teacher ratio (students per teacher) or crop yield (tons per acre).
+The reciprocal transformation is useful for ratios, where the values of a variable result from the division of two
+variables. Some examples include variables like student-teacher ratio (students per teacher) or crop yield (tons per acre).
 
 By calculating the inverse of these variables, we shift from representing students per teacher to teachers per student,
 or from tons per acre to acres per ton. This transformation still makes intuitive sense and can result in a better spread
@@ -30,22 +31,26 @@ Properties
 - The inverse of the reciprocal transformation is also the reciprocal transformation
 - The range of the reciprocal function includes all real numbers except 0
 
-Although in theory, the reciprocal function is defined for both positive and negative values, in practice, it's mostly
-used to transform strictly positive variables.
+.. note::
+
+    Although in theory, the reciprocal function is defined for both positive and negative values, in practice, it's mostly
+    used to transform strictly positive variables.
 
 
 ReciprocalTransformer
 ---------------------
 
-The :class:`ReciprocalTransformer` applies the reciprocal transformation to numerical variables. By default, it will
+:class:`ReciprocalTransformer` applies the reciprocal transformation to numerical variables. By default, it will
 find and transform all numerical variables in the dataset. A better practice would be to apply the transformer to a
 selected group of variables, which you can do by passing a list with the variable names to the `variables` parameter
 when setting up the transformer.
 
-If any of the variables contains 0 as value, the transformer will raise an error.
+.. note::
 
-Python examples
----------------
+    If any of the variables contains 0 as value, the transformer will raise an error.
+
+Python implementation
+---------------------
 
 In the next sections, we'll demonstrate how to apply the reciprocal transformation with :class:`ReciprocalTransformer`.
 
@@ -55,7 +60,6 @@ garage. Next, we'll separate the data into train and test sets:
 .. code:: python
 
     import matplotlib.pyplot as plt
-
     from sklearn.datasets import fetch_openml
     from sklearn.model_selection import train_test_split
     from feature_engine.transformation import ReciprocalTransformer
@@ -98,9 +102,9 @@ Let's plot the distribution of the variable with the square foot area per car in
 In the following image we can see the skewness of the variable:
 
 
-.. image:: ../../images/reciprocal_transformer/reciprocal_transfomer_original.png
-
-|
+.. figure::  ../../images/reciprocal_transformer/reciprocal_transfomer_original.png
+   :align:   center
+   :width: 350px
 
 Let's now apply the reciprocal transformation to this variable:
 
@@ -122,8 +126,9 @@ Finally, let's plot the distribution after the reciprocal transformation:
 In the following image, we see that the reciprocal transformation made the variable's values follow more closer a
 symmetric or normal distribution:
 
-.. image:: ../../images/reciprocal_transformer/reciprocal_transfomer_new.png
-
+.. figure::  ../../images/reciprocal_transformer/reciprocal_transfomer_new.png
+   :align:   center
+   :width: 350px
 
 Inverse transformation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -147,16 +152,17 @@ Let's check out the reverted transformation:
 As you can see in the following image, we obtained the original data by re-applying the reciprocal function to the
 transformed variable:
 
-.. image:: ../../images/reciprocal_transformer/reciprocal_transfomer_inverse.png
-
+.. figure::  ../../images/reciprocal_transformer/reciprocal_transfomer_inverse.png
+   :align:   center
+   :width: 350px
 
 Pipeline of transformations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As we mentioned previously, the reciprocal transformation is suitable, in general for ratio variables, so we need to
+As we mentioned previously, the reciprocal transformation is suitable, in general, for ratio variables, so we need to
 transform other variables in the data set with other type of transformations.
 
-Let's not plot the distribution of the 3 variables in the original data to see which transformations could be suitable
+Let's plot the distribution of the 3 variables in the original data to see which transformations could be suitable
 for them:
 
 .. code:: python
@@ -172,12 +178,9 @@ distribution), and `GarageArea` is a continuous variable:
 |
 
 Let's then create a pipeline to apply the square root transformation to `GarageCounts` and the Box-Cox transformation
-to `GarageArea`, while applying the reciprocal transformation to "sqrfootpercar":
+to `GarageArea`, while applying the reciprocal transformation to `sqrfootpercar`:
 
 .. code:: python
-
-    from feature_engine.pipeline import Pipeline
-    from feature_engine.transformation import PowerTransformer, BoxCoxTransformer
 
     from feature_engine.pipeline import Pipeline
     from feature_engine.transformation import PowerTransformer, BoxCoxTransformer
@@ -195,7 +198,7 @@ Let's now fit the pipeline and transform the datasets:
     train_t = pipe.fit_transform(X_train)
     test_t = pipe.transform(X_test)
 
-And now, we can corroborate how these transformations improved the value spread across all variables by plotting the
+We can check out how these transformations changed the value spread across all variables by plotting the
 histograms for the transformed data:
 
 .. code:: python
@@ -210,7 +213,7 @@ symmetrically distributed across their value ranges:
 
 |
 
-An that's it! We've now applied different mathematical functions to stabilise the variance of the variables in the
+That's it! We've now applied different mathematical functions to stabilise the variance of the variables in the
 dataset.
 
 Alternatives to the reciprocal function
