@@ -5,7 +5,7 @@
 ArcSinhTransformer
 ==================
 
-The inverse hyperbolic sine (or arcsinh) transformation is a variance-stabilising
+The inverse hyperbolic sine (or arcsinh) transformation is a variance stabilising
 transformation that achieves results similar to the logarithmic transformation,
 while retaining zero values in a variable, something the logarithm cannot do. It has
 gained popularity in recent years; therefore, we add support for it in Feature-engine.
@@ -42,8 +42,10 @@ The inverse hyperbolic sine (IHS) transformation is defined as follows:
 
    x' = \operatorname{arcsinh}(x) = \ln\left(x + \sqrt{x^2 + 1}\right)
 
-The IHS transformation works with data defined on the whole real line including
-negative values and zeros. For large values of x, the IHS behaves like a log
+The IHS transformation works with data defined on the whole real space including
+negative values and zeros.
+
+For large values of x, the IHS behaves like a log
 transformation. For small values of x, or in other words as x approaches 0, IHS(x)
 approaches x.
 
@@ -313,8 +315,8 @@ separation of larger values of the variable from 0.
 Unlike :class:`LogTransformer()`, :class:`ArcSinhTransformer()` can handle
 zero and negative values without requiring any preprocessing (or so we wanted to think).
 
-Python demo
------------
+Python implementation
+---------------------
 
 In this demo, we'll show how to use the inverse hyperbolic sine transformation with care.
 
