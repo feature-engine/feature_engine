@@ -51,9 +51,9 @@ In Python, we can encode cyclical features by using the Numpy functions `sin` an
     X[f"{variable}_sin"] = np.sin(X["variable"] * (2.0 * np.pi / X["variable"]).max())
     X[f"{variable}_cos"] = np.cos(X["variable"] * (2.0 * np.pi / X["variable"]).max())
 
-We can also use Feature-engine to automate this process.
+We can also use feature-engine to automate this process.
 
-Cyclical encoding with Feature-engine
+Cyclical encoding with feature-engine
 -------------------------------------
 
 :class:`CyclicalFeatures()` creates two new features from numerical variables to better
@@ -86,7 +86,7 @@ Applying cyclical encoding
 --------------------------
 
 We'll start by applying cyclical encoding to a toy dataset to get familiar with how to
-use Feature-engine for cyclical encoding.
+use feature-engine for cyclical encoding.
 
 In this example, we'll encode the cyclical features **days of the week** and **months**.
 Let's create a toy dataframe with the variables "days" and "months":
@@ -131,6 +131,8 @@ The maximum values used for the transformation are stored in the attribute
 
     cyclical.max_values_
 
+Below we see the maximum values of each variable:
+
 .. code:: python
 
     {'day': 7, 'months': 12}
@@ -141,7 +143,7 @@ Let's have a look at the transformed dataframe:
 
     print(X.head())
 
-We see that the new variables were added at the right of our dataframe.
+We see that the new variables were added at the right of our dataframe:
 
 .. code:: python
 
@@ -166,7 +168,7 @@ the feature creation, we can set the parameter to `True`:
     print(X.head())
 
 The resulting dataframe contains only the cyclical encoded features; the original variables
-are removed:
+were removed:
 
 .. code:: python
 
@@ -266,7 +268,7 @@ These are the sine and cosine features that represent the hour:
 
 
 Let's now plot the hour variable against its sine transformation. We add perpendicular
-lines to flag the hours 0 and 22.
+lines to flag the hours 0 and 22:
 
 .. code:: python
 
@@ -369,10 +371,10 @@ functions and cyclical encoding.
 Feature-engine vs Scikit-learn
 ------------------------------
 
-Let's compare the implementations of cyclical encoding between Feature-engine and Scikit-learn.
+Let's compare the implementations of cyclical encoding between feature-engine and scikit-learn.
 We'll work with the Bike sharing demand dataset, and we'll follow the implementation of
-Cyclical encoding found in the `Time related features documentation <https://scikit-learn.org/stable/auto_examples/applications/plot_cyclical_feature_engineering.html#trigonometric-features>`_
-from Scikit-learn.
+cyclical encoding found in the `Time related features documentation <https://scikit-learn.org/stable/auto_examples/applications/plot_cyclical_feature_engineering.html#trigonometric-features>`_
+from scikit-learn.
 
 Let's load the libraries and dataset:
 
@@ -409,7 +411,7 @@ In the following output we see the bike sharing dataset:
     3     14.395      0.75        0.0     13
     4     14.395      0.75        0.0      1
 
-To apply cyclical encoding with Scikit-learn, we can use the `FunctionTransformer`:
+To apply cyclical encoding with scikit-learn, we can use the `FunctionTransformer`:
 
 .. code:: python
 
@@ -476,7 +478,7 @@ and hour:
 
     [17379 rows x 6 columns]
 
-With Feature-engine, we can do the same as follows:
+With feature-engine, we can do the same as follows:
 
 .. code:: python
 
@@ -533,10 +535,10 @@ the variable hour by 23, instead of 24, because the values of these variables va
     {'month': 12, 'weekday': 6, 'hour': 23}
 
 Practically, there isn't a big difference between the values of the dataframes returned by
-Scikit-learn and Feature-engine, and I doubt that this subtle difference will incur in a big
+scikit-learn and feature-engine, and I doubt that this subtle difference will incur in a big
 change in model performance.
 
-However, if you want to divide the varibles weekday and hour by 7 and 24 respectively, you can
+However, if you want to divide the variables weekday and hour by 7 and 24 respectively, you can
 do so like this:
 
 .. code:: python
