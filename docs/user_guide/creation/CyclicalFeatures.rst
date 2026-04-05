@@ -34,7 +34,7 @@ Cyclical encoding
 
 The trigonometric functions sine and cosine are periodic and repeat their values every
 2 pi radians. Thus, to transform cyclical variables into (x, y) coordinates using these
-functions, first we need to normalize them to 2 pi radians.
+functions, first we need to normalise them to 2 pi radians.
 
 We achieve this by dividing the variables' values by their maximum value. Thus, the two
 new features are derived as follows:
@@ -69,7 +69,7 @@ Finding the max_value
 ~~~~~~~~~~~~~~~~~~~~~
 
 :class:`CyclicalFeatures()` attempts to automate the process of cyclical encoding by
-automatically determining the value used to normalize the feature between
+automatically determining the value used to normalise the feature between
 0 and 2 * pi radians, which coincides with the cycle of the periodic functions sine and
 cosine.
 
@@ -200,7 +200,7 @@ Understanding cyclical encoding
 -------------------------------
 
 We now know how to convert cyclical variables into (x, y) coordinates of a circle by using
-the sine and cosine functions. Let’s now carry out some visualizations to better understand
+the sine and cosine functions. Let’s now carry out some visualisations to better understand
 the effect of this transformation.
 
 Let's create a toy dataframe:
@@ -574,35 +574,6 @@ the user, with automation, we can only go that far.
 Additional resources
 --------------------
 
-For tutorials on how to create cyclical features, check out the following courses:
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
 For a comparison between one-hot encoding, ordinal encoding, cyclical encoding and spline
 encoding of cyclical features check out the following
 `sklearn demo <https://scikit-learn.org/stable/auto_examples/applications/plot_cyclical_feature_engineering.html>`_.
@@ -610,3 +581,14 @@ encoding of cyclical features check out the following
 Check also these Kaggle demo on the use of cyclical encoding with neural networks:
 
 - `Encoding Cyclical Features for Deep Learning <https://www.kaggle.com/code/avanwyk/encoding-cyclical-features-for-deep-learning>`_.
+
+
+For tutorials about this and other feature engineering methods check out these resources:
+
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
+
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

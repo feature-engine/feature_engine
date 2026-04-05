@@ -355,7 +355,7 @@ we so wish. Let's set up the :class:`DecisionTreeFeatures()`:
     dtf.fit(X_train, y_train)
 
 :class:`DecisionTreeFeatures()` trains each tree with cross-validation. If we do not
-pass a grid with hyperparameters, it will optimize the depth by default. We can find
+pass a grid with hyperparameters, it will optimise the depth by default. We can find
 the trained estimators like this:
 
 .. code:: python
@@ -404,7 +404,7 @@ we can do so like this:
     tree.score(X_test[['Population']], y_test)
 
 The following performance value corresponds to the negative of the mean squared error
-which is the metric optimised durign the search (you can select the metric to optimize
+which is the metric optimised durign the search (you can select the metric to optimise
 through the `scoring` parameter of :class:`DecisionTreeFeatures()`).
 
 .. code:: python
@@ -486,51 +486,12 @@ classification, on the other hand, the features will contain the prediction of t
 Additional resources
 --------------------
 
-For more details about this and other feature engineering methods check out these resources:
+For tutorials about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

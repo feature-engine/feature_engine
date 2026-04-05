@@ -1,4 +1,4 @@
-.. -*- mode: rst -*-
+.. _datetime_module:
 
 Datetime Features
 =================
