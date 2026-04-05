@@ -83,11 +83,11 @@ For more details about these variance stabilising transformations, check the art
 .trainindata.com/variance-stabilizing-transformations-in-machine-learning/>`_.
 
 
-Python example
---------------
+Python implementation
+---------------------
 
 :class:`PowerTransformer()` applies power transformations to numerical independent 
-variables. We'll use the Ames House Prices' dataset to see it in action. 
+variables. We'll use the Ames House Prices dataset to see it in action.
 First, let's load the dataset and split it into train and test sets:
 
 .. code:: python
@@ -223,8 +223,8 @@ especially in algorithms that hinge on the assumption of data variability,
 like linear regression and other regression-based models.
 
 
-Choosing lambda accordingly to the distribution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Choosing lambda according to the distribution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this section, we'll further explore the impact of the lambda parameter for 
 left- and right-skewed distributions.
