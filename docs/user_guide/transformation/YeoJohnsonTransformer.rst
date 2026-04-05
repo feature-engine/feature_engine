@@ -71,8 +71,6 @@ and testing sets.
 
 .. code:: python
 
-    import numpy as np
-    import pandas as pd
     import matplotlib.pyplot as plt
     from sklearn.datasets import fetch_openml
     from sklearn.model_selection import train_test_split
@@ -124,7 +122,7 @@ Let's now set up the transformer to apply the Yeo-Johnson transformation to 2 va
 
 	tf.fit(X_train)
 
-With `fit()`, :class:`YeoJohnsonTransformer()` learns the optimal lambda for the yeo-johnson power transformation. We
+With `fit()`, :class:`YeoJohnsonTransformer()` learns the optimal lambda for the Yeo-Johnson power transformation. We
 can inspect these values as follows:
 
 .. code:: python
@@ -137,7 +135,7 @@ We see the optimal lambda values below:
 
          {'LotArea': 0.02258978732751055, 'GrLivArea': 0.06781061353154169}
 
-We can now go ahead and apply the data transformation to get closer to normal distributions.
+We can now go ahead and apply the data transformation to get closer to normal distributions:
 
 .. code:: python
 
