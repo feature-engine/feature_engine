@@ -34,9 +34,8 @@ The distance can be returned in various units:
 - **meters**: Meters
 - **feet**: Feet
 
-Python Demo
------------
-
+Python implementation
+---------------------
 Let's create a dataframe with origin and destination coordinates:
 
 .. code:: python

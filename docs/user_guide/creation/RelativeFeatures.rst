@@ -44,8 +44,8 @@ The precedent code block will return a new dataframe, Xt, with 4 new variables t
 calculated as the division of each one of the variables in `variables` and
 'total_payments'.
 
-Examples
---------
+Python implementation
+---------------------
 
 Let's dive into how we can use :class:`RelativeFeatures()` in more details. Let's first
 create a toy dataset:
@@ -91,7 +91,7 @@ as follows:
 
     print(df_t)
 
-And we obtain the following dataset, where the new variables are named after the variables
+We obtain the following dataset, where the new variables are named after the variables
 that were used for the calculation and the function in the middle of their names. Thus,
 `Mark_sub_Age` means `Mark - Age`, and `Marks_mod_Age` means `Mark % Age`.
 

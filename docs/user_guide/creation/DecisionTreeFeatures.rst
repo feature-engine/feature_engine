@@ -39,8 +39,8 @@ are the output of the `predict_proba` method of the model corresponding to the p
 of class 1. If the output is multiclass, on the other hand, the features are derived from
 the `predict` method, and hence return the predicted class.
 
-Examples
---------
+Python implementation
+---------------------
 
 In the rest of the document, we'll show the versatility of :class:`DecisionTreeFeatures()`
 to create multiple features by using decision trees.
