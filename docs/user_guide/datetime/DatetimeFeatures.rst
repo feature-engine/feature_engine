@@ -109,7 +109,7 @@ We see the new features in the following output:
 
 By default, :class:`DatetimeFeatures()` drops the variable from which the date and time
 features were extracted, in this case, *var_date2*. To keep the variable, we just need
-to indicate `drop_original=False` when initializing the transformer.
+to indicate `drop_original=False` when initialising the transformer.
 
 Finally, we can obtain the name of the variables in the returned data as follows:
 
@@ -189,7 +189,7 @@ The original datetime variables are dropped from the data by default. This leave
 dataset ready to train machine learning algorithms like linear regression or random forests.
 
 If we want to keep the datetime variables, we just need to indicate `drop_original=False`
-when initializing the transformer.
+when initialising the transformer.
 
 Finally, if we want to obtain the names of the variables in the output data, we can use:
 
@@ -676,7 +676,7 @@ with such variables in three different scenarios.
 
 **Case 1**: our dataset contains a time-aware variable in object format,
 with potentially different timezones across different observations. 
-We pass `utc=True` when initializing the transformer to make sure it
+We pass `utc=True` when initialising the transformer to make sure it
 converts all data to UTC timezone.
 
 .. code:: python
@@ -708,7 +708,7 @@ converts all data to UTC timezone.
     3   08:44:23Z            8             44
 
 
-**Case 2**: our dataset contains a variable that is cast as a localized
+**Case 2**: our dataset contains a variable that is cast as a localised
 datetime in a particular timezone. However, we decide that we want to get all
 the datetime information extracted as if it were in UTC timezone.
 
@@ -729,7 +729,7 @@ the datetime information extracted as if it were in UTC timezone.
     2   2001-04-25 11:59:21-04:00
     dtype: datetime64[ns, US/Eastern]
 
-We need to pass `utc=True` when initializing the transformer to revert back to the UTC
+We need to pass `utc=True` when initialising the transformer to revert back to the UTC
 timezone.
 
 .. code:: python
@@ -755,7 +755,7 @@ timezone.
 
 
 **Case 3**: given a variable like *var_tz* in the example above, we now want
-to extract the features keeping the original timezone localization,
+to extract the features keeping the original timezone localisation,
 therefore we pass `utc=False` or `None`. In this case, we leave it to `None` which
 is the default option.
 
@@ -791,62 +791,12 @@ when a missing value is encountered in a datetime variable.
 Additional resources
 --------------------
 
-You can find an example of how to use :class:`DatetimeFeatures()` with a real dataset in
-the following `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/datetime/DatetimeFeatures.ipynb>`_
+For tutorials about this and other feature engineering methods check out these resources:
 
-For tutorials on how to create and use features from datetime columns, check the following courses:
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

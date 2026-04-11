@@ -21,7 +21,7 @@ it was built.
 
 The Python program offers many options for making operations between datetime objects, like,
 for example, the datetime module. Since most likely you will be working with Pandas dataframes,
-we will focus this guide on pandas and then how we can automate the procedure with Feature-engine.
+we will focus this guide on pandas and then how we can automate the procedure with feature-engine.
 
 Subtracting datetime features with pandas
 -----------------------------------------
@@ -56,7 +56,7 @@ This is the data that we created, containing two datetime variables:
     4 2019-03-09 2018-04-08
 
 Now, we can subtract `date2` from `date1` and capture the difference in a new variable by
-utilizing the pandas subtraction operator:
+utilising the pandas subtraction operator:
 
 .. code:: python
 
@@ -454,59 +454,12 @@ difference:
 Additional resources
 --------------------
 
-For tutorials on how to create and use features from datetime columns, check the following courses:
+For tutorials about this and other feature engineering methods check out these resources:
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-   Feature Engineering for Machine Learning
-
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
