@@ -48,7 +48,7 @@ The output shows the new ordinal feature:
 In the variable `ordinal`, the value `738521` means that `2023-01-01` is 738521 days
 *after* the 1st of January of the year 1.
 
-Datetime ordinal with Feature-engine
+Datetime ordinal with feature-engine
 ------------------------------------
 
 :class:`DatetimeOrdinal()` automatically converts one or more datetime variables into
@@ -62,8 +62,8 @@ functionalities are:
 - It can compute the ordinal number relative to a `start_date`.
 - It can automatically find and select datetime variables.
 
-Example
-~~~~~~~
+Python implementation
+---------------------
 
 First, let's create a toy dataframe with 2 date variables:
 
@@ -78,7 +78,7 @@ First, let's create a toy dataframe with 2 date variables:
         "other_var": [1, 2, 3, 4]
     })
 
-Now, we will set up the transformer to convert `var_date2` into an ordinal feature.
+Now, we will set up the transformer to convert `var_date2` into an ordinal feature:
 
 .. code:: python
 
@@ -105,7 +105,7 @@ Calculate days from a start date
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`DatetimeOrdinal()` can also calculate the number of days elapsed since a
-specific `start_date`.
+specific `start_date` as follows:
 
 .. code:: python
 
@@ -119,7 +119,7 @@ specific `start_date`.
     df_transf
 
 The new feature now represents the number of days between `var_date2` and January 1st,
-2010. Note that dates before the `start_date` will result in negative numbers.
+2010. Note that dates before the `start_date` will result in negative numbers:
 
 .. code:: python
 
