@@ -59,10 +59,10 @@ Summary of Feature-engine’s creation transformers
     Transformer                     	  Description
 ================================== =====================================================================================================================================
 :class:`CyclicalFeatures()`	         Creates 2 new features per variable by applying the trigonometric operations sine and cosine.
-:class:`MathFeatures()`	             Combines a set of features into new variables by applying mathematical functions like sum, mean, maximum or standard deviation.
-:class:`RelativeFeatures()`	         Combines features with math functions like subtraction, division, or modulo.
 :class:`DecisionTreeFeatures()`      Creates new features as the output of decision trees trained on 1 or more feature combinations.
 :class:`GeoDistanceFeatures()`	     Creates distance features from latitude and longitude.
+:class:`MathFeatures()`	             Combines a set of features into new variables by applying mathematical functions like sum, mean, maximum or standard deviation.
+:class:`RelativeFeatures()`	         Combines features with math functions like subtraction, division, or modulo.
 ================================== =====================================================================================================================================
 
 Feature creation module
@@ -72,10 +72,10 @@ Feature creation module
    :maxdepth: 1
 
    CyclicalFeatures
-   MathFeatures
-   RelativeFeatures
    DecisionTreeFeatures
    GeoDistanceFeatures
+   MathFeatures
+   RelativeFeatures
 
 Feature-engine in Practice
 --------------------------
