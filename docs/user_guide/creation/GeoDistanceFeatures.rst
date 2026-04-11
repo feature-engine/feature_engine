@@ -87,7 +87,7 @@ Using different distance methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can use the Euclidean distance method, which provides a faster but less accurate
-calculation suitable for short distances:
+calculation (suitable for short distances):
 
 .. code:: python
 
