@@ -5,7 +5,7 @@
 DatetimeSubtraction
 ===================
 
-Very often, we have datetime variables in our datasets, and we want to determine the time
+Often we have datetime variables in our datasets and we want to determine the time
 difference between them. For example, if we work with financial data, we may have the
 variable **date of loan application**, with the date and time when the customer applied for
 a loan, and also the variable **date of birth**, with the customer's date of birth. With those
@@ -17,9 +17,9 @@ In a different example, if we are trying to predict the price of the house and w
 information about the year in which the house was built, we can infer the age of the house
 at the point of sale. Generally, older houses cost less. To calculate the age of the house,
 we’d simply compute the difference in years between the sale date and the date at which
-it was built.
+the house was was built.
 
-The Python program offers many options for making operations between datetime objects, like,
+Python offers many options for making operations between datetime objects, like,
 for example, the datetime module. Since most likely you will be working with Pandas dataframes,
 we will focus this guide on pandas and then how we can automate the procedure with feature-engine.
 
@@ -98,22 +98,22 @@ We see the new variable now expressing the difference in years, at the right of 
     4 2019-03-09 2018-04-08  0.917199
 
 If you wanted to subtract various datetime variables, you would have to write lines of code
-for every subtraction. Fortunately, we can automate this procedure with :class:`DatetimeSubstraction()`.
+for every subtraction. Fortunately, we can automate this procedure with :class:`DatetimeSubtraction()`.
 
-Datetime subtraction with Feature-engine
+Datetime subtraction with feature-engine
 ----------------------------------------
 
-:class:`DatetimeSubstraction()` automatically subtracts several date and time features from
+:class:`DatetimeSubtraction()` automatically subtracts several date and time features from
 each other. You just need to indicate the features at the right of the subtraction operation
-in the `variables` parameters and those on the left in the `reference parameter`. You can also
+in the `variables` parameters and those on the left in the `reference` parameter. You can also
 change the output unit through the `output_unit` parameter.
 
-:class:`DatetimeSubstraction()` works with variables whose `dtype` is datetime, as well as
+:class:`DatetimeSubtraction()` works with variables whose `dtype` is datetime, as well as
 with object-like and categorical variables, provided that they can be parsed into datetime
 format. This will be done under the hood by the transformer.
 
 Following up with the former example, here is how we obtain the difference in number of
-days using :class:`DatetimeSubstraction()`:
+days using :class:`DatetimeSubtraction()`:
 
 .. code:: python
 
@@ -133,7 +133,7 @@ days using :class:`DatetimeSubstraction()`:
 
     print(data)
 
-With `transform()`, :class:`DatetimeSubstraction()` returns a new dataframe containing the
+With `transform()`, :class:`DatetimeSubtraction()` returns a new dataframe containing the
 original variables and also the new variables with the time difference:
 
 .. code:: python
@@ -188,8 +188,8 @@ Subtract multiple variables simultaneously
 
 We can perform multiple subtractions at the same time. In this example, we will add new
 datetime variables to the toy dataframe as strings. The idea is to show that
-:class:`DatetimeSubstraction()` will convert those strings to datetime under the hood to
-carry out the subtraction operation.
+:class:`DatetimeSubtraction()` will convert those strings to datetime under the hood to
+carry out the subtraction operation:
 
 .. code:: python
 
@@ -210,7 +210,7 @@ carry out the subtraction operation.
     print(data)
 
 The resulting dataframe contains the original variables plus the  new variables expressing
-the time difference between the date objects.
+the time difference between the date objects:
 
 .. code:: python
 
@@ -228,7 +228,7 @@ the time difference between the date objects.
 Working with missing values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, :class:`DatetimeSubstraction()`  will raise an error if the dataframe passed
+By default, :class:`DatetimeSubtraction()`  will raise an error if the dataframe passed
 to the `fit()` or `transform()` methods contains NA in the variables to subtract. We can
 override this behaviour and allow computations between variables with nan by setting the
 parameter `missing_values` to `"ignore"`. Here is a code example:
@@ -275,7 +275,7 @@ Working with different timezones
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If we have timestamps in different timezones or variables in different timezones, we can
-still perform subtraction operations with :class:`DatetimeSubstraction()` by first setting
+still perform subtraction operations with :class:`DatetimeSubtraction()` by first setting
 all timestamps to the universal central time zone. Here is a code example, were we return
 the time difference in microseconds:
 
@@ -314,8 +314,8 @@ We see the resulting dataframe with the time difference in microseconds:
 Adding arbitrary names to the new variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Often, we want to compute just a few time differences. In this case, we may want as well
-to assign the new variables specific names. In this code example, we do so:
+Often, we want to compute just a few time differences. In this case, we may also want
+to assign specific names to the new variables. In this code example, we do so:
 
 .. code:: python
 
@@ -348,15 +348,17 @@ called `my_new_var`:
     3 2019-03-08 2018-04-01       341.0
     4 2019-03-09 2018-04-08       335.0
 
-We should be mindful to pass a list of variales containing as many names as new variables.
-The number of variables that will be created is obtained by multiplying the number of variables
-in the parameter `variables` by the number of variables in the parameter `reference`.
+.. note::
+
+    Be mindful to pass a list containing as many names as new variables.
+    The number of variables that will be created is obtained by multiplying the number of variables
+    in the parameter `variables` by the number of variables in the parameter `reference`.
 
 get_feature_names_out()
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Finally, we can extract the names of the transformed dataframe for compatibility with the
-Scikit-learn pipeline:
+Finally, we can extract the names of the variables in the transformed dataframe for compatibility with
+scikit-learn:
 
 .. code:: python
 
