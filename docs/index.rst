@@ -372,21 +372,15 @@ Sponsors
 --------
 Feature-engine is supported by `Train in Data <https://www.trainindata.com/>`_ and `JetBrains <https://jb.gg/OpenSource>`_.
 
-.. rst-class:: image-no-text-wrap
+.. container:: sponsors-container
 
-.. image:: https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg
-   :height: 50pt
-   :align: left
-   :target: https://jb.gg/OpenSource
+   .. image:: https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg
+      :height: 50pt
+      :target: https://jb.gg/OpenSource
 
-
-.. rst-class:: image-no-text-wrap
-
-.. image:: images/sponsors/trainindata.png
-   :height: 50pt
-   :align: left
-   :target: https://www.trainindata.com/
-
+   .. image:: images/sponsors/trainindata.png
+      :height: 50pt
+      :target: https://www.trainindata.com/
 
 `Train in Data <https://www.trainindata.com/>`_ is your go-to online school for mastering machine learning. We offer
 intermediate and advanced courses in Python programming, data science and machine
