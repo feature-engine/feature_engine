@@ -237,7 +237,7 @@ def test_no_error_triggered_when_df_contains_unseen_categories_and_unseen_is_enc
         encoder.transform(df_enc_rare)
 
 
-@pytest.mark.parametrize("errors", ["raise", "ignore", "encode"])
+@pytest.mark.parametrize("errors", ["raise", "ignore", "encode", "warn"])
 def test_fit_raises_error_if_df_contains_na(errors, df_enc_na):
     # test case 4: when dataset contains na, fit method
     encoder = CountFrequencyEncoder(unseen=errors)
@@ -251,7 +251,7 @@ def test_fit_raises_error_if_df_contains_na(errors, df_enc_na):
     assert str(record.value) == msg
 
 
-@pytest.mark.parametrize("errors", ["raise", "ignore", "encode"])
+@pytest.mark.parametrize("errors", ["raise", "ignore", "encode", "warn"])
 def test_transform_raises_error_if_df_contains_na(errors, df_enc, df_enc_na):
     # test case 4: when dataset contains na, transform method
     encoder = CountFrequencyEncoder(unseen=errors)
@@ -476,3 +476,62 @@ def test_inverse_transform_raises_non_fitted_error():
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError):
         enc.inverse_transform(df1)
+
+
+# ---------------------------------------------------------------------------
+# Tests for unseen='warn'
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def train_test_dfs_warn():
+    X_train = pd.DataFrame({"color": ["red", "red", "blue", "green", "blue"]})
+    X_test = pd.DataFrame({"color": ["red", "blue", "yellow"]})  # 'yellow' unseen
+    return X_train, X_test
+
+
+def test_unseen_warn_emits_userwarning(train_test_dfs_warn):
+    """unseen='warn': UserWarning emitted for unseen categories."""
+    X_train, X_test = train_test_dfs_warn
+    encoder = CountFrequencyEncoder(encoding_method="count", unseen="warn")
+    encoder.fit(X_train)
+    with pytest.warns(UserWarning, match="unseen categories"):
+        encoder.transform(X_test)
+
+
+def test_unseen_warn_encodes_as_nan(train_test_dfs_warn):
+    """unseen='warn': unseen categories should become NaN."""
+    X_train, X_test = train_test_dfs_warn
+    encoder = CountFrequencyEncoder(encoding_method="count", unseen="warn")
+    encoder.fit(X_train)
+    with pytest.warns(UserWarning):
+        X_tr = encoder.transform(X_test)
+    # 'yellow' is unseen — should be NaN
+    assert pd.isna(X_tr.loc[X_tr.index[2], "color"])
+
+
+def test_unseen_warn_known_categories_encoded_correctly(train_test_dfs_warn):
+    """unseen='warn': known categories still encoded correctly."""
+    X_train, X_test = train_test_dfs_warn
+    encoder = CountFrequencyEncoder(encoding_method="count", unseen="warn")
+    encoder.fit(X_train)
+    with pytest.warns(UserWarning):
+        X_tr = encoder.transform(X_test)
+    # 'red' appears 2 times in training
+    assert X_tr.loc[X_tr.index[0], "color"] == 2
+
+
+def test_unseen_warn_no_warning_when_no_unseen(train_test_dfs_warn):
+    """unseen='warn': no warning if all categories were seen during fit."""
+    X_train, _ = train_test_dfs_warn
+    X_test_seen = pd.DataFrame({"color": ["red", "blue"]})
+    encoder = CountFrequencyEncoder(encoding_method="count", unseen="warn")
+    encoder.fit(X_train)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # Fail if any warning raised
+        encoder.transform(X_test_seen)
+
+
+def test_unseen_invalid_value_raises():
+    """Invalid unseen value should raise ValueError at init."""
+    with pytest.raises(ValueError, match="takes only values"):
+        CountFrequencyEncoder(unseen="bad_value")

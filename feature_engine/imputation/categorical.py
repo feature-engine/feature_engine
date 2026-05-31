@@ -1,33 +1,26 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
 
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
+from feature_engine._check_init_parameters.check_variables import \
+    _check_variables_input_value
 from feature_engine._docstrings.fit_attributes import (
-    _feature_names_in_docstring,
-    _imputer_dict_docstring,
-    _n_features_in_docstring,
-    _variables_attribute_docstring,
-)
-from feature_engine._docstrings.methods import (
-    _fit_transform_docstring,
-    _transform_imputers_docstring,
-)
+    _feature_names_in_docstring, _imputer_dict_docstring,
+    _n_features_in_docstring, _variables_attribute_docstring)
+from feature_engine._docstrings.methods import (_fit_transform_docstring,
+                                                _transform_imputers_docstring)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_all_variables,
-    check_categorical_variables,
-    find_all_variables,
-    find_categorical_variables,
-)
+from feature_engine.variable_handling import (check_all_variables,
+                                              check_categorical_variables,
+                                              find_all_variables,
+                                              find_categorical_variables)
 
 
 @Substitution(
@@ -88,6 +81,18 @@ class CategoricalImputer(BaseImputer):
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    errors : str, default='raise'
+        Indicates what to do when the selected imputation_method='frequent'
+        and a variable has more than 1 mode.
+
+        If 'raise', raises a ValueError and stops the fit.
+
+        If 'warn', raises a UserWarning and continues, imputing using the
+        first most frequent category found.
+
+        If 'ignore', continues without warnings, imputing using the first
+        most frequent category found.
+
     Attributes
     ----------
     {imputer_dict_}
@@ -135,6 +140,7 @@ class CategoricalImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_object: bool = False,
         ignore_format: bool = False,
+        errors: str = "raise",
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -144,11 +150,18 @@ class CategoricalImputer(BaseImputer):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
+        if errors not in ("raise", "warn", "ignore"):
+            raise ValueError(
+                "errors takes only values 'raise', 'warn', or 'ignore'. "
+                f"Got {errors} instead."
+            )
+
         self.imputation_method = imputation_method
         self.fill_value = fill_value
         self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
+        self.errors = errors
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -189,9 +202,20 @@ class CategoricalImputer(BaseImputer):
 
                 # Some variables may contain more than 1 mode:
                 if len(mode_vals) > 1:
-                    raise ValueError(
-                        f"The variable {var} contains multiple frequent categories."
-                    )
+                    if self.errors == "raise":
+                        raise ValueError(
+                            f"The variable {var} contains multiple "
+                            f"frequent categories. Set errors='warn' or "
+                            f"errors='ignore' to allow imputation using "
+                            f"the first most frequent category found."
+                        )
+                    elif self.errors == "warn":
+                        warnings.warn(
+                            f"Variable {var} has multiple frequent "
+                            f"categories. The first category found, "
+                            f"{mode_vals[0]}, will be used for imputation.",
+                            UserWarning,
+                        )
 
                 self.imputer_dict_ = {var: mode_vals[0]}
 
@@ -208,10 +232,22 @@ class CategoricalImputer(BaseImputer):
                         varnames_str = ", ".join(varnames)
                     else:
                         varnames_str = varnames[0]
-                    raise ValueError(
-                        f"The variable(s) {varnames_str} contain(s) multiple frequent "
-                        f"categories."
-                    )
+
+                    if self.errors == "raise":
+                        raise ValueError(
+                            f"The variable(s) {varnames_str} contain(s) "
+                            f"multiple frequent categories. Set "
+                            f"errors='warn' or errors='ignore' to allow "
+                            f"imputation using the first most frequent "
+                            f"category found."
+                        )
+                    elif self.errors == "warn":
+                        warnings.warn(
+                            f"Variable(s) {varnames_str} have multiple "
+                            f"frequent categories. The first category "
+                            f"found will be used for imputation.",
+                            UserWarning,
+                        )
 
                 self.imputer_dict_ = mode_vals.iloc[0].to_dict()
 
