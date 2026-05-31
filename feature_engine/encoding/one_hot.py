@@ -100,12 +100,13 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         if `top_categories` is None. If `drop` is not None and `drop_last` is also
         True, a `FutureWarning` is raised and `drop` takes precedence.
 
-        - ``None``: No category is dropped (k dummies). Equivalent to ``drop_last=False``.
+        - ``None``: No category is dropped (k dummies). Equivalent to
+          ``drop_last=False``.
         - ``'last'``: Drops the last category in alphabetical order.
         - ``'first'``: Drops the first category in alphabetical order.
         - ``'most_frequent'``: Drops the most frequent category found during ``fit()``.
-          If there is a tie, a ``UserWarning`` is raised and the first category
-          alphabetically among the tied categories is dropped.
+          If there is a tie, a ``UserWarning`` is raised and the first
+          category alphabetically among the tied categories is dropped.
 
     {variables}
 
