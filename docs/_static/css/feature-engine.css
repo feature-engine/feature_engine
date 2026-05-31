@@ -37,3 +37,8 @@ div.sk-sponsor-div-box, div.sk-testimonial-div-box {
 .caption {
   text-align: center
 }
+
+figure.image-no-text-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
