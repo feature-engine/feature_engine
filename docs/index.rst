@@ -370,16 +370,17 @@ For more details on how to contribute check the contributing page. Click on the
 
 Sponsors
 --------
+Feature-engine is supported by `Train in Data <https://www.trainindata.com/>`_ and `JetBrains <https://jb.gg/OpenSource>`_.
 
-Feature-engine is supported by `Train in Data <https://www.trainindata.com/>`_.
-
-|
+.. image:: https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg
+   :height: 50pt
+   :align: left
+   :target: https://jb.gg/OpenSource
 
 .. image:: images/sponsors/trainindata.png
-   :width: 200pt
+   :height: 50pt
    :align: left
-   :target:  https://www.trainindata.com/
-
+   :target: https://www.trainindata.com/
 |
 |
 |
