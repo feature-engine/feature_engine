@@ -40,5 +40,20 @@ div.sk-sponsor-div-box, div.sk-testimonial-div-box {
 
 figure.image-no-text-wrap {
   overflow: hidden;
-  white-space: nowrap;
+  white-space: normal;
+  margin: 0 8px;
+}
+
+/* Container for sponsor images to display them side-by-side */
+.sponsors-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.sponsors-container figure {
+  float: none !important;
+  display: inline-block;
 }
