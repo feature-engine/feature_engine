@@ -19,11 +19,19 @@ _input_params = [
 
 
 @pytest.mark.parametrize(
-    "_estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, _random_state, _variables_discrete",
+    "_estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, "
+    "_random_state, _variables_discrete",
     _input_params,
 )
 def test_input_params_assignment(
-    _estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, _random_state, _variables_discrete
+    _estimator,
+    _scoring,
+    _distribution,
+    _n_cat,
+    _cv,
+    _n_probes,
+    _random_state,
+    _variables_discrete,
 ):
     sel = ProbeFeatureSelection(
         estimator=_estimator,
@@ -383,35 +391,35 @@ def test_get_features_to_drop_with_many_probes(thresh, vars_to_drop):
 
 def test_variables_discrete_raises_error_when_not_in_variables(df_test):
     X, y = df_test
-    
+
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeClassifier(),
         variables=["var_0", "var_1"],
-        variables_discrete=["var_2"]
+        variables_discrete=["var_2"],
     )
     msg = "Variable var_2 is present in variables_discrete but not in variables."
     with pytest.raises(ValueError, match=msg):
         sel.fit(X, y)
 
 
-def test_variables_discrete_raises_error_when_no_continuous_or_discrete_probes_generated(df_test):
+def test_variables_discrete_raises_error_when_no_probes_generated(df_test):
     X, y = df_test
-    
+
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeClassifier(),
         variables=["var_0", "var_1"],
         variables_discrete=["var_1"],
-        distribution="normal", # only generates continuous probes
+        distribution="normal",  # only generates continuous probes
     )
     msg = "The selected distribution does not generate the required probes.*"
     with pytest.raises(ValueError, match=msg):
         sel.fit(X, y)
-        
+
     sel = ProbeFeatureSelection(
         estimator=DecisionTreeClassifier(),
         variables=["var_0", "var_1"],
         variables_discrete=["var_1"],
-        distribution="binary", # only generates discrete probes
+        distribution="binary",  # only generates discrete probes
     )
     with pytest.raises(ValueError, match=msg):
         sel.fit(X, y)
@@ -424,14 +432,28 @@ def test_variables_discrete_functionality():
     )
     sel.feature_importances_ = pd.Series(
         [11, 20, 9.9, 8.7, 10, 8, 9, 7],
-        index=["var1", "var2", "var3", "var4", "gaussian_probe_0", "gaussian_probe_1", "binary_probe_0", "binary_probe_1"],
+        index=[
+            "var1",
+            "var2",
+            "var3",
+            "var4",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+            "binary_probe_0",
+            "binary_probe_1",
+        ],
     )
     sel.probe_features_ = pd.DataFrame(
-        {"gaussian_probe_0": [1], "gaussian_probe_1": [1], "binary_probe_0": [1], "binary_probe_1": [1]}
+        {
+            "gaussian_probe_0": [1],
+            "gaussian_probe_1": [1],
+            "binary_probe_0": [1],
+            "binary_probe_1": [1],
+        }
     )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
     sel.variables_discrete_ = ["var3"]
-    
+
     assert sel._get_features_to_drop() == ["var4"]
 
 
