@@ -33,16 +33,20 @@ impute only the selected variables.
     from feature_engine.wrappers import SklearnTransformerWrapper
 	
     # Load dataset
-    data = pd.read_csv('houseprice.csv')
+    from sklearn.datasets import fetch_california_housing
+    data = fetch_california_housing(as_frame=True).frame
+    
     
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1),
-    	data['SalePrice'], test_size=0.3, random_state=0)
+        data.drop(['MedHouseVal'], axis=1),
+        data['MedHouseVal'], test_size=0.3, random_state=0)
+
     	
     # set up the wrapper with the SimpleImputer
     imputer = SklearnTransformerWrapper(transformer = SimpleImputer(strategy='mean'),
-                                        variables = ['LotFrontage', 'MasVnrArea'])
+                                        variables = ['MedInc', 'AveRooms'])
+
     
     # fit the wrapper + SimpleImputer                              
     imputer.fit(X_train)
@@ -64,16 +68,17 @@ to standardize only the selected variables.
     from feature_engine.wrappers import SklearnTransformerWrapper
 
     # Load dataset
-    data = pd.read_csv('houseprice.csv')
+    from sklearn.datasets import fetch_california_housing
+    data = fetch_california_housing(as_frame=True).frame
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1),
-    	data['SalePrice'], test_size=0.3, random_state=0)
+        data.drop(['MedHouseVal'], axis=1),
+        data['MedHouseVal'], test_size=0.3, random_state=0)
 
     # set up the wrapper with the StandardScaler
     scaler = SklearnTransformerWrapper(transformer = StandardScaler(),
-                                        variables = ['LotFrontage', 'MasVnrArea'])
+                                        variables = ['MedInc', 'AveRooms'])
 
     # fit the wrapper + StandardScaler
     scaler.fit(X_train)
@@ -95,12 +100,13 @@ to select only a subset of the variables.
     from feature_engine.wrappers import SklearnTransformerWrapper
 
     # Load dataset
-    data = pd.read_csv('houseprice.csv')
-
+    from sklearn.datasets import fetch_california_housing
+    data = fetch_california_housing(as_frame=True).frame
+    
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1),
-    	data['SalePrice'], test_size=0.3, random_state=0)
+        data.drop(['MedHouseVal'], axis=1),
+        data['MedHouseVal'], test_size=0.3, random_state=0)
 
     cols = [var for var in X_train.columns if X_train[var].dtypes !='O']
 
