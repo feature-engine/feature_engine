@@ -87,6 +87,13 @@ class ProbeFeatureSelection(BaseSelector):
 
     {variables}
 
+    variables_discrete: list, default=None
+        A list of discrete variables. If None, all variables are treated equally and
+        their feature importance is compared to the feature importance of all probe
+        features. If passed, the discrete variables will be compared to the discrete
+        probe features, and the continuous variables will be compared to the
+        continuous probe features.
+
     collective: bool, default=True
          Whether the feature importance should be derived from an estimator trained on
          the entire dataset (True), or trained using individual features (False).
@@ -140,6 +147,9 @@ class ProbeFeatureSelection(BaseSelector):
 
     {variables_}
 
+    variables_discrete_:
+        A list of discrete variables to be compared with discrete probes.
+
     {feature_names_in_}
 
     {n_features_in_}
@@ -183,6 +193,7 @@ class ProbeFeatureSelection(BaseSelector):
         self,
         estimator,
         variables: Variables = None,
+        variables_discrete: Variables = None,
         collective: bool = True,
         scoring: str = "roc_auc",
         n_probes: int = 1,
@@ -244,6 +255,7 @@ class ProbeFeatureSelection(BaseSelector):
         super().__init__(confirm_variables)
         self.estimator = estimator
         self.variables = variables
+        self.variables_discrete = variables_discrete
         self.collective = collective
         self.scoring = scoring
         self.distribution = distribution
@@ -271,6 +283,19 @@ class ProbeFeatureSelection(BaseSelector):
         self.variables_ = _select_numerical_variables(
             X, self.variables, self.confirm_variables
         )
+
+        if self.variables_discrete is not None:
+            self.variables_discrete_ = _select_numerical_variables(
+                X, self.variables_discrete, self.confirm_variables
+            )
+            for var in self.variables_discrete_:
+                if var not in self.variables_:
+                    raise ValueError(
+                        f"Variable {var} is present in variables_discrete "
+                        f"but not in variables."
+                    )
+        else:
+            self.variables_discrete_ = None
 
         # save input features
         self._get_feature_names_in(X)
@@ -360,39 +385,58 @@ class ProbeFeatureSelection(BaseSelector):
         Identify the variables that have a lower feature importance than the average
         feature importance of all the probe features.
         """
-
-        # if more than 1 probe feature, calculate threshold based on
-        # probe feature importance.
-        if self.probe_features_.shape[1] > 1:
-            if self.threshold == "mean":
-                threshold = self.feature_importances_[
-                    self.probe_features_.columns
-                ].values.mean()
-            elif self.threshold == "max":
-                threshold = self.feature_importances_[
-                    self.probe_features_.columns
-                ].values.max()
-            else:
-                threshold = (
-                    self.feature_importances_[
-                        self.probe_features_.columns
-                    ].values.mean()
-                    + 3
-                    * self.feature_importances_[
-                        self.probe_features_.columns
-                    ].values.std()
-                )
-
-        else:
-            threshold = self.feature_importances_[self.probe_features_.columns].values
-
         features_to_drop = []
 
-        for var in self.variables_:
-            if self.feature_importances_[var] < threshold:
-                features_to_drop.append(var)
+        if self.variables_discrete_ is None:
+            threshold = self._get_threshold(self.probe_features_.columns)
+            for var in self.variables_:
+                if self.feature_importances_[var] < threshold:
+                    features_to_drop.append(var)
+        else:
+            discrete_probes = [
+                c
+                for c in self.probe_features_.columns
+                if "binary" in c or "discrete_uniform" in c or "poisson" in c
+            ]
+            continuous_probes = [
+                c
+                for c in self.probe_features_.columns
+                if "gaussian" in c or ("uniform" in c and "discrete_uniform" not in c)
+            ]
+
+            threshold_discrete = self._get_threshold(discrete_probes)
+            threshold_continuous = self._get_threshold(continuous_probes)
+
+            for var in self.variables_:
+                if var in self.variables_discrete_:
+                    if self.feature_importances_[var] < threshold_discrete:
+                        features_to_drop.append(var)
+                else:
+                    if self.feature_importances_[var] < threshold_continuous:
+                        features_to_drop.append(var)
 
         return features_to_drop
+
+    def _get_threshold(self, probes):
+        if not len(probes):
+            raise ValueError(
+                "The selected distribution does not generate the required probes. "
+                "For example, if you set variables_discrete, you need to generate "
+                "both continuous and discrete probes."
+            )
+        if len(probes) > 1:
+            if self.threshold == "mean":
+                threshold = self.feature_importances_[probes].values.mean()
+            elif self.threshold == "max":
+                threshold = self.feature_importances_[probes].values.max()
+            else:
+                threshold = (
+                    self.feature_importances_[probes].values.mean()
+                    + 3 * self.feature_importances_[probes].values.std()
+                )
+        else:
+            threshold = self.feature_importances_[probes].values[0]
+        return threshold
 
     def _more_tags(self):
         tags_dict = _return_tags()
