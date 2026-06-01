@@ -8,22 +8,30 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from feature_engine.selection import ProbeFeatureSelection
 
 _input_params = [
-    (RandomForestClassifier(), "precision", "all", 3, 3, 6, 4),
-    (Lasso(), "neg_mean_squared_error", "binary", 7, 7, 4, 100),
-    (LogisticRegression(), "roc_auc", "normal", 5, 5, 2, 73),
-    (DecisionTreeRegressor(), "r2", "uniform", 4, 4, 10, 84),
-    (DecisionTreeRegressor(), "r2", "discrete_uniform", 4, 4, 10, 84),
-    (DecisionTreeRegressor(), "r2", "poisson", 4, 4, 10, 84),
-    (RandomForestClassifier(), "precision", ["binary", "uniform"], 3, 3, 6, 4),
+    (RandomForestClassifier(), "precision", "all", 3, 3, 6, 4, None),
+    (Lasso(), "neg_mean_squared_error", "binary", 7, 7, 4, 100, ["var1"]),
+    (LogisticRegression(), "roc_auc", "normal", 5, 5, 2, 73, None),
+    (DecisionTreeRegressor(), "r2", "uniform", 4, 4, 10, 84, ["var2"]),
+    (DecisionTreeRegressor(), "r2", "discrete_uniform", 4, 4, 10, 84, None),
+    (DecisionTreeRegressor(), "r2", "poisson", 4, 4, 10, 84, ["var1", "var2"]),
+    (RandomForestClassifier(), "precision", ["binary", "uniform"], 3, 3, 6, 4, None),
 ]
 
 
 @pytest.mark.parametrize(
-    "_estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, _random_state",
+    "_estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, "
+    "_random_state, _variables_discrete",
     _input_params,
 )
 def test_input_params_assignment(
-    _estimator, _scoring, _distribution, _n_cat, _cv, _n_probes, _random_state
+    _estimator,
+    _scoring,
+    _distribution,
+    _n_cat,
+    _cv,
+    _n_probes,
+    _random_state,
+    _variables_discrete,
 ):
     sel = ProbeFeatureSelection(
         estimator=_estimator,
@@ -33,6 +41,7 @@ def test_input_params_assignment(
         cv=_cv,
         n_probes=_n_probes,
         random_state=_random_state,
+        variables_discrete=_variables_discrete,
     )
 
     assert sel.estimator == _estimator
@@ -42,6 +51,7 @@ def test_input_params_assignment(
     assert sel.cv == _cv
     assert sel.n_probes == _n_probes
     assert sel.random_state == _random_state
+    assert sel.variables_discrete == _variables_discrete
 
 
 @pytest.mark.parametrize("collective", [True, False])
@@ -349,6 +359,7 @@ def test_get_features_to_drop_with_one_probe(thresh):
     )
     sel.probe_features_ = pd.DataFrame({"probe": [1, 1, 1, 1, 1]})
     sel.variables_ = ["var1", "var2", "var3"]
+    sel.variables_discrete_ = None
     assert sel._get_features_to_drop() == ["var3"]
 
 
@@ -374,7 +385,76 @@ def test_get_features_to_drop_with_many_probes(thresh, vars_to_drop):
         {"probe1": [1, 1, 1, 1, 1], "probe2": [1, 1, 1, 1, 1]}
     )
     sel.variables_ = ["var1", "var2", "var3", "var4"]
+    sel.variables_discrete_ = None
     assert sel._get_features_to_drop() == vars_to_drop
+
+
+def test_variables_discrete_raises_error_when_not_in_variables(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        variables=["var_0", "var_1"],
+        variables_discrete=["var_2"],
+    )
+    msg = "Variable var_2 is present in variables_discrete but not in variables."
+    with pytest.raises(ValueError, match=msg):
+        sel.fit(X, y)
+
+
+def test_variables_discrete_raises_error_when_no_probes_generated(df_test):
+    X, y = df_test
+
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        variables=["var_0", "var_1"],
+        variables_discrete=["var_1"],
+        distribution="normal",  # only generates continuous probes
+    )
+    msg = "The selected distribution does not generate the required probes.*"
+    with pytest.raises(ValueError, match=msg):
+        sel.fit(X, y)
+
+    sel = ProbeFeatureSelection(
+        estimator=DecisionTreeClassifier(),
+        variables=["var_0", "var_1"],
+        variables_discrete=["var_1"],
+        distribution="binary",  # only generates discrete probes
+    )
+    with pytest.raises(ValueError, match=msg):
+        sel.fit(X, y)
+
+
+def test_variables_discrete_functionality():
+    sel = ProbeFeatureSelection(
+        estimator=LogisticRegression(),
+        n_probes=2,
+    )
+    sel.feature_importances_ = pd.Series(
+        [11, 20, 9.9, 8.7, 10, 8, 9, 7],
+        index=[
+            "var1",
+            "var2",
+            "var3",
+            "var4",
+            "gaussian_probe_0",
+            "gaussian_probe_1",
+            "binary_probe_0",
+            "binary_probe_1",
+        ],
+    )
+    sel.probe_features_ = pd.DataFrame(
+        {
+            "gaussian_probe_0": [1],
+            "gaussian_probe_1": [1],
+            "binary_probe_0": [1],
+            "binary_probe_1": [1],
+        }
+    )
+    sel.variables_ = ["var1", "var2", "var3", "var4"]
+    sel.variables_discrete_ = ["var3"]
+
+    assert sel._get_features_to_drop() == ["var4"]
 
 
 def test_cv_generator(df_test):
