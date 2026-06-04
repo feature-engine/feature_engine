@@ -2,8 +2,8 @@
 
 .. currentmodule:: feature_engine.text
 
-Extracting Features from Text
-=============================
+TextFeatures
+============
 
 Short pieces of text are often found among the variables in our datasets. For example,
 in insurance, a text variable can describe the circumstances of an accident. Customer
@@ -31,7 +31,7 @@ contain text data via the `variables` parameter.
 
 Unlike scikit-learn's CountVectorizer or TfidfVectorizer which create sparse matrices,
 :class:`TextFeatures()` extracts metadata features that remain in DataFrame format
-and can be easily combined with other Feature-engine or sklearn transformers in a pipeline.
+and can be easily combined with other feature-engine or sklearn transformers in a pipeline.
 
 Text Features
 -------------
@@ -119,8 +119,8 @@ count:
     1    NaN                0
     2  World                5
 
-Python demo
------------
+Python implementation
+---------------------
 
 In this section, we'll show how to use :class:`TextFeatures()`.
 Let's create a dataframe with text data:
@@ -279,8 +279,8 @@ extracted features remain:
     2       Average                   9                 27
     3         Awful                   4                 20
 
-Combining with scikit-learn Bag-of-Words
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Combining with sklearn's Bag-of-Words
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In most NLP tasks, it is common to use bag-of-words (e.g., `CountVectorizer`) or TF-IDF
 (e.g., `TfidfVectorizer`) to represent the text. :class:`TextFeatures()` can be used
@@ -363,3 +363,16 @@ By adding statistical metadata through :class:`TextFeatures()`, we provided the 
 with information about text length, complexity, and style that is not explicitly
 captured by a word-count-based approach like TF-IDF, leading to a small but noticeable
 improvement in performance.
+
+Additional resources
+--------------------
+
+For tutorials about this and other feature engineering methods check out these resources:
+
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
+
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

@@ -53,8 +53,8 @@ The variable **total_number_payments** is obtained by adding up the features
 indicated in `variables`, whereas the variable **mean_number_payments** is
 the mean of those 4 features.
 
-Examples
---------
+Python implementation
+---------------------
 
 Let's dive into how we can use :class:`MathFeatures()` in more details. Let's first
 create a toy dataset:
@@ -71,7 +71,7 @@ create a toy dataset:
             "City": ["London", "Manchester", "Liverpool", "Bristol"],
             "Age": [20, 21, 19, 18],
             "Marks": [0.9, 0.8, 0.7, 0.6],
-            "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+            "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
         })
 
     print(df)
@@ -101,8 +101,8 @@ strings to indicate the functions:
 
     print(df_t)
 
-And we obtain the following dataset, where the new variables are named after the function
-used to obtain them, plus the group of variables that were used in the computation:
+We obtain the following dataset, where the new variables are named after the function
+used to create them, plus the group of variables that were used in the computation:
 
 .. code:: python
 
@@ -132,7 +132,7 @@ For more flexibility, we can pass existing functions to the `func` argument as f
 
     print(df_t)
 
-And we obtain the following dataframe:
+We obtain the following dataframe:
 
 .. code:: python
 
@@ -229,51 +229,12 @@ provided:
 Additional resources
 --------------------
 
-For more details about this and other feature engineering methods check out these resources:
+For tutorials about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

@@ -9,7 +9,7 @@ GeoDistanceFeatures
 coordinate pairs (latitude/longitude) and adds the result as a new feature.
 
 :class:`GeoDistanceFeatures()` is useful for location-based machine learning problems such as
-real estate pricing, delivery route optimization, ride-sharing applications,
+real estate pricing, delivery route optimisation, ride-sharing applications,
 and any domain where geographic proximity is relevant.
 
 Distance Methods
@@ -34,9 +34,8 @@ The distance can be returned in various units:
 - **meters**: Meters
 - **feet**: Feet
 
-Python Demo
------------
-
+Python implementation
+---------------------
 Let's create a dataframe with origin and destination coordinates:
 
 .. code:: python
@@ -88,7 +87,7 @@ Using different distance methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can use the Euclidean distance method, which provides a faster but less accurate
-calculation suitable for short distances:
+calculation (suitable for short distances):
 
 .. code:: python
 
@@ -234,3 +233,16 @@ The pipeline successfully trains and returns predictions:
 .. code:: python
 
     Predictions: [100. 150.  80. 200.]
+
+Additional resources
+--------------------
+
+For tutorials about this and other feature engineering methods check out these resources:
+
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
+
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
