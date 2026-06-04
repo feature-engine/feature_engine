@@ -5,15 +5,15 @@
 ArcSinhTransformer
 ==================
 
-The inverse hyperbolic sine (or arcsinh) transformation is a variance-stabilizing
+The inverse hyperbolic sine (or arcsinh) transformation is a variance stabilising
 transformation that achieves results similar to the logarithmic transformation,
 while retaining zero values in a variable, something the logarithm cannot do. It has
 gained popularity in recent years; therefore, we add support for it in Feature-engine.
 
-Variance stabilizing transformations
+Variance stabilising transformations
 ------------------------------------
 
-Variance stabilizing transformations are commonly used in regression analysis to make
+Variance stabilising transformations are commonly used in regression analysis to make
 skewed data more evenly distributed, approximate normality, or reduce heteroscedasticity.
 One of the most commonly used transformations is the logarithm. However, the logarithm
 transformation has one limitation: it is not defined for the value 0.
@@ -23,7 +23,7 @@ the logarithm is undefined, researchers developed a number of alternatives to tr
 those zeros.
 
 The simplest alternative consists of adding 1 (or a constant value to the variable). In fact,
-the Box-Cox transformation is a generalized version of power transformations that automatically
+the Box-Cox transformation is a generalised version of power transformations that automatically
 introduces a shift in 0 valued observations before applying the logarithm.
 
 However, adding 1 (or a constant) before applying a log transformation is arbitrary and can
@@ -42,8 +42,10 @@ The inverse hyperbolic sine (IHS) transformation is defined as follows:
 
    x' = \operatorname{arcsinh}(x) = \ln\left(x + \sqrt{x^2 + 1}\right)
 
-The IHS transformation works with data defined on the whole real line including
-negative values and zeros. For large values of x, the IHS behaves like a log
+The IHS transformation works with data defined on the whole real space including
+negative values and zeros.
+
+For large values of x, the IHS behaves like a log
 transformation. For small values of x, or in other words as x approaches 0, IHS(x)
 approaches x.
 
@@ -187,7 +189,7 @@ In the bottom panels we see the effect of the inverse hyperbolic sine transforma
 
 The fundamental message of this experiment is that:
 
-- Changing the variable scale will affect the variance stabilizing power of the IHS transformation
+- Changing the variable scale will affect the variance stabilising power of the IHS transformation
 - Reducing the scale (multiplying by values <1) increases the separation of larger values from zero values (second panel), which is probably not what we want
 - Increasing the scale substantially, may also result in suboptimal distributions, as shown on the right panel
 
@@ -285,7 +287,7 @@ negative values after the transformation (middle panel).
 Limitations of the IHS
 ----------------------
 
-As with all variance stabilizing transformations, the IHS comes with limitations, being,
+As with all variance stabilising transformations, the IHS comes with limitations, being,
 the result of the transformation largely depends on the variable scale, by the own definition
 of the transformation.
 
@@ -313,8 +315,8 @@ separation of larger values of the variable from 0.
 Unlike :class:`LogTransformer()`, :class:`ArcSinhTransformer()` can handle
 zero and negative values without requiring any preprocessing (or so we wanted to think).
 
-Python demo
------------
+Python implementation
+---------------------
 
 In this demo, we'll show how to use the inverse hyperbolic sine transformation with care.
 
@@ -414,7 +416,7 @@ variables:
     test_t.hist(bins=20, figsize=(8,4))
     plt.show()
 
-In the following figure, we see that while the arcsinh transformation seemed to stabilize the
+In the following figure, we see that while the arcsinh transformation seemed to stabilise the
 variance of the variable profit, it does an awful job for the variable net-worth:
 
 .. image:: ../../images/arcsinh-ihs.png
@@ -426,7 +428,7 @@ Scaling the distribution before arcsinh
 center and rescale data before transformation.
 
 We discussed previously that re-scaling the variables before applying the arcsinh transformation
-can help achieve better variance stabilizing results.
+can help achieve better variance stabilising results.
 
 Let's rescale the variable profit before applying the arcsinh transformation and then display
 the histogram of the resulting dataframe:
@@ -456,7 +458,7 @@ Shifting the distribution before arcsinh
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We mentioned previously that shifting the variables before applying the arcsinh transformation
-can help achieve better variance stabilizing results.
+can help achieve better variance stabilising results.
 
 Let's shift the variable profit before applying the arcsinh transformation, to make all its
 values positive. After that, we display the histogram of the resulting dataframe:
@@ -550,53 +552,15 @@ For more details on the inverse hyperbolic sine transformation, check the follow
 3. `Burbidge, J. B., Magee, L., & Robb, A. L. (1988). Alternative transformations to handle extreme values of the dependent variable. Journal of the American Statistical Association. <https://www.jstor.org/stable/2288929>`_
 4. `Aihounton, Henningsen. (2020). Units of measurement and the inverse hyperbolic sine transformation. The Econometrics Journal. <https://academic.oup.com/ectj/article-abstract/24/2/334/5948096>`_
 
-Tutorials, books and courses
-----------------------------
+Additional resources
+--------------------
 
-For tutorials about variance stabilizing transformations, check out our online course:
+For tutorials about this and other feature engineering methods check out these resources:
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
