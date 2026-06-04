@@ -44,7 +44,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     Constant variables will raise an error due to division by zero.
 
-    More details in the :ref:`User Guide <mean_normalization_scaler>`.
+    More details in the :ref:`User Guide <mean_normalisation_scaler>`.
 
 
     Parameters
