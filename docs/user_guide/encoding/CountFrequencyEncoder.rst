@@ -37,7 +37,7 @@ This, of course, can result in the loss of information by placing two categories
 are otherwise different in the same pot. But on the other hand, if we are using count
 encoding or frequency encoding, we have reasons to believe that the count or the frequency
 are a good indicator of predictive performance or somehow capture data insight, so that
-categories with similar counts would show similar patterns or behaviors.
+categories with similar counts would show similar patterns or behaviours.
 
 Count and Frequency encoding with Feature-engine
 ------------------------------------------------
@@ -163,7 +163,7 @@ Now, we can go ahead and encode the variables:
     print(train_t.head())
 
 We see the resulting dataframe where the categorical features are now replaced with
-integer values corresponding to the category counts:
+the category counts:
 
 .. code:: python
 
@@ -251,65 +251,12 @@ values.
 Additional resources
 --------------------
 
-In the following notebook, you can find more details into the :class:`CountFrequencyEncoder()`
-functionality and example plots with the encoded variables:
+For tutorials about this and other feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/CountFrequencyEncoder.ipynb>`_
-
-For more details about this and other feature engineering methods check out these resources:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
 Both our book and courses are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

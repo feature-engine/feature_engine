@@ -6,12 +6,11 @@
 OneHotEncoder
 =============
 
-One-hot encoding is a method used to represent categorical data, where each category
-is represented by a binary variable. The binary variable takes the value 1 if the
-category is present and 0 otherwise. The binary variables are also known as dummy
-variables.
+With one-hot encoding, each category is represented by a binary variable. The binary
+variable takes the value 1 if the category is present and 0 otherwise. The binary
+variables are also known as dummy variables.
 
-To represent the categorical feature "is-smoker" with categories "Smoker" and
+For example, to represent the categorical feature "is-smoker" with categories "Smoker" and
 "Non-smoker", we can generate the dummy variable "Smoker", which takes 1 if the
 person smokes and 0 otherwise. We can also generate the variable "Non-smoker", which
 takes 1 if the person does not smoke and 0 otherwise.
@@ -81,10 +80,10 @@ models evaluate all features during fit, thus, with k-1 they have all the inform
 about the original categorical variable.
 
 There are a few occasions in which we may prefer to encode the categorical variables
-with k binary variables.
+with k binary variables, which are, when training decision trees based models or performing
+feature selection.
 
-Encode into k dummy variables if training decision trees based models or performing
-feature selection. Decision tree based models and many feature selection algorithms
+Decision tree based models and many feature selection algorithms
 evaluate variables or groups of variables separately. Thus, if encoding into k-1, the
 last category will not be examined. In other words, we lose the information contained
 in that category.
@@ -150,16 +149,16 @@ are those with the greatest number of observations. The remaining categories wil
 zeroes in each one of the derived dummies. This behaviour is useful when the categorical
 variables are highly cardinal to control the expansion of the feature space.
 
-**Note**
+.. note::
 
-The parameter `drop_last` is ignored when encoding the most popular categories.
+    The parameter `drop_last` is ignored when encoding the most popular categories.
 
 
 Python implementation
 ---------------------
 
-Let's look at an example of one hot encoding, using Feature-engine's  :class:`OneHotEncoder()`
-utilizing the Titanic Dataset.
+Let's look at an example of one hot encoding, using feature-engine's  :class:`OneHotEncoder()`
+utilising the Titanic Dataset.
 
 We'll start by importing the libraries, functions and classes, and loading the data into
 a pandas dataframe and dividing it into a training and a testing set:
@@ -200,6 +199,9 @@ Let's explore the cardinality of 4 of the categorical features:
 
     X_train[['sex', 'pclass', 'cabin', 'embarked']].nunique()
 
+We see that the variable sex has 2 categories, pclass has 3 categories, the variable
+cabin has 9 categories, and the variable embarked has 4 categories:
+
 .. code:: python
 
     sex         2
@@ -208,8 +210,6 @@ Let's explore the cardinality of 4 of the categorical features:
     embarked    4
     dtype: int64
 
-We see that the variable sex has 2 categories, pclass has 3 categories, the variable
-cabin has 9 categories, and the variable embarked has 4 categories.
 
 Let's now set up the OneHotEncoder to encode 2 of the categorical variables into k-1 dummy
 variables:
@@ -230,15 +230,16 @@ attribute `encoder_dict_`.
 
    encoder.encoder_dict_
 
+The `encoder_dict_` contains the categories that will be represented by dummy variables
+for each categorical variable:
+
 .. code:: python
 
     {'cabin': ['M', 'E', 'C', 'D', 'B', 'A', 'F', 'T'],
      'embarked': ['S', 'C', 'Q']}
 
-The `encoder_dict_` contains the categories that will be represented by dummy variables
-for each categorical variable.
 
-With transform, we go ahead and encode the variables. Note that by default, the
+With transform, we go ahead and encode the variables. Note that by default,
 :class:`OneHotEncoder()` drops the original categorical variables, which are now
 represented by the one-hot array.
 
@@ -301,16 +302,20 @@ categories. We can find the categorical variables like this:
 
     encoder.variables_
 
+Below we see all categorical variables in the Titanic dataset:
+
 .. code:: python
 
     ['sex', 'cabin', 'embarked']
 
-And we can identify the unique categories for each variables like this:
+We can identify the unique categories for each variables like this:
 
 
 .. code:: python
 
     encoder.encoder_dict_
+
+Below, we see the unique categories per variable:
 
 .. code:: python
 
@@ -327,7 +332,7 @@ We can now encode the categorical variables:
 
     print(train_t.head())
 
-And here we see the resulting dataframe:
+Here we see the resulting dataframe:
 
 .. code:: python
 
@@ -356,7 +361,7 @@ And here we see the resulting dataframe:
 Encoding variables of type numeric
 ----------------------------------
 
-By default, Feature-engine's :class:`OneHotEncoder()` will only encode categorical
+By default, feature-engine's :class:`OneHotEncoder()` will only encode categorical
 features. If you attempt to encode a variable of numeric dtype, it will raise an error.
 To avoid this error, you can instruct the encoder to ignore the data type format as
 follows:
@@ -399,7 +404,7 @@ the transformer into 2 dummies:
 Encoding binary variables into 1 dummy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With Feature-engine's :class:`OneHotEncoder()` we can encode all categorical variables
+With feature-engine's :class:`OneHotEncoder()` we can encode all categorical variables
 into k dummies and the binary variables into k-1 by setting the encoder as follows:
 
 .. code:: python
@@ -415,7 +420,7 @@ into k dummies and the binary variables into k-1 by setting the encoder as follo
 
     print(train_t.head())
 
-As we see in the following input, for the variable sex, we have only have 1 dummy,
+As we see in the following output, for the variable sex, we have only have 1 dummy,
 and for all the rest we have k dummies:
 
 .. code:: python
@@ -526,57 +531,15 @@ For alternative encoding methods used in data science check the :class:`OrdinalE
 and other encoders included in the :ref:`encoding module <encoding_user_guide>`.
 
 
-Tutorials, books and courses
-----------------------------
+Additional resources
+--------------------
 
-For more details into :class:`OneHotEncoder()`'s functionality visit:
+For tutorials about this and other feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/OneHotEncoder.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For tutorials about this and other data preprocessing methods check out our online course:
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

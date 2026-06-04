@@ -5,43 +5,51 @@
 RareLabelEncoder
 ================
 
-The :class:`RareLabelEncoder()` groups infrequent categories into one new category
-called 'Rare' or a different string indicated by the user. We need to specify the
-minimum percentage of observations a category should have to be preserved and the
-minimum number of unique categories a variable should have to be re-grouped.
+:class:`RareLabelEncoder()` groups infrequent categories into one new category
+called 'Rare' or a different string indicated by the user.
 
-**tol**
+This transformers requires 2 parameters:
 
-In the parameter `tol` we indicate the minimum proportion of observations a category
-should have, not to be grouped. In other words, categories which frequency, or proportion
-of observations is <= `tol` will be grouped into a unique term.
+- The minimum frequency a category should have not to be grouped.
+- The minimum cardinality a variable should have to be processed.
 
-**n_categories**
+Category frequency
+~~~~~~~~~~~~~~~~~~
 
-In the parameter `n_categories` we indicate the minimum cardinality of the categorical
-variable in order to group infrequent categories. For example, if `n_categories=5`,
-categories will be grouped only in those categorical variables with more than 5 unique
-categories. The rest of the variables will be ignored.
+The parameter `tol` specifies the minimum proportion of observations a category must
+have to remain ungrouped. In other words, categories with a frequency <= `tol` are
+grouped into a single category.
 
-This parameter is useful when we have big datasets and do not have time to examine all
-categorical variables individually. This way, we ensure that variables with low cardinality
-are not reduced any further.
+Variable cardinality
+~~~~~~~~~~~~~~~~~~~~
 
-**max_n_categories**
+The parameter `n_categories` specifies the minimum cardinality a categorical variable must
+have for infrequent categories to be grouped.
 
-In the parameter `max_n_categories` we indicate the maximum number of unique categories
-that we want in the encoded variable. If `max_n_categories=5`, then the most popular 5
-categories will remain in the variable after the encoding, all other will be grouped into
-a single category.
+For example, if `n_categories = 5`, grouping is applied only to categorical variables
+with more than five unique categories. Variables with five or fewer categories are left
+unchanged.
 
-This parameter is useful if we are going to perform one hot encoding at the back of it,
-to control the expansion of the feature space.
+.. tip::
 
-**Example**
+    This parameter is useful for large datasets, where it may not be practical to examine all
+    categorical variables individually. It ensures that variables with low cardinality are
+    not reduced further.
 
-Let's look at an example using the Titanic Dataset.
 
-First, let's load the data and separate it into train and test:
+Encoding popular categories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The parameter `max_n_categories` specifies the maximum number of unique categories
+allowed in the encoded variable. If `max_n_categories = 5`, the five most frequent
+categories are retained after encoding, and all others are grouped into a single category.
+
+Python implementation
+---------------------
+
+Let's explore how to use :class:`RareLabelEncoder()` using the Titanic Dataset.
+
+Let's load the data and separate it into train and test:
 
 .. code:: python
 
@@ -74,7 +82,7 @@ We see the resulting data below:
     1193       3    male  29.881135      0      0   7.7250     M        Q
     686        3  female  22.000000      0      0   7.7250     M        Q
 
-Let's explore the number of uniue categories in the variable `"cabin"`.
+Let's explore the number of unique categories in the variable `"cabin"`.
 
 .. code:: python
 
@@ -87,8 +95,9 @@ We see the number of unique categories in the output below:
     array(['M', 'E', 'C', 'D', 'B', 'A', 'F', 'T', 'G'], dtype=object)
 
 Now, we set up the :class:`RareLabelEncoder()` to group categories shown by less than 3%
-of the observations into a new group or category called 'Rare'. We will group the
-categories in the indicated variables if they have more than 2 unique categories each.
+of the observations into a new group called 'Rare'. We will group the
+categories in the variables cabin, pclass and embarked, only if they have more than 2
+unique categories each.
 
 .. code:: python
 
@@ -103,8 +112,8 @@ categories in the indicated variables if they have more than 2 unique categories
     encoder.fit(X_train)
 
 With `fit()`, the :class:`RareLabelEncoder()` finds the categories present in more than
-3% of the observations, that is, those that will not be grouped. These categories can
-be found in the `encoder_dict_` attribute.
+3% of the observations, that is, those that will not be grouped. These categories are stored
+in the `encoder_dict_` attribute.
 
 .. code:: python
 
@@ -149,11 +158,13 @@ category:
 
 .. code:: python
 
-    from feature_engine.encoding import RareLabelEncoder
     import pandas as pd
+    from feature_engine.encoding import RareLabelEncoder
     data = {'var_A': ['A'] * 10 + ['B'] * 10 + ['C'] * 2 + ['D'] * 1}
     data = pd.DataFrame(data)
     data['var_A'].value_counts()
+
+In the following output, we see the number of observations per category:
 
 .. code:: python
 
@@ -163,13 +174,14 @@ category:
     D     1
     Name: var_A, dtype: int64
 
-In this block of code, we group the categories only for variables with more than 3
-unique categories and then we plot the result:
+Now, we group categories only for variables with more than 3 unique categories:
 
 .. code:: python
 
     rare_encoder = RareLabelEncoder(tol=0.05, n_categories=3)
     rare_encoder.fit_transform(data)['var_A'].value_counts()
+
+Note that the variable was left unchanged because it has exactly 3 unique categories:
 
 .. code:: python
 
@@ -188,6 +200,9 @@ the 'Rare' group:
     Xt = rare_encoder.fit_transform(data)
     Xt['var_A'].value_counts()
 
+In the following output we see that the 2 most infrequent categories have been grouped into
+a new category called `Rare`:
+
 .. code:: python
 
     A       10
@@ -195,75 +210,31 @@ the 'Rare' group:
     Rare     3
     Name: var_A, dtype: int64
 
-Tips
-----
+Considerations
+--------------
 
-The :class:`RareLabelEncoder()` can be used to group infrequent categories and like this
+:class:`RareLabelEncoder()` can be used to group infrequent categories and hence
 control the expansion of the feature space if using one hot encoding.
 
-Some categorical encodings will also return NAN if a category is present in the test
-set, but was not seen in the train set. This inconvenient can usually be avoided if we
+Some categorical encodings will return NAN if a category is present in the test
+set, but was not seen in the train set. This inconvenient can be mitigated if we
 group rare labels before training the encoders.
 
-Some categorical encoders will also return NAN if there is not enough observations for
-a certain category. For example the :class:`WoEEncoder()` and the :class:`PRatioEncoder()`.
-This behaviour can be also prevented by grouping infrequent labels before the encoding
-with the :class:`RareLabelEncoder()`.
+Some categorical encoders will return NAN if there is not enough observations for
+a certain category to calculate the mapping, for example :class:`WoEEncoder()`. These
+type of errors can be prevented by grouping infrequent labels before the encoding with
+:class:`RareLabelEncoder()`.
 
 
 Additional resources
 --------------------
 
-In the following notebook, you can find more details into the :class:`RareLabelEncoder()`
-functionality and example plots with the encoded variables:
+For tutorials about this and other feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/encoding/RareLabelEncoder.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For more details about this and other feature engineering methods check out these resources:
-
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

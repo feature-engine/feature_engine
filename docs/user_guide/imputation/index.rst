@@ -76,7 +76,7 @@ have missing values. In this scenario, we can predict the missing grade values b
 on existing grade data, using age and IQ as predictors. Subsequently, we can apply the same regression imputation approach
 to the other variables (age and IQ) in subsequent iterations.
 
-Feature-engine currenty supports univariate imputation strategies. For multivariate imputation, check out Scikit-learn's `iterative imputer <https://scikit-learn.org/stable/modules/generated/sklearn.impute.IterativeImputer.html>`_.
+Feature-engine currently supports univariate imputation strategies. For multivariate imputation, check out Scikit-learn's `iterative imputer <https://scikit-learn.org/stable/modules/generated/sklearn.impute.IterativeImputer.html>`_.
 
 
 Feature-engine's imputation methods
@@ -331,7 +331,7 @@ For tutorials about missing data imputation methods check out these resources:
 
 Both our book and courses are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
-the main developer of Feature-engine.
+the main developer of feature-engine.
 
 
 Imputers
