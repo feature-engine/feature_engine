@@ -10,7 +10,9 @@ occurrences. Outliers can distort the learning process of machine learning model
 reducing predictive accuracy. To prevent this, if you suspect that the outliers are errors or rare occurrences, you can
 remove them from the training data.
 
-In this guide, we show how to remove outliers in Python using the :class:`OutlierTrimmer()`.
+.. note::
+
+    In this guide, we show how to remove outliers in Python using the :class:`OutlierTrimmer()`.
 
 The first step to removing outliers consists of identifying those outliers. Outliers can be identified through various
 statistical methods, such as box plots, z-scores, the interquartile range (IQR), or the median absolute deviation.
@@ -44,7 +46,7 @@ Interquartile range proximity rule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The interquartile range proximity rule can be used to detect outliers both in variables that show a normal distribution
-and in variables with a skew. When using the IQR, we detect outliers as those values that lie before the 25th percentile
+and in variables with a skew. When using the IQR, we define outliers as those values that lie before the 25th percentile
 times a factor of the IQR, or after the 75th percentile times a factor of the IQR. This factor is normally 1.5, or 3 if
 we want to be more stringent. With the IQR method, the limits are calculated as follows:
 
@@ -87,13 +89,18 @@ values would be those that lie before or after a certain percentile or quantiles
 - right tail: 95th percentile
 - left tail:  5th percentile
 
-The number of outliers identified by any of these methods will vary. These methods detect outliers, but they can’t
-decide if they are true outliers or faithful data points. That required further examination and domain knowledge.
+The number of outliers identified by any of these methods will vary.
+
+.. note::
+
+    These methods help detect extreme values in a distribution, but they can’t decide if
+    they are true outliers or faithful data points. That requires further examination
+    and domain knowledge.
 
 Let’s move on to removing outliers in Python.
 
-Remove outliers in Python
--------------------------
+Removing outliers in Python
+---------------------------
 
 In this demo, we'll identify and remove outliers from the Titanic Dataset. First, let's load the data and separate it
 into train and test:
@@ -142,13 +149,13 @@ Let's now identify potential extreme values in the training set by using boxplot
     plt.show()
 
 
-In the following boxplots, we see that all three variables have data points that are significantly greater than the
+In the following boxplot, we see that all three variables have data points that are significantly greater than the
 majority of the data distribution. The variable age also shows outlier values towards the lower values.
 
 .. figure::  ../../images/boxplot-titanic.png
    :align:   center
 
-The variables have different scales, so let's plot them individually for better visualization. Let's start by making a
+The variables have different scales, so let's plot them individually for better visualisation. Let's start by making a
 boxplot of the variable fare:
 
 .. code:: python
@@ -215,11 +222,13 @@ we only want to cap outliers in 2 variables, which we indicate in a list.
     ot.fit(X_train)
 
 With `fit()`, the :class:`OutlierTrimmer()` finds the values at which it should cap the variables. These values are
-stored in one of its attributes:
+stored in the following attribute:
 
 .. code:: python
 
     ot.right_tail_caps_
+
+In the following output, we see the values beyond which observations will be deemed outliers:
 
 .. code:: python
 
@@ -244,12 +253,14 @@ We see that the transformed dataset contains less rows:
 
     ((916, 8), (764, 8))
 
-If we evaluate now the maximum of the variables in the transformed datasets, they should be <= the values observed in
+If we evaluate the maximum of the variables in the transformed datasets, they should be <= the values observed in
 the attribute `right_tail_caps_`:
 
 .. code:: python
 
     train_t[['fare', 'age']].max()
+
+In the following output, we see the maximum of the variables after removing the outliers:
 
 .. code:: python
 
@@ -257,7 +268,7 @@ the attribute `right_tail_caps_`:
     age     53.0
     dtype: float64
 
-Finally, we can check the boxplots of the transformed variables to corroborate the effect on their distribution.
+Finally, we can check the boxplot of the transformed variables to corroborate the effect on their distribution.
 
 .. code:: python
 
@@ -266,7 +277,7 @@ Finally, we can check the boxplots of the transformed variables to corroborate t
     plt.ylabel("variable values")
     plt.show()
 
-We see the boxplot and the `sibsp` does no longer have outliers, but as `fare` was very skewed, when removing outliers,
+We can see in the boxplot that `sibsp` does no longer have outliers, but as `fare` was very skewed, when removing outliers,
 the parameters of the IQR change, and we continue to see outliers:
 
 .. figure::  ../../images/boxplot-sibsp-fare-iqr.png
@@ -291,19 +302,20 @@ We can corroborate the size adjustment in the target as follows:
 
     y_train.shape, y_train_t.shape,
 
-The previous command returns the following output:
+We see in the output that the transformed target has the same number of rows that the
+transformed dataset:
 
 .. code:: python
 
     ((916,), (764,))
 
-We can obtain the names of the fetaures in the transformed dataset as follows:
+We can obtain the names of the features in the transformed dataset as follows:
 
 .. code:: python
 
     ot.get_feature_names_out()
 
-That returns the following variable namesL
+That returns the following variable names:
 
 .. code:: python
 
@@ -312,8 +324,8 @@ That returns the following variable namesL
 MAD
 ^^^
 
-We saw that the IQR did not work amazingly for the variable fare, because its skew is too big. So let's remove outliers
-by using the MAD instead:
+We saw that the IQR did not work amazingly for the variable `fare` because it's a very
+skewed variable. So let's remove outliers by using the MAD instead:
 
 .. code:: python
 
@@ -362,22 +374,26 @@ Let's inspect the maximum values beyond which data points will be considered out
 
     ot_age.right_tail_caps_
 
+Values greater than the following value will be considered outliers:
+
 .. code:: python
 
     {'age': 67.73951212364803}
 
-And the lower values beyond which data points will be considered outliers:
+Let's now check out the lower value beyond which data points will be considered outliers:
 
 .. code:: python
 
     ot_age.left_tail_caps_
 
+Values smaller than the following will be considered outliers:
+
 .. code:: python
 
     {'age': -7.410476010820627}
 
-The minimum value does not make sense, because age can't be negative. So, we'll try capping this variable with
-percentiles instead.
+The minimum value determined by the z-score does not make sense because age can't be
+negative. So, we'll try capping this variable with percentiles instead.
 
 Percentiles
 ^^^^^^^^^^^
@@ -389,7 +405,7 @@ We'll cap age at the bottom 5 and top 95 percentile:
     ot = OutlierTrimmer(capping_method='mad',
                         tail='right',
                         fold=0.05,
-                        variables=['fare'],
+                        variables=['age'],
                         )
 
     ot.fit(X_train)
@@ -401,28 +417,32 @@ Let's inspect the maximum values beyond which data points will be considered out
 
     ot_age.right_tail_caps_
 
+Values greater than the following will be considered outliers:
+
 .. code:: python
 
     {'age': 54.0}
 
-And the lower values beyond which data points will be considered outliers:
+Let's inspect the minimum value beyond which data points will be considered outliers:
 
 .. code:: python
 
     ot_age.left_tail_caps_
 
+Values smaller than the following will be considered outliers:
+
 .. code:: python
 
     {'age': 9.0}
 
-Let's tranform the dataset and target:
+Let's transform the dataset and target:
 
 .. code:: python
 
     train_t, y_train_t = ot_age.transform_x_y(X_train, y_train)
     test_t, y_test_t = ot_age.transform_x_y(X_test, y_test)
 
-And plot the resulting variable:
+After removing the outliers from `age`, let's plot the resulting variable:
 
 .. code:: python
 
@@ -442,7 +462,7 @@ Pipeline
 
 The :class:`OutlierTrimmer()` removes observations from the predictor data sets. If we want to use this transformer
 within a Pipeline, we can't use Scikit-learn's pipeline because it can't readjust the target. But we can use
-Feature-engine's pipeline instead.
+feature-engine's pipeline instead.
 
 Let's start by creating a pipeline that removes outliers and then encodes categorical variables:
 
@@ -608,58 +628,15 @@ The default values for fold are as follows:
 You can manually adjust the fold value to make the outlier detection process more or less
 conservative, thus customizing the extent of outlier trimming.
 
-Tutorials, books and courses
-----------------------------
+Additional resources
+--------------------
 
-In the following Jupyter notebook, in our accompanying Github repository, you will find more examples using
-:class:`OutlierTrimmer()`.
+For more details about this and other feature engineering methods check out these resources:
 
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/outliers/OutlierTrimmer.ipynb>`_
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-For tutorials about this and other feature engineering methods check out our online course:
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
