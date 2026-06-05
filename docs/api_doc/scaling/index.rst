@@ -10,3 +10,4 @@ given columns
    :maxdepth: 1
 
    MeanNormalizationScaler
+   GroupStandardScaler
