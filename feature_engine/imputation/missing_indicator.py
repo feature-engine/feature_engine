@@ -129,15 +129,16 @@ class AddMissingIndicator(BaseImputer):
 
         # find variables for which indicator should be added
         if self.variables is None:
-            self.variables_ = find_all_variables(X)
+            variables_ = find_all_variables(X)
         else:
-            self.variables_ = check_all_variables(X, self.variables)
+            variables_ = check_all_variables(X, self.variables)
 
         if self.missing_only is True:
-            self.variables_ = [
-                var for var in self.variables_ if X[var].isnull().sum() > 0
+            variables_ = [
+                var for var in variables_ if X[var].isnull().sum() > 0
             ]
 
+        self.variables_ = variables_
         self._get_feature_names_in(X)
 
         return self

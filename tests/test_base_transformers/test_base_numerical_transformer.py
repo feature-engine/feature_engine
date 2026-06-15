@@ -7,8 +7,14 @@ from tests.estimator_checks.non_fitted_error_checks import check_raises_non_fitt
 
 
 class MockClass(BaseNumericalTransformer):
-    def __init__(self):
-        self.variables = None
+    def __init__(self, variables=None):
+        self.variables = variables
+
+    def fit(self, X, y=None):
+        X, variables_ = self._fit_setup(X)
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
+        return X
 
     def transform(self, X):
         return self._check_transform_input_and_state(X)

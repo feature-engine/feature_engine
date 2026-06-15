@@ -120,17 +120,23 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        X = super().fit(X)
-        self.mean_ = X[self.variables_].mean().to_dict()
-        self.range_ = (X[self.variables_].max() - X[self.variables_].min()).to_dict()
+        X, variables_ = self._fit_setup(X)
+
+        mean_ = X[variables_].mean().to_dict()
+        range_ = (X[variables_].max() - X[variables_].min()).to_dict()
 
         # check for constant columns
-        constant_columns = [col for col, value in self.range_.items() if value == 0]
+        constant_columns = [col for col, value in range_.items() if value == 0]
         if constant_columns:
             raise ValueError(
                 f"The following variable(s) are constant: {constant_columns}. "
                 "Division by zero is not allowed. Please remove constant columns."
             )
+
+        self.variables_ = variables_
+        self.mean_ = mean_
+        self.range_ = range_
+        self._get_feature_names_in(X)
 
         return self
 

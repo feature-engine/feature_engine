@@ -28,53 +28,34 @@ class BaseNumericalTransformer(
     variable transformers, discretisers, math combination.
     """
 
-    def fit(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _fit_setup(self, X: pd.DataFrame):
         """
-        Checks that input is a dataframe, finds numerical variables, or alternatively
-        checks that variables entered by the user are of type numerical.
-
-        Parameters
-        ----------
-        X : Pandas DataFrame
-
-        y : Pandas Series, np.array. Default = None
-            Parameter is necessary for compatibility with sklearn Pipeline.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a Pandas DataFrame or a numpy array
-            If any of the user provided variables are not numerical
-        ValueError
-            If there are no numerical variables in the df or the df is empty
-            If the variable(s) contain null values
-
-        Returns
-        -------
-        X : Pandas DataFrame
-            The same dataframe entered as parameter
+        Check dataframe, find numerical variables, check for NA and Inf.
+        Returns the checked dataframe and the correctly identified numerical variables.
         """
-
         # check input dataframe
         X = check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
+            variables_ = find_numerical_variables(X)
         else:
-            self.variables_ = check_numerical_variables(X, self.variables)
+            variables_ = check_numerical_variables(X, self.variables)
 
         # check if dataset contains na or inf
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
+        _check_contains_na(X, variables_)
+        _check_contains_inf(X, variables_)
 
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
+        return X, variables_
 
-        # save train set shape
+    def _get_feature_names_in(self, X):
+        """Get the names and number of features in the train set (the dataframe
+        used during fit)."""
+
+        self.feature_names_in_ = X.columns.to_list()
         self.n_features_in_ = X.shape[1]
 
-        return X
+        return self
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
         """

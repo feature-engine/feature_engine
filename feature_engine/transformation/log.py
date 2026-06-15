@@ -127,14 +127,16 @@ class LogTransformer(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
 
         # check contains zero or negative values
-        if (X[self.variables_] <= 0).any().any():
+        if (X[variables_] <= 0).any().any():
             raise ValueError(
                 "Some variables contain zero or negative values, can't apply log"
             )
+
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
 
         return self
 
@@ -356,23 +358,34 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         # check input dataframe
         if isinstance(self.C, dict):
-            X = super()._fit_from_dict(X, self.C)
+            X, variables_ = super()._fit_from_dict(X, self.C)
         else:
-            X = super().fit(X)
-
-        self.C_ = self.C
+            X, variables_ = self._fit_setup(X)
 
         # calculate C to add to each variable
+        C_: Union[int, float, Dict[Union[str, int], Union[float, int]]]
         if self.C == "auto":
             # we add 0 to positive variables
-            c_dict = {var: 0 for var in self.variables_ if X[var].min() > 0}
+            c_dict: Dict[Union[str, int], Union[float, int]] = {
+                var: 0.0 for var in variables_ if X[var].min() > 0
+            }
 
             # we add the minimum plus 1 to non-positive variables
-            non_positive_vars = [
-                var for var in self.variables_ if var not in c_dict.keys()
-            ]
-            c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
-            self.C_ = c_dict  # type:ignore
+            non_positive_vars = [var for var in variables_ if var not in c_dict.keys()]
+            if non_positive_vars:
+                c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
+            C_ = c_dict
+        elif isinstance(self.C, (int, float, dict)):
+            C_ = self.C
+        else:
+            raise ValueError(
+                f"C can take only 'auto', integers, floats or dicts. "
+                f"Got {self.C} instead."
+            )
+
+        self.variables_ = variables_
+        self.C_ = C_
+        self._get_feature_names_in(X)
 
         return self
 

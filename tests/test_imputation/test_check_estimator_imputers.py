@@ -1,3 +1,6 @@
+from sklearn import clone
+from sklearn.exceptions import NotFittedError
+
 import pandas as pd
 import pytest
 import sklearn
@@ -69,3 +72,28 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    estimator = clone(estimator)
+
+    if estimator.__class__.__name__ in [
+        "MeanMedianImputer",
+        "EndTailImputer",
+        "ArbitraryNumberImputer",
+    ]:
+        X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+
+    elif estimator.__class__.__name__ == "CategoricalImputer":
+        estimator.set_params(ignore_format=False)
+        X = pd.DataFrame({"num1": [1.0, 2.0, 3.0, 4.0, 5.0]})
+
+    else:
+        X = pd.DataFrame()
+
+    with pytest.raises((ValueError, TypeError)):
+        estimator.fit(X)
+
+    with pytest.raises(NotFittedError):
+        estimator.transform(X)
