@@ -6,27 +6,21 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
-from feature_engine._check_init_parameters.check_variables import (
-    _check_variables_input_value,
-)
+from feature_engine._check_init_parameters.check_variables import \
+    _check_variables_input_value
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
-    _missing_values_docstring,
-    _variables_categorical_docstring,
-)
-from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
+    _missing_values_docstring, _variables_categorical_docstring)
+from feature_engine._docstrings.init_parameters.encoders import \
+    _ignore_format_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import (
-    _check_optional_contains_na,
-    _check_X_matches_training_df,
-    check_X,
-)
+from feature_engine.dataframe_checks import (_check_optional_contains_na,
+                                             _check_X_matches_training_df,
+                                             check_X)
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_all_variables,
-    check_categorical_variables,
-    find_all_variables,
-    find_categorical_variables,
-)
+from feature_engine.variable_handling import (check_all_variables,
+                                              check_categorical_variables,
+                                              find_all_variables,
+                                              find_categorical_variables)
 
 
 @Substitution(
@@ -221,6 +215,18 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
     def _encode(self, X: pd.DataFrame) -> pd.DataFrame:
         # replace categories by the learned parameters
         for feature in self.encoder_dict_.keys():
+            # Detect unseen categories BEFORE mapping so we can name them
+            if self.unseen == "warn":
+                unseen_cats = set(X[feature].dropna().unique()) - set(
+                    self.encoder_dict_[feature].keys()
+                )
+                if unseen_cats:
+                    warnings.warn(
+                        f"Variable {feature!r} contains unseen categories: "
+                        f"{unseen_cats}. These will be encoded as NaN.",
+                        UserWarning,
+                    )
+
             X[feature] = X[feature].map(self.encoder_dict_[feature])
 
             # if original variables are cast as categorical, they will remain
@@ -266,6 +272,8 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
                     "During the encoding, NaN values were introduced in the feature(s) "
                     f"{nan_columns_str}."
                 )
+            # 'warn': per-variable warnings were already issued in _encode before
+            # the mapping, so nothing more to do here.
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Convert the encoded variable back to the original values.
