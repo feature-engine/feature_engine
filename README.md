@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Open&#160;Source** | [![GitHub](https://img.shields.io/github/license/feature-engine/feature_engine)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)  [![Sponsorship](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/) |
+| **Open&#160;Source** | [![GitHub](https://img.shields.io/github/license/feature-engine/feature_engine)](https://github.com/feature-engine/feature_engine/blob/master/LICENSE.md)  [![Sponsorship](https://img.shields.io/badge/Powered%20By-TrainInData-orange.svg)](https://www.trainindata.com/) [![JetBrains](https://img.shields.io/badge/Powered%20By-JetBrains-ff318c.svg?logo=jetbrains)](https://jb.gg/OpenSource)|
 | **Tutorials** | [![!youtube](https://img.shields.io/static/v1?logo=youtube&label=YouTube&message=tutorials&color=red)](https://www.youtube.com/watch?v=nisuJQTyDSA&list=PL_7uaHXkQmKVXh06fCWRxdQRZsl3wva5k) |
 | **Code** | [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/feature_engine?logo=Python)](https://pypi.org/project/feature-engine/) [![PyPI](https://img.shields.io/pypi/v/feature_engine?logo=PyPI)](https://pypi.org/project/feature-engine) [![Conda](https://img.shields.io/conda/v/conda-forge/feature_engine?logo=Anaconda)](https://anaconda.org/conda-forge/feature_engine) |
 | **Downloads** | [![Monthly Downloads](https://img.shields.io/pypi/dm/feature-engine)](https://img.shields.io/pypi/dm/feature-engine)  [![Downloads](https://static.pepy.tech/personalized-badge/feature-engine?period=total&units=international_system&left_color=grey&right_color=green&left_text=total-downloads%20(pypi))](https://pepy.tech/project/feature-engine)|
@@ -20,6 +20,16 @@
 Feature-engine is a Python library with multiple transformers to engineer and select features for use in machine learning models. 
 Feature-engine's transformers follow Scikit-learn's functionality with fit() and transform() methods to learn the 
 transforming parameters from the data and then transform it.
+
+## Sponsors
+
+Feature-engine is made possible with the support of:
+
+[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
+
+<a href="https://www.trainindata.com/">
+  <img src="https://github.com/feature-engine/feature_engine/blob/main/docs/images/sponsors/trainindata.png?raw=true" alt="TrainInData logo." width="300"/>
+</a>
 
 
 ## Feature-engine features in the following resources
@@ -279,6 +289,4 @@ sphinx-build -b html docs build
 The content of this repository is licensed under a [BSD 3-Clause license](https://github.com/feature-engine/feature_engine/blob/main/LICENSE.md).
 
 
-## Sponsor
 
-Feature-engine is made possible with the support of [Train in Data](https://www.trainindata.com/).
