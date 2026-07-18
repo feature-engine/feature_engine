@@ -13,6 +13,7 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
+    _check_return_empty_is_bool,
 )
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -237,6 +238,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                 f"regression must be a boolean value. Got {regression} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
         _check_param_missing_values(missing_values)
         _check_param_drop_original(drop_original)
 

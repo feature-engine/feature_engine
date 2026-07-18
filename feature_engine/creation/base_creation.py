@@ -8,6 +8,7 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
+    _check_return_empty_is_bool,
 )
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -34,6 +35,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         _check_param_missing_values(missing_values)
         _check_param_drop_original(drop_original)
+        _check_return_empty_is_bool(return_empty)
 
         self.missing_values = missing_values
         self.drop_original = drop_original

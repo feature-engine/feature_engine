@@ -10,6 +10,7 @@ from feature_engine._base_transformers.mixins import (
 )
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
+    _check_return_empty_is_bool,
 )
 from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
@@ -133,6 +134,7 @@ class CyclicalFeatures(
 
         _check_numerical_dict(max_values)
         _check_param_drop_original(drop_original)
+        _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
         self.max_values = max_values
