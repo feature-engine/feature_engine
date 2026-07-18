@@ -8,6 +8,9 @@ import pandas as pd
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _imputer_dict_docstring,
@@ -17,6 +20,9 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
+)
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
@@ -33,6 +39,7 @@ from feature_engine.variable_handling import (
 @Substitution(
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=_transform_imputers_docstring,
@@ -74,6 +81,8 @@ class CategoricalImputer(BaseImputer):
         imputer will find and transform all variables of type object or categorical by
         default. You can also make the transformer accept numerical variables, see the
         parameter `ignore_format` below.
+
+    {return_empty}
 
     return_object: bool, default=False
         If working with numerical variables cast as object, decide
@@ -133,6 +142,7 @@ class CategoricalImputer(BaseImputer):
         imputation_method: str = "missing",
         fill_value: Union[str, int, float] = "Missing",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         return_object: bool = False,
         ignore_format: bool = False,
     ) -> None:
@@ -149,6 +159,8 @@ class CategoricalImputer(BaseImputer):
         self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
+        _check_return_empty_is_bool(return_empty)
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -169,12 +181,12 @@ class CategoricalImputer(BaseImputer):
         # select variables to encode
         if self.ignore_format is True:
             if self.variables is None:
-                self.variables_ = find_all_variables(X)
+                self.variables_ = find_all_variables(X, self.return_empty)
             else:
                 self.variables_ = check_all_variables(X, self.variables)
         else:
             if self.variables is None:
-                self.variables_ = find_categorical_variables(X)
+                self.variables_ = find_categorical_variables(X, self.return_empty)
             else:
                 self.variables_ = check_categorical_variables(X, self.variables)
 
