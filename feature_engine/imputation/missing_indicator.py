@@ -8,11 +8,15 @@ import pandas as pd
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
+from feature_engine._docstrings.init_parameters.all_transformers import _return_empty_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -21,6 +25,7 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
 
 
 @Substitution(
+    return_empty = _return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
@@ -58,6 +63,7 @@ class AddMissingIndicator(BaseImputer):
         The list of variables to impute. If None, the imputer will find and
         select all variables.
 
+    {return_empty}
 
     Attributes
     ----------
@@ -103,6 +109,7 @@ class AddMissingIndicator(BaseImputer):
         self,
         missing_only: bool = True,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(missing_only, bool):
@@ -110,6 +117,9 @@ class AddMissingIndicator(BaseImputer):
 
         self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
+        
+        _check_return_empty_is_bool(return_empty)
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -129,7 +139,7 @@ class AddMissingIndicator(BaseImputer):
 
         # find variables for which indicator should be added
         if self.variables is None:
-            self.variables_ = find_all_variables(X)
+            self.variables_ = find_all_variables(X, self.return_empty)
         else:
             self.variables_ = check_all_variables(X, self.variables)
 

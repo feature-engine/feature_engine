@@ -11,6 +11,9 @@ from feature_engine._check_init_parameters.check_input_dictionary import (
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _imputer_dict_docstring,
@@ -22,6 +25,7 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
 )
+from feature_engine._docstrings.init_parameters.all_transformers import _return_empty_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -34,6 +38,7 @@ from feature_engine.variable_handling import (
 @Substitution(
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
+    return_empty = _return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -63,6 +68,8 @@ class ArbitraryNumberImputer(BaseImputer):
         select all numerical variables. This parameter is used only if `imputer_dict`
         is None.
 
+    {return_empty}
+    
     imputer_dict: dict, default=None
         The dictionary of variables and the arbitrary numbers for their imputation. If
         specified, it overrides the above parameters.
@@ -70,7 +77,6 @@ class ArbitraryNumberImputer(BaseImputer):
 
     Attributes
     ----------
-
     {imputer_dict_}
 
     {variables_}
@@ -117,6 +123,7 @@ class ArbitraryNumberImputer(BaseImputer):
         arbitrary_number: Union[int, float] = 999,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         imputer_dict: Optional[dict] = None,
+        return_empty: bool = False,
     ) -> None:
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
@@ -129,6 +136,9 @@ class ArbitraryNumberImputer(BaseImputer):
         self.variables = _check_variables_input_value(variables)
 
         self.imputer_dict = imputer_dict
+        
+        _check_return_empty_is_bool(return_empty)
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -155,7 +165,7 @@ class ArbitraryNumberImputer(BaseImputer):
             self.imputer_dict_ = self.imputer_dict
         else:
             if self.variables is None:
-                self.variables_ = find_numerical_variables(X)
+                self.variables_ = find_numerical_variables(X, self.return_empty)
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
