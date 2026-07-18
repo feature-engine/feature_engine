@@ -15,6 +15,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.discretisers import (
@@ -43,6 +44,7 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    return_empty=_return_empty_docstring,
 )
 class EqualWidthDiscretiser(BaseDiscretiser):
     """
@@ -71,6 +73,8 @@ class EqualWidthDiscretiser(BaseDiscretiser):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     bins: int, default=10
         Desired number of equal width intervals / bins.

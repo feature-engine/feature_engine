@@ -4,6 +4,9 @@
 import pandas as pd
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 
 
 class BaseDiscretiser(BaseNumericalTransformer):
@@ -18,6 +21,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
         return_object: bool = False,
         return_boundaries: bool = False,
         precision: int = 3,
+        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(return_object, bool):
@@ -36,9 +40,12 @@ class BaseDiscretiser(BaseNumericalTransformer):
                 "precision must be a positive integer. " f"Got {precision} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.return_object = return_object
         self.return_boundaries = return_boundaries
         self.precision = precision
+        self.return_empty = return_empty
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Sort the variable values into the intervals.
