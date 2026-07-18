@@ -22,3 +22,8 @@ _missing_values_docstring = """missing_values: string, default='raise'
         contain missing values. If `'ignore'`, missing data will be ignored when
         learning parameters or performing the transformation.
         """.rstrip()
+
+_return_empty_docstring = """return_empty : bool, default=False
+        Whether to return an empty list when no variables are found. If False, the
+        function raises an error.
+        """.rstrip()
