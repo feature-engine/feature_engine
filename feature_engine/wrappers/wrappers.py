@@ -4,6 +4,9 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -95,6 +98,10 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
         variables of type numeric for all transformers, except the SimpleImputer,
         OrdinalEncoder and OneHotEncoder, in which case, it will select all variables
         in the dataset.
+
+    return_empty: bool, default=False
+        Whether to return an empty list when no variables of the required type are
+        found. If False, the transformer raises an error.
 
     Attributes
     ----------
@@ -192,6 +199,7 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
         self,
         transformer,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
     ) -> None:
 
         if not issubclass(transformer.__class__, TransformerMixin):
@@ -235,8 +243,11 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
             ):
                 raise NotImplementedError(msg)
 
+        _check_return_empty_is_bool(return_empty)
+
         self.transformer = transformer
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
@@ -263,13 +274,17 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
             "FunctionTransformer",
         ]:
             if self.variables is None:
-                self.variables_ = find_all_variables(X)
+                self.variables_ = find_all_variables(
+                    X, return_empty=self.return_empty
+                )
             else:
                 self.variables_ = check_all_variables(X, self.variables)
 
         else:
             if self.variables is None:
-                self.variables_ = find_numerical_variables(X)
+                self.variables_ = find_numerical_variables(
+                    X, return_empty=self.return_empty
+                )
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
 

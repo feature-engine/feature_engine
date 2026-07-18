@@ -14,6 +14,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _drop_original_docstring,
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import (
@@ -28,6 +29,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
 
 @Substitution(
     variables=_variables_numerical_docstring,
+    return_empty=_return_empty_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -67,6 +69,8 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     min_periods: int, default None.
         Minimum number of observations in window required to have a value;
@@ -159,6 +163,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
+        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(functions, (str, list)) or not all(
@@ -176,7 +181,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
                 f"periods must be a non-negative integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original, drop_na)
+        super().__init__(
+            variables, missing_values, drop_original, drop_na, return_empty
+        )
 
         self.min_periods = min_periods
         self.functions = functions

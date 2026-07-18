@@ -6,12 +6,18 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
+)
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -28,6 +34,7 @@ from feature_engine.variable_handling.find_variables import find_datetime_variab
 
 
 @Substitution(
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -50,6 +57,8 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         List of the variables to convert into ordinal. If None, the transformer will
         find and select all datetime variables, including variables of type object that
         can be converted to datetime.
+
+    {return_empty}
 
     missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. If 'raise' the
@@ -115,6 +124,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         missing_values: str = "raise",
         start_date: Union[None, str, datetime.datetime] = None,
         drop_original: bool = True,
+        return_empty: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -140,9 +150,12 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 f"Got {drop_original} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
         self.drop_original = drop_original
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -164,7 +177,9 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         X = check_X(X)
 
         if self.variables is None:
-            self.variables_ = find_datetime_variables(X)
+            self.variables_ = find_datetime_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.variables_ = check_datetime_variables(X, self.variables)
 
