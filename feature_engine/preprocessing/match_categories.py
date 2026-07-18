@@ -9,7 +9,7 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
     _variables_categorical_docstring,
 )

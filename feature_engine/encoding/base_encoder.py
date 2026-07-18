@@ -9,7 +9,7 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
     _variables_categorical_docstring,
 )
