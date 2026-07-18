@@ -21,7 +21,9 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_transformers import _return_empty_docstring
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -37,7 +39,7 @@ from feature_engine.variable_handling import (
 @Substitution(
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
-    return_empty = _return_empty_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=_transform_imputers_docstring,
@@ -79,7 +81,7 @@ class CategoricalImputer(BaseImputer):
         imputer will find and transform all variables of type object or categorical by
         default. You can also make the transformer accept numerical variables, see the
         parameter `ignore_format` below.
-        
+
     {return_empty}
 
     return_object: bool, default=False
@@ -157,7 +159,6 @@ class CategoricalImputer(BaseImputer):
         self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
-        
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 

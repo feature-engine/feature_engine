@@ -35,7 +35,7 @@ from feature_engine.variable_handling import (
 
 @Substitution(
     variables=_variables_numerical_docstring,
-    return_empty = _return_empty_docstring,
+    return_empty=_return_empty_docstring,
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -102,7 +102,7 @@ class EndTailImputer(BaseImputer):
         are 2 or 3 for Gaussian, or 1.5 or 3 for IQR.
 
     {variables}
-    
+
     {return_empty}
 
     Attributes
@@ -166,7 +166,7 @@ class EndTailImputer(BaseImputer):
         self.tail = tail
         self.fold = fold
         self.variables = _check_variables_input_value(variables)
-        
+
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 

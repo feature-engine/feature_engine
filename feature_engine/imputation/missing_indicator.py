@@ -16,7 +16,9 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
-from feature_engine._docstrings.init_parameters.all_transformers import _return_empty_docstring
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -25,7 +27,7 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
 
 
 @Substitution(
-    return_empty = _return_empty_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
@@ -117,7 +119,7 @@ class AddMissingIndicator(BaseImputer):
 
         self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
-        
+
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 

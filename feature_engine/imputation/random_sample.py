@@ -21,7 +21,9 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_transformers import _return_empty_docstring
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -47,7 +49,7 @@ def _define_seed(
 
 @Substitution(
     variables_=_variables_attribute_docstring,
-    return_empty = _return_empty_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=_transform_imputers_docstring,
@@ -75,7 +77,7 @@ class RandomSampleImputer(BaseImputer):
         all variables in the train set.
 
     {return_empty}
-    
+
     random_state: int, str or list, default=None
         The random_state can take an integer to set the seed when extracting the
         random samples. Alternatively, it can take a variable name or a list of
@@ -170,7 +172,7 @@ class RandomSampleImputer(BaseImputer):
         self.random_state = random_state
         self.seed = seed
         self.seeding_method = seeding_method
-        
+
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 

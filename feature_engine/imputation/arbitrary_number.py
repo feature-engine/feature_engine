@@ -25,7 +25,9 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_transformers import _return_empty_docstring
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -38,7 +40,7 @@ from feature_engine.variable_handling import (
 @Substitution(
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
-    return_empty = _return_empty_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -69,7 +71,7 @@ class ArbitraryNumberImputer(BaseImputer):
         is None.
 
     {return_empty}
-    
+
     imputer_dict: dict, default=None
         The dictionary of variables and the arbitrary numbers for their imputation. If
         specified, it overrides the above parameters.
@@ -136,7 +138,7 @@ class ArbitraryNumberImputer(BaseImputer):
         self.variables = _check_variables_input_value(variables)
 
         self.imputer_dict = imputer_dict
-        
+
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
