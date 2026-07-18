@@ -27,4 +27,3 @@ _return_empty_docstring = """return_empty : bool, default=False
         Whether to return an empty list when no variables are found. If False, the
         function raises an error.
         """.rstrip()
-
