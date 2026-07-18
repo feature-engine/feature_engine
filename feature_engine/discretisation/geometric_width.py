@@ -13,6 +13,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.discretisers import (
@@ -43,6 +44,7 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     fit_transform=_fit_transform_docstring,
     power="{1/n}",
     subindex="{i+1}",
+    return_empty=_return_empty_docstring,
 )
 class GeometricWidthDiscretiser(BaseDiscretiser):
     """
@@ -86,6 +88,8 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     bins: int, default=10
         Desired number of intervals / bins.

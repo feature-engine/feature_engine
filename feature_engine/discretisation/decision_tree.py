@@ -10,6 +10,9 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -19,6 +22,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
@@ -32,6 +36,7 @@ from feature_engine.tags import _return_tags
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
+    return_empty=_return_empty_docstring,
 )
 class DecisionTreeDiscretiser(BaseNumericalTransformer):
     """
@@ -56,6 +61,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     bin_output: str, default = "prediction"
         Whether to return the predictions of the tree, the bin number, or the interval
@@ -174,6 +181,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         bin_output: str = "prediction",
         precision: Union[int, None] = None,
         cv=3,
@@ -205,6 +213,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 f"regression can only take True or False. Got {regression} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.bin_output = bin_output
         self.precision = precision
         self.cv = cv
@@ -213,6 +223,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.param_grid = param_grid
         self.random_state = random_state
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: pd.Series):  # type: ignore
         """
