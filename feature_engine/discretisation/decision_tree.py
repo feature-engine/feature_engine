@@ -10,9 +10,12 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
-from feature_engine._check_init_parameters.check_variables import _check_variables_input_value
-from feature_engine._check_init_parameters.check_init_input_params import _check_return_empty_is_bool
-
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
+from feature_engine._check_init_parameters.check_variables import (
+    _check_variables_input_value,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -209,7 +212,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             raise ValueError(
                 f"regression can only take True or False. Got {regression} instead."
             )
-        
+
         _check_return_empty_is_bool(return_empty)
 
         self.bin_output = bin_output
