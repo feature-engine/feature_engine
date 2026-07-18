@@ -25,6 +25,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.creation import _features_to_combine
@@ -52,6 +53,7 @@ from feature_engine.variable_handling import (
     features_to_combine=_features_to_combine,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -81,6 +83,8 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
     {variables}
 
     {features_to_combine}
+
+    {return_empty}
 
     precision: int, default=None
         The precision of the predictions. In other words, the number of decimals after
@@ -211,6 +215,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         features_to_combine: Optional[Union[Iterable[Any], int]] = None,
+        return_empty: bool = False,
         precision: Union[int, None] = None,
         cv=3,
         scoring: str = "neg_mean_squared_error",
@@ -245,6 +250,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.random_state = random_state
         self.missing_values = missing_values
         self.drop_original = drop_original
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -276,7 +282,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
 
         # find or check for numerical variables
         if self.variables is None:
-            variables_ = find_numerical_variables(X)
+            variables_ = find_numerical_variables(X, return_empty=self.return_empty)
         else:
             variables_ = check_numerical_variables(X, self.variables)
 

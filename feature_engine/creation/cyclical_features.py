@@ -24,6 +24,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.all_trasnformers import (
     _drop_original_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import (
@@ -36,6 +37,7 @@ from feature_engine._docstrings.substitute import Substitution
 @Substitution(
     variables=_variables_numerical_docstring,
     drop_original=_drop_original_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -72,6 +74,8 @@ class CyclicalFeatures(
         automatically find the maximum value of each variable.
 
     {drop_original}
+
+    {return_empty}
 
     Attributes
     ----------
@@ -124,6 +128,7 @@ class CyclicalFeatures(
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         max_values: Optional[Dict[str, Union[int, float]]] = None,
         drop_original: Optional[bool] = False,
+        return_empty: bool = False,
     ) -> None:
 
         _check_numerical_dict(max_values)
@@ -132,6 +137,7 @@ class CyclicalFeatures(
         self.variables = _check_variables_input_value(variables)
         self.max_values = max_values
         self.drop_original = drop_original
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

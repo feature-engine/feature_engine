@@ -29,6 +29,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         self,
         missing_values: str = "raise",
         drop_original: bool = False,
+        return_empty: bool = False,
     ) -> None:
 
         _check_param_missing_values(missing_values)
@@ -36,6 +37,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         self.missing_values = missing_values
         self.drop_original = drop_original
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -55,7 +57,9 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         # check variables are numerical
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
+            self.variables_ = find_numerical_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 
