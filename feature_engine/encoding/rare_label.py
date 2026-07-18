@@ -14,6 +14,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
@@ -30,6 +31,7 @@ from feature_engine.encoding.base_encoder import (
     missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -88,6 +90,8 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
     {variables}
 
+    {return_empty}
+
     {missing_values}
 
     {ignore_format}
@@ -139,6 +143,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         max_n_categories: Optional[int] = None,
         replace_with: Union[str, int, float] = "Rare",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
         ignore_format: bool = False,
     ) -> None:
@@ -169,7 +174,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 f"Got {replace_with} instead."
             )
 
-        super().__init__(variables, missing_values, ignore_format)
+        super().__init__(variables, missing_values, ignore_format, return_empty)
         self.tol = tol
         self.n_categories = n_categories
         self.max_n_categories = max_n_categories

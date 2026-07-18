@@ -11,6 +11,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
@@ -33,6 +34,7 @@ _gpm_fast_vec = np.vectorize(_gpm_fast)
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -120,6 +122,8 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
     {variables}
 
+    {return_empty}
+
     {ignore_format}
 
     Attributes
@@ -187,6 +191,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         keywords: Optional[dict] = None,
         missing_values: str = "impute",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         ignore_format: bool = False,
     ):
         if top_categories and not isinstance(top_categories, int):
@@ -207,7 +212,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 "The items in keywords should be lists."
                 f" Got {keywords.values()!r} instead."
             )
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, ignore_format, return_empty)
         self.top_categories = top_categories
         self.missing_values = missing_values
         self.keywords = keywords

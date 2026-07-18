@@ -12,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
@@ -27,6 +28,7 @@ from feature_engine.encoding.base_encoder import (
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -96,7 +98,10 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
     {variables}
 
+    {return_empty}
+
     {ignore_format}
+
 
     Attributes
     ----------
@@ -164,6 +169,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        return_empty: bool = False,
     ) -> None:
 
         if top_categories and (
@@ -185,7 +191,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 f"Got {drop_last_binary} instead."
             )
 
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, ignore_format, return_empty)
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
