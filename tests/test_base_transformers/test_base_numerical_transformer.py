@@ -20,7 +20,6 @@ def test_empty_find_numerical_variables(df_vartypes):
     transformer = MockClass()
     with pytest.raises(TypeError):
         transformer.fit(df_vartypes.drop(columns=["Age", "Marks"]))
-    # Else, no problem
     transformer = MockClass()
     transformer.return_empty = True
     transformer.fit(df_vartypes.drop(columns=["Age", "Marks"]))
