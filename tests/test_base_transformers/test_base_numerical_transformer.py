@@ -9,9 +9,23 @@ from tests.estimator_checks.non_fitted_error_checks import check_raises_non_fitt
 class MockClass(BaseNumericalTransformer):
     def __init__(self):
         self.variables = None
+        self.return_empty = False
 
     def transform(self, X):
         return self._check_transform_input_and_state(X)
+
+
+
+def test_empty_find_numerical_variables(df_vartypes):
+    # without return empty_flag, dfs without numerical variables should raise error 
+    transformer = MockClass()
+    with pytest.raises(TypeError):
+        transformer.fit(df_vartypes.drop(columns=["Age", "Marks"]))
+    # Else, no problem
+    transformer = MockClass()
+    transformer.return_empty = True
+    transformer.fit(df_vartypes.drop(columns=["Age", "Marks"]))
+    assert transformer.variables_ == []
 
 
 def test_fit_method(df_vartypes, df_na):
@@ -57,3 +71,5 @@ def test_transform_method(df_vartypes, df_na):
 
 def test_raises_non_fitted_error():
     check_raises_non_fitted_error(MockClass())
+
+

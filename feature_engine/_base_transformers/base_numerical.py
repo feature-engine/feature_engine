@@ -60,7 +60,7 @@ class BaseNumericalTransformer(
 
         # find or check for numerical variables
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
+            self.variables_ = find_numerical_variables(X, return_empty=self.return_empty)
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 
