@@ -3,7 +3,6 @@ import pandas as pd
 import pytest
 from sklearn import __version__ as skl_version
 from sklearn.base import clone
-from sklearn.datasets import fetch_california_housing
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.feature_selection import (
@@ -112,9 +111,9 @@ def test_error_not_implemented_transformer(transformer, df_na):
 
 
 @pytest.mark.parametrize("transformer", _selectors)
-def test_wrap_selectors(transformer):
+def test_wrap_selectors(transformer, static_california_housing):
     # load data
-    X = fetch_california_housing(as_frame=True).frame
+    X = static_california_housing
     y = X["MedHouseVal"]
     X = X.drop(["MedHouseVal"], axis=1)
 
@@ -150,9 +149,9 @@ def test_wrap_selectors(transformer):
 
 
 @pytest.mark.parametrize("transformer", _transformers)
-def test_wrap_transformers(transformer):
+def test_wrap_transformers(transformer, static_california_housing):
     # load data
-    X = fetch_california_housing(as_frame=True).frame
+    X = static_california_housing
 
     # prepare selectors
     tr = clone(transformer)
@@ -182,9 +181,9 @@ def test_wrap_transformers(transformer):
     pd.testing.assert_frame_equal(Xt, Xw)
 
 
-def test_wrap_polynomial_features():
+def test_wrap_polynomial_features(static_california_housing):
     # load data
-    X = fetch_california_housing(as_frame=True).frame
+    X = static_california_housing
 
     # prepare selectors
     tr = PolynomialFeatures()
@@ -215,8 +214,8 @@ def test_wrap_polynomial_features():
     assert Xw.shape[1] == len(tr.get_feature_names_out(X.columns))
 
 
-def test_wrap_polynomial_features_get_features_name_out():
-    X = fetch_california_housing(as_frame=True).frame
+def test_wrap_polynomial_features_get_features_name_out(static_california_housing):
+    X = static_california_housing
 
     varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
     tr_wrap = SklearnTransformerWrapper(
@@ -521,14 +520,14 @@ def test_sklearn_ohe_all_features(df_vartypes):
     pd.testing.assert_frame_equal(ref, transformed_df)
 
 
-def test_sklearn_ohe_with_crossvalidation():
+def test_sklearn_ohe_with_crossvalidation(static_california_housing):
     """
     Created 2022-02-14 to test fix to issue # 368
     """
 
     # Set up test pipeline with wrapped OneHotEncoder, with simple regression model
     # to be able to run cross-validation; use sklearn CA housing data
-    df = fetch_california_housing(as_frame=True).frame
+    df = static_california_housing
     y = df["MedHouseVal"]
     X = (
         df[["HouseAge", "AveBedrms"]]
@@ -614,8 +613,8 @@ def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
     "transformer",
     [PowerTransformer(), OrdinalEncoder(), MinMaxScaler(), StandardScaler()],
 )
-def test_inverse_transform(transformer):
-    X = fetch_california_housing(as_frame=True).frame
+def test_inverse_transform(transformer, static_california_housing):
+    X = static_california_housing
     X = X.drop(["Longitude"], axis=1)
 
     tr_wrap = SklearnTransformerWrapper(transformer=transformer)
@@ -645,8 +644,8 @@ def test_inverse_transform(transformer):
         SimpleImputer(),
     ],
 )
-def test_error_when_inverse_transform_not_implemented(transformer):
-    X = fetch_california_housing(as_frame=True).frame
+def test_error_when_inverse_transform_not_implemented(transformer, static_california_housing):
+    X = static_california_housing
     y = X["MedHouseVal"]
     X = X.drop(["MedHouseVal"], axis=1)
 
@@ -662,8 +661,8 @@ def test_error_when_inverse_transform_not_implemented(transformer):
     "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
 )
 @pytest.mark.parametrize("transformer", _transformers)
-def test_get_feature_names_out_transformers(varlist, transformer):
-    X = fetch_california_housing(as_frame=True).frame
+def test_get_feature_names_out_transformers(varlist, transformer, static_california_housing):
+    X = static_california_housing
     tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
     Xw = tr_wrap.fit_transform(X)
 
@@ -675,8 +674,8 @@ def test_get_feature_names_out_transformers(varlist, transformer):
     "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
 )
 @pytest.mark.parametrize("transformer", _selectors)
-def test_get_feature_names_out_selectors(varlist, transformer):
-    X = fetch_california_housing(as_frame=True).frame
+def test_get_feature_names_out_selectors(varlist, transformer, static_california_housing):
+    X = static_california_housing
     y = X["MedHouseVal"]
     X = X.drop(["MedHouseVal"], axis=1)
     tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
@@ -689,8 +688,8 @@ def test_get_feature_names_out_selectors(varlist, transformer):
 @pytest.mark.parametrize(
     "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
 )
-def test_get_feature_names_out_polynomialfeatures(varlist):
-    X = fetch_california_housing(as_frame=True).frame
+def test_get_feature_names_out_polynomialfeatures(varlist, static_california_housing):
+    X = static_california_housing
     tr_wrap = SklearnTransformerWrapper(
         transformer=PolynomialFeatures(), variables=varlist
     )

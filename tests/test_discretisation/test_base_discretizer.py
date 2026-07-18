@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.datasets import fetch_california_housing
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
@@ -37,23 +36,21 @@ def test_correct_param_assignment_at_init(params):
 
 
 class MockClassFit(BaseDiscretiser):
+    def __init__(self, dataset: pd.DataFrame, *args, **kwargs):
+        self._dataset = dataset
+        super().__init__(*args, **kwargs)
+    
     def fit(self, X):
-        california_dataset = fetch_california_housing()
-        data = pd.DataFrame(
-            california_dataset.data, columns=california_dataset.feature_names
-        )
+        data = self._dataset
         self.variables_ = ["HouseAge"]
         self.binner_dict_ = {"HouseAge": [0, 20, 40, 60, np.inf]}
         self.n_features_in_ = data.shape[1]
-        self.feature_names_in_ = california_dataset.feature_names
+        self.feature_names_in_ = data.columns
         return self
 
 
-def test_transform():
-    california_dataset = fetch_california_housing()
-    data = pd.DataFrame(
-        california_dataset.data, columns=california_dataset.feature_names
-    )
+def test_transform(static_california_housing):
+    data = static_california_housing
 
     data_t1 = data.copy()
     data_t2 = data.copy()
@@ -70,10 +67,10 @@ def test_transform():
         include_lowest=True,
     )
 
-    transformer = MockClassFit(return_boundaries=False)
+    transformer = MockClassFit(data, return_boundaries=False)
     X = transformer.fit_transform(data)
     pd.testing.assert_frame_equal(X, data_t2)
 
-    transformer = MockClassFit(return_object=False, return_boundaries=True)
+    transformer = MockClassFit(data, return_object=False, return_boundaries=True)
     X = transformer.fit_transform(data)
     pd.testing.assert_frame_equal(X, data_t1)
