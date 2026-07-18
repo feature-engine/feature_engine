@@ -31,7 +31,6 @@ from sklearn.preprocessing import (
 
 from feature_engine.wrappers import SklearnTransformerWrapper
 
-
 if skl_version < "1.7.0":
     kbd = KBinsDiscretizer(n_bins=3, encode="ordinal")
 else:
@@ -644,7 +643,9 @@ def test_inverse_transform(transformer, static_california_housing):
         SimpleImputer(),
     ],
 )
-def test_error_when_inverse_transform_not_implemented(transformer, static_california_housing):
+def test_error_when_inverse_transform_not_implemented(
+    transformer, static_california_housing
+):
     X = static_california_housing
     y = X["MedHouseVal"]
     X = X.drop(["MedHouseVal"], axis=1)
@@ -661,7 +662,9 @@ def test_error_when_inverse_transform_not_implemented(transformer, static_califo
     "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
 )
 @pytest.mark.parametrize("transformer", _transformers)
-def test_get_feature_names_out_transformers(varlist, transformer, static_california_housing):
+def test_get_feature_names_out_transformers(
+    varlist, transformer, static_california_housing
+):
     X = static_california_housing
     tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
     Xw = tr_wrap.fit_transform(X)
@@ -674,7 +677,9 @@ def test_get_feature_names_out_transformers(varlist, transformer, static_califor
     "varlist", [["MedInc", "HouseAge", "AveRooms", "AveBedrms"], None]
 )
 @pytest.mark.parametrize("transformer", _selectors)
-def test_get_feature_names_out_selectors(varlist, transformer, static_california_housing):
+def test_get_feature_names_out_selectors(
+    varlist, transformer, static_california_housing
+):
     X = static_california_housing
     y = X["MedHouseVal"]
     X = X.drop(["MedHouseVal"], axis=1)
