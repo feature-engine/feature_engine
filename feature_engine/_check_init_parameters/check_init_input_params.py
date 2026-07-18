@@ -12,3 +12,10 @@ def _check_param_drop_original(drop_original):
             "drop_original takes only boolean values True and False. "
             f"Got {drop_original} instead."
         )
+
+def _check_return_empty_is_bool(return_empty):
+    if not isinstance(return_empty, bool):
+        raise ValueError(
+            "return_empty takes only boolean values True and False. "
+            f"Got {return_empty} instead."
+        )
