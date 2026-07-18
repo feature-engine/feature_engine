@@ -17,7 +17,6 @@ class MockClass(BaseNumericalTransformer):
 
 
 def test_empty_find_numerical_variables(df_vartypes):
-    # without return empty_flag, dfs without numerical variables should raise error 
     transformer = MockClass()
     with pytest.raises(TypeError):
         transformer.fit(df_vartypes.drop(columns=["Age", "Marks"]))
