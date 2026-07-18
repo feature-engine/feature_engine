@@ -139,12 +139,13 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         return_object: bool = False,
         return_boundaries: bool = False,
         precision: int = 3,
+        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(q, int):
             raise ValueError(f"q must be an integer. Got {q} instead.")
 
-        super().__init__(return_object, return_boundaries, precision)
+        super().__init__(return_object, return_boundaries, precision, return_empty)
 
         self.q = q
         self.variables = _check_variables_input_value(variables)
