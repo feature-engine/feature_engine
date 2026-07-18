@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -681,7 +681,12 @@ class DropHighPSIFeatures(BaseSelector):
 
         # Split the original dataframe
         if isinstance(self.cut_off_, list):
-            is_within_cut_off = np.array(reference.isin(self.cut_off_))
+            cut_off = self.cut_off_
+            # isin with values castable to datetime (strings, dates) is
+            # deprecated in pandas; cast them to the reference dtype first.
+            if is_datetime64_any_dtype(reference):
+                cut_off = pd.to_datetime(cut_off)
+            is_within_cut_off = np.array(reference.isin(cut_off))
 
         else:
             is_within_cut_off = np.array(reference <= self.cut_off_)

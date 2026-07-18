@@ -288,8 +288,8 @@ def test_pipeline_methods_pca_svm():
     iris = load_iris()
     X = iris.data
     y = iris.target
-    # Test with PCA + SVC
-    clf = SVC(gamma="scale", probability=True, random_state=0)
+    # Test with PCA + classifier with predict_proba
+    clf = LogisticRegression(solver="lbfgs", random_state=0)
     pca = PCA(svd_solver="full", n_components="mle", whiten=True)
     pipe = Pipeline([("pca", pca), ("svc", clf)])
     pipe.fit(X, y)
@@ -308,12 +308,7 @@ def test_pipeline_methods_preprocessing_svm():
     n_classes = len(np.unique(y))
     scaler = StandardScaler()
     pca = PCA(n_components=2, svd_solver="randomized", whiten=True)
-    clf = SVC(
-        gamma="scale",
-        probability=True,
-        random_state=0,
-        decision_function_shape="ovr",
-    )
+    clf = LogisticRegression(solver="lbfgs", random_state=0)
 
     for preprocessing in [scaler, pca]:
         pipe = Pipeline([("preprocess", preprocessing), ("svc", clf)])
@@ -612,8 +607,8 @@ def test_pipeline_memory_transformer():
     cachedir = mkdtemp()
     try:
         memory = Memory(cachedir, verbose=10)
-        # Test with Transformer + SVC
-        clf = SVC(gamma="scale", probability=True, random_state=0)
+        # Test with Transformer + classifier with predict_proba
+        clf = LogisticRegression(solver="lbfgs", random_state=0)
         transf = DummyTransf()
         pipe = Pipeline([("transf", clone(transf)), ("svc", clf)])
         cached_pipe = Pipeline([("transf", transf), ("svc", clf)], memory=memory)
@@ -648,7 +643,7 @@ def test_pipeline_memory_transformer():
         assert cached_pipe.named_steps["transf"].timestamp_ == expected_ts
         # Create a new pipeline with cloned estimators
         # Check that even changing the name step does not affect the cache hit
-        clf_2 = SVC(gamma="scale", probability=True, random_state=0)
+        clf_2 = LogisticRegression(solver="lbfgs", random_state=0)
         transf_2 = DummyTransf()
         cached_pipe_2 = Pipeline(
             [("transf_2", transf_2), ("svc", clf_2)], memory=memory
@@ -765,7 +760,7 @@ def test_pipeline_param_error():
         clf.fit([[0], [0]], [0, 1], sample_weight=[1, 1])
 
 
-parameter_grid_test_verbose = (
+parameter_grid_test_verbose = [
     (est, pattern, method)
     for (est, pattern), method in itertools.product(
         [
@@ -825,7 +820,7 @@ parameter_grid_test_verbose = (
         and hasattr(est, "steps")
         and isinstance(est.steps[-1][1], FitParamT)
     )
-)
+]
 
 
 @pytest.mark.parametrize("est, pattern, method", parameter_grid_test_verbose)
