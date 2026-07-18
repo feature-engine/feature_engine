@@ -39,7 +39,7 @@ class MockClassFit(BaseDiscretiser):
     def __init__(self, dataset: pd.DataFrame, *args, **kwargs):
         self._dataset = dataset
         super().__init__(*args, **kwargs)
-    
+
     def fit(self, X):
         data = self._dataset
         self.variables_ = ["HouseAge"]

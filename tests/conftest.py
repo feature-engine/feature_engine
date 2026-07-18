@@ -202,6 +202,9 @@ def df_normal_dist():
 
     return df
 
+
 @pytest.fixture(scope="module")
 def static_california_housing() -> pd.DataFrame:
-    return pd.read_csv(Path(__file__).parent / "resources" / "california_housing.csv", index_col=0)
+    return pd.read_csv(
+        Path(__file__).parent / "resources" / "california_housing.csv", index_col=0
+    )
