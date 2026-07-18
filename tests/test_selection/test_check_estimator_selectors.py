@@ -81,8 +81,12 @@ _model_based_estimators = [
     ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
+# The selectors allow NaN input, but sklearn's checks fit them on data with
+# NaN, which the inner cross-validated estimator cannot handle; sklearn then
+# scores those fits as nan and warns. This is expected, hence the filter.
 if sklearn_version < parse_version("1.6"):
 
+    @pytest.mark.filterwarnings("ignore::sklearn.exceptions.FitFailedWarning")
     @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
         return check_estimator(estimator)
@@ -91,6 +95,7 @@ else:
     # In sklearn 1.6. the API changes break the tests for the target mean selector.
     # We need to investigate further.
     # TODO: investigate checks for target mean selector.
+    @pytest.mark.filterwarnings("ignore::sklearn.exceptions.FitFailedWarning")
     @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
         if estimator.__class__.__name__ not in [
