@@ -12,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import (
@@ -40,6 +41,7 @@ _unseen_docstring = (
     missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -80,9 +82,12 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
     {variables}
 
+    {return_empty}
+
     {missing_values}
 
     {ignore_format}
+
 
     {unseen}
 
@@ -163,6 +168,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self,
         encoding_method: str = "ordered",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
         ignore_format: bool = False,
         unseen: str = "ignore",
@@ -174,7 +180,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
-        super().__init__(variables, missing_values, ignore_format)
+        super().__init__(variables, missing_values, ignore_format, return_empty)
         self.encoding_method = encoding_method
         self.unseen = unseen
 

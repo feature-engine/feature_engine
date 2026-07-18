@@ -6,11 +6,15 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
@@ -32,6 +36,7 @@ from feature_engine.variable_handling import (
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
 )
 class CategoricalInitMixin:
     """Shared initialization parameters across transformers. Sets and checks init
@@ -39,7 +44,9 @@ class CategoricalInitMixin:
 
     Parameters
     ----------
-    {variables}.
+    {variables}
+
+    {return_empty}
 
     {ignore_format}
     """
@@ -48,6 +55,7 @@ class CategoricalInitMixin:
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(ignore_format, bool):
@@ -56,14 +64,18 @@ class CategoricalInitMixin:
                 f"Got {ignore_format} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
         self.ignore_format = ignore_format
+        self.return_empty = return_empty
 
 
 @Substitution(
     missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
 )
 class CategoricalInitMixinNA:
     """Shared initialization parameters across transformers. Sets and checks init
@@ -76,6 +88,8 @@ class CategoricalInitMixinNA:
     {missing_values}
 
     {ignore_format}
+
+    {return_empty}
     """
 
     def __init__(
@@ -83,6 +97,7 @@ class CategoricalInitMixinNA:
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
         ignore_format: bool = False,
+        return_empty: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -97,9 +112,12 @@ class CategoricalInitMixinNA:
                 f"Got {ignore_format} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
         self.ignore_format = ignore_format
         self.missing_values = missing_values
+        self.return_empty = return_empty
 
 
 class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
@@ -140,7 +158,9 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
                 variables_ = check_all_variables(X, self.variables)
         else:
             if self.variables is None:
-                variables_ = find_categorical_variables(X)
+                variables_ = find_categorical_variables(
+                    X, return_empty=self.return_empty
+                )
             else:
                 variables_ = check_categorical_variables(X, self.variables)
 

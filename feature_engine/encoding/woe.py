@@ -12,6 +12,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import (
@@ -86,6 +87,7 @@ class WoE:
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -127,6 +129,8 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     {ignore_format}
 
@@ -202,9 +206,10 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         ignore_format: bool = False,
         unseen: str = "ignore",
         fill_value: Union[int, float, None] = None,
+        return_empty: bool = False,
     ) -> None:
 
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, ignore_format, return_empty)
         check_parameter_unseen(unseen, ["ignore", "raise"])
         if fill_value is not None and not isinstance(fill_value, (int, float)):
             raise ValueError(
