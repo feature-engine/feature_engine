@@ -534,3 +534,206 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_binary):
     enc = OneHotEncoder().fit(df_enc_binary)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_binary)
+
+
+# ===========================================================================
+# Tests for the new `drop` parameter (Issue #913)
+# ===========================================================================
+
+
+@pytest.fixture(scope="module")
+def df_drop():
+    """DataFrame with known categories for testing drop strategies."""
+    df = pd.DataFrame(
+        {
+            "x1": ["c", "a", "b", "a", "c", "b", "a"],
+            "x2": ["z", "y", "z", "x", "y", "z", "x"],
+            "num": [1, 2, 3, 4, 5, 6, 7],
+        }
+    )
+    return df
+
+
+def test_drop_last_alphabetically(df_drop):
+    """drop='last' should drop the last category in sorted order."""
+    encoder = OneHotEncoder(drop="last")
+    encoder.fit(df_drop)
+
+    # x1 categories sorted: ['a', 'b', 'c'] -> drop 'c'
+    assert encoder.encoder_dict_["x1"] == ["a", "b"]
+    # x2 categories sorted: ['x', 'y', 'z'] -> drop 'z'
+    assert encoder.encoder_dict_["x2"] == ["x", "y"]
+
+    X = encoder.transform(df_drop)
+    assert "x1_c" not in X.columns
+    assert "x2_z" not in X.columns
+    assert "x1_a" in X.columns
+    assert "x1_b" in X.columns
+    assert "x2_x" in X.columns
+    assert "x2_y" in X.columns
+
+
+def test_drop_first_alphabetically(df_drop):
+    """drop='first' should drop the first category in sorted order."""
+    encoder = OneHotEncoder(drop="first")
+    encoder.fit(df_drop)
+
+    # x1 categories sorted: ['a', 'b', 'c'] -> drop 'a'
+    assert encoder.encoder_dict_["x1"] == ["b", "c"]
+    # x2 categories sorted: ['x', 'y', 'z'] -> drop 'x'
+    assert encoder.encoder_dict_["x2"] == ["y", "z"]
+
+    X = encoder.transform(df_drop)
+    assert "x1_a" not in X.columns
+    assert "x2_x" not in X.columns
+    assert "x1_b" in X.columns
+    assert "x1_c" in X.columns
+    assert "x2_y" in X.columns
+    assert "x2_z" in X.columns
+
+
+def test_drop_most_frequent():
+    """drop='most_frequent' should drop the most common category."""
+    df = pd.DataFrame(
+        {
+            "x1": ["a"] * 10 + ["b"] * 5 + ["c"] * 3,
+        }
+    )
+
+    encoder = OneHotEncoder(drop="most_frequent")
+    encoder.fit(df)
+
+    # 'a' is most frequent (10 times) -> drop 'a'
+    assert "a" not in encoder.encoder_dict_["x1"]
+    assert "b" in encoder.encoder_dict_["x1"]
+    assert "c" in encoder.encoder_dict_["x1"]
+
+    X = encoder.transform(df)
+    assert "x1_a" not in X.columns
+    assert "x1_b" in X.columns
+    assert "x1_c" in X.columns
+
+
+def test_drop_most_frequent_with_tie():
+    """When multiple categories tie for most frequent, warn and drop first alpha."""
+    df = pd.DataFrame(
+        {
+            "x1": ["c"] * 5 + ["a"] * 5 + ["b"] * 3,
+        }
+    )
+
+    with pytest.warns(UserWarning, match="multiple categories share the highest"):
+        encoder = OneHotEncoder(drop="most_frequent")
+        encoder.fit(df)
+
+    # 'a' and 'c' both have frequency 5 — drop 'a' (first alphabetically)
+    assert "a" not in encoder.encoder_dict_["x1"]
+    assert "b" in encoder.encoder_dict_["x1"]
+    assert "c" in encoder.encoder_dict_["x1"]
+
+
+def test_drop_ignored_when_top_categories_set():
+    """top_categories should take precedence over drop."""
+    df = pd.DataFrame(
+        {
+            "x1": ["a"] * 10 + ["b"] * 5 + ["c"] * 3 + ["d"] * 1,
+        }
+    )
+
+    encoder = OneHotEncoder(top_categories=2, drop="first")
+    encoder.fit(df)
+
+    # top_categories=2 should pick the 2 most frequent: ['a', 'b']
+    assert encoder.encoder_dict_["x1"] == ["a", "b"]
+
+
+def test_drop_overrides_drop_last():
+    """When both drop and drop_last are set, drop wins and FutureWarning is raised."""
+    df = pd.DataFrame(
+        {
+            "x1": ["c", "a", "b", "a", "c", "b", "a"],
+        }
+    )
+
+    with pytest.warns(FutureWarning, match="drop_last.*deprecated"):
+        encoder = OneHotEncoder(drop_last=True, drop="first")
+
+    encoder.fit(df)
+
+    # drop="first" should drop 'a' (sorted: ['a', 'b', 'c'])
+    assert encoder.encoder_dict_["x1"] == ["b", "c"]
+
+
+def test_drop_with_drop_last_binary():
+    """drop and drop_last_binary should work together correctly."""
+    df = pd.DataFrame(
+        {
+            "x1": ["a"] * 10 + ["b"] * 5 + ["c"] * 3,
+            "x2": ["yes"] * 10 + ["no"] * 8,  # binary variable
+        }
+    )
+
+    encoder = OneHotEncoder(drop="first", drop_last_binary=True)
+    encoder.fit(df)
+
+    # x1: sorted ['a', 'b', 'c'] -> drop 'a'
+    assert encoder.encoder_dict_["x1"] == ["b", "c"]
+
+    # x2: binary -> drop_last_binary overrides to keep only the first unique
+    assert len(encoder.encoder_dict_["x2"]) == 1
+
+
+@pytest.mark.parametrize(
+    "drop_value", ["empanada", "middle", 123, True, ["last"]]
+)
+def test_error_if_drop_not_valid_string(drop_value):
+    """Invalid drop values should raise ValueError."""
+    with pytest.raises(ValueError, match="drop takes only values"):
+        OneHotEncoder(drop=drop_value)
+
+
+def test_get_feature_names_out_with_drop(df_enc_binary):
+    """get_feature_names_out should reflect the dropped category."""
+    original_features = ["var_num"]
+    input_features = df_enc_binary.columns
+
+    # drop="first": sorted cats for var_A are ['A','B','C'] -> drop 'A'
+    tr = OneHotEncoder(drop="first")
+    tr.fit(df_enc_binary)
+
+    out = [
+        "var_A_B",
+        "var_A_C",
+        "var_B_B",
+        "var_B_C",
+        "var_C_UHU",
+        "var_D_OHO",
+    ]
+    feat_out = original_features + out
+    assert tr.get_feature_names_out(input_features=None) == feat_out
+    assert tr.get_feature_names_out(input_features=input_features) == feat_out
+
+
+def test_drop_none_produces_k_dummies(df_drop):
+    """drop=None (default) should produce k dummies, same as drop_last=False."""
+    encoder = OneHotEncoder(drop=None, drop_last=False)
+    encoder.fit(df_drop)
+
+    # x1 has 3 unique categories -> 3 dummies
+    assert len(encoder.encoder_dict_["x1"]) == 3
+    # x2 has 3 unique categories -> 3 dummies
+    assert len(encoder.encoder_dict_["x2"]) == 3
+
+
+def test_drop_last_backward_compatible(df_drop):
+    """Existing drop_last=True without drop should behave exactly as before."""
+    encoder = OneHotEncoder(drop_last=True)
+    encoder.fit(df_drop)
+
+    # Original behavior: category_ls = list(unique()), drop last element
+    # This preserves insertion order, NOT sorted order
+    x1_unique = list(df_drop["x1"].unique())
+    assert encoder.encoder_dict_["x1"] == x1_unique[:-1]
+
+    x2_unique = list(df_drop["x2"].unique())
+    assert encoder.encoder_dict_["x2"] == x2_unique[:-1]
