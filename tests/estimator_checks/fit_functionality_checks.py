@@ -49,9 +49,6 @@ def check_return_empty(estimator):
     this way, since there is always at least one variable of *some* type in a
     non-empty dataframe: the check is skipped for those.
     """
-    if "return_empty" not in estimator.get_params():
-        return
-
     y = pd.Series([0, 1, 0, 1, 0, 1])
     candidate_dfs = [
         pd.DataFrame({"var_num": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}),
