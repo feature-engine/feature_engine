@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 import pytest
 from sklearn.pipeline import Pipeline
@@ -458,13 +460,18 @@ def test_get_feature_names_out(df_enc_binary):
     tr = OneHotEncoder(drop_last=True)
     tr.fit(df_enc_binary)
 
+    # With drop_last=True, categories are sorted alphabetically and last is dropped.
+    # var_A: [A, B, C] -> drop C -> keep A, B
+    # var_B: [A, B, C] -> drop C -> keep A, B
+    # var_C: [AHA, UHU] -> drop UHU -> keep AHA
+    # var_D: [EHE, OHO] -> drop OHO -> keep EHE
     out = [
         "var_A_A",
         "var_A_B",
         "var_B_A",
         "var_B_B",
         "var_C_AHA",
-        "var_D_OHO",
+        "var_D_EHE",
     ]
     feat_out = original_features + out
 
@@ -534,3 +541,124 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_binary):
     enc = OneHotEncoder().fit(df_enc_binary)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_binary)
+
+
+# ================================================================
+# Tests for the new `drop` parameter
+# ================================================================
+
+
+def test_drop_last_drops_last_category_alphabetically():
+    """drop='last' should sort categories alphabetically and drop the last one."""
+    df = pd.DataFrame({"color": ["Red", "Blue", "Green", "Red", "Blue", "Green"]})
+    encoder = OneHotEncoder(drop="last")
+    encoder.fit(df)
+
+    # Alphabetically: Blue, Green, Red -> drop "Red"
+    assert encoder.encoder_dict_ == {"color": ["Blue", "Green"]}
+
+    X = encoder.transform(df)
+    assert "color_Red" not in X.columns
+    assert "color_Blue" in X.columns
+    assert "color_Green" in X.columns
+
+
+def test_drop_first_drops_first_category_alphabetically():
+    """drop='first' should sort categories alphabetically and drop the first one."""
+    df = pd.DataFrame({"color": ["Red", "Blue", "Green", "Red", "Blue", "Green"]})
+    encoder = OneHotEncoder(drop="first")
+    encoder.fit(df)
+
+    # Alphabetically: Blue, Green, Red -> drop "Blue"
+    assert encoder.encoder_dict_ == {"color": ["Green", "Red"]}
+
+    X = encoder.transform(df)
+    assert "color_Blue" not in X.columns
+    assert "color_Green" in X.columns
+    assert "color_Red" in X.columns
+
+
+def test_drop_most_frequent_drops_most_common_category():
+    """drop='most_frequent' should drop the category with the highest count."""
+    df = pd.DataFrame({
+        "animal": ["Cat"] * 10 + ["Dog"] * 5 + ["Fish"] * 3
+    })
+    encoder = OneHotEncoder(drop="most_frequent")
+    encoder.fit(df)
+
+    # Cat appears 10 times (most frequent) -> it should be dropped
+    assert "Cat" not in encoder.encoder_dict_["animal"]
+    assert "Dog" in encoder.encoder_dict_["animal"]
+    assert "Fish" in encoder.encoder_dict_["animal"]
+
+    X = encoder.transform(df)
+    assert "animal_Cat" not in X.columns
+    assert "animal_Dog" in X.columns
+    assert "animal_Fish" in X.columns
+
+
+def test_drop_most_frequent_with_tie_raises_warning():
+    """When multiple categories share the highest frequency, a warning should be
+    raised and the first one alphabetically among the tied should be dropped."""
+    df = pd.DataFrame({
+        "fruit": ["Apple"] * 5 + ["Banana"] * 5 + ["Cherry"] * 3
+    })
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        encoder = OneHotEncoder(drop="most_frequent")
+        encoder.fit(df)
+
+        # Apple and Banana are tied at 5 each -> warning expected
+        user_warnings = [
+            x for x in w
+            if issubclass(x.category, UserWarning)
+            and "multiple categories" in str(x.message).lower()
+        ]
+        assert len(user_warnings) == 1
+
+    # Should drop "Apple" (first alphabetically among tied)
+    assert "Apple" not in encoder.encoder_dict_["fruit"]
+    assert "Banana" in encoder.encoder_dict_["fruit"]
+    assert "Cherry" in encoder.encoder_dict_["fruit"]
+
+
+def test_deprecation_warning_when_drop_last_and_drop_both_set():
+    """Using both drop_last=True and drop='first' should emit a FutureWarning,
+    and the 'drop' parameter should take precedence."""
+    df = pd.DataFrame({"color": ["Red", "Blue", "Green", "Red", "Blue", "Green"]})
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        encoder = OneHotEncoder(drop_last=True, drop="first")
+
+        future_warnings = [x for x in w if issubclass(x.category, FutureWarning)]
+        assert len(future_warnings) == 1
+        assert "deprecated" in str(future_warnings[0].message).lower()
+
+    encoder.fit(df)
+
+    # drop='first' takes precedence -> drops "Blue" (first alphabetically)
+    assert "Blue" not in encoder.encoder_dict_["color"]
+    assert "Green" in encoder.encoder_dict_["color"]
+    assert "Red" in encoder.encoder_dict_["color"]
+
+
+@pytest.mark.parametrize("bad_value", ["middle", "random", 123, True])
+def test_error_if_drop_not_valid(bad_value):
+    """Invalid values for 'drop' should raise a ValueError."""
+    with pytest.raises(ValueError):
+        OneHotEncoder(drop=bad_value)
+
+
+def test_drop_last_backward_compatibility(df_enc_big):
+    """Using drop_last=True without the new drop parameter should still work."""
+    encoder = OneHotEncoder(
+        top_categories=None, variables=["var_A", "var_B"], drop_last=True
+    )
+    X = encoder.fit_transform(df_enc_big)
+
+    # Alphabetically last category is "G" -> should be dropped
+    assert "var_A_G" not in X.columns
+    assert "var_B_G" not in X.columns
+    assert "var_A_A" in X.columns
+    assert "var_B_A" in X.columns

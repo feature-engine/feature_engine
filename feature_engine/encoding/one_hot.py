@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import numpy as np
@@ -80,12 +81,30 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         categories to encode. In this case, dummy variables will be created only for
         those popular categories and the rest will be ignored, i.e., they will show the
         value 0 in all the binary variables. Note that if `top_categories` is not None,
-        the parameter `drop_last` is ignored.
+        the parameters `drop_last` and `drop` are ignored.
 
     drop_last: boolean, default=False
         Only used if `top_categories = None`. It indicates whether to create dummy
         variables for all the categories (k dummies), or if set to `True`, it will
         ignore the last binary variable and return k-1 dummies.
+
+        .. deprecated::
+            `drop_last` is deprecated. Use the `drop` parameter instead, which
+            provides more flexibility. If both `drop_last` and `drop` are set,
+            a warning will be raised and `drop` will take precedence.
+
+    drop: str, default=None
+        Only used if `top_categories = None`. Determines which category to drop
+        to return k-1 binary variables. Options are:
+
+        - None: No category is dropped (k dummies are returned), unless
+          `drop_last` is True.
+        - ``'last'``: Drops the last category alphabetically.
+        - ``'first'``: Drops the first category alphabetically.
+        - ``'most_frequent'``: Drops the most frequent category observed during
+          fit(). If multiple categories share the highest frequency, a UserWarning
+          is raised and the first category alphabetically among the tied ones is
+          dropped.
 
     drop_last_binary: boolean, default=False
         Whether to return 1 or 2 dummy variables for binary categorical variables. When
@@ -164,6 +183,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         ignore_format: bool = False,
+        drop: Optional[str] = None,
     ) -> None:
 
         if top_categories and (
@@ -185,10 +205,26 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 f"Got {drop_last_binary} instead."
             )
 
+        if drop is not None and drop not in ("last", "first", "most_frequent"):
+            raise ValueError(
+                "drop takes only values 'last', 'first', 'most_frequent' "
+                f"or None. Got {drop} instead."
+            )
+
+        if drop_last is True and drop is not None:
+            warnings.warn(
+                "Both 'drop_last' and 'drop' were set. 'drop_last' is deprecated "
+                "in favour of 'drop'. The 'drop' parameter will take precedence. "
+                "Please use only 'drop' going forward.",
+                FutureWarning,
+                stacklevel=2,
+            )
+
         super().__init__(variables, ignore_format)
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
+        self.drop = drop
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -228,15 +264,48 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 ]
 
             else:
-                category_ls = list(X[var].unique())
+                # Determine the effective drop strategy.
+                # New 'drop' param takes precedence over old 'drop_last'.
+                drop_strategy = self.drop
+                if drop_strategy is None and self.drop_last:
+                    drop_strategy = "last"
 
-                # return k-1 dummies
-                if self.drop_last:
-                    self.encoder_dict_[var] = category_ls[:-1]
+                if drop_strategy is not None:
+                    # Sort alphabetically so "first"/"last" are deterministic
+                    category_ls = sorted(X[var].unique())
 
-                # return k dummies
+                    # Figure out which single category to remove
+                    if drop_strategy == "last":
+                        cat_to_drop = category_ls[-1]
+
+                    elif drop_strategy == "first":
+                        cat_to_drop = category_ls[0]
+
+                    elif drop_strategy == "most_frequent":
+                        freq = X[var].value_counts()
+                        max_freq = freq.max()
+                        most_frequent_cats = sorted(
+                            freq[freq == max_freq].index.tolist()
+                        )
+                        if len(most_frequent_cats) > 1:
+                            warnings.warn(
+                                f"Variable '{var}': multiple categories share "
+                                f"the highest frequency ({max_freq}): "
+                                f"{most_frequent_cats}. Dropping the first "
+                                f"alphabetically: '{most_frequent_cats[0]}'.",
+                                UserWarning,
+                                stacklevel=2,
+                            )
+                        cat_to_drop = most_frequent_cats[0]
+
+                    # Remove that one category from the list
+                    self.encoder_dict_[var] = [
+                        c for c in category_ls if c != cat_to_drop
+                    ]
+
+                # return k dummies (no category dropped) — preserve insertion order
                 else:
-                    self.encoder_dict_[var] = category_ls
+                    self.encoder_dict_[var] = list(X[var].unique())
 
         self.variables_binary_ = [var for var in variables_ if X[var].nunique() == 2]
 
