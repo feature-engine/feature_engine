@@ -130,7 +130,4 @@ def test_constant_columns_error():
 
 
 def test_check_return_empty():
-    # the scaling module has no test_check_estimator_*.py file and is not
-    # part of the check_feature_engine_estimator pipeline, so return_empty is
-    # tested directly here instead.
     check_return_empty(MeanNormalizationScaler())
