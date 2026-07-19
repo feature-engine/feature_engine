@@ -35,6 +35,30 @@ def check_error_if_y_not_passed(estimator):
         estimator.fit(X)
 
 
+# A dataframe with no variables of the given type, keyed by the transformer's
+# `variables` tag (see feature_engine.tags._return_tags and each transformer's
+# _more_tags()). Fitting with variables=None on the matching dataframe is what
+# triggers the "no variables found" path that return_empty controls.
+_NO_VARIABLES_OF_TYPE = {
+    "numerical": pd.DataFrame({"var_cat": ["A", "B", "A", "B", "A", "B"]}),
+    "categorical": pd.DataFrame({"var_num": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}),
+    "datetime": pd.DataFrame({"var_num": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}),
+}
+
+# A couple of transformers don't carry the right `variables` tag, for reasons
+# unrelated to return_empty:
+# - LogTransformer's own _more_tags() doesn't set "variables" at all (a
+#   pre-existing gap; it's numerical like its sibling transformers).
+# - DatetimeSubtraction inherits BaseCreation's "skip" tag, which exists so
+#   the *generic* variable-assignment checks leave it alone (it needs
+#   `variables` and `reference` checked together, which those checks don't
+#   support) -- but it does select datetime variables.
+_TAG_OVERRIDE_BY_CLASS_NAME = {
+    "LogTransformer": "numerical",
+    "DatetimeSubtraction": "datetime",
+}
+
+
 def check_return_empty(estimator):
     """
     Only for transformers with the init parameter `return_empty`.
@@ -45,18 +69,19 @@ def check_return_empty(estimator):
     instead assigns an empty list to `variables_`, and raises a `UserWarning`
     instead of an error.
 
-    Transformers that accept every variable type (tagged 'all') cannot be probed
-    this way, since there is always at least one variable of *some* type in a
-    non-empty dataframe: the check is skipped for those.
+    Transformers that accept every variable type (tagged 'all') are skipped:
+    there is always at least one variable of *some* type in a non-empty
+    dataframe, so there is no dataframe that can trigger "no variables found"
+    for them.
     """
+    variables_tag = _TAG_OVERRIDE_BY_CLASS_NAME.get(
+        estimator.__class__.__name__, estimator._more_tags().get("variables")
+    )
+    if variables_tag not in _NO_VARIABLES_OF_TYPE:
+        return
+    no_variables_df = _NO_VARIABLES_OF_TYPE[variables_tag]
+
     y = pd.Series([0, 1, 0, 1, 0, 1])
-    candidate_dfs = [
-        pd.DataFrame({"var_num": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}),
-        pd.DataFrame({"var_cat": ["A", "B", "A", "B", "A", "B"]}),
-        pd.DataFrame(
-            {"var_date": pd.date_range("2020-01-01", periods=6, freq="D")}
-        ),
-    ]
 
     # ignore_format=True makes categorical transformers select all variables
     # regardless of type, which defeats the purpose of this check.
@@ -67,19 +92,6 @@ def check_return_empty(estimator):
     # way as `variables`, and require both to be None together.
     if "reference" in estimator.get_params():
         base_params["reference"] = None
-
-    no_variables_df = None
-    for df in candidate_dfs:
-        transformer = clone(estimator)
-        transformer.set_params(**base_params)
-        try:
-            transformer.fit(df, y)
-        except TypeError:
-            no_variables_df = df
-            break
-
-    if no_variables_df is None:
-        return
 
     # default: raises an error
     transformer = clone(estimator)
