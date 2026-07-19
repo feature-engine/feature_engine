@@ -4,7 +4,6 @@ import pytest
 
 from feature_engine.datetime import DatetimeOrdinal
 
-
 @pytest.fixture(scope="module")
 def df_datetime_ordinal():
     df = pd.DataFrame({
@@ -286,3 +285,8 @@ def test_return_empty():
     with pytest.warns(UserWarning):
         transformer.fit(X)
     assert transformer.variables_ == []
+
+    # if return_empty=True, transformer should return same df
+    # after transformation
+    dft = transformer.transform(X)
+    pd.testing.assert_frame_equal(dft, X)
