@@ -281,11 +281,16 @@ def test_return_empty():
     X = pd.DataFrame({"var_num": [1.0, 2.0, 3.0]})
 
     transformer = DatetimeOrdinal(variables=None, return_empty=False)
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="No datetime variables found in this dataframe"
+    ):
         transformer.fit(X)
 
     transformer = DatetimeOrdinal(variables=None, return_empty=True)
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning,
+        match="No datetime variables found in this dataframe. Returning an empty list.",
+    ):
         transformer.fit(X)
     assert transformer.variables_ == []
 

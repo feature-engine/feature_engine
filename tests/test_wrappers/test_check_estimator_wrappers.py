@@ -65,13 +65,19 @@ def test_return_empty():
     transformer = SklearnTransformerWrapper(
         transformer=StandardScaler(), variables=None, return_empty=False
     )
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="No numerical variables found in this dataframe"
+    ):
         transformer.fit(X)
 
     transformer = SklearnTransformerWrapper(
         transformer=StandardScaler(), variables=None, return_empty=True
     )
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning,
+        match="No numerical variables found in this dataframe. "
+        "Returning an empty list.",
+    ):
         transformer.fit(X)
     assert transformer.variables_ == []
 

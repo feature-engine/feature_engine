@@ -53,8 +53,14 @@ def check_return_empty(estimator):
         return
     else:
         df = pd.DataFrame({"var_num": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]})
+        variable_tag = "categorical"
 
     y = pd.Series([0, 1, 0, 1, 0, 1])
+    raise_match = f"No {variable_tag} variables found in this dataframe"
+    warn_match = (
+        f"No {variable_tag} variables found in this dataframe. "
+        "Returning an empty list."
+    )
 
     # ignore_format=True makes categorical transformers select all variables
     # regardless of type, which defeats the purpose of this check.
@@ -65,13 +71,13 @@ def check_return_empty(estimator):
     # default: raises an error
     transformer = clone(estimator)
     transformer.set_params(**base_params)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=raise_match):
         transformer.fit(df, y)
 
     # return_empty=True: warns and returns an empty list instead of raising
     transformer = clone(estimator)
     transformer.set_params(**{**base_params, "return_empty": True})
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match=warn_match):
         transformer.fit(df, y)
     assert transformer.variables_ == []
 
