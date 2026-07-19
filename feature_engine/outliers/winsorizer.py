@@ -15,6 +15,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.outliers import (
@@ -35,6 +36,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     fold=_fold_docstring,
     variables=_variables_numerical_docstring,
     missing_values=_missing_values_docstring,
+    return_empty=_return_empty_docstring,
     right_tail_caps_=_right_tail_caps_docstring,
     left_tail_caps_=_left_tail_caps_docstring,
     variables_=_variables_attribute_docstring,
@@ -74,6 +76,8 @@ class Winsorizer(WinsorizerBase):
     {variables}
 
     {missing_values}
+
+    {return_empty}
 
     Attributes
     ----------
@@ -169,13 +173,16 @@ class Winsorizer(WinsorizerBase):
         add_indicators: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
+        return_empty: bool = False,
     ) -> None:
         if not isinstance(add_indicators, bool):
             raise ValueError(
                 "add_indicators takes only booleans True and False"
                 f"Got {add_indicators} instead."
             )
-        super().__init__(capping_method, tail, fold, variables, missing_values)
+        super().__init__(
+            capping_method, tail, fold, variables, missing_values, return_empty
+        )
         self.add_indicators = add_indicators
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

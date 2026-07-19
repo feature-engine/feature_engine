@@ -5,6 +5,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -156,6 +159,7 @@ class WinsorizerBase(BaseOutlier):
         fold: Union[int, float, Literal["auto"]] = "auto",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
+        return_empty: bool = False,
     ) -> None:
 
         if capping_method not in ("gaussian", "iqr", "quantiles", "mad"):
@@ -192,11 +196,14 @@ class WinsorizerBase(BaseOutlier):
                 f" Got {missing_values} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.capping_method = capping_method
         self.tail = tail
         self.fold = fold
         self.variables = _check_variables_input_value(variables)
         self.missing_values = missing_values
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -216,7 +223,9 @@ class WinsorizerBase(BaseOutlier):
 
         # find or check for numerical variables
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
+            self.variables_ = find_numerical_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 

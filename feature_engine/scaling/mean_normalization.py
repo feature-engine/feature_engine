@@ -6,6 +6,9 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -15,6 +18,7 @@ from feature_engine._docstrings.fit_attributes import (
     _variables_attribute_docstring,
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import (
@@ -26,6 +30,7 @@ from feature_engine._docstrings.substitute import Substitution
 
 @Substitution(
     variables=_variables_numerical_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -51,6 +56,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
     ----------
     {variables}
 
+    {return_empty}
 
     Attributes
     ----------
@@ -101,9 +107,13 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
     ) -> None:
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

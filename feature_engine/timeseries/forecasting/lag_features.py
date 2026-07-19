@@ -13,6 +13,7 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _drop_original_docstring,
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import (
@@ -27,6 +28,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
 
 @Substitution(
     variables=_variables_numerical_docstring,
+    return_empty=_return_empty_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -56,6 +58,8 @@ class LagFeatures(BaseForecastTransformer):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     periods: int, list of ints, default=1
         Number of periods to shift. Can be a positive integer or list of positive
@@ -142,6 +146,7 @@ class LagFeatures(BaseForecastTransformer):
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
+        return_empty: bool = False,
     ) -> None:
 
         if not (
@@ -166,7 +171,9 @@ class LagFeatures(BaseForecastTransformer):
                 "sort_index takes values True and False." f"Got {sort_index} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original, drop_na)
+        super().__init__(
+            variables, missing_values, drop_original, drop_na, return_empty
+        )
 
         self.periods = periods
         self.freq = freq

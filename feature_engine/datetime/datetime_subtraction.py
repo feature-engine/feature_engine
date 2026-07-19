@@ -14,6 +14,7 @@ from feature_engine._docstrings.fit_attributes import (
 )
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -48,6 +49,7 @@ _example = """
 
 @Substitution(
     missing_values=_missing_values_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -76,6 +78,8 @@ class DatetimeSubtraction(BaseCreation):
     reference: list
         The list of datetime reference variables that will be subtracted from
         `variables` (right side of the subtraction operation).
+
+    {return_empty}
 
     new_variables_names: list, default=None
         Names of the new variables. You have the option to pass a list with the names
@@ -162,6 +166,7 @@ class DatetimeSubtraction(BaseCreation):
         yearfirst: bool = False,
         utc: Union[None, bool] = None,
         format: Union[None, str] = None,
+        return_empty: bool = False,
     ) -> None:
 
         valid_output_units = {
@@ -198,7 +203,7 @@ class DatetimeSubtraction(BaseCreation):
                     f"Got {new_variables_names} instead."
                 )
 
-        super().__init__(missing_values, drop_original)
+        super().__init__(missing_values, drop_original, return_empty)
         self.variables = _check_variables_input_value(variables)
         self.reference = _check_variables_input_value(reference)
         self.new_variables_names = new_variables_names
@@ -226,12 +231,16 @@ class DatetimeSubtraction(BaseCreation):
 
         # check variables are datetime
         if self.variables is None:
-            self.variables_ = find_datetime_variables(X)
+            self.variables_ = find_datetime_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.variables_ = check_datetime_variables(X, self.variables)
 
         if self.reference is None:
-            self.reference_ = find_datetime_variables(X)
+            self.reference_ = find_datetime_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.reference_ = check_datetime_variables(X, self.reference)
 
