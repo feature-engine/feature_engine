@@ -85,6 +85,7 @@ def test_return_empty():
     # after transformation
     dft = transformer.transform(X)
     pd.testing.assert_frame_equal(dft, X)
+    assert transformer.get_feature_names_out() == list(X.columns)
 
     # when wrapping a transformer that selects all variable types (e.g.
     # OrdinalEncoder), find_all_variables always finds at least the 1 column
