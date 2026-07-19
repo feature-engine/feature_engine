@@ -79,11 +79,14 @@ def test_return_empty():
     transformer = SklearnTransformerWrapper(
         transformer=StandardScaler(), variables=None, return_empty=True
     )
-    with pytest.raises(ValueError):
-        # the "no numerical variables found" TypeError is bypassed, but
-        # StandardScaler itself cannot be fit on zero columns.
+    with pytest.warns(UserWarning):
         transformer.fit(X)
     assert transformer.variables_ == []
+
+    # if return_empty=True, transformer should return same df
+    # after transformation
+    dft = transformer.transform(X)
+    pd.testing.assert_frame_equal(dft, X)
 
     # when wrapping a transformer that selects all variable types (e.g.
     # OrdinalEncoder), find_all_variables always finds at least the 1 column
