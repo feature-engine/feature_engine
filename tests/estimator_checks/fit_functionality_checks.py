@@ -43,7 +43,7 @@ def check_return_empty(estimator):
     required by the transformer (numerical, categorical or datetime), `fit()`
     raises a `TypeError` by default. When `return_empty` is set to `True`, `fit()`
     instead assigns an empty list to `variables_`, and raises a `UserWarning`
-    instead of an error.
+    instead of an error. Transformer should return the same dataframe in this case.
     """
     # dataframe with no variables of the given type
     variable_tag = estimator._more_tags().get("variables")
