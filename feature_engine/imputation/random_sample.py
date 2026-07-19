@@ -144,10 +144,10 @@ class RandomSampleImputer(BaseImputer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
         seeding_method: str = "add",
-        return_empty: bool = False,
     ) -> None:
 
         if seed not in ["general", "observation"]:
@@ -169,12 +169,13 @@ class RandomSampleImputer(BaseImputer):
             )
 
         self.variables = _check_variables_input_value(variables)
-        self.random_state = random_state
-        self.seed = seed
-        self.seeding_method = seeding_method
 
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
+
+        self.random_state = random_state
+        self.seed = seed
+        self.seeding_method = seeding_method
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

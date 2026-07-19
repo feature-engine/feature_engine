@@ -146,11 +146,11 @@ class EqualWidthDiscretiser(BaseDiscretiser):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         bins: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
         precision: int = 3,
-        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(bins, int):
@@ -160,9 +160,9 @@ class EqualWidthDiscretiser(BaseDiscretiser):
 
         super().__init__(return_object, return_boundaries, precision)
 
-        self.bins = bins
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
+        self.bins = bins
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

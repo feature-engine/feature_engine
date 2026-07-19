@@ -104,8 +104,8 @@ class PowerTransformer(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        exp: Union[float, int] = 0.5,
         return_empty: bool = False,
+        exp: Union[float, int] = 0.5,
     ):
 
         if not isinstance(exp, (float, int)):
@@ -113,9 +113,9 @@ class PowerTransformer(BaseNumericalTransformer):
 
         _check_return_empty_is_bool(return_empty)
 
-        self.exp = exp
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
+        self.exp = exp
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

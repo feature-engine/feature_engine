@@ -25,7 +25,8 @@ _missing_values_docstring = """missing_values: string, default='raise'
 
 _return_empty_docstring = """return_empty : bool, default=False
         Whether to return an empty list when no variables of the required type are
-        found. If False, the transformer raises an error.
+        found. If False, the transformer raises an error. This parameter is only
+        used when `variables` is `None`.
 
         .. versionadded:: 2.0
            `return_empty` currently defaults to False. The default will change to

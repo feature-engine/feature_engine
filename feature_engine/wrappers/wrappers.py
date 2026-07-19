@@ -101,7 +101,8 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
     return_empty: bool, default=False
         Whether to return an empty list when no variables of the required type are
-        found. If False, the transformer raises an error.
+        found. If False, the transformer raises an error. This parameter is only
+        used when `variables` is `None`.
 
     Attributes
     ----------

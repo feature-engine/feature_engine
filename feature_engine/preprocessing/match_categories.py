@@ -59,11 +59,11 @@ class MatchCategories(
     ----------
     {variables}
 
+    {return_empty}
+
     {ignore_format}
 
     {missing_values}
-
-    {return_empty}
 
     Attributes
     ----------
@@ -121,9 +121,9 @@ class MatchCategories(
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         ignore_format: bool = False,
         missing_values: str = "raise",
-        return_empty: bool = False,
     ) -> None:
 
         _check_return_empty_is_bool(return_empty)

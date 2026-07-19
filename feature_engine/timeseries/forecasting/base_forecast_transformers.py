@@ -73,10 +73,10 @@ class BaseForecastTransformer(
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
-        return_empty: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -100,10 +100,10 @@ class BaseForecastTransformer(
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.missing_values = missing_values
         self.drop_original = drop_original
         self.drop_na = drop_na
-        self.return_empty = return_empty
 
     def _check_index(self, X: pd.DataFrame):
         """

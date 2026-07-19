@@ -35,8 +35,8 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     tail=_tail_docstring,
     fold=_fold_docstring,
     variables=_variables_numerical_docstring,
-    missing_values=_missing_values_docstring,
     return_empty=_return_empty_docstring,
+    missing_values=_missing_values_docstring,
     right_tail_caps_=_right_tail_caps_docstring,
     left_tail_caps_=_left_tail_caps_docstring,
     variables_=_variables_attribute_docstring,
@@ -75,9 +75,9 @@ class Winsorizer(WinsorizerBase):
 
     {variables}
 
-    {missing_values}
-
     {return_empty}
+
+    {missing_values}
 
     Attributes
     ----------
@@ -172,8 +172,8 @@ class Winsorizer(WinsorizerBase):
         fold: Union[int, float, Literal["auto"]] = "auto",
         add_indicators: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        missing_values: str = "raise",
         return_empty: bool = False,
+        missing_values: str = "raise",
     ) -> None:
         if not isinstance(add_indicators, bool):
             raise ValueError(
@@ -181,7 +181,7 @@ class Winsorizer(WinsorizerBase):
                 f"Got {add_indicators} instead."
             )
         super().__init__(
-            capping_method, tail, fold, variables, missing_values, return_empty
+            capping_method, tail, fold, variables, return_empty, missing_values
         )
         self.add_indicators = add_indicators
 

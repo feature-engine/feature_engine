@@ -161,6 +161,7 @@ class DatetimeSubtraction(BaseCreation):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         reference: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         new_variables_names: Union[None, List[str], str] = None,
         output_unit: str = "D",
         missing_values: str = "ignore",
@@ -169,7 +170,6 @@ class DatetimeSubtraction(BaseCreation):
         yearfirst: bool = False,
         utc: Union[None, bool] = None,
         format: Union[None, str] = None,
-        return_empty: bool = False,
     ) -> None:
 
         valid_output_units = {

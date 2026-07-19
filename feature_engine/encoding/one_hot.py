@@ -168,8 +168,8 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         drop_last: bool = False,
         drop_last_binary: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
         return_empty: bool = False,
+        ignore_format: bool = False,
     ) -> None:
 
         if top_categories and (
@@ -191,7 +191,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 f"Got {drop_last_binary} instead."
             )
 
-        super().__init__(variables, ignore_format, return_empty)
+        super().__init__(variables, return_empty, ignore_format)
         self.top_categories = top_categories
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary

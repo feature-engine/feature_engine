@@ -83,9 +83,9 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
     ----------
     {variables}
 
-    {features_to_combine}
-
     {return_empty}
+
+    {features_to_combine}
 
     precision: int, default=None
         The precision of the predictions. In other words, the number of decimals after
@@ -215,8 +215,8 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        features_to_combine: Optional[Union[Iterable[Any], int]] = None,
         return_empty: bool = False,
+        features_to_combine: Optional[Union[Iterable[Any], int]] = None,
         precision: Union[int, None] = None,
         cv=3,
         scoring: str = "neg_mean_squared_error",
@@ -243,6 +243,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         _check_param_drop_original(drop_original)
 
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.features_to_combine = features_to_combine
         self.precision = precision
         self.cv = cv
@@ -252,7 +253,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.random_state = random_state
         self.missing_values = missing_values
         self.drop_original = drop_original
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """

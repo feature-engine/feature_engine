@@ -212,7 +212,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
                 "The items in keywords should be lists."
                 f" Got {keywords.values()!r} instead."
             )
-        super().__init__(variables, ignore_format, return_empty)
+        super().__init__(variables, return_empty, ignore_format)
         self.top_categories = top_categories
         self.missing_values = missing_values
         self.keywords = keywords

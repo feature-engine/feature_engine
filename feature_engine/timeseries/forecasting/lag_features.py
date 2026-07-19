@@ -139,6 +139,7 @@ class LagFeatures(BaseForecastTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         periods: Union[int, List[int]] = 1,
         freq: Union[str, List[str], None] = None,
         fill_value: Hashable = None,
@@ -146,7 +147,6 @@ class LagFeatures(BaseForecastTransformer):
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
-        return_empty: bool = False,
     ) -> None:
 
         if not (
@@ -172,7 +172,7 @@ class LagFeatures(BaseForecastTransformer):
             )
 
         super().__init__(
-            variables, missing_values, drop_original, drop_na, return_empty
+            variables, return_empty, missing_values, drop_original, drop_na
         )
 
         self.periods = periods

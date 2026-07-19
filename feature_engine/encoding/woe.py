@@ -203,13 +203,13 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         ignore_format: bool = False,
         unseen: str = "ignore",
         fill_value: Union[int, float, None] = None,
-        return_empty: bool = False,
     ) -> None:
 
-        super().__init__(variables, ignore_format, return_empty)
+        super().__init__(variables, return_empty, ignore_format)
         check_parameter_unseen(unseen, ["ignore", "raise"])
         if fill_value is not None and not isinstance(fill_value, (int, float)):
             raise ValueError(
