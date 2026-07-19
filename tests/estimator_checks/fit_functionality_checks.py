@@ -68,22 +68,14 @@ def check_return_empty(estimator):
     with pytest.raises(TypeError):
         transformer.fit(df, y)
 
-    # KNOWN BUG: DecisionTreeEncoder builds a nested OrdinalEncoder with
-    # `variables=variables_`. When `variables_` is an empty list, that nested
-    # encoder's own constructor rejects it (a guard meant to catch users
-    # explicitly passing `variables=[]` by mistake), so fit() raises ValueError
-    # instead of completing. This asserts today's actual behaviour so the test
-    # documents the bug rather than papering over it.
-    # if estimator.__class__.__name__ == "DecisionTreeEncoder":
-    #     transformer = clone(estimator)
-    #     transformer.set_params(**{**base_params, "return_empty": True})
-    #     with pytest.raises(ValueError, match="The list of `variables` is empty"):
-    #         transformer.fit(df, y)
-    #     return
-
     # return_empty=True: warns and returns an empty list instead of raising
     transformer = clone(estimator)
     transformer.set_params(**{**base_params, "return_empty": True})
     with pytest.warns(UserWarning):
         transformer.fit(df, y)
     assert transformer.variables_ == []
+
+    # if return_empty=True, transformer should return same df
+    # after transformation
+    dft = transformer.transform(df)
+    pd.testing.assert_frame_equal(dft, df)
