@@ -60,14 +60,6 @@ def test_raises_error_when_no_transformer_passed():
 
 
 def test_return_empty():
-    # SklearnTransformerWrapper is not part of the check_feature_engine_estimator
-    # pipeline, so return_empty is tested directly here. The shared
-    # check_return_empty helper isn't reused because, unlike feature-engine's own
-    # transformers, this wrapper delegates the actual fitting to the wrapped
-    # sklearn transformer. When the wrapped transformer is e.g. StandardScaler,
-    # fitting it on zero columns raises its own (expected) error -- return_empty
-    # only controls whether *variable selection* raises, not what the wrapped
-    # transformer does afterwards with an empty selection.
     X = pd.DataFrame({"var_cat": ["A", "B", "A"]})
 
     transformer = SklearnTransformerWrapper(
