@@ -121,10 +121,10 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
         start_date: Union[None, str, datetime.datetime] = None,
         drop_original: bool = True,
-        return_empty: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -153,9 +153,9 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.missing_values = missing_values
         self.drop_original = drop_original
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

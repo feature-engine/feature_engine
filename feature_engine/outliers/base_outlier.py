@@ -158,8 +158,8 @@ class WinsorizerBase(BaseOutlier):
         tail: str = "right",
         fold: Union[int, float, Literal["auto"]] = "auto",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        missing_values: str = "raise",
         return_empty: bool = False,
+        missing_values: str = "raise",
     ) -> None:
 
         if capping_method not in ("gaussian", "iqr", "quantiles", "mad"):
@@ -202,8 +202,8 @@ class WinsorizerBase(BaseOutlier):
         self.tail = tail
         self.fold = fold
         self.variables = _check_variables_input_value(variables)
-        self.missing_values = missing_values
         self.return_empty = return_empty
+        self.missing_values = missing_values
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

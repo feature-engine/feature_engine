@@ -129,9 +129,9 @@ class ArcSinhTransformer(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         loc: float = 0.0,
         scale: float = 1.0,
-        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(loc, (int, float)):
@@ -148,9 +148,9 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.loc = float(loc)
         self.scale = float(scale)
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

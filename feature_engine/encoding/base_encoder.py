@@ -54,8 +54,8 @@ class CategoricalInitMixin:
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        ignore_format: bool = False,
         return_empty: bool = False,
+        ignore_format: bool = False,
     ) -> None:
 
         if not isinstance(ignore_format, bool):
@@ -67,8 +67,8 @@ class CategoricalInitMixin:
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
-        self.ignore_format = ignore_format
         self.return_empty = return_empty
+        self.ignore_format = ignore_format
 
 
 @Substitution(

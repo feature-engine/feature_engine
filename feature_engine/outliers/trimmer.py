@@ -68,9 +68,9 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
 
     {variables}
 
-    {missing_values}
-
     {return_empty}
+
+    {missing_values}
 
     Attributes
     ----------

@@ -124,8 +124,8 @@ class ArbitraryNumberImputer(BaseImputer):
         self,
         arbitrary_number: Union[int, float] = 999,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        imputer_dict: Optional[dict] = None,
         return_empty: bool = False,
+        imputer_dict: Optional[dict] = None,
     ) -> None:
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
@@ -137,10 +137,10 @@ class ArbitraryNumberImputer(BaseImputer):
 
         self.variables = _check_variables_input_value(variables)
 
-        self.imputer_dict = imputer_dict
-
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
+
+        self.imputer_dict = imputer_dict
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

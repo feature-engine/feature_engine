@@ -69,14 +69,14 @@ class CyclicalFeatures(
     ----------
     {variables}
 
+    {return_empty}
+
     max_values: dict, default=None
         A dictionary with the maximum value of each variable to transform. Useful when
         the maximum value is not present in the dataset. If None, the transformer will
         automatically find the maximum value of each variable.
 
     {drop_original}
-
-    {return_empty}
 
     Attributes
     ----------
@@ -127,9 +127,9 @@ class CyclicalFeatures(
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         max_values: Optional[Dict[str, Union[int, float]]] = None,
         drop_original: Optional[bool] = False,
-        return_empty: bool = False,
     ) -> None:
 
         _check_numerical_dict(max_values)
@@ -137,9 +137,9 @@ class CyclicalFeatures(
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.max_values = max_values
         self.drop_original = drop_original
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

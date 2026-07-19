@@ -138,11 +138,11 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         q: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
         precision: int = 3,
-        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(q, int):
@@ -152,9 +152,9 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
 
         super().__init__(return_object, return_boundaries, precision)
 
-        self.q = q
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
+        self.q = q
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

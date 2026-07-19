@@ -187,6 +187,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         features_to_extract: Union[None, str, List[str]] = None,
         drop_original: bool = True,
         missing_values: str = "raise",
@@ -194,7 +195,6 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         yearfirst: bool = False,
         utc: Union[None, bool] = None,
         format: Union[None, str] = None,
-        return_empty: bool = False,
     ) -> None:
 
         if features_to_extract:
@@ -231,6 +231,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.drop_original = drop_original
         self.missing_values = missing_values
         self.dayfirst = dayfirst
@@ -238,7 +239,6 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         self.utc = utc
         self.features_to_extract = features_to_extract
         self.format = format
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

@@ -107,8 +107,8 @@ class LogTransformer(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
-        base: str = "e",
         return_empty: bool = False,
+        base: str = "e",
     ) -> None:
 
         if base not in ["e", "10"]:
@@ -117,8 +117,8 @@ class LogTransformer(BaseNumericalTransformer):
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
-        self.base = base
         self.return_empty = return_empty
+        self.base = base
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -331,9 +331,9 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         base: str = "e",
         C: Union[int, float, str, Dict[Union[str, int], Union[float, int]]] = "auto",
-        return_empty: bool = False,
     ) -> None:
 
         if base not in ["e", "10"]:
@@ -349,9 +349,9 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         _check_return_empty_is_bool(return_empty)
 
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.base = base
         self.C = C
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

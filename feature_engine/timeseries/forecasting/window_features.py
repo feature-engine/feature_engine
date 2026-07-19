@@ -158,6 +158,7 @@ class WindowFeatures(BaseForecastTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         window: Union[str, int, Callable, List[int], List[str]] = 3,
         min_periods: Union[int, None] = None,
         functions: Union[str, List[str]] = "mean",
@@ -167,7 +168,6 @@ class WindowFeatures(BaseForecastTransformer):
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
-        return_empty: bool = False,
     ) -> None:
 
         if isinstance(window, list) and len(window) != len(set(window)):
@@ -189,7 +189,7 @@ class WindowFeatures(BaseForecastTransformer):
             )
 
         super().__init__(
-            variables, missing_values, drop_original, drop_na, return_empty
+            variables, return_empty, missing_values, drop_original, drop_na
         )
 
         self.window = window

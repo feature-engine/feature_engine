@@ -180,15 +180,16 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
         ignore_format: bool = False,
         unseen: str = "ignore",
         smoothing: Union[int, float, str] = 0.0,
-        return_empty: bool = False,
     ) -> None:
         _check_return_empty_is_bool(return_empty)
 
         super().__init__(variables, missing_values, ignore_format)
+        self.return_empty = return_empty
         if (
             not isinstance(smoothing, (str, float, int))
             or isinstance(smoothing, str)
@@ -201,7 +202,6 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self.smoothing = smoothing
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         self.unseen = unseen
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """

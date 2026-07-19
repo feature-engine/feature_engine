@@ -155,6 +155,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     def __init__(
         self,
         variables: None | int | str | list[str | int] = None,
+        return_empty: bool = False,
         min_periods: int | None = None,
         functions: str | list[str] = "mean",
         periods: int = 1,
@@ -163,7 +164,6 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
-        return_empty: bool = False,
     ) -> None:
 
         if not isinstance(functions, (str, list)) or not all(
@@ -182,7 +182,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
             )
 
         super().__init__(
-            variables, missing_values, drop_original, drop_na, return_empty
+            variables, return_empty, missing_values, drop_original, drop_na
         )
 
         self.min_periods = min_periods
