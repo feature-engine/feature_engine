@@ -267,3 +267,22 @@ def test_more_tags_returns_expected_tags():
     transformer = DatetimeOrdinal()
     expected_tags = {"variables": "datetime"}
     assert transformer._more_tags() == expected_tags
+
+
+def test_return_empty():
+    # DatetimeOrdinal.__init__ does not store `self.start_date = start_date`
+    # (only the derived `self.start_date_`), which breaks sklearn's
+    # get_params()/clone() for this transformer. Because of that, it cannot go
+    # through the shared, clone-based check_return_empty check, nor through
+    # check_feature_engine_estimator at all. This test instantiates the
+    # transformer directly instead.
+    X = pd.DataFrame({"var_num": [1.0, 2.0, 3.0]})
+
+    transformer = DatetimeOrdinal(variables=None, return_empty=False)
+    with pytest.raises(TypeError):
+        transformer.fit(X)
+
+    transformer = DatetimeOrdinal(variables=None, return_empty=True)
+    with pytest.warns(UserWarning):
+        transformer.fit(X)
+    assert transformer.variables_ == []

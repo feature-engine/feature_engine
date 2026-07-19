@@ -6,6 +6,7 @@ from tests.estimator_checks.dataframe_for_checks import test_df
 from tests.estimator_checks.fit_functionality_checks import (
     check_error_if_y_not_passed,
     check_feature_names_in,
+    check_return_empty,
 )
 from tests.estimator_checks.get_feature_names_out_checks import (
     check_get_feature_names_out,
@@ -55,6 +56,8 @@ def check_feature_engine_estimator(estimator, needs_group: bool = False):
 
     - check that users enters permitted values to init parameters `missing_values`.
 
+    - checks correct functionality of parameter `return_empty`.
+
     **Checks based on transformer tags.**
 
     - checks that transformer raises error if y is not passed.
@@ -96,6 +99,9 @@ def check_feature_engine_estimator(estimator, needs_group: bool = False):
 
     if hasattr(estimator, "drop_original"):
         check_drop_original_variables(estimator)
+
+    if "return_empty" in estimator.get_params():
+        check_return_empty(estimator)
 
     return None
 

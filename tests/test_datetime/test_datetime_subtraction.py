@@ -6,7 +6,10 @@ from feature_engine.datetime import DatetimeSubtraction
 from tests.estimator_checks.estimator_checks import (
     check_raises_error_when_input_not_a_df,
 )
-from tests.estimator_checks.fit_functionality_checks import check_feature_names_in
+from tests.estimator_checks.fit_functionality_checks import (
+    check_feature_names_in,
+    check_return_empty,
+)
 from tests.estimator_checks.init_params_triggered_functionality_checks import (
     check_drop_original_variables,
 )
@@ -373,3 +376,4 @@ def test_common_tests(estimator):
     check_raises_error_when_input_not_a_df(estimator)
     check_feature_names_in(estimator)
     check_drop_original_variables(estimator)
+    check_return_empty(estimator)

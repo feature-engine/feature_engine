@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 import sklearn
 from sklearn.impute import SimpleImputer
@@ -56,3 +57,35 @@ def test_raises_error_when_no_transformer_passed():
     # this transformer needs an estimator as an input param.
     with pytest.raises(TypeError):
         SklearnTransformerWrapper()
+
+
+def test_return_empty():
+    # SklearnTransformerWrapper is not part of the check_feature_engine_estimator
+    # pipeline, so return_empty is tested directly here. The shared
+    # check_return_empty helper isn't reused because, unlike feature-engine's own
+    # transformers, this wrapper delegates the actual fitting to the wrapped
+    # sklearn transformer. When the wrapped transformer is e.g. StandardScaler,
+    # fitting it on zero columns raises its own (expected) error -- return_empty
+    # only controls whether *variable selection* raises, not what the wrapped
+    # transformer does afterwards with an empty selection.
+    X = pd.DataFrame({"var_cat": ["A", "B", "A"]})
+
+    transformer = SklearnTransformerWrapper(
+        transformer=StandardScaler(), variables=None, return_empty=False
+    )
+    with pytest.raises(TypeError):
+        transformer.fit(X)
+
+    transformer = SklearnTransformerWrapper(
+        transformer=StandardScaler(), variables=None, return_empty=True
+    )
+    with pytest.raises(ValueError):
+        # the "no numerical variables found" TypeError is bypassed, but
+        # StandardScaler itself cannot be fit on zero columns.
+        transformer.fit(X)
+    assert transformer.variables_ == []
+
+    # when wrapping a transformer that selects all variable types (e.g.
+    # OrdinalEncoder), find_all_variables always finds at least the 1 column
+    # present in a non-empty dataframe, so return_empty can't be exercised
+    # this way; there is no dataframe that reaches the "no variables" branch.
