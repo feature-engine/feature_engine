@@ -298,3 +298,4 @@ def test_return_empty():
     # after transformation
     dft = transformer.transform(X)
     pd.testing.assert_frame_equal(dft, X)
+    assert transformer.get_feature_names_out() == list(X.columns)

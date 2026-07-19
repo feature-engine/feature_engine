@@ -85,3 +85,4 @@ def check_return_empty(estimator):
     # after transformation
     dft = transformer.transform(df)
     pd.testing.assert_frame_equal(dft, df)
+    assert transformer.get_feature_names_out() == list(df.columns)
