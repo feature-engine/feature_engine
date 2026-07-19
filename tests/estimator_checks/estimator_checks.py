@@ -100,7 +100,7 @@ def check_feature_engine_estimator(estimator, needs_group: bool = False):
     if hasattr(estimator, "drop_original"):
         check_drop_original_variables(estimator)
 
-    if "return_empty" in estimator.get_params():
+    if hasattr(estimator, "return_empty"):
         check_return_empty(estimator)
 
     return None

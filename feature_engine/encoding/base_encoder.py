@@ -75,7 +75,6 @@ class CategoricalInitMixin:
     missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
-    return_empty=_return_empty_docstring,
 )
 class CategoricalInitMixinNA:
     """Shared initialization parameters across transformers. Sets and checks init
@@ -88,8 +87,6 @@ class CategoricalInitMixinNA:
     {missing_values}
 
     {ignore_format}
-
-    {return_empty}
     """
 
     def __init__(
@@ -97,7 +94,6 @@ class CategoricalInitMixinNA:
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         missing_values: str = "raise",
         ignore_format: bool = False,
-        return_empty: bool = False,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -112,12 +108,9 @@ class CategoricalInitMixinNA:
                 f"Got {ignore_format} instead."
             )
 
-        _check_return_empty_is_bool(return_empty)
-
         self.variables = _check_variables_input_value(variables)
         self.ignore_format = ignore_format
         self.missing_values = missing_values
-        self.return_empty = return_empty
 
 
 class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):

@@ -5,6 +5,9 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -172,9 +175,12 @@ class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
-        super().__init__(variables, missing_values, ignore_format, return_empty)
+        _check_return_empty_is_bool(return_empty)
+
+        super().__init__(variables, missing_values, ignore_format)
         self.encoding_method = encoding_method
         self.unseen = unseen
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
