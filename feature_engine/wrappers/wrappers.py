@@ -288,6 +288,12 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
 
+        if len(self.variables_) == 0:
+            # save input features
+            self.feature_names_in_ = X.columns.tolist()
+            self.n_features_in_ = X.shape[1]
+            return self
+
         self.transformer_.fit(X[self.variables_], y)
 
         if self.transformer_.__class__.__name__ in _SELECTORS:
@@ -338,6 +344,10 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
         # reorder df to match train set
         X = X[self.feature_names_in_]
+
+        # nothing to transform, e.g. when return_empty selected no variables
+        if len(self.variables_) == 0:
+            return X
 
         # Transformers that add features: creators
         if self.transformer_.__class__.__name__ in [

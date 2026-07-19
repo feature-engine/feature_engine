@@ -8,7 +8,6 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
-    _check_return_empty_is_bool,
 )
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
@@ -30,16 +29,13 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         self,
         missing_values: str = "raise",
         drop_original: bool = False,
-        return_empty: bool = False,
     ) -> None:
 
         _check_param_missing_values(missing_values)
         _check_param_drop_original(drop_original)
-        _check_return_empty_is_bool(return_empty)
 
         self.missing_values = missing_values
         self.drop_original = drop_original
-        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """
@@ -59,9 +55,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         # check variables are numerical
         if self.variables is None:
-            self.variables_ = find_numerical_variables(
-                X, return_empty=self.return_empty
-            )
+            self.variables_ = find_numerical_variables(X)
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 

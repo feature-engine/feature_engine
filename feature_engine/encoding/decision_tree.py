@@ -295,6 +295,14 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
         param_grid = self._assign_param_grid()
 
+        # if the list of variables to transform is empty, we
+        # stop the logic.
+        if isinstance(variables_, list) and len(variables_) == 0:
+            self.encoder_dict_ = {}
+            self.variables_ = variables_
+            self._get_feature_names_in(X)
+            return self
+
         encoder = OrdinalEncoder(
             encoding_method=self.encoding_method,
             variables=variables_,

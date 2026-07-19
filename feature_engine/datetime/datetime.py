@@ -356,6 +356,9 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             if self.missing_values == "raise":
                 _check_contains_na(X, self.variables_)
 
+            if len(self.variables_) == 0:
+                return X
+
             # convert datetime variables
             datetime_df = pd.concat(
                 [

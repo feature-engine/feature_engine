@@ -5,6 +5,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.scaling import MeanNormalizationScaler
+from tests.estimator_checks.fit_functionality_checks import check_return_empty
 
 
 def test_transforming_int_vars():
@@ -126,3 +127,7 @@ def test_constant_columns_error():
     transformer = MeanNormalizationScaler()
     with pytest.raises(ValueError, match=re.escape("Division by zero is not allowed")):
         transformer.fit(df)
+
+
+def test_check_return_empty():
+    check_return_empty(MeanNormalizationScaler())

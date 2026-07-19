@@ -3,6 +3,9 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -144,10 +147,13 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        super().__init__(return_object, return_boundaries, precision, return_empty)
+        _check_return_empty_is_bool(return_empty)
+
+        super().__init__(return_object, return_boundaries, precision)
 
         self.bins = bins
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

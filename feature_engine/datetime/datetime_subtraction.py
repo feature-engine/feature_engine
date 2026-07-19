@@ -5,6 +5,9 @@ import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -203,9 +206,12 @@ class DatetimeSubtraction(BaseCreation):
                     f"Got {new_variables_names} instead."
                 )
 
-        super().__init__(missing_values, drop_original, return_empty)
+        _check_return_empty_is_bool(return_empty)
+
+        super().__init__(missing_values, drop_original)
         self.variables = _check_variables_input_value(variables)
         self.reference = _check_variables_input_value(reference)
+        self.return_empty = return_empty
         self.new_variables_names = new_variables_names
         self.output_unit = output_unit
         self.dayfirst = dayfirst

@@ -7,6 +7,9 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -174,11 +177,14 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 f"Got {replace_with} instead."
             )
 
-        super().__init__(variables, missing_values, ignore_format, return_empty)
+        _check_return_empty_is_bool(return_empty)
+
+        super().__init__(variables, missing_values, ignore_format)
         self.tol = tol
         self.n_categories = n_categories
         self.max_n_categories = max_n_categories
         self.replace_with = replace_with
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

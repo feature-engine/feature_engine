@@ -319,6 +319,9 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         if self.missing_values == "raise":
             _check_optional_contains_na(X, self.variables_)
 
+        if len(self.variables_) == 0:
+            return X
+
         new_values = []
         for var in self.variables_:
             if self.missing_values == "impute":

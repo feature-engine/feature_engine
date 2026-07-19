@@ -228,6 +228,9 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # reorder variables to match train set
         X = X[self.feature_names_in_]
 
+        if len(self.variables_) == 0:
+            return X
+
         # create a copy(to protect original data)
         X_new = X.copy()
 
