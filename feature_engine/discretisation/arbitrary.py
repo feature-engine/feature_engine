@@ -13,9 +13,6 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_transformers import (
-    _return_empty_docstring,
-)
 from feature_engine._docstrings.init_parameters.discretisers import (
     _precision_docstring,
     _return_boundaries_docstring,
@@ -42,7 +39,6 @@ from feature_engine.tags import _return_tags
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
     fit_transform=_fit_transform_docstring,
-    return_empty=_return_empty_docstring,
 )
 class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     """

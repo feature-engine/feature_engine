@@ -138,12 +138,13 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         return_object: bool = False,
         return_boundaries: bool = False,
         precision: int = 7,
+        return_empty: bool = False,
     ):
 
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        super().__init__(return_object, return_boundaries, precision)
+        super().__init__(return_object, return_boundaries, precision, return_empty)
 
         self.bins = bins
         self.variables = _check_variables_input_value(variables)
