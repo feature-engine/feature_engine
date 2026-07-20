@@ -5,9 +5,12 @@
 ArbitraryOutlierCapper
 ======================
 
-The :class:`ArbitraryOutlierCapper()` caps the maximum or minimum values of a variable
+:class:`ArbitraryOutlierCapper()` caps the maximum or minimum values of a variable
 at an arbitrary value indicated by the user. The maximum or minimum values should be
 entered in a dictionary with the form {feature:capping value}.
+
+Python implementation
+---------------------
 
 Let's look at this in an example. First we load the Titanic dataset, and separate it
 into a train and a test set:
@@ -43,7 +46,7 @@ We see the resulting data below:
     686        3  female  22.000000      0      0   7.7250  Missing        Q
 
 Now, we set up the :class:`ArbitraryOutlierCapper()` indicating that we want to cap the
-variable 'age' at 50 and the variable 'Fare' at 200. We do not want to cap these variables
+variable 'age' at 50 and the variable 'fare' at 200. We do not want to cap these variables
 on the left side of their distribution.
 
 .. code:: python
@@ -60,18 +63,21 @@ dictionary to the attribute that will be used in the transformation:
 
 .. code:: python
 
-	capper.right_tail_caps_
+    capper.right_tail_caps_
+
+In the following output, we see that the dictionary we entered when setting up the transformer
+was assigned to a different attribute after fitting:
 
 .. code:: python
 
-	{'age': 50, 'fare': 200}
+    {'age': 50, 'fare': 200}
 
 Now, we can go ahead and cap the variables:
 
 .. code:: python
 
-	train_t = capper.transform(X_train)
-	test_t = capper.transform(X_test)
+    train_t = capper.transform(X_train)
+    test_t = capper.transform(X_test)
 
 If we now check the maximum values in the transformed data, they should be those entered
 in the dictionary:
@@ -79,6 +85,9 @@ in the dictionary:
 .. code:: python
 
     train_t[['fare', 'age']].max()
+
+In the following output, we see that the variables were capped at the requested maximum
+values:
 
 .. code:: python
 
@@ -90,56 +99,12 @@ in the dictionary:
 Additional resources
 --------------------
 
-You can find more details about the :class:`ArbitraryOutlierCapper()` functionality in the following
-notebook:
-
-- `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/outliers/ArbitraryOutlierCapper.ipynb>`_
-
 For more details about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
