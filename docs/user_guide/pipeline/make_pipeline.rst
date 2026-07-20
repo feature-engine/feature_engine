@@ -255,65 +255,19 @@ We see the 3 hr ahead energy demand prediction for each hour:
     4  6646.981390  6970.501840  7308.359237
 
 
+Additional resources
+--------------------
+
 To learn more about direct forecasting and how to create features, check out our courses:
 
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Forecasting with Machine Learning <https://www.courses.trainindata.com/p/forecasting-with-machine-learning>`_, online course.
 
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
+To learn more about feature engineering more generally, check out our course and book:
 
-   Feature Engineering for Time Series Forecasting
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/fwml.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
-
-   Forecasting with Machine Learning
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

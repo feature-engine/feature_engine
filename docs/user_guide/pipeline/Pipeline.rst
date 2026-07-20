@@ -469,33 +469,8 @@ We see the 6 hr ahead energy demand prediction for each hour:
 
 To learn more about direct forecasting and how to create features, check out our courses:
 
-
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-.. figure::  ../../images/fwml.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
-
-   Forecasting with Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Forecasting with Machine Learning <https://www.courses.trainindata.com/p/forecasting-with-machine-learning>`_, online course.
 
 Hyperparameter optimisation
 ---------------------------
@@ -603,48 +578,9 @@ Additional resources
 To learn more about feature engineering and data preprocessing, including missing data imputation, outlier removal or
 capping, variable transformation and encoding, check out our online course and book:
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
