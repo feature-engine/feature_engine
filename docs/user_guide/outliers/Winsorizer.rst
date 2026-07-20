@@ -66,6 +66,13 @@ Percentiles or quantiles
     The values used by default by :class:`Winsorizer()` are those suggested as optimal
     in statistical studies.
 
+The following image shows the four methods applied to a normal distribution. Their capping
+values are close together because, when the data is roughly symmetric and bell-shaped, the
+mean, median, standard deviation, IQR, and MAD all describe the same thing.
+
+.. figure::  ../../images/outlier-methods-normal.png
+   :align:   center
+
 
 Python implementation
 ---------------------
@@ -225,12 +232,12 @@ Below, we see the maximum values for each variable:
 
     {'GrLivArea': 2764.625, 'MasVnrArea': 425.0}
 
-:class:`Winsorizer()` has also a  `left_tail_caps_` attribute, which in this case should
+:class:`Winsorizer()` also has a `left_tail_caps_` attribute, which in this case should
 be empty. Let's check that out:
 
 .. code:: python
 
-	pipe.named_steps["outlier"].left_tail_caps_
+    pipe.named_steps["outlier"].left_tail_caps_
 
 Below, we see that the dictionary is empty:
 
@@ -311,12 +318,19 @@ Below, we see the maximum values for each variable:
     is too skewed, calculating some of the parameters of the IQR or MAD methods will not be
     possible and the transformer will raise an error. In those cases, use the percentiles instead.
 
+The image below illustrates why: on a skewed distribution, the Gaussian limits stretch far
+beyond where the actual data lies, even into negative values, while the IQR, MAD, and
+percentile methods stay anchored to the observations.
+
+.. figure::  ../../images/outlier-methods-skewed.png
+   :align:   center
+
 Setting up the stringency (param `fold`)
 ----------------------------------------
 
 By default, :class:`Winsorizer()` automatically determines the parameter `fold` based
 on the chosen `capping_method`. This parameter determines the multiplier for standard
-deviation, interquartile range (IQR), or Median Absolute Deviation (MAD), or
+deviation, interquartile range (IQR), or median absolute deviation (MAD), or
 sets the percentile at which to cap the variables.
 
 The default values for fold are as follows:

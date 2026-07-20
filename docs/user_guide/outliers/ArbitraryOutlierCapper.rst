@@ -46,7 +46,7 @@ We see the resulting data below:
     686        3  female  22.000000      0      0   7.7250  Missing        Q
 
 Now, we set up the :class:`ArbitraryOutlierCapper()` indicating that we want to cap the
-variable 'age' at 50 and the variable 'Fare' at 200. We do not want to cap these variables
+variable 'age' at 50 and the variable 'fare' at 200. We do not want to cap these variables
 on the left side of their distribution.
 
 .. code:: python
@@ -63,23 +63,23 @@ dictionary to the attribute that will be used in the transformation:
 
 .. code:: python
 
-	capper.right_tail_caps_
+    capper.right_tail_caps_
 
 In the following output, we see that the dictionary we entered when setting up the transformer
 was assigned to a different attribute after fitting:
 
 .. code:: python
 
-	{'age': 50, 'fare': 200}
+    {'age': 50, 'fare': 200}
 
 Now, we can go ahead and cap the variables:
 
 .. code:: python
 
-	train_t = capper.transform(X_train)
-	test_t = capper.transform(X_test)
+    train_t = capper.transform(X_train)
+    test_t = capper.transform(X_test)
 
-If we now check the maximum values in the transformed data -they should be those entered
+If we now check the maximum values in the transformed data, they should be those entered
 in the dictionary:
 
 .. code:: python

@@ -91,6 +91,23 @@ values would be those that lie before or after a certain percentile or quantiles
 
 The number of outliers identified by any of these methods will vary.
 
+The images below compare the four methods side by side. Each horizontal line marks the range
+of values a method would keep as inliers, with the whisker ends showing the lower and upper
+bounds and the dot marking the centre (the mean for the Gaussian method, the median for the
+rest).
+
+On a normal distribution, the four methods roughly agree:
+
+.. figure::  ../../images/outlier-methods-normal.png
+   :align:   center
+
+On a skewed distribution, they diverge sharply. The Gaussian bound is pulled into a range
+that doesn't reflect the real data, sometimes even into negative values, while the IQR, MAD,
+and percentile methods stay closer to where the observations actually lie:
+
+.. figure::  ../../images/outlier-methods-skewed.png
+   :align:   center
+
 .. note::
 
     These methods help detect extreme values in a distribution, but they can’t decide if
@@ -277,7 +294,7 @@ Finally, we can check the boxplot of the transformed variables to corroborate th
     plt.ylabel("variable values")
     plt.show()
 
-We can see in the boxplot that `sibsp` does no longer have outliers, but as `fare` was very skewed, when removing outliers,
+We can see in the boxplot that `sibsp` no longer has outliers, but as `fare` was very skewed, when removing outliers,
 the parameters of the IQR change, and we continue to see outliers:
 
 .. figure::  ../../images/boxplot-sibsp-fare-iqr.png
@@ -402,8 +419,8 @@ We'll cap age at the bottom 5 and top 95 percentile:
 
 .. code:: python
 
-    ot = OutlierTrimmer(capping_method='mad',
-                        tail='right',
+    ot = OutlierTrimmer(capping_method='quantiles',
+                        tail='both',
                         fold=0.05,
                         variables=['age'],
                         )
@@ -415,7 +432,7 @@ Let's inspect the maximum values beyond which data points will be considered out
 
 .. code:: python
 
-    ot_age.right_tail_caps_
+    ot.right_tail_caps_
 
 Values greater than the following will be considered outliers:
 
@@ -427,7 +444,7 @@ Let's inspect the minimum value beyond which data points will be considered outl
 
 .. code:: python
 
-    ot_age.left_tail_caps_
+    ot.left_tail_caps_
 
 Values smaller than the following will be considered outliers:
 
@@ -439,8 +456,8 @@ Let's transform the dataset and target:
 
 .. code:: python
 
-    train_t, y_train_t = ot_age.transform_x_y(X_train, y_train)
-    test_t, y_test_t = ot_age.transform_x_y(X_test, y_test)
+    train_t, y_train_t = ot.transform_x_y(X_train, y_train)
+    test_t, y_test_t = ot.transform_x_y(X_test, y_test)
 
 After removing the outliers from `age`, let's plot the resulting variable:
 
@@ -461,7 +478,7 @@ Pipeline
 --------
 
 The :class:`OutlierTrimmer()` removes observations from the predictor data sets. If we want to use this transformer
-within a Pipeline, we can't use Scikit-learn's pipeline because it can't readjust the target. But we can use
+within a Pipeline, we can't use scikit-learn's pipeline because it can't readjust the target. But we can use
 feature-engine's pipeline instead.
 
 Let's start by creating a pipeline that removes outliers and then encodes categorical variables:
@@ -575,7 +592,7 @@ That returns the following accuracy:
 
     0.7823343848580442
 
-We can obtain the names of the features after the trasnformation:
+We can obtain the names of the features after the transformation:
 
 .. code:: python
 
@@ -615,7 +632,7 @@ Setting up the stringency (param `fold`)
 
 By default, :class:`OutlierTrimmer()` automatically determines the parameter fold based
 on the chosen `capping_method`. This parameter determines the multiplier for standard
-deviation, interquartile range (IQR), or Median Absolute Deviation (MAD), or
+deviation, interquartile range (IQR), or median absolute deviation (MAD), or
 sets the percentile at which to cap the variables.
 
 The default values for fold are as follows:
@@ -623,10 +640,10 @@ The default values for fold are as follows:
 - 'gaussian': `fold` is set to 3.0;
 - 'iqr': `fold` is set to 1.5;
 - 'mad': `fold` is set to 3.29;
-- 'percentiles': `fold` is set to 0.05.
+- 'quantiles': `fold` is set to 0.05.
 
 You can manually adjust the fold value to make the outlier detection process more or less
-conservative, thus customizing the extent of outlier trimming.
+conservative, thus customising the extent of outlier trimming.
 
 Additional resources
 --------------------
