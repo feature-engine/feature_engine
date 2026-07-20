@@ -45,11 +45,11 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
     variables at 0, and rescale the distribution between -1 and 1.
 
     A list of variables can be passed as an argument. Alternatively, the transformer
-    will automatmypy featureically select and transform all variables of type numeric.
+    will automatically select and transform all variables of type numeric.
 
     Constant variables will raise an error due to division by zero.
 
-    More details in the :ref:`User Guide <mean_normalization_scaler>`.
+    More details in the :ref:`User Guide <mean_normalisation_scaler>`.
 
 
     Parameters

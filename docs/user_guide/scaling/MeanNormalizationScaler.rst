@@ -1,20 +1,31 @@
-.. _mean_normalization_scaler:
+.. _mean_normalisation_scaler:
 
 .. currentmodule:: feature_engine.scaling
 
 MeanNormalizationScaler
 =======================
 
-:class:`MeanNormalizationScaler()` scales variables using mean normalization. With mean normalization,
-we center the distribution around 0, and rescale the distribution to the variable's value range,
-so that its values vary between -1 and 1. This is accomplished by subtracting the mean of the feature
-and then dividing by its range (i.e., the difference between the maximum and minimum values).
+With mean normalisation, we centre the variable distribution around 0 and rescale the
+variable's values so that they vary between -1 and 1.
 
-The :class:`MeanNormalizationScaler()` only works with non-constant numerical variables.
-If the variable is constant, the scaler will raise an error.
+This is accomplished by subtracting the mean of the feature and then dividing by its
+range (i.e., the difference between the maximum and minimum values).
 
-Python example
---------------
+Mean normalisation is given by the following formula:
+
+.. math::
+
+    X' = (X - Mean(X)) / (Max(X) - Min(X))
+
+:class:`MeanNormalizationScaler()` scales variables using mean normalisation.
+
+.. note::
+
+    :class:`MeanNormalizationScaler()` only works with non-constant numerical variables.
+    If the variable is constant, the scaler will raise an error.
+
+Python implementation
+---------------------
 
 We'll show how to use :class:`MeanNormalizationScaler()` through a toy dataset. Let's create
 a toy dataset:
@@ -47,7 +58,7 @@ The dataset looks like this:
     3   jack     Bristol   18    2.00    0.6 2020-02-24 00:03:00
 
 We see that the only numerical features in this dataset are **Age**, **Marks**, and **Height**. We want
-to scale them using mean normalization.
+to scale them using mean normalisation.
 
 First, let's make a list with the variable names:
 
@@ -69,8 +80,8 @@ Now, let's set up :class:`MeanNormalizationScaler()`:
     # fit the scaler
     scaler.fit(df)
     
-The scaler learns the mean of every column in *vars* and their respective range.
-Note that we can access these values in the following way:
+With the method `fit()`, the scaler learned the mean of every variable in `vars` and
+their respective value range. We can access these values in the following way:
 
 .. code:: python
 
@@ -103,7 +114,7 @@ In the following output, we can see the scaled variables:
     2  krish   Liverpool -0.166667  0.141304 -0.166667 2020-02-24 00:02:00
     3   jack     Bristol -0.500000  0.576087 -0.500000 2020-02-24 00:03:00
 
-We can restore the data to itsoriginal values using the inverse transformation:
+We can restore the data to its original values using the inverse transformation:
 
 .. code:: python
 
@@ -111,7 +122,7 @@ We can restore the data to itsoriginal values using the inverse transformation:
     df = scaler.inverse_transform(df)
     print(df)
 
-In the following data, we see the scaled variables returned to their oridinal representation:
+In the following data, we see the scaled variables returned to their original representation:
 
 .. code:: python
 
@@ -125,52 +136,12 @@ In the following data, we see the scaled variables returned to their oridinal re
 Additional resources
 --------------------
 
-For more details about this and other feature engineering methods check out
-these resources:
+For tutorials about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
