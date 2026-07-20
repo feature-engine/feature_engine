@@ -5,7 +5,7 @@
 MeanNormalizationScaler
 =======================
 
-With mean normalisation, we center the variable distribution at around 0 and rescale the
+With mean normalisation, we centre the variable distribution around 0 and rescale the
 variable's values so that they vary between -1 and 1.
 
 This is accomplished by subtracting the mean of the feature and then dividing by its
@@ -15,7 +15,7 @@ Mean normalisation is given by the following formula:
 
 .. math::
 
-    X' = (X - Mean(X)) / Max(X) - Min(X)
+    X' = (X - Mean(X)) / (Max(X) - Min(X))
 
 :class:`MeanNormalizationScaler()` scales variables using mean normalisation.
 
@@ -122,7 +122,7 @@ We can restore the data to its original values using the inverse transformation:
     df = scaler.inverse_transform(df)
     print(df)
 
-In the following data, we see the scaled variables returned to their oridinal representation:
+In the following data, we see the scaled variables returned to their original representation:
 
 .. code:: python
 

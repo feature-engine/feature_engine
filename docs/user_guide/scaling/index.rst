@@ -44,9 +44,9 @@ When to apply scaling
 
 - **Dimensionality reduction:** Principal component analysis (PCA) and other dimensionality reduction
   methods are distance based, and as such, sensitive to the scale of the features (more details in our
-  course `Clustering and Dimensionality Reduction <https://www.trainindata.com/clustering-dimensionality-reduction>`_.
+  course `Clustering and Dimensionality Reduction <https://www.trainindata.com/p/clustering-and-dimensionality-reduction>`_.)
 
-When scaling Is not necessary
+When scaling is not necessary
 -----------------------------
 
 Not all algorithms require scaling. For example, tree-based algorithms (like Decision Trees,
