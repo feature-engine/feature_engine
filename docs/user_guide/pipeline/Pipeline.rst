@@ -16,7 +16,6 @@ available in these transformers, to adjust the target variable to the remaining 
 
 The Pipeline serves various functions in this context:
 
-
 **Simplicity and encapsulation:**
 
 You need only call the `fit` and `predict` functions once on your data to fit an entire sequence of estimators.
@@ -25,9 +24,9 @@ You need only call the `fit` and `predict` functions once on your data to fit an
 
 Grid search and random search can be performed over hyperparameters of all estimators in the pipeline simultaneously.
 
-**Safety**
+**Safety:**
 
-Using a pipeline prevent the leakage of statistics from test data into the trained model during cross-validation, by
+Using a pipeline prevents the leakage of statistics from test data into the trained model during cross-validation, by
 ensuring that the same data is used to fit the transformers and predictors.
 
 Pipeline functions
@@ -37,7 +36,8 @@ Calling the `fit` function on the pipeline, is the same as calling `fit` on each
 transforming the input data and forwarding it to the subsequent step.
 
 The pipeline will have all the methods present in the final estimator within it. For instance, if the last estimator is
-a classifier, the Pipeline can function as a classifier. Similarly, if the last estimator is a transformer, the pipeline inherits this functionality as well.
+a classifier, the pipeline can function as a classifier. Similarly, if the last estimator is a transformer, the pipeline
+inherits this functionality as well.
 
 Setting up a Pipeline
 ---------------------
@@ -46,7 +46,7 @@ The :class:`Pipeline` is constructed utilising a list of (key, value) pairs, whe
 name for the step, and the value denotes an estimator or a transformer object.
 
 In the following example, we set up a :class:`Pipeline` that drops missing data, then replaces categories with ordinal
-numbers, and finally fits a Lasso regression model.
+numbers, and finally fits a Lasso regression model. Let's start by importing the classes and functions we need:
 
 .. code:: python
 
@@ -58,6 +58,10 @@ numbers, and finally fits a Lasso regression model.
 
     from sklearn.linear_model import Lasso
 
+Next, we create a toy dataframe with missing data in a numerical and a categorical variable, plus a target variable:
+
+.. code:: python
+
     X = pd.DataFrame(
         dict(
             x1=[2, 1, 1, 0, np.nan],
@@ -66,6 +70,10 @@ numbers, and finally fits a Lasso regression model.
     )
     y = pd.Series([1, 2, 3, 4, 5])
 
+Now, we assemble the 3 steps into a :class:`Pipeline`:
+
+.. code:: python
+
     pipe = Pipeline(
         [
             ("drop", DropMissingData()),
@@ -73,7 +81,11 @@ numbers, and finally fits a Lasso regression model.
             ("lasso", Lasso(random_state=10)),
         ]
     )
-    # predict
+
+Finally, we fit the pipeline and use it to make predictions:
+
+.. code:: python
+
     pipe.fit(X, y)
     preds_pipe = pipe.predict(X)
     preds_pipe
@@ -97,6 +109,8 @@ For example, this notation extracts the first step of the pipeline:
 
    pipe[:1]
 
+This returns a new pipeline containing only the first step:
+
 .. code:: python
 
    Pipeline(steps=[('drop', DropMissingData())])
@@ -107,6 +121,8 @@ This notation extracts the first **two** steps of the pipeline:
 .. code:: python
 
    pipe[:2]
+
+Similarly, this returns a pipeline with the first two steps:
 
 .. code:: python
 
@@ -119,6 +135,8 @@ This notation extracts the last step of the pipeline:
 .. code:: python
 
    pipe[-1:]
+
+And this returns a pipeline with only the last step:
 
 .. code:: python
 
@@ -158,7 +176,8 @@ Finding feature names in a Pipeline
 The :class:`Pipeline` includes a `get_feature_names_out()` method, similar to other transformers. By employing
 pipeline slicing, you can obtain the feature names entering each step.
 
-Let's set up a Pipeline that adds new features to the dataset to make this more interesting:
+Let's set up a Pipeline that adds new features to the dataset, to make this more interesting. As before, we start
+with the imports:
 
 .. code:: python
 
@@ -170,6 +189,10 @@ Let's set up a Pipeline that adds new features to the dataset to make this more 
 
     from sklearn.linear_model import Lasso
 
+We create the same toy dataframe and target as before:
+
+.. code:: python
+
     X = pd.DataFrame(
         dict(
             x1=[2, 1, 1, 0, np.nan],
@@ -177,6 +200,10 @@ Let's set up a Pipeline that adds new features to the dataset to make this more 
         )
     )
     y = pd.Series([1, 2, 3, 4, 5])
+
+This time, we set up the pipeline with a one-hot encoder instead of an ordinal encoder, and fit it to the data:
+
+.. code:: python
 
     pipe = Pipeline(
         [
@@ -194,6 +221,8 @@ In the first step of the pipeline, no features are added, we just drop rows with
 
     pipe[:1].get_feature_names_out()
 
+Indeed, we obtain the original variable names:
+
 .. code:: python
 
     ['x1', 'x2']
@@ -204,6 +233,8 @@ should see the binary variables:
 .. code:: python
 
     pipe[:2].get_feature_names_out()
+
+And that's exactly what we find:
 
 .. code:: python
 
@@ -217,7 +248,7 @@ Accessing nested parameters
 ---------------------------
 
 We can re-define, or re-set the parameters of the transformers and estimators within the pipeline. This is done under
-the hood by the Grid search and random search. But in case you need to change a parameter in a step of the
+the hood by grid search and random search. But in case you need to change a parameter in a step of the
 :class:`Pipeline`, this is how you do it:
 
 .. code:: python
@@ -227,14 +258,14 @@ the hood by the Grid search and random search. But in case you need to change a 
 Here, we changed the alpha of the lasso regression algorithm to 10.
 
 
-Best use: Dropping rows during data preprocessing
--------------------------------------------------
+Best use: dropping rows during data preprocessing
+--------------------------------------------------
 
 Feature-engine's :class:`Pipeline` was designed to support transformers that remove rows from the dataset, like
 `DropMissingData`, `OutlierTrimmer`, `LagFeatures` and `WindowFeatures`.
 
 We saw earlier in this page how to use :class:`Pipeline` with `DropMissingData`. Let's now take a look at how to
-combine :class:`Pipeline` with `LagFeatures` and `WindowFeaures` to do multiple step forecasting.
+combine :class:`Pipeline` with `LagFeatures` and `WindowFeatures` to do multiple step forecasting.
 
 We start by making imports:
 
@@ -259,12 +290,18 @@ We'll use the Australia electricity demand dataset described here:
 Godahewa, Rakshitha, Bergmeir, Christoph, Webb, Geoff, Hyndman, Rob, & Montero-Manso, Pablo. (2021). Australian
 Electricity Demand Dataset (Version 1) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.4659727
 
+Let's load the data and drop the `Industrial` column, which we won't use in this example:
+
 .. code:: python
 
     url = "https://raw.githubusercontent.com/tidyverts/tsibbledata/master/data-raw/vic_elec/VIC2015/demand.csv"
     df = pd.read_csv(url)
 
     df.drop(columns=["Industrial"], inplace=True)
+
+The date and time of each reading are stored as integers, so next, we convert them into an actual datetime index:
+
+.. code:: python
 
     # Convert the integer Date to an actual date with datetime type
     df["date"] = df["Date"].apply(
@@ -276,6 +313,10 @@ Electricity Demand Dataset (Version 1) [Data set]. Zenodo. https://doi.org/10.52
         pd.to_timedelta((df["Period"] - 1) * 30, unit="m")
 
     df.dropna(inplace=True)
+
+Finally, we keep only the demand column, rename it, and resample the data to an hourly frequency:
+
+.. code:: python
 
     # Rename columns
     df = df[["date_time", "OperationalLessIndustrial"]]
@@ -348,7 +389,7 @@ Next, we split the data into a training set and a test set:
     X_test  = df.loc[begin_test:]
     y_test = y.loc[begin_test:]
 
-Next, we set up `LagFeatures` and `WindowFeatures` to create features from lags and windows:
+Next, we set up `LagFeatures` to create 6 lagged versions of the demand variable:
 
 .. code:: python
 
@@ -359,6 +400,9 @@ Next, we set up `LagFeatures` and `WindowFeatures` to create features from lags 
         drop_na=True,
     )
 
+And we set up `WindowFeatures` to add the rolling 3-hour mean of the demand variable:
+
+.. code:: python
 
     winf = WindowFeatures(
         variables=["demand"],
@@ -376,7 +420,7 @@ We wrap the lasso regression within the multioutput regressor to predict multipl
 
     lasso = MultiOutputRegressor(Lasso(random_state=0, max_iter=10))
 
-Now, we assemble the steps in the :class:`Pipeline` and fit it to the training data:
+Now, we assemble the 3 steps into the :class:`Pipeline`:
 
 .. code:: python
 
@@ -387,6 +431,10 @@ Now, we assemble the steps in the :class:`Pipeline` and fit it to the training d
             ("lasso", lasso),
         ]
     ).set_output(transform="pandas")
+
+Finally, we fit the pipeline to the training data:
+
+.. code:: python
 
     pipe.fit(X_train, y_train)
 
@@ -477,7 +525,7 @@ Hyperparameter optimisation
 
 We can optimise the hyperparameters of the transformers and the estimators from a pipeline simultaneously.
 
-We'll start by loading the titanic dataset:
+We'll start with the imports:
 
 .. code:: python
 
@@ -490,12 +538,19 @@ We'll start by loading the titanic dataset:
     from sklearn.model_selection import train_test_split, GridSearchCV
     from sklearn.preprocessing import StandardScaler
 
+Next, we load the titanic dataset:
+
+.. code:: python
+
     X, y = load_titanic(
         return_X_y_frame=True,
         predictors_only=True,
         handle_missing=True,
     )
 
+And we split it into a training set and a test set:
+
+.. code:: python
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=0,
@@ -556,6 +611,8 @@ And we can see the best hyperparameters for each step:
 
     grid.best_params_
 
+This returns the following combination of hyperparameters:
+
 .. code:: python
 
     {'enc__top_categories': None,
@@ -567,6 +624,8 @@ And the best accuracy obtained with these hyperparameters:
 .. code:: python
 
     grid.best_score_
+
+Which is:
 
 .. code:: python
 
