@@ -22,10 +22,11 @@ example, we obtain the variable `age` by subtracting `date_of_application` from
 variables in the dataset any more. Thus, we can add :class:`DropFeatures()` in the Pipeline
 to have these removed.
 
-**Example**
+Python implementation
+---------------------
 
 Let's see how to use :class:`DropFeatures()` in an example with the Titanic dataset. We
-first load the data and separate it into train and test:
+start with the imports:
 
 .. code:: python
 
@@ -33,23 +34,26 @@ first load the data and separate it into train and test:
     from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropFeatures
 
+Next, we load the Titanic dataset and separate it into a train set and a test set:
+
+.. code:: python
+
     X, y = load_titanic(
         return_X_y_frame=True,
         handle_missing=True,
     )
 
-
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=0,
     )
-
-    print(X_train.head())
 
 Now, we go ahead and print the dataset column names:
 
 .. code:: python
 
     X_train.columns
+
+We see the following variables in the dataset:
 
 .. code:: python
 
@@ -85,6 +89,8 @@ been reduced:
 .. code:: python
 
     train_t.columns
+
+The 6 variables that we indicated are no longer in the dataframe:
 
 .. code:: python
 

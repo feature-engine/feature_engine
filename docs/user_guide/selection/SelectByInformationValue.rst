@@ -60,8 +60,9 @@ The table below presents a general framework for using IV to determine a variabl
 Table taken from `listendata <https://www.listendata.com/2015/03/weight-of-evidence-woe-and-information.html>`_.
 
 
-Example
--------
+Python implementation
+----------------------
+
 Let's see how to use this transformer to select variables from UC Irvine's credit approval data set which can
 be found `here`_. This dataset concerns credit card applications. All attribute names and values have been changed
 to meaningless symbols to protect confidentiality.
@@ -150,10 +151,16 @@ predictive power.
 With :code:`fit()`, the transformer:
 
  - calculates the WoE for each variable
- - calculates the the IV for each variable
+ - calculates the IV for each variable
  - identifies the variables that have an IV score below the threshold
 
 In the attribute :code:`variables_`, we find the variables that were evaluated:
+
+.. code:: python
+
+    sel.variables_
+
+These are the 7 variables that were evaluated:
 
 .. code:: python
 
@@ -165,9 +172,19 @@ In the attribute :code:`features_to_drop_`, we find the variables that were not 
 
     sel.features_to_drop_
 
+These are the 3 variables that do not meet the IV threshold:
+
+.. code:: python
+
     ['A1', 'A12', 'A13']
 
-The attribute :code:`information_values_` shows the IV scores for each variable.
+The attribute :code:`information_values_` shows the IV scores for each variable:
+
+.. code:: python
+
+    sel.information_values_
+
+Below we see the IV score for each variable:
 
 .. code:: python
 
@@ -182,7 +199,14 @@ We see that the transformer correctly selected the features that have an IV scor
 than the :code:`threshold` which was set to 0.2.
 
 The transformer also has the method `get_support` with similar functionality to scikit-learn's
-selectors method. If you execute `sel.get_support()`, you obtain:
+selectors method:
+
+.. code:: python
+
+    sel.get_support()
+
+If you execute the command above, you obtain a boolean vector with `True` for the features
+that are retained, and `False` for those that are dropped:
 
 .. code:: python
 
@@ -197,6 +221,8 @@ With :code:`transform()`, we can go ahead and drop the features that do not meet
     Xtr = sel.transform(X_test)
 
     Xtr.head()
+
+We see the resulting dataframe below:
 
 .. code:: python
 
@@ -216,6 +242,10 @@ And, finally, we can also obtain the names of the features in the final transfor
 .. code:: python
 
     sel.get_feature_names_out()
+
+We obtain the names of the retained features:
+
+.. code:: python
 
     ['A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A14', 'A15']
 

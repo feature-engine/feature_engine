@@ -41,14 +41,15 @@ it offers a straightforward way of reducing the feature subset.
 
 Be mindful, though, that depending on the context, quasi-constant variables could be useful.
 
-**Example**
+Python implementation
+---------------------
 
-Let’s see how to use :class:`DropConstantFeatures()` by using the Titanic dataset. This dataset
+Let's see how to use :class:`DropConstantFeatures()` by using the Titanic dataset. This dataset
 does not contain constant or quasi-constant variables, so for the sake of the demonstration,
 we will consider quasi-constant those features that show the same value in more than 70% of
 the rows.
 
-We first load the data and separate it into a training set and a test set:
+We start with the imports:
 
 .. code:: python
 
@@ -56,11 +57,14 @@ We first load the data and separate it into a training set and a test set:
     from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropConstantFeatures
 
+Next, we load the Titanic dataset and separate it into a training set and a test set:
+
+.. code:: python
+
     X, y = load_titanic(
         return_X_y_frame=True,
         handle_missing=True,
     )
-
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=0,
@@ -89,6 +93,8 @@ The variables to drop are stored in the attribute `features_to_drop_`:
 
     transformer.features_to_drop_
 
+These are the 4 features that show the same value in more than 70% of the rows:
+
 .. code:: python
 
     ['parch', 'cabin', 'embarked', 'body']
@@ -100,6 +106,8 @@ the observations as follows:
 .. code:: python
 
     X_train['embarked'].value_counts(normalize = True)
+
+We obtain the following proportions:
 
 .. code:: python
 
@@ -117,6 +125,8 @@ Let's now evaluate `parch`:
 .. code:: python
 
     X_train['parch'].value_counts(normalize = True)
+
+We obtain the following proportions:
 
 .. code:: python
 
@@ -191,6 +201,9 @@ will be dropped.
 .. code:: python
 
     transformer.get_support()
+
+We obtain a boolean vector with `True` for the features that will be retained, and
+`False` for those that will be dropped:
 
 .. code:: python
 

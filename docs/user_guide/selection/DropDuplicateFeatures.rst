@@ -29,10 +29,11 @@ works with numerical and categorical features alike.
 
 So let’s see how to set up :class:`DropDuplicateFeatures()`.
 
-**Example**
+Python implementation
+---------------------
 
 In this demo, we will use the Titanic dataset and introduce a few duplicated features
-manually:
+manually. We start with the imports:
 
 .. code:: python
 
@@ -40,6 +41,10 @@ manually:
     from sklearn.model_selection import train_test_split
     from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropDuplicateFeatures
+
+Next, we load the Titanic dataset and manually duplicate 3 of its columns:
+
+.. code:: python
 
     data = load_titanic(
         handle_missing=True,
@@ -107,6 +112,8 @@ attribute:
 
     transformer.features_to_drop_
 
+These are the 3 duplicated features that will be removed:
+
 .. code:: python
 
     {'age_dup', 'sex_dup', 'sibsp_dup'}
@@ -125,16 +132,20 @@ the duplicated features are not there any more:
 
     train_t.columns
 
+We confirm that the duplicated features are gone:
+
 .. code:: python
 
     Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'cabin', 'embarked'], dtype='object')
 
 The transformer also stores the groups of duplicated features, which is useful for data
-analysis and validation.
+analysis and validation:
 
 .. code:: python
 
     transformer.duplicated_feature_sets_
+
+We see each original feature grouped together with the duplicates that were found for it:
 
 .. code:: python
 

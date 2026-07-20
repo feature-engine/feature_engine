@@ -11,9 +11,9 @@ three, four, or even more features within the dataset. Consequently, determining
 features to retain and which ones to eliminate becomes a crucial consideration.
 
 Deciding which features to retain from a correlated group involves several strategies,
-such us:
+such as:
 
-1. **Model Performance**: Some features returns model with higher performance than others.
+1. **Model Performance**: Some features result in models with higher performance than others.
 
 2. **Variability and Cardinality**: Features with higher variability or cardinality often provide more information about the target variable.
 
@@ -21,7 +21,7 @@ such us:
 
 4. **Correlation with Target**: Features that show a stronger correlation with the target variable are often more predictive and should be prioritised.
 
-We can apply this selection strategies out of the box with the :class:`SmartCorrelatedSelection`.
+We can apply these selection strategies out of the box with :class:`SmartCorrelatedSelection`.
 
 From a group of correlated variables, the :class:`SmartCorrelatedSelection` will retain
 the variable with:
@@ -72,14 +72,18 @@ the one with the highest absolute correlation.
 Variance
 ~~~~~~~~
 
-Let's see how to use :class:`SmartCorrelatedSelection` in a toy example. Let's create a
-toy dataframe with 4 correlated features:
+Let's see how to use :class:`SmartCorrelatedSelection` in a toy example. We start with
+the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
     from feature_engine.selection import SmartCorrelatedSelection
+
+Next, we create a toy dataframe with 4 correlated features:
+
+.. code:: python
 
     # make dataframe with some correlated variables
     def make_data():
@@ -187,16 +191,20 @@ The features that will be removed from the dataset are stored in the following a
 
     tr.features_to_drop_
 
+These are the 4 features that will be dropped from the dataset:
+
 .. code:: python
 
    ['var_6', 'var_4', 'var_9', 'var_0']
 
 If we now go ahead and print the transformed data, we see that the correlated features
-have been removed.
+have been removed:
 
 .. code:: python
 
     print(Xt.head())
+
+Below we see the resulting dataframe:
 
 .. code:: python
 
@@ -221,9 +229,7 @@ Performance
 Let's now select the feature that returns a machine learning model with the highest
 performance, from each group. We'll use a decision tree.
 
-We start by creating a toy dataframe:
-
-
+We start with the imports:
 
 .. code:: python
 
@@ -231,6 +237,10 @@ We start by creating a toy dataframe:
     from sklearn.datasets import make_classification
     from sklearn.tree import DecisionTreeClassifier
     from feature_engine.selection import SmartCorrelatedSelection
+
+Next, we create a toy dataframe:
+
+.. code:: python
 
     # make dataframe with some correlated variables
     def make_data():
@@ -291,7 +301,7 @@ We can find the feature that will be retained as the key in the following attrib
 
     tr.correlated_feature_dict_
 
-The variables `var_0` and `var_7` will be retained, and the remaining ones will be dropped.
+The variables `var_0` and `var_7` will be retained, and the remaining ones will be dropped:
 
 .. code:: python
 
@@ -303,6 +313,8 @@ We find the variables that will be dropped in the following attribute:
 
     tr.features_to_drop_
 
+These are the 4 features that will be dropped from the dataset:
+
 .. code:: python
 
     ['var_8', 'var_4', 'var_6', 'var_9']
@@ -312,6 +324,8 @@ And now we can print the resulting dataframe after the transformation:
 .. code:: python
 
     print(Xt.head())
+
+Below we see the resulting dataframe:
 
 .. code:: python
 
@@ -336,6 +350,8 @@ we can obtain the names of the features in the resulting dataframe as follows:
 
     tr.get_feature_names_out()
 
+We obtain the names of the features that were retained:
+
 .. code:: python
 
     ['var_0', 'var_1', 'var_2', 'var_3', 'var_5', 'var_7', 'var_10', 'var_11']
@@ -346,6 +362,9 @@ the dataframe:
 .. code:: python
 
     tr.get_support()
+
+We obtain a boolean vector with `True` for the features that are retained, and `False`
+for those that are dropped:
 
 .. code:: python
 
@@ -358,13 +377,17 @@ Correlation with Target
 Finally, let's select the feature that shows the strongest correlation with the target
 variable from each group.
 
-Let's create another toy dataframe with 4 features and a target variable:
+We start with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
     from feature_engine.selection import SmartCorrelatedSelection
+
+Next, we create another toy dataframe with 4 features and a target variable:
+
+.. code:: python
 
     # make dataframe with some correlated variables
     def make_data():
@@ -415,10 +438,10 @@ Let's explore the correlated feature groups:
     tr.correlated_feature_sets_
 
 Similarly to the previous examples, we see that the groups of correlated features are
-slightly different. Here, what happened is that the features were ordered first based 
+slightly different. Here, what happened is that the features were ordered first based
 on their absolute correlation with the target, before carrying on the search of correlation
-with the other features in the dataset. Like this, the first feature of the group is retained, 
-which is the one with highest correlation with the target.
+with the other features in the dataset. Like this, the first feature of the group is retained,
+which is the one with highest correlation with the target:
 
 .. code:: python
 
@@ -430,7 +453,7 @@ We can find the features that will be retained as keys in the following dictiona
 
     tr.correlated_feature_dict_
 
-The variables `var_7` and `var_0` will be retained, and the remaining ones will be dropped.
+The variables `var_7` and `var_0` will be retained, and the remaining ones will be dropped:
 
 .. code:: python
 
@@ -441,6 +464,8 @@ We can check the correlation of the features with the target variable as follows
 .. code:: python
 
     print(X.corrwith(y).abs())
+
+We see the correlation of every feature with the target below:
 
 .. code:: python
 
@@ -466,6 +491,8 @@ the `var_8`, which is why `var_0` was retained:
 
     print(X.corrwith(y).abs().loc[['var_0', 'var_8']])
 
+We confirm the difference below:
+
 .. code:: python
 
     var_0    0.270913
@@ -478,6 +505,8 @@ The variables that will be dropped are available in the following attribute:
 
     tr.features_to_drop_
 
+These are the 4 features that will be dropped from the dataset:
+
 .. code:: python
 
     ['var_4', 'var_6', 'var_9', 'var_8']
@@ -487,6 +516,8 @@ And now we can print the resulting dataframe after the transformation:
 .. code:: python
 
     print(Xt.head())
+
+Below we see the resulting dataframe:
 
 .. code:: python
 
@@ -510,6 +541,8 @@ We can also obtain the names of the features in the resulting dataframe as follo
 
     tr.get_feature_names_out()
 
+We obtain the names of the features that were retained:
+
 .. code:: python
 
     ['var_0', 'var_1', 'var_2', 'var_3', 'var_5', 'var_7', 'var_10', 'var_11']
@@ -520,6 +553,9 @@ the dataframe:
 .. code:: python
 
     tr.get_support()
+
+We obtain a boolean vector with `True` for the features that are retained, and `False`
+for those that are dropped:
 
 .. code:: python
 

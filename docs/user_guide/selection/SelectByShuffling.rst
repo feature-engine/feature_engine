@@ -24,11 +24,11 @@ The algorithm operates as follows:
 6. If the performance drops beyond a predefined threshold, retain the feature.
 7. Repeat steps 3-6 for each feature until all have been evaluated.
 
-Python Example
---------------
+Python implementation
+---------------------
 
 Let's see how to use :class:`SelectByShuffling()` with the diabetes dataset that comes
-with scikit-learn. First, we load the data:
+with scikit-learn. We start with the imports:
 
 .. code:: python
 
@@ -37,6 +37,10 @@ with scikit-learn. First, we load the data:
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
     from feature_engine.selection import SelectByShuffling
+
+Next, we load the diabetes dataset:
+
+.. code:: python
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
     print(X.head())
@@ -80,7 +84,7 @@ the performance drop is bigger than the mean drop caused by all features.
         random_state=0,
     )
 
-The `fit`()` method identifies important variables—those whose value permutations lead
+The `fit()` method identifies important variables—those whose value permutations lead
 to a decline in model performance. The `transform()` method then removes these variables
 from the dataset.
 

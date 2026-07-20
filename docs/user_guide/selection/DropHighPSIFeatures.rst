@@ -58,7 +58,7 @@ When working with the PSI it is worth highlighting the following:
 - The PSI is a suitable metric for numerical features (i.e., either continuous or with high cardinality).
 - For categorical or discrete features, the change in distributions is better assessed with Chi-squared.
 
-he PSI is symmetric. That means that switching the order of the basis and test dataframes
+The PSI is symmetric. That means that switching the order of the basis and test dataframes
 in the PSI calculation will lead to identical values. However, in this implementation, the interval
 limits used to calculate the PSI are inferred from the basis dataframe. Hence, switching the
 order of the dataframes will lead to different interval limits, which in turn may result in
@@ -208,8 +208,8 @@ values of the dataframe index. This might be a good option if the index contains
 values or if splitting just based on `split_frac`.
 
 
-Examples
---------
+Python implementation
+----------------------
 
 The versatility of the class lies in the different options to split the input dataframe
 in a reference or basis data set with the "expected" distributions, and a test set which
@@ -229,8 +229,7 @@ indicated proportion. The proportion is indicated in the `split_frac` parameter.
 the option to select a variable in `split_col` or leave it to None. In the latter, the
 dataframe index will be used to split.
 
-Let's first create a toy dataframe containing 5 random variables and 1 variable
-with a shift in its distribution (*var_3* in this case).
+We start with the imports:
 
 .. code:: python
 
@@ -239,6 +238,11 @@ with a shift in its distribution (*var_3* in this case).
 
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
+
+Next, we create a toy dataframe containing 5 random variables and 1 variable
+with a shift in its distribution (*var_3* in this case):
+
+.. code:: python
 
     # Create a dataframe with 500 observations and 6 random variables
     X, y = make_classification(
@@ -309,7 +313,7 @@ The cut-off value used to split the dataframe is stored in the `cut_off_` attrib
 
     transformer.cut_off_
 
-This yields the following answer
+This yields the following answer:
 
 .. code:: python
 
@@ -344,13 +348,17 @@ Yields the following result:
     ['var_3']
 
 That the *var_3* feature is dropped during the procedure is illustrated when
-looking at the columns from the `X_transformed` dataframe.
+looking at the columns from the `X_transformed` dataframe:
 
 .. code:: python
 
     X_transformed = transformer.transform(X)
 
     X_transformed.columns
+
+We confirm that *var_3* is no longer in the dataframe:
+
+.. code:: python
 
     Index(['var_0', 'var_1', 'var_2', 'var_4', 'var_5'], dtype='object')
 
@@ -359,21 +367,22 @@ the `fit` and the `transform` methods.
 
 The difference in distribution between a non-shifted and
 a shifted distribution is clearly visible when plotting the cumulative density
-function.
-
-For the shifted variable:
+function. Let's plot the cumulative distribution for the shifted variable:
 
 .. code:: python
 
     X['above_cut_off'] = X.index > transformer.cut_off_
     sns.ecdfplot(data=X, x='var_3', hue='above_cut_off')
 
-and a non-shifted variable (for example *var_1*)
+And now let's plot the cumulative distribution for a non-shifted variable (for
+example *var_1*):
 
 .. code:: python
 
     sns.ecdfplot(data=X, x='var_1', hue='above_cut_off')
 
+Below we can compare both plots. We see that the distribution of *var_3* clearly
+shifts after the cut-off, whereas the distribution of *var_1* remains stable:
 
 .. image:: ../../images/PSI_distribution_case1.png
 
@@ -396,7 +405,7 @@ their use to assess distribution shifts in the features.
 
 Let's create a toy dataframe representing the customers' characteristics of a
 company. This dataset contains six random variables (in
-real life this are variables like age or postal code), the seniority of the customer
+real life these are variables like age or postal code), the seniority of the customer
 (i.e. the number of months since the start of the relationship between the
 customer and the company) and the customer ID (i.e. the number (integer) used
 to identify the customer). Generally the customer ID grows
@@ -405,13 +414,17 @@ customers.
 
 From the definition of the variables, we expect the *seniority* to increase with
 the customer ID and therefore to have a high PSI value when comparing early and
-late customer,
+late customers. We start with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
+
+Next, we create the toy dataframe:
+
+.. code:: python
 
     X, y = make_classification(
             n_samples=500,
@@ -454,26 +467,30 @@ the `customer_id` feature, because this variable was used as a reference to spli
     'var_5': 0.027545195437270797,
     'seniority': 7.8688986006052035}
 
+The `features_to_drop_` attribute confirms that *seniority* is the only feature to remove:
 
 .. code:: python
 
     transformer.features_to_drop_
 
-Gives
+This gives:
 
 .. code:: python
 
     ['seniority']
 
-
 Executing the dataframe transformation leads to the exclusion of the *seniority*
-feature but not to the exclusion of the *customer_id*.
+feature but not to the exclusion of the *customer_id*:
 
 .. code:: python
 
     X_transformed = transformer.transform(X)
 
     X_transformed.columns
+
+We confirm that *customer_id* is retained in the transformed dataframe:
+
+.. code:: python
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'customer_id'], dtype='object')
 
@@ -487,8 +504,8 @@ we often want to determine if the distribution of a feature changes in time, for
 after a certain event like the start of the Covid-19 pandemic.
 
 This is how to do it. Let's create a toy dataframe with 6 random numerical variables
-and two date variables. One will be use to specific the split of the dataframe
-while the second one is expected to have a high PSI value.
+and two date variables. One will be used to specify the split of the dataframe,
+while the second one is expected to have a high PSI value. We start with the imports:
 
 .. code:: python
 
@@ -496,6 +513,10 @@ while the second one is expected to have a high PSI value.
     from datetime import date
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
+
+Next, we create the toy dataframe:
+
+.. code:: python
 
     X, y = make_classification(
             n_samples=1000,
@@ -528,12 +549,16 @@ will be done comparing the periods up to the French revolution and after.
 **Important**: if the date variable is in pandas or NumPy datetime format, you may need
 to pass the cut_off value as `pd.to_datetime(1789-07-14)`.
 
-The PSI values shows the *century* variables in unstable as its value is above
-the 0.25 threshold.
+The PSI values show the *century* variable as unstable, since its value is above
+the 0.25 threshold:
 
 .. code:: python
 
     transformer.psi_values_
+
+Below we see the PSI value for every feature:
+
+.. code:: python
 
     {'var_0': 0.0181623637463045,
     'var_1': 0.10595496570984747,
@@ -543,21 +568,29 @@ the 0.25 threshold.
     'var_5': 0.10122468631060424,
     'century': 8.272395772368412}
 
-The class has correctly identified the feature to be dropped.
+The class has correctly identified the feature to be dropped:
 
 .. code:: python
 
     transformer.features_to_drop_
 
+This confirms that *century* is the only feature to remove:
+
+.. code:: python
+
     ['century']
 
-And the transform method correctly removes the feature.
+And the transform method correctly removes the feature:
 
 .. code:: python
 
     X_transformed = transformer.transform(X)
 
     X_transformed.columns
+
+We confirm that *century* is no longer in the transformed dataframe:
+
+.. code:: python
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'time'], dtype='object')
 
@@ -572,7 +605,7 @@ We can plot the cumulative distribution of the shifted variable like this:
     X['above_cut_off'] = X.time > pd.to_datetime(transformer.cut_off_)
     sns.ecdfplot(data=X, x='century', hue='above_cut_off')
 
-and the distribution of a non-shifted variable, for example *var_2*, like this:
+And the distribution of a non-shifted variable, for example *var_2*, like this:
 
 .. code:: python
 
@@ -610,8 +643,8 @@ Split passing a category value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Let's show how to set up the transformer in this case. The example data set
-contains 6 randoms variables, a categorical variable with the labels of the
-different categories and 2 category related features.
+contains 6 random variables, a categorical variable with the labels of the
+different categories and 2 category related features. We start with the imports:
 
 .. code:: python
 
@@ -620,6 +653,10 @@ different categories and 2 category related features.
 
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
+
+Next, we create the toy dataframe:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -645,11 +682,15 @@ with values that come before C, alphabetically, will be allocated to the referen
     transformer = DropHighPSIFeatures(split_col='group', cut_off='C')
     X_transformed = transformer.fit_transform(X)
 
-The PSI values are provided in the `psi_values_` attribute.
+The PSI values are provided in the `psi_values_` attribute:
 
 .. code:: python
 
     transformer.psi_values_
+
+Below we see the PSI value for every feature:
+
+.. code:: python
 
     {'var_0': 0.06485778974895254,
     'var_1': 0.03605540598761757,
@@ -663,21 +704,27 @@ The PSI values are provided in the `psi_values_` attribute.
 From these values we see that the last 2 features should be removed. We can corroborate
 that in the `features_to_drop_` attribute:
 
-
 .. code:: python
 
     transformer.features_to_drop_
 
+This confirms that *group_means* and *shifted_feature* will be dropped:
+
+.. code:: python
+
     ['group_means', 'shifted_feature']
 
 And these columns are removed from the original dataframe by the transform
-method that, in the present case, has been applied through the fit_transform
-method a couple of block cells above.
-
+method that, in the present case, has been applied through the `fit_transform`
+method a couple of code blocks above:
 
 .. code:: python
 
     X_transformed.columns
+
+We confirm that *group_means* and *shifted_feature* are no longer in the dataframe:
+
+.. code:: python
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
 
@@ -698,53 +745,62 @@ only the values B and D.
     trans = DropHighPSIFeatures(split_col='group', cut_off=['A', 'C', 'E'])
     X_no_drift = trans.fit_transform(X)
 
+The PSI values are provided in the `psi_values_` attribute:
 
 .. code:: python
 
     trans.psi_values_
 
-    'var_0': 0.04322345673014104,
+Below we see the PSI value for every feature:
+
+.. code:: python
+
+    {'var_0': 0.04322345673014104,
     'var_1': 0.03534439253617049,
     'var_2': 0.05220272785661243,
     'var_3': 0.04550964862452317,
     'var_4': 0.04492720670343145,
     'var_5': 0.044886435640028144,
     'group_means': 6.601444547497699,
-    'shifted_features': 0.3683642099948127}
+    'shifted_feature': 0.3683642099948127}
 
-
-Here again, the object will remove the *group_means* and the *shifted_features* columns
-from the dataframe.
-
+Here again, the object will remove the *group_means* and the *shifted_feature* columns
+from the dataframe:
 
 .. code:: python
 
     trans.features_to_drop_
 
-    ['group_means', 'shifted_features']
-
-And these columns are removed from the original dataframe by the transform
-method that has been applied through the `fit_transform` method.
-
+This confirms that *group_means* and *shifted_feature* will be dropped:
 
 .. code:: python
 
-    X_transformed.columns
+    ['group_means', 'shifted_feature']
+
+And these columns are removed from the original dataframe by the transform
+method that has been applied through the `fit_transform` method:
+
+.. code:: python
+
+    X_no_drift.columns
+
+We confirm that *group_means* and *shifted_feature* are no longer in the dataframe:
+
+.. code:: python
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
-
 
 In the following plots, we can compare the distribution of a feature with high PSI and
 one with low PSI, in the different categories of the categorical variable.
 
-With this code we plot the cumulative distribution of a feature which distribution is
+With this code we plot the cumulative distribution of a feature whose distribution is
 different among the different categories of the variable:
 
 .. code:: python
 
     sns.ecdfplot(data=X, x='shifted_feature', hue='group')
 
-With this code we plot the cumulative distribution of a feature which distribution is
+And with this code we plot the cumulative distribution of a feature whose distribution is
 the same across the different categories of the categorical variable:
 
 .. code:: python
@@ -763,14 +819,14 @@ In this case, the split is not done based on the number observations from
 `split_col` but from the number of distinct values in the reference variable indicated
 in `split_col`.
 
-A real life example for this case is when dealing with groups of different sizes
-like customers income classes ('1000', '2000', '3000', '4000', ...).
-Split_distinct allows to control the numbers of classes in the basis and test
-dataframes regardless of the number of observations in each class.
+A real life example for this case is when dealing with groups of different sizes,
+like customer income classes ('1000', '2000', '3000', '4000', ...).
+The `split_distinct` parameter allows us to control the number of classes in the
+basis and test dataframes, regardless of the number of observations in each class.
 
-This case is illustrated in the toy data for this case. The data set contains
-6 random variable and 1 income variable that is larger for one of the 6 group
-defined (the F group).
+This case is illustrated in the following toy dataset, which contains 6 random
+variables and 1 income variable that is larger for one of the 6 groups defined
+(the F group). We start with the imports:
 
 .. code:: python
 
@@ -780,6 +836,10 @@ defined (the F group).
 
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropHighPSIFeatures
+
+Next, we create the toy dataframe:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -795,10 +855,12 @@ defined (the F group).
 
     # And an income variable that is category dependent.
     np.random.seed(0)
-    X['income'] = np.random.uniform(1000, 2000, 500).tolist() +
-                  np.random.uniform(1250, 2250, 500).tolist()
+    X['income'] = (
+        np.random.uniform(1000, 2000, 500).tolist()
+        + np.random.uniform(1250, 2250, 500).tolist()
+    )
 
-    # Shuffle the dataframe to make the dataset more real life case.
+    # Shuffle the dataframe to make it more realistic.
     X = X.sample(frac=1).reset_index(drop=True)
 
 
@@ -830,23 +892,29 @@ This yields the following PSI values:
     'var_5': 0.04119583769297253,
     'income': 0.46191580731264914}
 
-And we can find the feature that will be dropped, income, here:
+And we can find the feature that will be dropped, `income`, here:
 
 .. code:: python
 
     transformer.features_to_drop_
 
-        ['income']
+This confirms that *income* will be dropped:
 
+.. code:: python
 
-The former feature will be removed from the dataset when calling the `transform()` method.
+    ['income']
 
+The former feature will be removed from the dataset when calling the `transform()` method:
 
 .. code:: python
 
     X_transformed = transformer.transform(X)
 
     X_transformed.columns
+
+We confirm that *income* is no longer in the dataframe:
+
+.. code:: python
 
     Index(['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'group'], dtype='object')
 
@@ -862,12 +930,14 @@ For the shifted variable (income):
 
     sns.ecdfplot(data=X, x='income', hue='group')
 
-and a non-shifted variable (for example *var_4*)
+And for a non-shifted variable (for example *var_4*):
 
 .. code:: python
 
     sns.ecdfplot(data=X, x="var_4", hue="group")
 
+Below we can compare both plots. We see that the distribution of *income* shifts
+noticeably between groups, whereas the distribution of *var_4* remains stable:
 
 .. image:: ../../images/PSI_distribution_case5.png
 

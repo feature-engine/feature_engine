@@ -99,17 +99,17 @@ the dataset: Pearson's correlation coefficient or mutual information.
 Correlation
 ~~~~~~~~~~~
 
-To determine each features's redundancy, :class:`MRMR()` obtains Pearson's correlation
+To determine each feature's redundancy, :class:`MRMR()` obtains Pearson's correlation
 coefficient between each feature and the features selected in previous rounds. Next, it
 takes the average of the absolute value of the coefficients.
 
-Note that correlation assumes that all features are continuous, so this metric may returned biased
+Note that correlation assumes that all features are continuous, so this metric may return biased
 results for categorical and discrete variables.
 
 Mutual information
 ~~~~~~~~~~~~~~~~~~
 
-To determine each features's redundancy, :class:`MRMR()` caclulates the mutual information
+To determine each feature's redundancy, :class:`MRMR()` calculates the mutual information
 between each feature and the features selected in former iterations, and then takes the average.
 
 
@@ -154,8 +154,8 @@ detects linear and non-linear associations, but for continuous features it takes
 compute, impacting the speed of selection of MRMR.
 
 
-Python examples
----------------
+Python implementation
+----------------------
 
 Let's see how to implement :class:`MRMR()`. We'll start by using scikit-learn's breast cancer
 dataset. The target variable is binary, representing malignant or benign tumors. All
@@ -341,7 +341,7 @@ In the following output we see the test set with a reduced number of features:
 In the final dataset we only have the "relevant features". And by relevant, we mean those
 with high association with the target, and low association with other features.
 
-Since we left the parameter `'max_features'` as `None, :class:`MRMR()` selected 20% of the
+Since we left the parameter `'max_features'` as `None`, :class:`MRMR()` selected 20% of the
 features in the training set. The training set contained 30 features, so 6 features remain
 after applying MRMR.
 
@@ -358,7 +358,7 @@ correlation coefficient.
 In a similar way, the MRMR feature selection algorithm will compute the feature importance as the
 ratio between the random forest importance and Pearson's correlation coefficient.
 
-Lets, set up :class:`MRMR()` to use a random forests classifier for the relevance. Note that we
+Let's set up :class:`MRMR()` to use a random forests classifier for the relevance. Note that we
 need to specify a cross-validation scheme, a performance metric, and we have the option to pass
 a grid with hyperparameters to optimise:
 
@@ -513,7 +513,7 @@ Considerations
 --------------
 
 The maximum relevance minimum redundancy feature selection method is fast, and therefore allows
-scrutinizing fairly big datasets. Computing the F-statistic is fast. That's one of the reasons
+scrutinising fairly big datasets. Computing the F-statistic is fast. That's one of the reasons
 that made it gain popularity.
 
 

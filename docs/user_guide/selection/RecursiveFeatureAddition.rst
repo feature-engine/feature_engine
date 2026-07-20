@@ -48,11 +48,11 @@ Regarding the threshold, this parameter needs a bit of hand tuning. Higher thres
 return fewer features.
 
 
-Python example
---------------
+Python implementation
+---------------------
 
 Let's see how to use this transformer with the diabetes dataset that comes in scikit-learn.
-First, we load the data:
+We start with the imports:
 
 .. code:: python
 
@@ -61,6 +61,10 @@ First, we load the data:
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
     from feature_engine.selection import RecursiveFeatureAddition
+
+Next, we load the diabetes dataset:
+
+.. code:: python
 
     # load dataset
     X, y = load_diabetes(return_X_y=True, as_frame=True)
@@ -317,7 +321,7 @@ be dropped:
 
     [False, False, True, True, True, False, False, False, True, False]
 
-And that's it! You now now how to select features by recursively adding them to a dataset.
+And that's it! You now know how to select features by recursively adding them to a dataset.
 
 Additional resources
 --------------------

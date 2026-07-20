@@ -95,14 +95,14 @@ Finally, if a numerical variable is truly continuous and not skewed, check that 
 not accidentally cast as object.
 
 
-Example
--------
+Python implementation
+---------------------
 
 Let's see how to use this method to select variables in the Titanic dataset. This data
-has a mix of numerical and categorical variables, then it is a good option to showcase
-this selector.
+has a mix of numerical and categorical variables, which makes it a good option to
+showcase this selector.
 
-Let's import the required libraries and classes, and prepare the titanic dataset:
+Let's import the required libraries and classes:
 
 .. code:: python
 
@@ -114,6 +114,10 @@ Let's import the required libraries and classes, and prepare the titanic dataset
     from feature_engine.datasets import load_titanic
     from feature_engine.encoding import RareLabelEncoder
     from feature_engine.selection import SelectByTargetMeanPerformance
+
+Next, we load the Titanic dataset and prepare it for the demo:
+
+.. code:: python
 
     data = load_titanic(
         handle_missing=True,
@@ -187,14 +191,16 @@ With `fit()` the transformer:
 - replaces categories by the target mean
 - sorts numerical variables into equal-frequency bins
 - replaces bins by the target mean
-- calculates the the roc-auc for each transformed variable
-- selects features which roc-auc bigger than the average
+- calculates the roc-auc for each transformed variable
+- selects features whose roc-auc is bigger than the average
 
 In the attribute `variables_` we find the variables that were evaluated:
 
 .. code:: python
 
     sel.variables_
+
+These are the 8 variables that were evaluated:
 
 .. code:: python
 
@@ -205,6 +211,8 @@ In the attribute `features_to_drop_` we find the variables that were not selecte
 .. code:: python
 
     sel.features_to_drop_
+
+These are the 4 variables that will be dropped:
 
 .. code:: python
 
@@ -287,7 +295,7 @@ In the following image we see the feature importance:
 .. figure::  ../../images/target-mean-sel-std.png
 
 With this, we can get a better idea of the relationship between the features and the
-target variable, based on a linear regression model.
+target variable, based on the target mean value used as a proxy for prediction.
 
 Checking out the resulting dataframe
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -299,6 +307,8 @@ With `transform()` we can go ahead and drop the features:
     Xtr = sel.transform(X_test)
 
     Xtr.head()
+
+We see the resulting dataframe, with the 4 selected features, below:
 
 .. code:: python
 
@@ -316,6 +326,8 @@ data:
 
     sel.get_feature_names_out()
 
+We obtain the names of the 4 features that were retained:
+
 .. code:: python
 
     ['pclass', 'sex', 'fare', 'cabin']
@@ -330,7 +342,6 @@ Check also:
 
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
 
-For more details about this and other feature selection methods check out these resources:
 For more details about this and other feature selection methods check out these resources:
 
 - `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.

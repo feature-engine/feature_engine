@@ -13,16 +13,16 @@ supported by feature-engine are not yet available in other libraries. These algo
 have been gathered from data science competitions or used in the industry.
 
 
-Selection Mechanism Overview
+Selection mechanism overview
 ----------------------------
 
-Feature-engine’s transformers select features based on different strategies.
+Feature-engine's transformers select features based on different strategies.
 
-The first strategy evaluates the features intrinsic characteristics, like their distributions.
+The first strategy evaluates the features' intrinsic characteristics, like their distributions.
 For example, we can remove constant or quasi-constant features. Or we can remove features
-whose distribution in unstable in time by using the Population Stability Index.
+whose distribution is unstable in time by using the Population Stability Index.
 
-A second strategy consists in determining the relationships between features. Among these,
+A second strategy consists of determining the relationships between features. Among these,
 we can remove features that are duplicated or correlated.
 
 We can also select features based on their relationship with the target. To assess this,
@@ -46,11 +46,11 @@ These methods are normally geared towards improving the overall performance of t
 machine learning model as well as reducing the feature space.
 
 
-Selectors Characteristics Overview
-----------------------------------
+Selectors characteristics overview
+-----------------------------------
 
 Some feature-engine's selectors work with categorical variables off-the-shelf and/or allow
-missing data in the variables. These gives you the opportunity to quickly screen features
+missing data in the variables. This gives you the opportunity to quickly screen features
 before jumping into any feature engineering.
 
 In the following tables, we highlight the main feature-engine selectors characteristics:
@@ -99,11 +99,11 @@ Selection methods commonly used in finance
 :class:`SelectByInformationValue()`	            √                         x             Drops features with low information value
 ============================================ ======================= ============= ====================================================================================
 
-:class:`DropHighPSIFeatures()` allows to remove features with changes in their distribution. This is done by
+:class:`DropHighPSIFeatures()` removes features with changes in their distribution. This is done by
 splitting the input dataframe in two parts and comparing the distribution of each feature in the two
 parts. The metric used to assess distribution shift is the Population Stability Index (PSI). Removing
 unstable features may lead to more robust models. In fields like Credit Risk Modelling, the Regulator
-often requires the PSI of the final feature set to be below are given threshold.
+often requires the PSI of the final feature set to be below a given threshold.
 
 Alternative feature selection methods
 -------------------------------------
@@ -122,12 +122,12 @@ Thus, it is suitable for both categorical and numerical variables. In its curren
 it does not support missing data.
 
 The :class:`ProbeFeatureSelection()` introduces random variables to the dataset, then creates a model and derives
-the feature importance. It selects all variables whose importance is grater than the mean importance of the random
+the feature importance. It selects all variables whose importance is greater than the mean importance of the random
 features.
 
-Throughout the rest of user guide, you will find more details about each of the feature selection procedures.
+Throughout the rest of the user guide, you will find more details about each of the feature selection procedures.
 
-Feature Selection Algorithms
+Feature selection algorithms
 ----------------------------
 
 Click below to find more details on how to use each one of the transformers.

@@ -9,16 +9,16 @@ RecursiveFeatureElimination
 feature elimination (RFE) is a backward feature selection process.
 
 In feature-engine's implementation of RFE, a feature will be kept or removed based on the
-resulting change in model performance resulting of adding that feature to a
-machine learning. This differs from scikit-learn's implementation of
+resulting change in model performance caused by removing that feature from the
+machine learning model. This differs from scikit-learn's implementation of
 `RFE <https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html>`_
 where a feature will be kept or removed based on the feature importance derived from a
-machine learning model via it's coefficients parameters or 'feature_importances_` attribute.
+machine learning model via its `coef_` or `feature_importances_` attribute.
 
 Feature-engine's implementation of RFE begins by training a model on the entire set of variables,
 and storing its performance value. From this same model, :class:`RecursiveFeatureElimination`
 derives the feature importance through the `coef_` or `feature_importances_` attributes, depending
-if it is a linear model or a tree-based algorithm. These feature importance value is used
+if it is a linear model or a tree-based algorithm. This feature importance value is used
 to sort the features by increasing performance, to determine the order in which the features
 will be recursively removed. The least important features are removed first.
 
@@ -27,8 +27,8 @@ then the initial feature importance is determined by feature permutation.
 
 In the next step, :class:`RecursiveFeatureElimination` removes the least important feature
 and trains a new machine learning model using the remaining variables. If the performance of
-this model is worse than the performance from the previus model, then, the feature is kept
-(because eliminating the feature caused a drop in model performance) otherwise, it removed.
+this model is worse than the performance from the previous model, then the feature is kept
+(because eliminating the feature caused a drop in model performance); otherwise, it is removed.
 
 :class:`RecursiveFeatureElimination` removes now the second least important feature, trains a new model,
 compares its performance to the previous model, determines if it should remove or retain the feature,
@@ -56,12 +56,11 @@ recommended that you use the machine learning model that you finally intend to b
 Regarding the threshold, this parameter needs a bit of hand tuning. Higher thresholds will
 return fewer features.
 
-Python example
---------------
+Python implementation
+---------------------
 
 Let's see how to use this transformer with the diabetes dataset that comes in scikit-learn.
-First, we load the data:
-
+We start with the imports:
 
 .. code:: python
 
@@ -70,6 +69,10 @@ First, we load the data:
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
     from feature_engine.selection import RecursiveFeatureElimination
+
+Next, we load the diabetes dataset:
+
+.. code:: python
 
     # load dataset
     X, y = load_diabetes(return_X_y=True, as_frame=True)
@@ -324,7 +327,7 @@ be dropped:
 
     [False, True, True, True, True, True, False, False, True, False]
 
-And that's it! You now now how to select features by recursively removing them to a dataset.
+And that's it! You now know how to select features by recursively removing them from a dataset.
 
 
 Additional resources
@@ -333,8 +336,6 @@ Additional resources
 More details on recursive feature elimination in this article:
 
 - `Recursive feature elimination with Python <https://www.blog.trainindata.com/recursive-feature-elimination-with-python/>`_
-
-For more details about this and other feature selection methods check out these resources:
 
 For more details about this and other feature selection methods check out these resources:
 

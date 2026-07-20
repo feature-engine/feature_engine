@@ -100,8 +100,8 @@ importance than probes extracted from a binomial, poisson or discrete uniform di
 when using these models.
 
 
-Python examples
----------------
+Python implementation
+----------------------
 
 Let's see how to use this transformer to select variables from UC Irvine's Breast Cancer
 Wisconsin (Diagnostic) dataset, which can be found `here`_. We will use scikit-learn to load
@@ -200,11 +200,13 @@ With :code:`fit()`, the transformer:
 Analysing the probes
 ~~~~~~~~~~~~~~~~~~~~
 
-In the attribute :code:`probe_features`, we find the pseudo-randomly generated variable(s):
+In the attribute :code:`probe_features_`, we find the pseudo-randomly generated variable(s):
 
 .. code:: python
 
     sel.probe_features_.head()
+
+These are the first 5 values of the probe feature:
 
 .. code:: python
 
@@ -477,11 +479,13 @@ In the histograms we recognise the 5 well defined distributions:
 .. figure::  ../../images/probe_features.png
    :align:   center
 
-Let's display the importance of the random features
+Let's display the importance of the random features:
 
 .. code:: python
 
     sel.feature_importances_.tail()
+
+We obtain the importance of each of the 5 probe features:
 
 .. code:: python
 
@@ -492,7 +496,6 @@ Let's display the importance of the random features
     poisson_probe_0             0.001759
     dtype: float64
 
-
 We see that the binary feature has an extremely low importance, hence, when we take the
 average, the value is so small, that no feature will be dropped (remember random forests
 favouring highly cardinal features?):
@@ -501,8 +504,7 @@ favouring highly cardinal features?):
 
     sel.features_to_drop_
 
-
-The previous command returns and empty list:
+The previous command returns an empty list:
 
 .. code:: python
 

@@ -18,15 +18,22 @@ The transformer will examine all numerical variables automatically. Note that yo
 dataframe with categorical and datetime variables, and these will be ignored automatically.
 Alternatively, you can pass a list with the variables you wish to evaluate.
 
-**Example**
+Python implementation
+---------------------
 
-Let's create a toy dataframe where 4 of the features are correlated:
+Let's create a toy dataframe where 4 of the features are correlated. We start with the
+imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
     from feature_engine.selection import DropCorrelatedFeatures
+
+Next, we create a function to generate a dataframe with some correlated variables, and
+use it to obtain our toy dataset:
+
+.. code:: python
 
     # make dataframe with some correlated variables
     def make_data():
@@ -66,6 +73,7 @@ The correlated feature groups are stored in the transformer's attributes:
 
     tr.correlated_feature_sets_
 
+We obtain 2 groups of correlated features:
 
 .. code:: python
 
@@ -97,16 +105,20 @@ as well:
 
     tr.features_to_drop_
 
+These are the 4 correlated features that will be dropped from the dataset:
+
 .. code:: python
 
     ['var_8', 'var_6', 'var_7', 'var_9']
 
 If we now go ahead and print the transformed data, we see that the correlated features
-have been removed.
+have been removed:
 
 .. code:: python
 
-    print(print(Xt.head()))
+    print(Xt.head())
+
+Below we see the resulting dataframe:
 
 .. code:: python
 

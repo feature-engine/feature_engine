@@ -17,11 +17,11 @@ process works as follows:
 If the `threshold` parameter is set to `None`, the algorithm will select features with
 performance above the average of all individual features.
 
-Python Example
---------------
+Python implementation
+---------------------
 
 Let's see how to use :class:`SelectBySingleFeaturePerformance()` with the diabetes
-dataset that comes with scikit-learn. First, we load the data:
+dataset that comes with scikit-learn. We start with the imports:
 
 .. code:: python
 
@@ -30,6 +30,10 @@ dataset that comes with scikit-learn. First, we load the data:
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
     from feature_engine.selection import SelectBySingleFeaturePerformance
+
+Next, we load the diabetes dataset:
+
+.. code:: python
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
     print(X.head())
@@ -77,11 +81,11 @@ The features that will be dropped are stored in the following attribute:
     sel.features_to_drop_
 
 Only one feature will be dropped, because a linear model trained using this feature showed
-an r2 smaller than 0. 1:
+an r2 smaller than 0.01:
 
 .. code:: python
 
-    [sex]
+    ['sex']
 
 Evaluating feature importance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -200,8 +204,6 @@ Check also:
 - `Jupyter notebook <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/selection/Select-by-Single-Feature-Performance.ipynb>`_
 
 All notebooks can be found in a `dedicated repository <https://github.com/feature-engine/feature-engine-examples>`_.
-
-For more details about this and other feature selection methods check out these resources:
 
 For more details about this and other feature selection methods check out these resources:
 
