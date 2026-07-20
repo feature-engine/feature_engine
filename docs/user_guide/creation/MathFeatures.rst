@@ -6,12 +6,12 @@ MathFeatures
 ============
 
 :class:`MathFeatures()` applies basic functions to groups of features, returning one or
-more additional variables as a result.  It uses `pandas.agg()` to create the features,
+more additional variables as a result. It uses `pandas.agg()` to create the features,
 so in essence, you can pass any function that is accepted by this method. One exception
 is that :class:`MathFeatures()` does not accept dictionaries for the parameter `func`.
 
 The functions can be passed as strings, numpy methods, i.e., np.mean, or any function
-that you create, as long as, it returns a scalar from a vector.
+that you create, as long as it returns a scalar from a vector.
 
 For supported aggregation functions, see
 `pandas documentation <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html>`_.
@@ -36,7 +36,7 @@ and mean number of payments as follows:
             'number_payments_fourth_quarter'
         ],
         func=['sum','mean'],
-        new_variables_name=[
+        new_variables_names=[
             'total_number_payments',
             'mean_number_payments'
         ]
@@ -176,7 +176,7 @@ Which will return the names of all the variables in the transformed data:
 New variables names
 ^^^^^^^^^^^^^^^^^^^
 
-Even though the transfomer allows to combine variables automatically, its use is intended
+Even though the transformer allows you to combine variables automatically, its use is intended
 to combine variables with domain knowledge. In this case, we normally want to
 give meaningful names to the variables. We can do so through the parameter
 `new_variables_names`.

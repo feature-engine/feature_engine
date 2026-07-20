@@ -33,26 +33,26 @@ features results in lots of binary variables, and so does polynomial combination
 This may have downstream effects depending on the machine learning algorithm being used. For example,
 decision trees are known for not being able to cope with huge number of features.
 
-Creating New Features with Feature-engine
+Creating new features with feature-engine
 -----------------------------------------
 
 Feature-engine has several transformers that create and add new features to the dataset. One of
 the most popular ones is `OneHotEncoder <https://feature-engine.trainindata.com/en/latest/user_guide/encoding/OneHotEncoder.html>`_
 that creates dummy variables from categorical features.
 
-With Feature-engine we can also create new features from time series data through lags and windows by using
+With feature-engine we can also create new features from time series data through lags and windows by using
 `LagFeatures <https://feature-engine.trainindata.com/en/latest/user_guide/timeseries/forecasting/LagFeatures.html>`_
 or `WindowFeatures <https://feature-engine.trainindata.com/en/latest/user_guide/timeseries/forecasting/WindowFeatures.html>`_.
 
 Feature-engine also supports the creation of new features from :ref:`datetime <datetime_module>` variables
 as well as the extraction of features from :ref:`text <text_module>`.
 
-Feature-engine’s creation module, supports transformers that create and add new features to a pandas
+Feature-engine’s creation module supports transformers that create and add new features to a pandas
 dataframe by either combining existing features through different mathematical or statistical operations,
 or through feature transformations. These transformers operate with numerical variables, that is, those
 with integer and float data types.
 
-Summary of Feature-engine’s creation transformers
+Summary of feature-engine’s creation transformers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ================================== =====================================================================================================================================
@@ -77,7 +77,7 @@ Feature creation module
    MathFeatures
    RelativeFeatures
 
-Feature-engine in Practice
+Feature-engine in practice
 --------------------------
 
 Here, you'll get a taste of the transformers from the feature creation module from feature-engine.
@@ -272,7 +272,7 @@ alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/sole
 the main developer of feature-engine.
 
 
-Transformers in other Libraries
+Transformers in other libraries
 -------------------------------
 
 Check also the following transformer from scikit-learn:

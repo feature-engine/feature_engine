@@ -434,7 +434,7 @@ And now we mistakenly extract only date features:
 
     df_transf
 
-As you see in the following output, tThe transformer will still create features derived
+As you see in the following output, the transformer will still create features derived
 from today's date (the date of creating the docs).
 
 .. code:: python
@@ -540,13 +540,13 @@ from them:
 
        var_dt1_year  var_dt1_day_of_week  var_dt1_day_of_month  var_dt1_hour  \
     0          2018                    0                     1             0
-    1          2018                    0                                   1
-    2          2018                    0                  1                2
+    1          2018                    0                     1             1
+    2          2018                    0                     1             2
 
-        var_dt1_minute    var_dt1_second
-    0               0                  0
-    1               0                  0
-    2               0                  0
+       var_dt1_minute  var_dt1_second
+    0               0               0
+    1               0               0
+    2               0               0
 
 
 We can find the group of features extracted by the transformer in the following attribute:
@@ -819,7 +819,7 @@ timezone before extracting the features:
     df_transf
 
 In the output we see the resulting dataframe, where the variable was first set to UTC and
-after that the features were created (see missmatch between the hour in the original variable
+after that the features were created (see mismatch between the hour in the original variable
 and the extracted feature):
 
 .. code:: python
@@ -857,7 +857,7 @@ eastern time zone:
     1 1990-12-01 23:01:02-05:00                    1           23
     2 2001-04-25 11:59:21-04:00                   25           11
 
-Note that the hour extracted from the variable differ in this dataframe respect to the
+Note that the hour extracted from the variable differs in this dataframe compared to the
 one obtained in **Case 2**.
 
 Missing timestamps

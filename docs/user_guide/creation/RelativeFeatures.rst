@@ -40,7 +40,7 @@ quarter as follows:
 
     Xt = transformer.fit_transform(X)
 
-The precedent code block will return a new dataframe, Xt, with 4 new variables that are
+The preceding code block will return a new dataframe, Xt, with 4 new variables that are
 calculated as the division of each one of the variables in `variables` and
 'total_payments'.
 
@@ -76,8 +76,8 @@ The dataset looks like this:
     2  krish   Liverpool   19    0.7 2020-02-24 00:02:00
     3   jack     Bristol   18    0.6 2020-02-24 00:03:00
 
-We can now apply several functions between the numerical variables `Age` and `Marks`
-and `Age` as follows:
+We can now apply several functions between the numerical variables `Age` and `Marks`,
+using `Age` as the reference variable, as follows:
 
 .. code:: python
 
@@ -93,7 +93,7 @@ and `Age` as follows:
 
 We obtain the following dataset, where the new variables are named after the variables
 that were used for the calculation and the function in the middle of their names. Thus,
-`Mark_sub_Age` means `Mark - Age`, and `Marks_mod_Age` means `Mark % Age`.
+`Marks_sub_Age` means `Marks - Age`, and `Marks_mod_Age` means `Marks % Age`.
 
 .. code:: python
 

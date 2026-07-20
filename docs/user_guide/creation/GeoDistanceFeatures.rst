@@ -12,7 +12,7 @@ coordinate pairs (latitude/longitude) and adds the result as a new feature.
 real estate pricing, delivery route optimisation, ride-sharing applications,
 and any domain where geographic proximity is relevant.
 
-Distance Methods
+Distance methods
 ----------------
 
 The transformer supports different distance calculation methods:
@@ -24,14 +24,14 @@ The transformer supports different distance calculation methods:
 - **manhattan**: Manhattan (taxicab) distance in coordinate space.
   Useful as a rough approximation for grid-based city layouts.
 
-Output Units
+Output units
 ------------
 
 The distance can be returned in various units:
 
-- **km**: Kilometers (default)
+- **km**: Kilometres (default)
 - **miles**: Miles
-- **meters**: Meters
+- **meters**: Metres
 - **feet**: Feet
 
 Python implementation
@@ -73,7 +73,7 @@ Now let's calculate the distances using the haversine formula and returning the 
 
     print(X_transformed[['trip_id', 'distance_km']])
 
-In the following output we see the trip ID followed by the distance traveled in each trip:
+In the following output we see the trip ID followed by the distance travelled in each trip:
 
 .. code:: python
 
@@ -141,7 +141,7 @@ The Manhattan distance sums the absolute differences in latitude and longitude:
 Using different output units
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The transformer supports returning distances in km (default), miles, meters, or feet.
+The transformer supports returning distances in km (default), miles, metres, or feet.
 Here we calculate distances in miles:
 
 .. code:: python
@@ -157,7 +157,7 @@ Here we calculate distances in miles:
     X_transformed = gdt.transform(X)
     print(X_transformed[['trip_id', 'distance_miles']])
 
-The distances are now expressed in miles instead of kilometers:
+The distances are now expressed in miles instead of kilometres:
 
 .. code:: python
 

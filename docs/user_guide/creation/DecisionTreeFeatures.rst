@@ -99,7 +99,7 @@ We can find the feature combinations that will be used to train the trees as fol
     dtf.input_features_
 
 In the following output we see the combinations of 1 and 2 features that will be used
-to train decision trees, based of all the numerical variables in the training set:
+to train decision trees, based on all the numerical variables in the training set:
 
 .. code:: python
 
@@ -190,10 +190,10 @@ decision trees:
 
     [5 rows x 27 columns]
 
-Combining features - Lists
+Combining features - lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's say that we want to create features based of trees trained of 2 or more variables. Instead of using
+Let's say that we want to create features based on trees trained on 2 or more variables. Instead of using
 an integer in `features_to_combine`, we need to pass a list of integers, telling :class:`DecisionTreeFeatures()`
 to make all possible combinations of the integers mentioned in the list.
 
@@ -214,7 +214,7 @@ If we now examine the feature combinations:
 
     dtf.input_features_
 
-We see that they are based of combinations of 2 or 3 of the variables that we set in
+We see that they are based on combinations of 2 or 3 of the variables that we set in
 the `variables` parameter:
 
 .. code:: python
@@ -382,7 +382,7 @@ the result of the search:
                   param_grid={'max_depth': [1, 2, 3, 4]},
                   scoring='neg_mean_squared_error')]
 
-If you want to inspect an individual tree and it's performance, you can do so like this:
+If you want to inspect an individual tree and its performance, you can do so like this:
 
 .. code:: python
 
@@ -404,7 +404,7 @@ we can do so like this:
     tree.score(X_test[['Population']], y_test)
 
 The following performance value corresponds to the negative of the mean squared error
-which is the metric optimised durign the search:
+which is the metric optimised during the search:
 
 .. code:: python
 
@@ -412,7 +412,7 @@ which is the metric optimised durign the search:
 
 .. note::
 
-    You can select the metric to optimise through the `scoring` parameter of :class:`DecisionTreeFeatures()`).
+    You can select the metric to optimise through the `scoring` parameter of :class:`DecisionTreeFeatures()`.
 
 Note that you can also isolate the tree, and then obtain a performance metric:
 

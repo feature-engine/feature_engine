@@ -17,10 +17,10 @@ In a different example, if we are trying to predict the price of the house and w
 information about the year in which the house was built, we can infer the age of the house
 at the point of sale. Generally, older houses cost less. To calculate the age of the house,
 we’d simply compute the difference in years between the sale date and the date at which
-the house was was built.
+the house was built.
 
 Python offers many options for making operations between datetime objects, like,
-for example, the datetime module. Since most likely you will be working with Pandas dataframes,
+for example, the datetime module. Since most likely you will be working with pandas dataframes,
 we will focus this guide on pandas and then how we can automate the procedure with feature-engine.
 
 Subtracting datetime features with pandas
@@ -104,8 +104,8 @@ Datetime subtraction with feature-engine
 ----------------------------------------
 
 :class:`DatetimeSubtraction()` automatically subtracts several date and time features from
-each other. You just need to indicate the features at the right of the subtraction operation
-in the `variables` parameters and those on the left in the `reference` parameter. You can also
+each other. You just need to indicate the features at the left of the subtraction operation
+in the `variables` parameter and those on the right in the `reference` parameter. You can also
 change the output unit through the `output_unit` parameter.
 
 :class:`DatetimeSubtraction()` works with variables whose `dtype` is datetime, as well as
@@ -209,7 +209,7 @@ carry out the subtraction operation:
 
     print(data)
 
-The resulting dataframe contains the original variables plus the  new variables expressing
+The resulting dataframe contains the original variables plus the new variables expressing
 the time difference between the date objects:
 
 .. code:: python
@@ -228,7 +228,7 @@ the time difference between the date objects:
 Working with missing values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, :class:`DatetimeSubtraction()`  will raise an error if the dataframe passed
+By default, :class:`DatetimeSubtraction()` will raise an error if the dataframe passed
 to the `fit()` or `transform()` methods contains NA in the variables to subtract. We can
 override this behaviour and allow computations between variables with nan by setting the
 parameter `missing_values` to `"ignore"`. Here is a code example:
@@ -276,8 +276,8 @@ Working with different timezones
 
 If we have timestamps in different timezones or variables in different timezones, we can
 still perform subtraction operations with :class:`DatetimeSubtraction()` by first setting
-all timestamps to the universal central time zone. Here is a code example, were we return
-the time difference in microseconds:
+all timestamps to the universal central time zone. Here is a code example, where we return
+the time difference in milliseconds:
 
 .. code:: python
 
@@ -301,7 +301,7 @@ the time difference in microseconds:
 
     print(new)
 
-We see the resulting dataframe with the time difference in microseconds:
+We see the resulting dataframe with the time difference in milliseconds:
 
 .. code:: python
 
@@ -426,7 +426,7 @@ creation of new features by subtraction of datetime variables:
 
     print(data)
 
-In the following output we see the new dataframe contaning the features that were extracted
+In the following output we see the new dataframe containing the features that were extracted
 from the different datetime variables followed by those created by capturing the time
 difference:
 

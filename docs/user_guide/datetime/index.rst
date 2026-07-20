@@ -6,7 +6,7 @@ Datetime Features
 Feature-engine’s datetime transformers extract a wide variety of date and time features
 from datetime variables. Datetime variables can be cast as datetime or object.
 
-Summary of Feature-engine’s creation transformers
+Summary of feature-engine’s datetime transformers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ================================ ===============================================================================
