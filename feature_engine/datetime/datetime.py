@@ -9,12 +9,18 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
+)
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -40,6 +46,7 @@ from feature_engine.variable_handling.find_variables import find_datetime_variab
 
 
 @Substitution(
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -87,6 +94,8 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         including variables of type object that can be converted to datetime.
         If "index", the transformer will extract datetime features from the
         index of the dataframe.
+
+    {return_empty}
 
     features_to_extract: list, default=None
         The list of date features to extract. If None, the following features will be
@@ -178,6 +187,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         features_to_extract: Union[None, str, List[str]] = None,
         drop_original: bool = True,
         missing_values: str = "raise",
@@ -218,7 +228,10 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         if utc is not None and not isinstance(utc, bool):
             raise ValueError("utc takes only booleans or None. " f"Got {utc} instead.")
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.drop_original = drop_original
         self.missing_values = missing_values
         self.dayfirst = dayfirst
@@ -260,7 +273,9 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             self.variables_ = []
 
         elif self.variables is None:
-            self.variables_ = find_datetime_variables(X)
+            self.variables_ = find_datetime_variables(
+                X, return_empty=self.return_empty
+            )
 
         else:
             self.variables_ = check_datetime_variables(X, self.variables)
@@ -340,6 +355,9 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             # check if dataset contains na
             if self.missing_values == "raise":
                 _check_contains_na(X, self.variables_)
+
+            if len(self.variables_) == 0:
+                return X
 
             # convert datetime variables
             datetime_df = pd.concat(

@@ -462,7 +462,10 @@ class MRMR(BaseSelector):
         if self.method in ["MID", "FCD"]:
             mrmr = relevance - redundance
         else:
-            mrmr = relevance / redundance
+            # redundance can be 0; the resulting inf makes the feature rank
+            # first in argmax, which is the intended MRMR behavior.
+            with np.errstate(divide="ignore", invalid="ignore"):
+                mrmr = relevance / redundance
         return mrmr
 
     def _more_tags(self):

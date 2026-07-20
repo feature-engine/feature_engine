@@ -4,13 +4,17 @@ from typing import List, Optional, Union
 import pandas as pd
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
@@ -26,6 +30,7 @@ from feature_engine.encoding.base_encoder import (
     ignore_format=_ignore_format_docstring,
     missing_values=_missing_values_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -53,6 +58,8 @@ class MatchCategories(
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     {ignore_format}
 
@@ -114,11 +121,15 @@ class MatchCategories(
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         ignore_format: bool = False,
         missing_values: str = "raise",
     ) -> None:
 
+        _check_return_empty_is_bool(return_empty)
+
         super().__init__(variables, missing_values, ignore_format)
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

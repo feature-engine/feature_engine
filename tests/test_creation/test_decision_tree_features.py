@@ -6,6 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from feature_engine.creation import DecisionTreeFeatures
+from tests.estimator_checks.fit_functionality_checks import check_return_empty
 
 
 @pytest.fixture(scope="module")
@@ -582,3 +583,11 @@ def test_user_enter_param_grid(df_creation, classification_target):
             X_exp[varn] = preds[:, 1]
 
     pd.testing.assert_frame_equal(Xt, X_exp)
+
+
+def test_check_return_empty():
+    # DecisionTreeFeatures is not part of the check_feature_engine_estimator
+    # pipeline (test_check_estimator_creation.py only feeds MathFeatures,
+    # RelativeFeatures and CyclicalFeatures into it), so return_empty is
+    # tested directly here instead.
+    check_return_empty(DecisionTreeFeatures(regression=False))

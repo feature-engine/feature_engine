@@ -3,6 +3,9 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -12,7 +15,8 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.discretisers import (
@@ -43,6 +47,7 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     fit_transform=_fit_transform_docstring,
     power="{1/n}",
     subindex="{i+1}",
+    return_empty=_return_empty_docstring,
 )
 class GeometricWidthDiscretiser(BaseDiscretiser):
     """
@@ -87,6 +92,8 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
     ----------
     {variables}
 
+    {return_empty}
+
     bins: int, default=10
         Desired number of intervals / bins.
 
@@ -130,6 +137,7 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         bins: int = 10,
         return_object: bool = False,
         return_boundaries: bool = False,
@@ -139,10 +147,13 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         if not isinstance(bins, int):
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
+        _check_return_empty_is_bool(return_empty)
+
         super().__init__(return_object, return_boundaries, precision)
 
-        self.bins = bins
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
+        self.bins = bins
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """

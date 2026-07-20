@@ -11,8 +11,9 @@ from feature_engine._docstrings.fit_attributes import (
     _right_tail_caps_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.outliers import (
@@ -31,6 +32,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     tail=_tail_docstring,
     fold=_fold_docstring,
     variables=_variables_numerical_docstring,
+    return_empty=_return_empty_docstring,
     missing_values=_missing_values_docstring,
     right_tail_caps_=_right_tail_caps_docstring,
     left_tail_caps_=_left_tail_caps_docstring,
@@ -65,6 +67,8 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
     {fold}
 
     {variables}
+
+    {return_empty}
 
     {missing_values}
 

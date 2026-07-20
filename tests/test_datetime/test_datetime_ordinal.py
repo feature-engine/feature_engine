@@ -7,28 +7,32 @@ from feature_engine.datetime import DatetimeOrdinal
 
 @pytest.fixture(scope="module")
 def df_datetime_ordinal():
-    df = pd.DataFrame({
-        "date_col_1": pd.to_datetime(
-            ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]
-        ),
-        "date_col_2": pd.to_datetime(
-            ["2024-02-10", "2024-02-11", "2024-02-12", "2024-02-13", "2024-02-14"]
-        ),
-        "non_date_col": [1, 2, 3, 4, 5],
-    })
+    df = pd.DataFrame(
+        {
+            "date_col_1": pd.to_datetime(
+                ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]
+            ),
+            "date_col_2": pd.to_datetime(
+                ["2024-02-10", "2024-02-11", "2024-02-12", "2024-02-13", "2024-02-14"]
+            ),
+            "non_date_col": [1, 2, 3, 4, 5],
+        }
+    )
     return df
 
 
 @pytest.fixture(scope="module")
 def df_datetime_ordinal_na():
-    df = pd.DataFrame({
-        "date_col_1": pd.to_datetime(
-            ["2023-01-01", "2023-01-02", None, "2023-01-04", "2023-01-05"]
-        ),
-        "date_col_2": pd.to_datetime(
-            ["2024-02-10", "2024-02-11", "2024-02-12", None, "2024-02-14"]
-        ),
-    })
+    df = pd.DataFrame(
+        {
+            "date_col_1": pd.to_datetime(
+                ["2023-01-01", "2023-01-02", None, "2023-01-04", "2023-01-05"]
+            ),
+            "date_col_2": pd.to_datetime(
+                ["2024-02-10", "2024-02-11", "2024-02-12", None, "2024-02-14"]
+            ),
+        }
+    )
     return df
 
 
@@ -36,11 +40,11 @@ def df_datetime_ordinal_na():
     "variables_param",
     [
         ["date_col_1", "date_col_2"],  # Case 1: 'variables' are specified
-        None,                          # Case 2: 'variables' not specified
+        None,  # Case 2: 'variables' not specified
     ],
     ids=[
         "variables_specified",
-        "variables_auto_find"
+        "variables_auto_find",
     ],  # Optional but recommended for test readability
 )
 def test_datetime_ordinal_feature_creation(df_datetime_ordinal, variables_param):
@@ -111,8 +115,7 @@ def test_datetime_ordinal_with_start_date_datetime_object(df_datetime_ordinal):
 def test_datetime_ordinal_missing_values_raise(df_datetime_ordinal_na):
     transformer = DatetimeOrdinal(missing_values="raise")
     with pytest.raises(
-            ValueError,
-            match="Some of the variables in the dataset contain NaN"
+        ValueError, match="Some of the variables in the dataset contain NaN"
     ):
         transformer.fit(df_datetime_ordinal_na)
 
@@ -149,8 +152,7 @@ def test_datetime_ordinal_missing_values_ignore(df_datetime_ordinal_na):
 
 def test_datetime_ordinal_invalid_start_date():
     with pytest.raises(
-        ValueError,
-        match="start_date could not be converted to datetime"
+        ValueError, match="start_date could not be converted to datetime"
     ):
         DatetimeOrdinal(start_date="not-a-date")
 
@@ -267,3 +269,33 @@ def test_more_tags_returns_expected_tags():
     transformer = DatetimeOrdinal()
     expected_tags = {"variables": "datetime"}
     assert transformer._more_tags() == expected_tags
+
+
+def test_return_empty():
+    # DatetimeOrdinal.__init__ does not store `self.start_date = start_date`
+    # (only the derived `self.start_date_`), which breaks sklearn's
+    # get_params()/clone() for this transformer. Because of that, it cannot go
+    # through the shared, clone-based check_return_empty check, nor through
+    # check_feature_engine_estimator at all. This test instantiates the
+    # transformer directly instead.
+    X = pd.DataFrame({"var_num": [1.0, 2.0, 3.0]})
+
+    transformer = DatetimeOrdinal(variables=None, return_empty=False)
+    with pytest.raises(
+        TypeError, match="No datetime variables found in this dataframe"
+    ):
+        transformer.fit(X)
+
+    transformer = DatetimeOrdinal(variables=None, return_empty=True)
+    with pytest.warns(
+        UserWarning,
+        match="No datetime variables found in this dataframe. Returning an empty list.",
+    ):
+        transformer.fit(X)
+    assert transformer.variables_ == []
+
+    # if return_empty=True, transformer should return same df
+    # after transformation
+    dft = transformer.transform(X)
+    pd.testing.assert_frame_equal(dft, X)
+    assert transformer.get_feature_names_out() == list(X.columns)

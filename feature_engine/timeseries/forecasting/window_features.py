@@ -6,9 +6,10 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _drop_original_docstring,
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import (
@@ -23,6 +24,7 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
 
 @Substitution(
     variables=_variables_numerical_docstring,
+    return_empty=_return_empty_docstring,
     missing_values=_missing_values_docstring,
     drop_original=_drop_original_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -63,6 +65,8 @@ class WindowFeatures(BaseForecastTransformer):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     window: int, offset, BaseIndexer subclass, or list, default=3
         Size of the moving window. If an integer, the fixed number of observations used
@@ -154,6 +158,7 @@ class WindowFeatures(BaseForecastTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         window: Union[str, int, Callable, List[int], List[str]] = 3,
         min_periods: Union[int, None] = None,
         functions: Union[str, List[str]] = "mean",
@@ -183,7 +188,9 @@ class WindowFeatures(BaseForecastTransformer):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
-        super().__init__(variables, missing_values, drop_original, drop_na)
+        super().__init__(
+            variables, return_empty, missing_values, drop_original, drop_na
+        )
 
         self.window = window
         self.min_periods = min_periods

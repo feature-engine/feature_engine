@@ -9,6 +9,9 @@ import pandas as pd
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -17,6 +20,9 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
+)
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
@@ -43,6 +49,7 @@ def _define_seed(
 
 @Substitution(
     variables_=_variables_attribute_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=_transform_imputers_docstring,
@@ -68,6 +75,8 @@ class RandomSampleImputer(BaseImputer):
     variables: list, default=None
         The list of variables to be imputed. If None, the imputer will select
         all variables in the train set.
+
+    {return_empty}
 
     random_state: int, str or list, default=None
         The random_state can take an integer to set the seed when extracting the
@@ -135,6 +144,7 @@ class RandomSampleImputer(BaseImputer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
         seeding_method: str = "add",
@@ -159,6 +169,10 @@ class RandomSampleImputer(BaseImputer):
             )
 
         self.variables = _check_variables_input_value(variables)
+
+        _check_return_empty_is_bool(return_empty)
+        self.return_empty = return_empty
+
         self.random_state = random_state
         self.seed = seed
         self.seeding_method = seeding_method
@@ -184,7 +198,7 @@ class RandomSampleImputer(BaseImputer):
 
         # find variables to impute
         if self.variables is None:
-            self.variables_ = find_all_variables(X)
+            self.variables_ = find_all_variables(X, self.return_empty)
         else:
             self.variables_ = check_all_variables(X, self.variables)
 

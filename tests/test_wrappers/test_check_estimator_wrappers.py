@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 import sklearn
 from sklearn.impute import SimpleImputer
@@ -56,3 +57,37 @@ def test_raises_error_when_no_transformer_passed():
     # this transformer needs an estimator as an input param.
     with pytest.raises(TypeError):
         SklearnTransformerWrapper()
+
+
+def test_return_empty():
+    X = pd.DataFrame({"var_cat": ["A", "B", "A"]})
+
+    transformer = SklearnTransformerWrapper(
+        transformer=StandardScaler(), variables=None, return_empty=False
+    )
+    with pytest.raises(
+        TypeError, match="No numerical variables found in this dataframe"
+    ):
+        transformer.fit(X)
+
+    transformer = SklearnTransformerWrapper(
+        transformer=StandardScaler(), variables=None, return_empty=True
+    )
+    with pytest.warns(
+        UserWarning,
+        match="No numerical variables found in this dataframe. "
+        "Returning an empty list.",
+    ):
+        transformer.fit(X)
+    assert transformer.variables_ == []
+
+    # if return_empty=True, transformer should return same df
+    # after transformation
+    dft = transformer.transform(X)
+    pd.testing.assert_frame_equal(dft, X)
+    assert transformer.get_feature_names_out() == list(X.columns)
+
+    # when wrapping a transformer that selects all variable types (e.g.
+    # OrdinalEncoder), find_all_variables always finds at least the 1 column
+    # present in a non-empty dataframe, so return_empty can't be exercised
+    # this way; there is no dataframe that reaches the "no variables" branch.

@@ -645,6 +645,9 @@ def test_split_by_list(df_mixed_types, col, cut_off_list):
     test = DropHighPSIFeatures(split_col=col, cut_off=cut_off_list, bins=3)
     a, b = test._split_dataframe(df_mixed_types)
 
+    if pd.api.types.is_datetime64_any_dtype(df_mixed_types[col]):
+        cut_off_list = pd.to_datetime(cut_off_list)
+
     pd.testing.assert_frame_equal(
         a, df_mixed_types[df_mixed_types[col].isin(cut_off_list)]
     )

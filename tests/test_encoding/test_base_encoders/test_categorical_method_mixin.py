@@ -6,9 +6,10 @@ from feature_engine.encoding.base_encoder import CategoricalMethodsMixin
 
 
 class MockClassFit(CategoricalMethodsMixin):
-    def __init__(self, missing_values="raise", ignore_format=False):
+    def __init__(self, missing_values="raise", ignore_format=False, return_empty=False):
         self.missing_values = missing_values
         self.variables = None
+        self.return_empty = return_empty
         self.ignore_format = ignore_format
 
 
