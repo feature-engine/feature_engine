@@ -13,8 +13,9 @@ from feature_engine._docstrings.fit_attributes import (
     _right_tail_caps_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.init_parameters.outliers import (
@@ -34,6 +35,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     tail=_tail_docstring,
     fold=_fold_docstring,
     variables=_variables_numerical_docstring,
+    return_empty=_return_empty_docstring,
     missing_values=_missing_values_docstring,
     right_tail_caps_=_right_tail_caps_docstring,
     left_tail_caps_=_left_tail_caps_docstring,
@@ -72,6 +74,8 @@ class Winsorizer(WinsorizerBase):
         tails of the distribution. One binary variable per tail, per variable.
 
     {variables}
+
+    {return_empty}
 
     {missing_values}
 
@@ -168,6 +172,7 @@ class Winsorizer(WinsorizerBase):
         fold: Union[int, float, Literal["auto"]] = "auto",
         add_indicators: bool = False,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
     ) -> None:
         if not isinstance(add_indicators, bool):
@@ -175,7 +180,9 @@ class Winsorizer(WinsorizerBase):
                 "add_indicators takes only booleans True and False"
                 f"Got {add_indicators} instead."
             )
-        super().__init__(capping_method, tail, fold, variables, missing_values)
+        super().__init__(
+            capping_method, tail, fold, variables, return_empty, missing_values
+        )
         self.add_indicators = add_indicators
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

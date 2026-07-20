@@ -1,4 +1,4 @@
-""" The base transformer provides functionality that is shared by most transformer
+"""The base transformer provides functionality that is shared by most transformer
 classes. Provides the base functionality within the fit() and transform() methods
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
@@ -60,7 +60,9 @@ class BaseNumericalTransformer(
 
         # find or check for numerical variables
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
+            self.variables_ = find_numerical_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 

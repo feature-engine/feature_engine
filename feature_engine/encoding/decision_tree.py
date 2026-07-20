@@ -13,7 +13,8 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import (
@@ -35,7 +36,6 @@ from feature_engine.encoding.base_encoder import (
 from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.tags import _return_tags
 
-
 _unseen_docstring = (
     _unseen_docstring
     + """ If `'encode'` unseen categories will be encoded as `fill_value`."""
@@ -45,6 +45,7 @@ _unseen_docstring = (
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     unseen=_unseen_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -124,6 +125,8 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         the random_state to an integer.
 
     {variables}
+
+    {return_empty}
 
     {ignore_format}
 
@@ -220,6 +223,7 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         regression: bool = True,
         random_state: Optional[int] = None,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         ignore_format: bool = False,
         precision: Optional[int] = None,
         unseen: str = "ignore",
@@ -247,7 +251,7 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
-        super().__init__(variables, ignore_format)
+        super().__init__(variables, return_empty, ignore_format)
         self.encoding_method = encoding_method
         self.cv = cv
         self.scoring = scoring
@@ -290,6 +294,14 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         _check_contains_na(X, variables_)
 
         param_grid = self._assign_param_grid()
+
+        # if the list of variables to transform is empty, we
+        # stop the logic.
+        if isinstance(variables_, list) and len(variables_) == 0:
+            self.encoder_dict_ = {}
+            self.variables_ = variables_
+            self._get_feature_names_in(X)
+            return self
 
         encoder = OrdinalEncoder(
             encoding_method=self.encoding_method,

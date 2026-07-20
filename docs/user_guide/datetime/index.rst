@@ -1,10 +1,21 @@
-.. -*- mode: rst -*-
+.. _datetime_module:
 
 Datetime Features
 =================
 
-Feature-engine’s datetime transformers are able to extract a wide variety of datetime
-features from existing datetime or object-like data.
+Feature-engine’s datetime transformers extract a wide variety of date and time features
+from datetime variables. Datetime variables can be cast as datetime or object.
+
+Summary of feature-engine’s datetime transformers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+================================ ===============================================================================
+    Transformer                     	  Description
+================================ ===============================================================================
+:class:`DatetimeFeatures()`	        Extracts features like day, month, year, hour, minute, second, and more.
+:class:`DatetimeOrdinal()`          Recodes variable as time elapsed since a certain date.
+:class:`DatetimeSubtraction()`	    Calculates time difference between 2 datetime variables.
+================================ ===============================================================================
 
 .. toctree::
    :maxdepth: 1

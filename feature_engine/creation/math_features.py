@@ -1,5 +1,6 @@
 from typing import Any, List, Optional, Union
 
+import numpy as np
 import pandas as pd
 
 from feature_engine._docstrings.fit_attributes import (
@@ -7,7 +8,7 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _drop_original_docstring,
     _missing_values_docstring,
 )
@@ -18,6 +19,26 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
+
+_PANDAS_LT_3 = int(pd.__version__.split(".")[0]) < 3
+
+# In pandas < 3, agg() maps these callables to the pandas methods and warns that
+# this will change; the string alias keeps that behavior (e.g., np.std ->
+# Series.std with ddof=1) without the warning. In pandas >= 3 the callables are
+# used directly (np.std applies ddof=0), so they must not be aliased.
+_FUNC_TO_STRING_ALIAS = {
+    sum: "sum",
+    min: "min",
+    max: "max",
+    np.sum: "sum",
+    np.mean: "mean",
+    np.std: "std",
+    np.var: "var",
+    np.median: "median",
+    np.min: "min",
+    np.max: "max",
+    np.prod: "prod",
+}
 
 
 @Substitution(
@@ -206,10 +227,17 @@ class MathFeatures(BaseCreation):
 
         new_variable_names = self._get_new_features_name()
 
+        func = self.func
+        if _PANDAS_LT_3:
+            if isinstance(func, list):
+                func = [_FUNC_TO_STRING_ALIAS.get(fun, fun) for fun in func]
+            else:
+                func = _FUNC_TO_STRING_ALIAS.get(func, func)
+
         if len(new_variable_names) == 1:
-            X[new_variable_names[0]] = X[self.variables].agg(self.func, axis=1)
+            X[new_variable_names[0]] = X[self.variables].agg(func, axis=1)
         else:
-            X[new_variable_names] = X[self.variables].agg(self.func, axis=1)
+            X[new_variable_names] = X[self.variables].agg(func, axis=1)
 
         if self.drop_original:
             X.drop(columns=self.variables, inplace=True)

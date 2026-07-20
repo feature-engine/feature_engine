@@ -5,6 +5,9 @@ import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from sklearn.utils.validation import check_is_fitted
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -12,8 +15,9 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
 )
 from feature_engine._docstrings.methods import (
     _fit_not_learn_docstring,
@@ -48,6 +52,7 @@ _example = """
 
 @Substitution(
     missing_values=_missing_values_docstring,
+    return_empty=_return_empty_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -76,6 +81,8 @@ class DatetimeSubtraction(BaseCreation):
     reference: list
         The list of datetime reference variables that will be subtracted from
         `variables` (right side of the subtraction operation).
+
+    {return_empty}
 
     new_variables_names: list, default=None
         Names of the new variables. You have the option to pass a list with the names
@@ -154,6 +161,7 @@ class DatetimeSubtraction(BaseCreation):
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         reference: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         new_variables_names: Union[None, List[str], str] = None,
         output_unit: str = "D",
         missing_values: str = "ignore",
@@ -198,9 +206,12 @@ class DatetimeSubtraction(BaseCreation):
                     f"Got {new_variables_names} instead."
                 )
 
+        _check_return_empty_is_bool(return_empty)
+
         super().__init__(missing_values, drop_original)
         self.variables = _check_variables_input_value(variables)
         self.reference = _check_variables_input_value(reference)
+        self.return_empty = return_empty
         self.new_variables_names = new_variables_names
         self.output_unit = output_unit
         self.dayfirst = dayfirst
@@ -226,12 +237,16 @@ class DatetimeSubtraction(BaseCreation):
 
         # check variables are datetime
         if self.variables is None:
-            self.variables_ = find_datetime_variables(X)
+            self.variables_ = find_datetime_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.variables_ = check_datetime_variables(X, self.variables)
 
         if self.reference is None:
-            self.reference_ = find_datetime_variables(X)
+            self.reference_ = find_datetime_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.reference_ = check_datetime_variables(X, self.reference)
 

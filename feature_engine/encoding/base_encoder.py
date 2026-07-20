@@ -6,11 +6,15 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
@@ -32,6 +36,7 @@ from feature_engine.variable_handling import (
 @Substitution(
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
 )
 class CategoricalInitMixin:
     """Shared initialization parameters across transformers. Sets and checks init
@@ -39,7 +44,9 @@ class CategoricalInitMixin:
 
     Parameters
     ----------
-    {variables}.
+    {variables}
+
+    {return_empty}
 
     {ignore_format}
     """
@@ -47,6 +54,7 @@ class CategoricalInitMixin:
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         ignore_format: bool = False,
     ) -> None:
 
@@ -56,7 +64,10 @@ class CategoricalInitMixin:
                 f"Got {ignore_format} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.ignore_format = ignore_format
 
 
@@ -140,7 +151,9 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
                 variables_ = check_all_variables(X, self.variables)
         else:
             if self.variables is None:
-                variables_ = find_categorical_variables(X)
+                variables_ = find_categorical_variables(
+                    X, return_empty=self.return_empty
+                )
             else:
                 variables_ = check_categorical_variables(X, self.variables)
 

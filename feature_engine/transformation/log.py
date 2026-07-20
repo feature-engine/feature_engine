@@ -8,6 +8,9 @@ import pandas as pd
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import FitFromDictMixin
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -16,7 +19,8 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
     _variables_numerical_docstring,
 )
 from feature_engine._docstrings.methods import (
@@ -30,6 +34,7 @@ from feature_engine.tags import _return_tags
 
 @Substitution(
     variables=_variables_numerical_docstring,
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -53,6 +58,8 @@ class LogTransformer(BaseNumericalTransformer):
     Parameters
     ----------
     {variables}
+
+    {return_empty}
 
     base: string, default='e'
         Indicates if the natural or base 10 logarithm should be applied. Can take
@@ -100,13 +107,17 @@ class LogTransformer(BaseNumericalTransformer):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         base: str = "e",
     ) -> None:
 
         if base not in ["e", "10"]:
             raise ValueError("base can take only '10' or 'e' as values")
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.base = base
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
@@ -221,6 +232,7 @@ class LogTransformer(BaseNumericalTransformer):
 
 
 @Substitution(
+    return_empty=_return_empty_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
@@ -254,6 +266,8 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
         will find and select all numerical variables. If C is a dictionary, then this
         parameter is ignored and the variables to transform are selected from the
         dictionary keys.
+
+    {return_empty}
 
     base: string, default='e'
         Indicates if the natural or base 10 logarithm should be applied. Can take
@@ -317,6 +331,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         base: str = "e",
         C: Union[int, float, str, Dict[Union[str, int], Union[float, int]]] = "auto",
     ) -> None:
@@ -331,7 +346,10 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 f"C can take only 'auto', integers or floats. Got {C} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.base = base
         self.C = C
 

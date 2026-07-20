@@ -37,3 +37,18 @@ div.sk-sponsor-div-box, div.sk-testimonial-div-box {
 .caption {
   text-align: center
 }
+
+/* Container for sponsor images to display them side-by-side */
+.sponsors-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 28px;
+}
+
+.sponsors-container figure {
+  float: none !important;
+  display: inline-block;
+}

@@ -5,13 +5,17 @@ from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _missing_values_docstring,
+    _return_empty_docstring,
     _variables_categorical_docstring,
 )
 from feature_engine._docstrings.init_parameters.encoders import (
@@ -40,6 +44,7 @@ _unseen_docstring = (
     missing_values=_missing_values_docstring,
     ignore_format=_ignore_format_docstring,
     variables=_variables_categorical_docstring,
+    return_empty=_return_empty_docstring,
     unseen=_unseen_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -80,9 +85,12 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
     {variables}
 
+    {return_empty}
+
     {missing_values}
 
     {ignore_format}
+
 
     {unseen}
 
@@ -163,6 +171,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self,
         encoding_method: str = "ordered",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
         ignore_format: bool = False,
         unseen: str = "ignore",
@@ -174,9 +183,12 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
+        _check_return_empty_is_bool(return_empty)
+
         super().__init__(variables, missing_values, ignore_format)
         self.encoding_method = encoding_method
         self.unseen = unseen
+        self.return_empty = return_empty
 
     def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         """Learn the numbers to be used to replace the categories in each

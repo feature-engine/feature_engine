@@ -32,6 +32,12 @@ def find_numerical_variables(
         Whether to return an empty list when no numerical variables are found.
         If False, the function raises an error.
 
+        .. versionadded:: 2.0
+           `return_empty` currently defaults to False. The default will change to
+           True in version 2.1. To keep the current behaviour and silence the
+           warning, explicitly set `return_empty=False` instead of relying on the
+           default.
+
     Returns
     -------
     variables: List
@@ -85,6 +91,12 @@ def find_categorical_variables(
     return_empty : bool, default=False
         Whether to return an empty list when no categorical variables are found.
         If False, the function raises an error.
+
+        .. versionadded:: 2.0
+           `return_empty` currently defaults to False. The default will change to
+           True in version 2.1. To keep the current behaviour and silence the
+           warning, explicitly set `return_empty=False` instead of relying on the
+           default.
 
     Returns
     -------
@@ -144,8 +156,14 @@ def find_datetime_variables(
         The dataset.
 
     return_empty : bool, default=False
-        Whether to return an empty list when no datetimemvariables are found.
+        Whether to return an empty list when no datetime variables are found.
         If False, the function raises an error.
+
+        .. versionadded:: 2.0
+           `return_empty` currently defaults to False. The default will change to
+           True in version 2.1. To keep the current behaviour and silence the
+           warning, explicitly set `return_empty=False` instead of relying on the
+           default.
 
     Returns
     -------
@@ -193,7 +211,7 @@ def find_all_variables(
 ) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the variables in the dataframe.
-    Optionally, it exlcudes variables that can be parsed as datetime or datetimetz.
+    Optionally, it excludes variables that can be parsed as datetime or datetimetz.
 
     More details in the :ref:`User Guide <find_all_vars>`.
 
@@ -208,6 +226,12 @@ def find_all_variables(
     return_empty : bool, default=False
         Whether to return an empty list when no variables are found. If False, the
         function raises an error.
+
+        .. versionadded:: 2.0
+           `return_empty` currently defaults to False. The default will change to
+           True in version 2.1. To keep the current behaviour and silence the
+           warning, explicitly set `return_empty=False` instead of relying on the
+           default.
 
     Returns
     -------
@@ -277,6 +301,12 @@ def find_categorical_and_numerical_variables(
     return_empty : bool, default=False
         Whether to return empty lists when no variables are found. If False, the
         function raises an error.
+
+        .. versionadded:: 2.0
+           `return_empty` currently defaults to False. The default will change to
+           True in version 2.1. To keep the current behaviour and silence the
+           warning, explicitly set `return_empty=False` instead of relying on the
+           default.
 
     Returns
     -------

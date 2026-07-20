@@ -6,6 +6,8 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
 from feature_engine.tags import _return_tags
 
+_PANDAS_LT_3 = int(pd.__version__.split(".")[0]) < 3
+
 
 class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across imputers"""
@@ -59,9 +61,15 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         X = self._transform(X)
 
-        # Replace missing data with learned parameters
-        X = X.fillna(value=self.imputer_dict_).infer_objects()
-        return X
+        # Replace missing data with learned parameters. In pandas < 3, fillna
+        # downcasts object columns and warns; the option applies the pandas 3
+        # behavior: no downcasting, and infer_objects restores numeric dtypes.
+        if _PANDAS_LT_3:
+            with pd.option_context("future.no_silent_downcasting", True):
+                X = X.fillna(value=self.imputer_dict_)
+        else:
+            X = X.fillna(value=self.imputer_dict_)
+        return X.infer_objects()
 
     def _get_feature_names_in(self, X):
         """Get the names and number of features in the train set (the dataframe

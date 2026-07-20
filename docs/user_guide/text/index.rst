@@ -1,4 +1,4 @@
-.. -*- mode: rst -*-
+.. _text_module:
 
 Text Feature Extraction
 =======================

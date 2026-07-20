@@ -11,14 +11,14 @@ is the process of transforming the range of numerical features so that they fit 
 specific scale, usually to improve the performance and training stability of machine learning
 models.
 
-Scaling helps to normalize the input data, ensuring that each feature contributes proportionately
+Scaling helps to normalise the input data, ensuring that each feature contributes proportionately
 to the final result, particularly in algorithms that are sensitive to the range of the data,
 such as gradient descent-based models (e.g., linear regression, logistic regression, neural networks)
-and distance-based models (e.g., K-nearest neighbors, clustering).
+and distance-based models (e.g., K-nearest neighbours, clustering).
 
 Feature-engine's scalers replace the variables' values by the scaled ones. In this page, we
 discuss the importance of scaling numerical features, and then introduce the various
-scaling techniques supported by Feature-engine.
+scaling techniques supported by feature-engine.
 
 Importance of scaling
 ---------------------
@@ -30,25 +30,28 @@ and distance-based methods. Additionally, scaling can improve convergence speed 
 accuracy, leading to more reliable predictions.
 
 
-When apply scaling
-------------------
+When to apply scaling
+---------------------
 
 - **Training:** Most machine learning algorithms require data to be scaled before training,
   especially linear models, neural networks, and distance-based models.
 
-- **Feature Engineering:** Scaling can be essential for certain feature engineering techniques,
+- **Feature engineering:** Scaling can be essential for certain feature engineering techniques,
   like polynomial features.
 
 - **Resampling:** Some oversampling methods like SMOTE and many of the undersampling methods
-  clean data based on KNN algorithms, which are distance based models.
+  resample data based on KNN algorithms, which are distance based models.
 
+- **Dimensionality reduction:** Principal component analysis (PCA) and other dimensionality reduction
+  methods are distance based, and as such, sensitive to the scale of the features (more details in our
+  course `Clustering and Dimensionality Reduction <https://www.trainindata.com/p/clustering-and-dimensionality-reduction>`_.)
 
-When Scaling Is Not Necessary
+When scaling is not necessary
 -----------------------------
 
 Not all algorithms require scaling. For example, tree-based algorithms (like Decision Trees,
 Random Forests, Gradient Boosting) are generally invariant to scaling because they split data
-based on the order of values, not the magnitude.
+based on the order of values, not their magnitude.
 
 Scalers
 -------

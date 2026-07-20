@@ -2,8 +2,8 @@
 
 .. currentmodule:: feature_engine.text
 
-Extracting Features from Text
-=============================
+TextFeatures
+============
 
 Short pieces of text are often found among the variables in our datasets. For example,
 in insurance, a text variable can describe the circumstances of an accident. Customer
@@ -31,9 +31,9 @@ contain text data via the `variables` parameter.
 
 Unlike scikit-learn's CountVectorizer or TfidfVectorizer which create sparse matrices,
 :class:`TextFeatures()` extracts metadata features that remain in DataFrame format
-and can be easily combined with other Feature-engine or sklearn transformers in a pipeline.
+and can be easily combined with other feature-engine or sklearn transformers in a pipeline.
 
-Text Features
+Text features
 -------------
 
 :class:`TextFeatures()` can extract the following features from a text piece:
@@ -79,7 +79,7 @@ Handling missing values
 -----------------------
 
 By default, :class:`TextFeatures()` ignores missing values by treating them as empty
-strings (`missing_values='ignore'`). You can change this behavior by setting the
+strings (`missing_values='ignore'`). You can change this behaviour by setting the
 parameter to `'raise'` if you prefer the transformer to raise an error when encountering
 missing data.
 
@@ -109,18 +109,18 @@ in the following example:
 
     print(X_transformed)
 
-In the resulting dataframe, we see that the row with NaN returned 0 in the character
-count:
+In the resulting dataframe, we see that the row with NaN was replaced with an empty
+string, and returned 0 in the character count:
 
 .. code-block:: none
 
     text  text_char_count
     0  Hello                5
-    1    NaN                0
+    1                       0
     2  World                5
 
-Python demo
------------
+Python implementation
+---------------------
 
 In this section, we'll show how to use :class:`TextFeatures()`.
 Let's create a dataframe with text data:
@@ -279,8 +279,8 @@ extracted features remain:
     2       Average                   9                 27
     3         Awful                   4                 20
 
-Combining with scikit-learn Bag-of-Words
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Combining with sklearn's bag-of-words
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In most NLP tasks, it is common to use bag-of-words (e.g., `CountVectorizer`) or TF-IDF
 (e.g., `TfidfVectorizer`) to represent the text. :class:`TextFeatures()` can be used
@@ -351,8 +351,8 @@ model that combines TF-IDF and :class:`TextFeatures()` metadata:
     combined_pipe.fit(X_train, y_train)
     print(f"Combined Accuracy: {combined_pipe.score(X_test, y_test):.3f}")
 
-Below we see the accuracy of a model trained using only the bag of words, respect to a
-model trained using both the bag of words and the additional meta data:
+Below we see the accuracy of a model trained using only the bag of words, compared to a
+model trained using both the bag of words and the additional metadata:
 
 .. code-block:: none
 
@@ -363,3 +363,16 @@ By adding statistical metadata through :class:`TextFeatures()`, we provided the 
 with information about text length, complexity, and style that is not explicitly
 captured by a word-count-based approach like TF-IDF, leading to a small but noticeable
 improvement in performance.
+
+Additional resources
+--------------------
+
+For tutorials about this and other feature engineering methods check out these resources:
+
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
+
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

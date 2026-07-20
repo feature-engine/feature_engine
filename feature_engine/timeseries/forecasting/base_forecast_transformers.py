@@ -8,6 +8,9 @@ from feature_engine._base_transformers.mixins import (
     GetFeatureNamesOutMixin,
     TransformXyMixin,
 )
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -15,7 +18,7 @@ from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
 )
-from feature_engine._docstrings.init_parameters.all_trasnformers import (
+from feature_engine._docstrings.init_parameters.all_transformers import (
     _drop_original_docstring,
     _missing_values_docstring,
 )
@@ -70,6 +73,7 @@ class BaseForecastTransformer(
     def __init__(
         self,
         variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
@@ -93,7 +97,10 @@ class BaseForecastTransformer(
                 f"Got {drop_na} instead."
             )
 
+        _check_return_empty_is_bool(return_empty)
+
         self.variables = _check_variables_input_value(variables)
+        self.return_empty = return_empty
         self.missing_values = missing_values
         self.drop_original = drop_original
         self.drop_na = drop_na
@@ -173,7 +180,9 @@ class BaseForecastTransformer(
 
         # find or check for numerical variables
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
+            self.variables_ = find_numerical_variables(
+                X, return_empty=self.return_empty
+            )
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 
