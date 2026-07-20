@@ -22,7 +22,7 @@ returns a Numpy array, and the order of the variables may not coincide with that
 original dataset.
 
 In the next code snippet we show how to wrap the SimpleImputer from scikit-learn to
-impute only the selected variables.
+impute only the selected variables. We start with the imports:
 
 .. code:: python
 
@@ -33,6 +33,10 @@ impute only the selected variables.
     from sklearn.impute import SimpleImputer
     from feature_engine.wrappers import SklearnTransformerWrapper
 
+Next, we load the house prices dataset and split it into a train set and a test set:
+
+.. code:: python
+
     # Load dataset
     data = fetch_openml(
         name='house_prices',
@@ -46,6 +50,10 @@ impute only the selected variables.
         data.drop(['Id', 'SalePrice'], axis=1),
         data['SalePrice'], test_size=0.3, random_state=0)
 
+Now, we set up the wrapper with the SimpleImputer, and fit it to the train set:
+
+.. code:: python
+
     # set up the wrapper with the SimpleImputer
     imputer = SklearnTransformerWrapper(transformer = SimpleImputer(strategy='mean'),
                                         variables = ['LotFrontage', 'MasVnrArea'])
@@ -53,13 +61,17 @@ impute only the selected variables.
     # fit the wrapper + SimpleImputer
     imputer.fit(X_train)
 
+Finally, we impute the missing data in the train and test sets:
+
+.. code:: python
+
     # transform the data
     X_train = imputer.transform(X_train)
     X_test = imputer.transform(X_test)
 
 
 In the next snippet of code we show how to wrap the StandardScaler from scikit-learn
-to standardise only the selected variables.
+to standardise only the selected variables. We start with the imports:
 
 .. code:: python
 
@@ -70,6 +82,10 @@ to standardise only the selected variables.
     from sklearn.preprocessing import StandardScaler
     from feature_engine.wrappers import SklearnTransformerWrapper
 
+Next, we load the house prices dataset and split it into a train set and a test set:
+
+.. code:: python
+
     # Load dataset
     data = fetch_openml(
         name='house_prices',
@@ -83,6 +99,10 @@ to standardise only the selected variables.
         data.drop(['Id', 'SalePrice'], axis=1),
         data['SalePrice'], test_size=0.3, random_state=0)
 
+Now, we set up the wrapper with the StandardScaler, and fit it to the train set:
+
+.. code:: python
+
     # set up the wrapper with the StandardScaler
     scaler = SklearnTransformerWrapper(transformer = StandardScaler(),
                                         variables = ['LotFrontage', 'MasVnrArea'])
@@ -90,13 +110,17 @@ to standardise only the selected variables.
     # fit the wrapper + StandardScaler
     scaler.fit(X_train)
 
+Finally, we standardise the selected variables in the train and test sets:
+
+.. code:: python
+
     # transform the data
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
 
 
 In the next snippet of code we show how to wrap the SelectKBest from scikit-learn
-to select only a subset of the variables.
+to select only a subset of the variables. We start with the imports:
 
 .. code:: python
 
@@ -107,6 +131,10 @@ to select only a subset of the variables.
     from sklearn.feature_selection import f_regression, SelectKBest
     from feature_engine.wrappers import SklearnTransformerWrapper
 
+Next, we load the house prices dataset and split it into a train set and a test set:
+
+.. code:: python
+
     # Load dataset
     data = fetch_openml(
         name='house_prices',
@@ -120,9 +148,16 @@ to select only a subset of the variables.
         data.drop(['Id', 'SalePrice'], axis=1),
         data['SalePrice'], test_size=0.3, random_state=0)
 
+We'll apply the selector to the numerical variables, so let's capture their names in a
+list:
+
+.. code:: python
+
     cols = [var for var in X_train.columns if X_train[var].dtypes !='O']
 
-    # let's apply the standard scaler on the above variables
+Now, we set up the wrapper with the SelectKBest, and fit it to the train set:
+
+.. code:: python
 
     selector = SklearnTransformerWrapper(
         transformer = SelectKBest(f_regression, k=5),
@@ -130,15 +165,20 @@ to select only a subset of the variables.
 
     selector.fit(X_train.fillna(0), y_train)
 
+Finally, we select the 5 best features in the train and test sets:
+
+.. code:: python
+
     # transform the data
     X_train_t = selector.transform(X_train.fillna(0))
     X_test_t = selector.transform(X_test.fillna(0))
 
-Even though feature-engine has its own implementation of OneHotEncoder, you may want 
-to use Scikit-Learn's transformer in order to access different options, 
-such as drop first Category. 
-In the following example, we show you how to apply scikit-learn's OneHotEncoder to a 
-subset of categories using the :class:SklearnTransformerWrapper().
+Even though feature-engine has its own implementation of OneHotEncoder, you may want
+to use scikit-learn's transformer in order to access different options,
+such as drop first category.
+In the following example, we show you how to apply scikit-learn's OneHotEncoder to a
+subset of categories using the :class:`SklearnTransformerWrapper()`. We start with the
+imports and a function to load and clean the Titanic dataset:
 
 .. code:: python
 
@@ -158,6 +198,10 @@ subset of categories using the :class:SklearnTransformerWrapper().
         data.drop(["name", "home.dest", "ticket", "boat", "body"], axis=1, inplace=True)
         return data
 
+Next, we load the data and split it into a train set and a test set:
+
+.. code:: python
+
     df = load_titanic()
 
     X_train, X_test, y_train, y_test= train_test_split(
@@ -166,6 +210,11 @@ subset of categories using the :class:SklearnTransformerWrapper().
         test_size=0.2,
         random_state=42,
     )
+
+Now, we set up the wrapper with the OneHotEncoder, fit it to the train set, and use it
+to transform the train and test sets:
+
+.. code:: python
 
     ohe = SklearnTransformerWrapper(
             OneHotEncoder(sparse=False, drop='first'),
@@ -194,14 +243,14 @@ The resulting dataframe is:
     147  NaN      0      0     42.4     n        S       0.0       0.0       1.0
 
 
-Let's say you want to use :class:`SklearnTransformerWrapper()` in a more complex 
-context. As you may note there are `?` signs to denote unknown values. Due to the 
-complexity of the transformations needed we'll use a Pipeline to impute missing values, 
-encode categorical features and create interactions for specific variables using 
-Scikit-Learn's PolynomialFeatures.
+Let's say you want to use :class:`SklearnTransformerWrapper()` in a more complex
+context. As you may note there are `?` signs to denote unknown values. Due to the
+complexity of the transformations needed we'll use a Pipeline to impute missing values,
+encode categorical features and create interactions for specific variables using
+scikit-learn's PolynomialFeatures. We start with the imports:
 
 .. code:: python
-    
+
     import pandas as pd
     import numpy as np
     from sklearn.model_selection import train_test_split
@@ -212,6 +261,10 @@ Scikit-Learn's PolynomialFeatures.
     from feature_engine.encoding import OrdinalEncoder
     from feature_engine.wrappers import SklearnTransformerWrapper
 
+Next, we load the Titanic dataset and split it into a train set and a test set:
+
+.. code:: python
+
     X, y = load_titanic(
         return_X_y_frame=True,
         predictors_only=True,
@@ -219,6 +272,12 @@ Scikit-Learn's PolynomialFeatures.
     )
 
     X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2, random_state=42)
+
+Now, we assemble the pipeline. The last step wraps scikit-learn's PolynomialFeatures with
+:class:`SklearnTransformerWrapper()`, so that it only creates interactions between
+`pclass` and `sex`:
+
+.. code:: python
 
     pipeline = Pipeline(steps = [
         ('ci', CategoricalImputer(imputation_method='frequent')),
@@ -229,11 +288,17 @@ Scikit-Learn's PolynomialFeatures.
             variables=['pclass','sex']))
     ])
 
+Finally, we fit the pipeline and use it to transform the train and test sets:
+
+.. code:: python
+
     pipeline.fit(X_train)
     X_train_transformed = pipeline.transform(X_train)
     X_test_transformed = pipeline.transform(X_test)
 
     print(X_train_transformed.head())
+
+We see the resulting dataframe, with the new interaction features at the end:
 
 .. code:: python
 

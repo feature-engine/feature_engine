@@ -8,12 +8,18 @@ find_all_variables
 With :class:`find_all_variables()` you can automatically capture in a list the names of
 all the variables in the dataset.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import find_all_variables
+
+Now, we create the dataset:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -60,8 +66,6 @@ We can now use :class:`find_all_variables()` to capture all the variable names i
 So let's do that and then display the items in the list:
 
 .. code:: python
-
-    from feature_engine.variable_handling import find_all_variables
 
     vars_all = find_all_variables(X)
 

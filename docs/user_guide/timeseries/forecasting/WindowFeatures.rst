@@ -45,8 +45,8 @@ algorithms, we also need to shift the window forward with pandas method `shift`:
 
     X[["var_1", "var_2"].rolling(window=3).agg(["max", "mean"]).shift(period=1)
 
-Shifting is important to ensure that we are using values strictly in the past, respect
-to the point that we want to forecast.
+Shifting is important to ensure that we are using values strictly in the past, with
+respect to the point that we want to forecast.
 
 Sliding window features with feature-engine
 -------------------------------------------
@@ -64,7 +64,7 @@ To create window features we need to determine a number of parameters. First, we
 identify the size of the window or windows in which we will perform the operations. For
 example, we can take the average of the variable over 3 months, or 6 weeks.
 
-We also need to determine how far back is the window located respect to the data point we
+We also need to determine how far back is the window located with respect to the data point we
 want to forecast. For example, I can take the average of the last 3 weeks of data to forecast
 this week of data, or I can take the average of the last 3 weeks of data to forecast next
 weeks data, leaving a gap of a window in between the window feature and the forecasting point.
@@ -97,8 +97,8 @@ compatible with the scikit-learn's `Pipeline` and cross-validation functions.
 Note that, in the current implementation, :class:`WindowFeatures` only works with dataframes whose index,
 containing the time series timestamp, contains unique values and no NaN.
 
-Examples
---------
+Python implementation
+----------------------
 
 Let's create a time series dataset to see how to create window features with
 :class:`WindowFeatures`. The dataframe contains 3 numerical variables, a categorical
@@ -168,11 +168,15 @@ data within those windows and also find the maximum value within the windows.
 
 With `freq="15min"` we indicate that we need to shift the calculations 15 minutes
 forward. In other words, we are using the data available in windows defined up to 15 minutes
-before the forecasting point.
+before the forecasting point. Let's start with the import:
 
 .. code:: python
 
     from feature_engine.timeseries.forecasting import WindowFeatures
+
+Now, we set up the transformer and fit it to the data:
+
+.. code:: python
 
     win_f = WindowFeatures(
         window=["30min", "60min"], functions=["mean", "max", "std"], freq="15min",
@@ -315,6 +319,8 @@ attribute of the :class:`WindowFeatures`:
 
     win_f.variables_
 
+These are the 3 numerical variables used to create the window features:
+
 .. code:: python
 
     ['ambient_temp', 'module_temp', 'irradiation']
@@ -325,6 +331,8 @@ We can obtain the names of the variables in the transformed dataframe using the
 .. code:: python
 
     win_f.get_feature_names_out()
+
+We see the original variables, followed by the new window features:
 
 .. code:: python
 
@@ -474,6 +482,8 @@ The following is a pandas Series:
 
     X['ambient_temp']
 
+This is the resulting output:
+
 .. code:: python
 
     2020-05-15 12:00:00    31.31
@@ -501,6 +511,8 @@ to a pandas Dataframe using the method `to_frame()`:
     X_tr = win_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
+
+We obtain the following dataframe with the 2 new window features:
 
 .. code:: python
 
@@ -535,6 +547,8 @@ just need to remember to drop the original series after the transformation:
 
     X_tr.head()
 
+The original variable is no longer in the output dataframe:
+
 .. code:: python
 
                          ambient_temp_window_45min_mean  \
@@ -567,6 +581,8 @@ all the features in the output dataframe.
     win_f.fit(X)
 
     win_f.get_feature_names_out()
+
+We obtain the names of the original variables plus the new window features:
 
 .. code:: python
 

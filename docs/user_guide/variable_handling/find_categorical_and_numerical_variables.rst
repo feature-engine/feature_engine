@@ -9,12 +9,18 @@ With :class:`find_categorical_and_numerical_variables()` you can automatically c
 2 separate lists the names of all the categorical and numerical variables in the dataset,
 respectively.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import find_categorical_and_numerical_variables
+
+Now, we create the dataset:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -62,8 +68,6 @@ and numerical variables in separate lists. So let's do that and then display the
 
 .. code:: python
 
-    from feature_engine.variable_handling import find_categorical_and_numerical_variables
-
     var_cat, var_num = find_categorical_and_numerical_variables(X)
 
     var_cat, var_num
@@ -91,15 +95,16 @@ We see the resulting lists below:
 
     (['cat_var1'], ['num_var_1'])
 
-We can also select from a list of variables those that are numerical or categorical:
+If the list of variables also contains variables that are neither numerical nor
+categorical, like the datetime variable `date1`, these are simply ignored:
 
 .. code:: python
 
-    find_categorical_and_numerical_variables(X, ["num_var_1", "cat_var1", "date1"])
+    var_cat, var_num = find_categorical_and_numerical_variables(X, ["num_var_1", "cat_var1", "date1"])
 
     var_cat, var_num
 
-We see the resulting lists below:
+We see that `date1` is absent from the resulting lists:
 
 .. code:: python
 

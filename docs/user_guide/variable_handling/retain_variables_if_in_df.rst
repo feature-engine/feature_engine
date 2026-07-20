@@ -8,11 +8,18 @@ retain_variables_if_in_df
 :class:`retain_variables_if_in_df()` returns the subset of variables in a list that
 is present in the dataset.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
+    from feature_engine.variable_handling import retain_variables_if_in_df
+
+Now, we create the dataset:
+
+.. code:: python
+
     df = pd.DataFrame({
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
@@ -39,11 +46,9 @@ resulting list:
 
 .. code:: python
 
-    from feature_engine.variable_handling import retain_variables_if_in_df
-
     vars_in_df = retain_variables_if_in_df(df, variables = ["Name", "City", "Dogs"])
 
-    var_in_df
+    vars_in_df
 
 We see the names of the subset of variables that are in the dataframe below:
 

@@ -8,11 +8,18 @@ check_numerical_variables
 :class:`check_numerical_variables()` checks that the variables in the list are of
 type numerical.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
+    from feature_engine.variable_handling import check_numerical_variables
+
+Now, we create the dataset:
+
+.. code:: python
+
     df = pd.DataFrame({
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
@@ -36,8 +43,6 @@ We see the resulting dataframe below:
 Let's now check that 2 of the variables are of type numerical:
 
 .. code:: python
-
-    from feature_engine.variable_handling import check_numerical_variables
 
     var_num = check_numerical_variables(df, ['Age', 'Marks'])
 

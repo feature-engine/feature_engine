@@ -55,7 +55,7 @@ Window features are the result of applying an aggregation operation (e.g., mean,
 min, max, etc.) to a variable over a window of past data.
 
 When forecasting the future values of a variable, the past values of that variable are
-likely to be predictive. To capitalize on the past values of a variable, we can simply
+likely to be predictive. To capitalise on the past values of a variable, we can simply
 lag features with :class:`LagFeatures`. We can also create features that summarise the
 past values into a single quantity utilising :class:`ExpandingWindowFeatures`.
 
@@ -83,8 +83,8 @@ functions.
 Note that, in the current implementation, :class:`ExpandingWindowFeatures` only works with
 dataframes whose index, containing the time series timestamp, contains unique values and no NaN.
 
-Examples
---------
+Python implementation
+----------------------
 
 Let's create a toy dataset to demonstrate the functionality of :class:`ExpandingWindowFeatures`.
 The dataframe contains 3 numerical variables, a categorical variable, and a datetime
@@ -143,11 +143,16 @@ Below we see the target variable:
 Now we will create expanding window features from the numerical variables. In `functions`,
 we indicate all the operations that we want to perform over those windows. In
 our example below, we want to calculate the mean and the standard deviation of the
-data within those windows and also find the maximum value within the windows.
+data within those windows and also find the maximum value within the windows. Let's
+start with the import:
 
 .. code:: python
 
     from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
+
+Now, we set up the transformer and fit it to the data:
+
+.. code:: python
 
     win_f = ExpandingWindowFeatures(functions=["mean", "max", "std"])
 
@@ -209,6 +214,8 @@ attribute of the :class:`ExpandingWindowFeatures`.
 
     win_f.variables_
 
+These are the 3 numerical variables used to create the expanding window features:
+
 .. code:: python
 
     ['ambient_temp', 'module_temp', 'irradiation']
@@ -219,6 +226,8 @@ We can obtain the names of the variables in the returned dataframe using the
 .. code:: python
 
     win_f.get_feature_names_out()
+
+We see the original variables, followed by the new expanding window features:
 
 .. code:: python
 
@@ -261,7 +270,7 @@ We see that the resulting dataframe contains less rows than the original datafra
 
 .. code:: python
 
-    (8, 4), (8,), (6, 13), (6,))
+    ((8, 4), (8,), (6, 13), (6,))
 
 
 Imputing rows with nan
@@ -334,6 +343,8 @@ The following is a pandas Series:
 
     X['ambient_temp']
 
+This is the resulting output:
+
 .. code:: python
 
     2020-05-15 12:00:00    31.31
@@ -357,6 +368,8 @@ it to a pandas Dataframe using the method `to_frame()`:
     X_tr = win_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
+
+We obtain the following dataframe with the 2 new expanding window features:
 
 .. code:: python
 
@@ -389,6 +402,8 @@ just need to remember to drop the original series after the transformation:
 
     X_tr.head()
 
+The original variable is no longer in the output dataframe:
+
 .. code:: python
 
                          ambient_temp_expanding_mean  ambient_temp_expanding_max
@@ -411,6 +426,8 @@ We can easily obtain the name of the original and new variables with the method
     win_f.fit(X)
 
     win_f.get_feature_names_out()
+
+We obtain the names of the original variables plus the new expanding window features:
 
 .. code:: python
 

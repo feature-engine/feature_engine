@@ -8,11 +8,18 @@ find_numerical_variables
 :class:`find_numerical_variables()` returns a list with the names of the numerical
 variables in the dataset.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
+    from feature_engine.variable_handling import find_numerical_variables
+
+Now, we create the dataset:
+
+.. code:: python
+
     df = pd.DataFrame({
         "Name": ["tom", "nick", "krish", "jack"],
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
@@ -38,8 +45,6 @@ variables in a list. So let's do that and then display the list:
 
 .. code:: python
 
-    from feature_engine.variable_handling import find_numerical_variables
-
     var_num = find_numerical_variables(df)
 
     var_num
@@ -62,4 +67,4 @@ need to set `return_empty` to `True`:
 
     find_numerical_variables(df[["Name", "City", "dob"]], return_empty=True)
 
-The previous commands returns an empty list: `[]`.
+The previous command returns an empty list: `[]`.

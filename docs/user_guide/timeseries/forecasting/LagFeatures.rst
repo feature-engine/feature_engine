@@ -6,7 +6,6 @@ LagFeatures
 ===========
 
 Lag features are commonly used in data science to forecast time series with traditional
-
 machine learning models, like linear regression or random forests. A lag feature is a
 feature with information about a prior time step of the time series.
 
@@ -56,8 +55,8 @@ same time. Also, unlike `pandas.shift`, we can only lag features forward.
 Note that, in the current implementation, :class:`LagFeatures` only works with dataframes whose index,
 containing the time series timestamp, contains unique values and no NaN.
 
-Examples
---------
+Python implementation
+----------------------
 
 Let's create a toy dataset to show how to add lag features with :class:`LagFeatures`.
 The dataframe contains 3 numerical variables, a categorical variable, and a datetime
@@ -97,6 +96,8 @@ And here we print and show the target variable:
 .. code:: python
 
     y
+
+This is our target variable:
 
 .. code:: python
 
@@ -152,6 +153,8 @@ The variables to lag are stored in the `variables_` attribute of the
 
     lag_f.variables_
 
+These are the 3 numerical variables that were lagged:
+
 .. code:: python
 
     ['ambient_temp', 'module_temp', 'irradiation']
@@ -162,6 +165,8 @@ returned in the transformed dataframe using the `get_feature_names_out()` method
 .. code:: python
 
     lag_f.get_feature_names_out()
+
+We see the original variables, followed by the new lag features:
 
 .. code:: python
 
@@ -212,6 +217,8 @@ Alternatively, we can drop the rows with missing values in the lag features, lik
     X_tr = lag_f.fit_transform(X)
 
     print(X_tr.head())
+
+We see that the row with missing data was removed from the dataframe:
 
 .. code:: python
 
@@ -290,6 +297,9 @@ We can get the names of features in the resulting dataframe as follows:
 .. code:: python
 
     lag_f.get_feature_names_out()
+
+We see the original variables, followed by the 2 lag features created from each
+numerical variable:
 
 .. code:: python
 
@@ -496,6 +506,8 @@ The following is a pandas Series:
 
     X['ambient_temp']
 
+This is the resulting output:
+
 .. code:: python
 
     2020-05-15 12:00:00    31.31
@@ -518,6 +530,8 @@ pandas Series if we convert it to a pandas Dataframe using the method `to_frame(
     X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
+
+We obtain the following dataframe with the 3 lag features:
 
 .. code:: python
 
@@ -545,6 +559,8 @@ just need to remember to drop the original series after the transformation:
     X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
+
+The original variable is no longer in the output dataframe:
 
 .. code:: python
 
@@ -577,6 +593,8 @@ all the features in the output dataframe.
     lag_f.fit(X)
 
     lag_f.get_feature_names_out()
+
+We obtain the names of the original variables plus the new lag features:
 
 .. code:: python
 
@@ -613,6 +631,7 @@ to use features that capture seasonality and trend, and much more.
 
 Lags from the target vs lags from predictor variables
 -----------------------------------------------------
+
 Very often, we want to forecast the values of just one time series. For example, we want
 to forecast sales in the next month. The sales variable is our target variable, and we can
 create features by lagging past sales values.
