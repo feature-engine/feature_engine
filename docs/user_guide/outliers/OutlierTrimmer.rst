@@ -12,7 +12,7 @@ remove them from the training data.
 
 .. note::
 
-    In this guide, we show how to remove outliers in Python using the :class:`OutlierTrimmer()`.
+    In this guide, we show how to remove outliers in Python using :class:`OutlierTrimmer()`.
 
 The first step to removing outliers consists of identifying those outliers. Outliers can be identified through various
 statistical methods, such as box plots, z-scores, the interquartile range (IQR), or the median absolute deviation.
