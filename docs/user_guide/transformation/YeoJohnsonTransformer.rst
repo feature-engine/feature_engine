@@ -11,7 +11,7 @@ variables with zero and negative values, in addition to positive values.
 The Box-Cox transformation, on the other hand, is suitable for numeric variables that are strictly positive. When variables
 include negative values, we have two options:
 
-- shift the distribution toward positive values by adding a constant
+- shift the distribution towards positive values by adding a constant
 - use the Yeo-Johnson transformation
 
 The Yeo-Johnson transformation is defined as:
@@ -45,12 +45,12 @@ values.
 
 - For strictly positive values: The Yeo-Johnson transformation is equivalent to the Box-Cox transformation applied to (X + 1).
 
-- For strictly negative values: The Yeo-Johnson transformation corresponds to the Box-Cox transformation applied to (-X + 1) with a power of (2 — λ), where λ is the transformation parameter.
+- For strictly negative values: The Yeo-Johnson transformation corresponds to the Box-Cox transformation applied to (-X + 1) with a power of (2 - λ), where λ is the transformation parameter.
 
 - For variables with both positive and negative values: The Yeo-Johnson transformation combines the two approaches, using different powers for the positive and negative segments of the variable.
 
 To apply the Yeo-Johnson transformation in Python, you can use `scipy.stats.yeojohnson`, which can transform one variable
-at a time. For transforming multiple variables simultaneously, libraries like scikit-klearn and feature-engine are more suitable.
+at a time. For transforming multiple variables simultaneously, libraries like scikit-learn and feature-engine are more suitable.
 
 The YeoJohnsonTransformer
 -------------------------
@@ -60,7 +60,7 @@ Feature-engine's :class:`YeoJohnsonTransformer()` applies the Yeo-Johnson transf
 Under the hood, :class:`YeoJohnsonTransformer()` uses `scipy.stats.yeojohnson <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.yeojohnson.html>`_
 to apply the transformations to each variable.
 
-Python Implementation
+Python implementation
 ----------------------
 
 In this section, we will apply the Yeo-Johnson transformation to several variables from the Ames house prices dataset.
@@ -118,9 +118,9 @@ Let's now set up the transformer to apply the Yeo-Johnson transformation to 2 va
 
 .. code:: python
 
-	tf = YeoJohnsonTransformer(variables = ['LotArea', 'GrLivArea'])
+    tf = YeoJohnsonTransformer(variables = ['LotArea', 'GrLivArea'])
 
-	tf.fit(X_train)
+    tf.fit(X_train)
 
 With `fit()`, :class:`YeoJohnsonTransformer()` learns the optimal lambda for the Yeo-Johnson power transformation. We
 can inspect these values as follows:
@@ -139,8 +139,8 @@ We can now go ahead and apply the data transformation to get closer to normal di
 
 .. code:: python
 
-	train_t = tf.transform(X_train)
-	test_t = tf.transform(X_test)
+    train_t = tf.transform(X_train)
+    test_t = tf.transform(X_test)
 
 We'll check out the effect of the transformation in the next section.
 

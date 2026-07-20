@@ -11,7 +11,7 @@ Some regression models, like linear regression, t-test and ANOVA, make assumptio
 
 Applying data transformations is common practice during regression analysis because it can help make the data meet those assumptions and hence obtain more reliable results.
 
-The logarithm function is helpful for dealing with positive data with a right-skewed distribution. That is, those variables whose observations accumulate towards lower values. A common example is the variable income, with a heavy accumulation of values toward lower salaries.
+The logarithm function is helpful for dealing with positive data with a right-skewed distribution. That is, those variables whose observations accumulate towards lower values. A common example is the variable income, with a heavy accumulation of values towards lower salaries.
 
 More generally, when data follows a log-normal distribution, then its log-transformed version approximates a normal distribution.
 
@@ -28,9 +28,9 @@ LogTransformer
 
 .. note::
 
-    Note that the logarithm can only be applied to positive values. Thus, if the variable contains 0 or negative variables, this transformer will return and error.
+    Note that the logarithm can only be applied to positive values. Thus, if the variable contains 0 or negative values, this transformer will return an error.
 
-To transform non-positive variables you can add a constant to shift the data points towards positive values. You can do this from by using :class:`LogCpTransformer()`.
+To transform non-positive variables you can add a constant to shift the data points towards positive values. You can do this by using :class:`LogCpTransformer()`.
 
 Python implementation
 ---------------------

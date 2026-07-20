@@ -40,7 +40,7 @@ Properties
 ReciprocalTransformer
 ---------------------
 
-:class:`ReciprocalTransformer` applies the reciprocal transformation to numerical variables. By default, it will
+:class:`ReciprocalTransformer()` applies the reciprocal transformation to numerical variables. By default, it will
 find and transform all numerical variables in the dataset. A better practice would be to apply the transformer to a
 selected group of variables, which you can do by passing a list with the variable names to the `variables` parameter
 when setting up the transformer.
@@ -52,7 +52,7 @@ when setting up the transformer.
 Python implementation
 ---------------------
 
-In the next sections, we'll demonstrate how to apply the reciprocal transformation with :class:`ReciprocalTransformer`.
+In the next sections, we'll demonstrate how to apply the reciprocal transformation with :class:`ReciprocalTransformer()`.
 
 We'll load the Ames house prices dataset and create a new variable that represents the square foots per car in the house
 garage. Next, we'll separate the data into train and test sets:
@@ -123,7 +123,7 @@ Finally, let's plot the distribution after the reciprocal transformation:
     plt.title("sqrfootpercar")
     plt.show()
 
-In the following image, we see that the reciprocal transformation made the variable's values follow more closer a
+In the following image, we see that the reciprocal transformation made the variable's values more closely follow a
 symmetric or normal distribution:
 
 .. figure::  ../../images/reciprocal_transformer/reciprocal_transfomer_new.png
@@ -133,13 +133,13 @@ symmetric or normal distribution:
 Inverse transformation
 ~~~~~~~~~~~~~~~~~~~~~~
 
-With :class:`ReciprocalTransformer`, we can easily revert the transformed data to it's original representation, by using
+With :class:`ReciprocalTransformer()`, we can easily revert the transformed data to its original representation, by using
 the method `inverse_transform`:
 
 .. code:: python
 
-	train_unt = tf.inverse_transform(train_t)
-	test_unt = tf.inverse_transform(test_t)
+    train_unt = tf.inverse_transform(train_t)
+    test_unt = tf.inverse_transform(test_t)
 
 Let's check out the reverted transformation:
 
@@ -170,14 +170,14 @@ for them:
     X_train.hist(bins=50, figsize=(10,10))
     plt.show()
 
-In the following plot, we can see that, as expected, `GarageCounts` contains counts (potentially following a Poisson
+In the following plot, we can see that, as expected, `GarageCars` contains counts (potentially following a Poisson
 distribution), and `GarageArea` is a continuous variable:
 
 .. image:: ../../images/reciprocal_transformer/reciprocal_transformer_3plots_original.png
 
 |
 
-Let's then create a pipeline to apply the square root transformation to `GarageCounts` and the Box-Cox transformation
+Let's then create a pipeline to apply the square root transformation to `GarageCars` and the Box-Cox transformation
 to `GarageArea`, while applying the reciprocal transformation to `sqrfootpercar`:
 
 .. code:: python
@@ -234,10 +234,10 @@ All these functions are considered variance stabilising transformations, and hav
 meet the assumptions of statistical parametric tests and linear regression models.
 
 You can apply all these functions out-of-the-box with the transformers from feature-engine's transformation module.
-Remember to follow up the transformations with proper data analysis, to ensure that the transformations returned the desired effect, otherwise, we are adding complexity to the feature engineering pipeline for now added benefit.
+Remember to follow up the transformations with proper data analysis, to ensure that the transformations returned the desired effect, otherwise, we are adding complexity to the feature engineering pipeline for no added benefit.
 
-Alternatives with Feature-engine
---------------------------------
+Alternatives with feature-engine
+---------------------------------
 
 You can apply other variance data transformation functions with the following transformers:
 

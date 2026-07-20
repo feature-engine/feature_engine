@@ -24,18 +24,18 @@ See the following illustration:
 Supported transformations
 -------------------------
 
-================================== ========================= ===================================================== ======================================================================
-    Transformer                       Limitations     	  	    Description                                          Suitable for
-================================== ========================= ===================================================== ======================================================================
-:class:`LogTransformer()`	         Not valid for x<=0         Applies natural or decimal logarithm.                Positive continuous variables with right skew.
-:class:`LogCpTransformer()`	               None	                Applies logarithm after adding a constant value.     Continuous variables with a right skew.
-:class:`ReciprocalTransformer()`     Not defined for x=0        Applies the reciprocal transformation: 1/x.          Variables representing ratios or proportions, like tons per acre.
-:class:`ArcsinTransformer()`         0<= x <= 1                 Applies the arcsin square root transformation.       Probabilities or proportion variables with values between 0 and 1.
-:class:`ArcSinhTransformer()`	     	 None                   Applies the inverse hyperbolic sine function.        Similar to log but retaining zero values in a variable.
-:class:`PowerTransformer()`	        	 None                   Applies any power transformation x = x**n.           Square root is suitable for count variables. Other powers vary.
-:class:`BoxCoxTransformer()`	     Not defined for x<=0       Applies the Box-Cox transformation.
-:class:`YeoJohnsonTransformer()`         None                   Applies the Yeo-Johnson transformation.
-================================== ========================= ===================================================== ======================================================================
+================================ ================================================ ============================================================================================= ====================
+Transformer                      Description                                      Suitable for                                                                                  Limitations
+================================ ================================================ ============================================================================================= ====================
+:class:`LogTransformer()`        Applies natural or decimal logarithm.            Positive continuous variables with right skew.                                                Not valid for x<=0
+:class:`LogCpTransformer()`      Applies logarithm after adding a constant value. Continuous variables with a right skew.                                                       None
+:class:`ReciprocalTransformer()` Applies the reciprocal transformation: 1/x.      Variables representing ratios or proportions, like tons per acre.                             Not defined for x=0
+:class:`ArcsinTransformer()`     Applies the arcsin square root transformation.   Probabilities or proportion variables with values between 0 and 1.                            0<= x <= 1
+:class:`ArcSinhTransformer()`    Applies the inverse hyperbolic sine function.    Similar to log but retaining zero values in a variable.                                       None
+:class:`PowerTransformer()`      Applies any power transformation x = x**n.       Square root is suitable for count variables. Other powers vary.                               None
+:class:`BoxCoxTransformer()`     Applies the Box-Cox transformation.              Positive continuous variables when the optimal transformation is unknown.                     Not defined for x<=0
+:class:`YeoJohnsonTransformer()` Applies the Yeo-Johnson transformation.          Continuous variables with zero or negative values when the optimal transformation is unknown. None
+================================ ================================================ ============================================================================================= ====================
 
 .. note::
 

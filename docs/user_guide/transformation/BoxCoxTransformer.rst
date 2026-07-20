@@ -8,10 +8,13 @@ BoxCoxTransformer
 The Box-Cox transformation is a generalisation of the power transformations family and is
 defined as follows:
 
-.. code:: python
+.. math::
 
-   y = (x**λ - 1) / λ,      for λ != 0
-   y = log(x),              for λ = 0
+   y =
+   \begin{cases}
+   \dfrac{x^{\lambda} - 1}{\lambda} & \text{if } \lambda \neq 0 \\
+   \log(x) & \text{if } \lambda = 0
+   \end{cases}
 
 Here, y is the transformed data, x is the variable to transform and λ is the transformation
 parameter.
@@ -35,13 +38,13 @@ approximates a normal distribution.
     instead.
 
 
-Uses of the Box-Cox Transformation
-----------------------------------
+Uses of the Box-Cox transformation
+-----------------------------------
 
 Many statistical methods that we use for data analysis make assumptions about the data.
 For example, the linear regression model assumes that the values of the dependent variable
 are independent, that there is a linear relationship between the response variable and the
-independent variables, and that the residuals are normally distributed and centered at 0.
+independent variables, and that the residuals are normally distributed and centred at 0.
 
 When these assumptions are not met, we can't fully trust the results of our regression
 analyses. To make data meet the assumptions and improve the trust in the models, it is
@@ -64,7 +67,7 @@ BoxCoxTransformer
 The :class:`BoxCoxTransformer()` applies the BoxCox transformation to numerical variables.
 It uses `SciPy.stats <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.boxcox.html>`_ under the hood to apply the transformation.
 
-The BoxCox transformation works only for strictly positive variables (>=0). If the
+The BoxCox transformation works only for strictly positive variables (>0). If the
 variable contains 0 or negative values, the :class:`BoxCoxTransformer()` will return an
 error. To apply this transformation to non-positive variables, you can add a constant
 value. Alternatively, you can apply the Yeo-Johnson transformation with the

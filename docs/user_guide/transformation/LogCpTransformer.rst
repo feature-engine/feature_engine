@@ -32,7 +32,7 @@ Let's check out the functionality of :class:`LogCpTransformer()`.
 Transforming strictly positive variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's load the California housing dataset that comes with Scikit-learn and separate it
+Let's load the California housing dataset that comes with scikit-learn and separate it
 into train and test sets.
 
 .. code:: python

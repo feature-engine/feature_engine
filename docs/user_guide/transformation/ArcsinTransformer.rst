@@ -29,7 +29,7 @@ Python implementation
 In this section, we'll show how to apply the arcsin square root transformation with
 :class:`ArcsinTransformer()`.
 
-Let's load the breast cancer dataset from scikit-learn and  separate it into train and
+Let's load the breast cancer dataset from scikit-learn and separate it into train and
 test sets.
 
 .. code:: python
@@ -71,7 +71,7 @@ First, let's make a list with the variable names:
       'worst symmetry',
       'worst fractal dimension']
 
-Now, let's set up the arscin transformer to modify the previous variables:
+Now, let's set up the arcsin transformer to modify the previous variables:
 
 .. code:: python
 
@@ -94,7 +94,7 @@ We can now go ahead and transform the variables:
     train_t = tf.transform(X_train)
     test_t = tf.transform(X_test)
 
-That's it, now the variables have been transformed with the arscin formula.
+That's it, now the variables have been transformed with the arcsin formula.
 
 Let's go ahead and check out the effect of the transformation on the variables' distribution.
 We'll start by making a histogram for each of the original variable:

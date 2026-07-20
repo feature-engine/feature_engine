@@ -8,7 +8,7 @@ ArcSinhTransformer
 The inverse hyperbolic sine (or arcsinh) transformation is a variance stabilising
 transformation that achieves results similar to the logarithmic transformation,
 while retaining zero values in a variable, something the logarithm cannot do. It has
-gained popularity in recent years; therefore, we add support for it in Feature-engine.
+gained popularity in recent years; therefore, we add support for it in feature-engine.
 
 Variance stabilising transformations
 ------------------------------------
@@ -33,7 +33,7 @@ In recent years, the inverse hyperbolic sine (or arcsinh) transformation has gro
 popularity because it is similar to a logarithm, and it allows retaining zero-valued
 (and even negative-valued) observations.
 
-Inverse Hyperbolic Sine Transformation
+Inverse hyperbolic sine transformation
 --------------------------------------
 
 The inverse hyperbolic sine (IHS) transformation is defined as follows:
@@ -95,7 +95,7 @@ when x is small (left panel), or behaves like the log(x) (plus a shift) when x i
 
 .. image:: ../../images/arcsinh-transformation.png
 
-Variable Scaling before IHS
+Variable scaling before IHS
 ---------------------------
 
 The effect of the IHS transformation depends on the magnitude of the values to transform.
@@ -195,17 +195,17 @@ The fundamental message of this experiment is that:
 
 Hence, choosing the right scale, is key to achieving the desired results.
 
-Variable Centering before IHS
+Variable centring before IHS
 -----------------------------
 
 Another way to obtain better results using the inverse hyperbolic sine transformation is
 to shift the data (i.e., to add a constant). This is particularly useful when the variable
-has negative values, to transition from negative logarithmic behavior to positive logarithmic
-behavior.
+has negative values, to transition from negative logarithmic behaviour to positive logarithmic
+behaviour.
 
 Let's compare the effect of shifting the original variable distribution before applying the
 IHS transformation. With the following code, we apply the IHS to a variable containing
-zero and negative values after centering at its mean, or at its minimum value (shifting all
+zero and negative values after centring at its mean, or at its minimum value (shifting all
 negative values to positive):
 
 .. code:: python
@@ -281,7 +281,7 @@ see the variables after the ISH transformation:
 
 We observe that making all variable values positive, results in the best transformation
 (right panel), as the transformed variable has a more Gaussian looking distribution.
-Centering the variable at the mean reduces the difference between larger and zero and
+Centring the variable at the mean reduces the difference between larger and zero and
 negative values after the transformation (middle panel).
 
 Limitations of the IHS
@@ -425,7 +425,7 @@ Scaling the distribution before arcsinh
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`ArcSinhTransformer()` supports location and scale parameters to
-center and rescale data before transformation.
+centre and rescale data before transformation.
 
 We discussed previously that re-scaling the variables before applying the arcsinh transformation
 can help achieve better variance stabilising results.
