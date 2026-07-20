@@ -3,16 +3,12 @@ import pandas as pd
 import pytest
 from numpy.random import default_rng
 from scipy.stats import skewnorm
-from sklearn.datasets import fetch_california_housing
 
 from feature_engine.discretisation import ArbitraryDiscretiser
 
 
-def test_arbitrary_discretiser():
-    california_dataset = fetch_california_housing()
-    data = pd.DataFrame(
-        california_dataset.data, columns=california_dataset.feature_names
-    )
+def test_arbitrary_discretiser(static_california_housing):
+    data = static_california_housing
     user_dict = {"HouseAge": [0, 20, 40, 60, np.inf]}
 
     data_t1 = data.copy()

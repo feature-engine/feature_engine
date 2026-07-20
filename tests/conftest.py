@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -199,3 +201,10 @@ def df_normal_dist():
     df.columns = ["var"]
 
     return df
+
+
+@pytest.fixture(scope="module")
+def static_california_housing() -> pd.DataFrame:
+    return pd.read_csv(
+        Path(__file__).parent / "resources" / "california_housing.csv", index_col=0
+    )
