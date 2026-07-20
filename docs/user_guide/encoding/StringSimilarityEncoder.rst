@@ -133,7 +133,7 @@ string similarity to the seen categories.
 No text preprocessing is applied by :class:`StringSimilarityEncoder()`. Be mindful of preparing
 string categorical variables if needed.
 
-:class:`StringSimilarityEncoder()` works with categorical variables by default. Tt has the option to
+:class:`StringSimilarityEncoder()` works with categorical variables by default. It has the option to
 encode numerical variables as well. This is useful, when the values of the numerical variables are more
 useful as strings, than as numbers. For example, for variables like barcode.
 
