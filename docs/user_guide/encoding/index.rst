@@ -26,7 +26,7 @@ Categorical features
 Categorical variables are those whose values are selected from a group of categories 
 or labels. Their values can be strings or numbers.
 
-*Color* is a categorical feature that can take values such as *red*, *yellow* or 
+*Colour* is a categorical feature that can take values such as *red*, *yellow* or
 *orange*, among others. Similarly, *size* is another categorical feature, with 
 the values of *small*, *medium* and *large*. 
 
@@ -37,7 +37,7 @@ Nominal data vs ordinal data
 Categorical features can be **nominal** or **ordinal**.
 
 **Nominal features** are categorical features whose categories don't have a defined ranking 
-or inherent order. *Color* is an example of a nominal feature because each color is an 
+or inherent order. *Colour* is an example of a nominal feature because each colour is an
 independent entity, without a logical ordering or ranking.
 
 **Ordinal features** are categorical features whose categories show an inherent order or 
@@ -215,7 +215,7 @@ categories, we can assign them a frequency or count of '0' explicitly, which rep
 the frequency of the category on the training set, to prevent failure during inference 
 time (i.e., while making predictions) or while encoding live data.
 
-Feature-engine's :class:`CountFrequencyEncoder` implements cound and frequency encoding.
+Feature-engine's :class:`CountFrequencyEncoder` implements count and frequency encoding.
 
 Mean Encoding
 ~~~~~~~~~~~~~

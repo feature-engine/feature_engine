@@ -35,7 +35,7 @@ DecisionTreeEncoder
 The :class:`DecisionTreeEncoder()` replaces categories in the variable with
 the predictions of a decision tree.
 
-The :class:`DecisionTreeEncoder()`  uses Scikit-learn's decision trees under the hood.
+The :class:`DecisionTreeEncoder()` uses scikit-learn's decision trees under the hood.
 As these models can't handle non-numerical data, the :class:`DecisionTreeEncoder()` first
 replaces the categories with ordinal numbers and then fits the trees.
 

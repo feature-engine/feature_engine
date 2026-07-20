@@ -62,7 +62,7 @@ variables.
 
     Fewer intervals may be required if the variable is highly skewed or not continuous.
 
-**Integration with scikit-learn:** :class:`EqualWidthDiscretiser()` and all other Feature-engine transformers seamlessly
+**Integration with scikit-learn:** :class:`EqualWidthDiscretiser()` and all other feature-engine transformers seamlessly
 integrate with scikit-learn `pipelines <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_.
 
 Python implementation
@@ -148,7 +148,7 @@ In the following dictionary, we see the interval limits determined for each vari
 	  inf]}
 
 
-Note that the lower and upper boundaries are set to -inf and inf, respectively. This behavior ensures that the transformer
+Note that the lower and upper boundaries are set to -inf and inf, respectively. This behaviour ensures that the transformer
 is able to allocate to the extreme bins values that are smaller or greater than the observed minimum and maximum
 values in the training set.
 
@@ -215,7 +215,7 @@ Now, let's check out the number of observations per bin by creating a bar plot:
 	plt.ylabel('Number of houses')
 	plt.show()
 
-As we see in the following image, the intervals contain different number of observations:
+As we see in the following image, the intervals contain different numbers of observations:
 
 .. image:: ../../images/equalwidthdiscretisation.png
 
@@ -296,11 +296,11 @@ See Also
 For alternative binning techniques, check out the following resources:
 
 - Other feature-engine :ref:`discretisers / binning methods <discretization_transformers>`
-- Scikit-learn's `KBinsDiscretizer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html#sklearn.preprocessing.KBinsDiscretizer>`_.
+- scikit-learn's `KBinsDiscretizer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html#sklearn.preprocessing.KBinsDiscretizer>`_.
 
 Check out also:
 
-- `Pandas cut <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html>`_.
+- `pandas cut <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.cut.html>`_.
 
 Additional resources
 --------------------

@@ -10,7 +10,7 @@ commonly used during data preprocessing in Kaggle's data science competitions, e
 their predictive value is not immediately obvious.
 
 Count encoding consists of replacing the categories of categorical features by their
-counts, which are estimated from the training set. For example, in the variable color,
+counts, which are estimated from the training set. For example, in the variable colour,
 if 10 observations are blue and 5 observations are red, blue will be replaced by 10 and
 red by 5.
 
@@ -39,7 +39,7 @@ encoding or frequency encoding, we have reasons to believe that the count or the
 are a good indicator of predictive performance or somehow capture data insight, so that
 categories with similar counts would show similar patterns or behaviours.
 
-Count and Frequency encoding with Feature-engine
+Count and frequency encoding with feature-engine
 ------------------------------------------------
 
 The :class:`CountFrequencyEncoder()` replaces categories of categorical features by

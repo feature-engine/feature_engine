@@ -79,13 +79,13 @@ On the other hand, decision tree-based discretisation techniques can automatical
 determine the cut-points and the optimal number of divisions. This is a supervised
 method, as it uses the target variable to guide the determination of interval limits.
 
-Feature-engine's Discretisers
------------------------------
+Feature-engine's discretisers
+------------------------------
 
 Feature-engine's discretisation transformers transform continuous variables into
 discrete features. They use different logic to determine the limits of those intervals.
 
-**Summary of Feature-engine's discretisers**
+**Summary of feature-engine's discretisers**
 
 =====================================  ========================================================================
       Transformer                           Functionality

@@ -350,7 +350,7 @@ After encoding the features we can use the data sets to train machine learning a
 
     Last thing to note before closing in is that mean encoding does not increase the
     dimensionality of the resulting dataframes: from 1 categorical feature, we obtain 1
-    encoded variable. Hence, this encoding method is suitable for predictive modeling that
+    encoded variable. Hence, this encoding method is suitable for predictive modelling that
     uses models that are sensitive to the size of the feature space.
 
 Additional resources

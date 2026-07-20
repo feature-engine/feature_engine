@@ -71,7 +71,7 @@ DropMissingData
 :class:`DropMissingData()` has some advantages over pandas:
 
 - It learns and stores the variables for which rows with nan values should be deleted.
-- It can be used within a Scikit-learn like pipeline.
+- It can be used within a scikit-learn-like pipeline.
 
 With :class:`DropMissingData()`, you can drop nan values from numerical and categorical
 variables. In other words, you can remove null values from numerical, categorical or
@@ -158,7 +158,7 @@ of whether they had nan values during fit, we need to set up the class like this
     dmd =  DropMissingData(missing_only=False)
     Xt = dmd.fit_transform(X)
 
-Now, when we explore the paramter `variables_`, we see that all the variables in the
+Now, when we explore the parameter `variables_`, we see that all the variables in the
 train set are stored, and hence, will be used to remove nan values:
 
 .. code:: python
@@ -395,8 +395,8 @@ Now we see that only the last row was removed.
 Scikit-learn compatible
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-:class:`DropMissingData()` is fully compatible with the Scikit-learn API, so you will
-find common methods that you also find in Scikit-learn transformers, like, for example,
+:class:`DropMissingData()` is fully compatible with the scikit-learn API, so you will
+find common methods that you also find in scikit-learn transformers, like, for example,
 the `get_feature_names_out()` method to obtain the variable names in the transformed
 dataframe.
 
@@ -408,7 +408,7 @@ When we dropna from a dataframe, we then need to realign the target. We saw prev
 that we can do that by using the method `transform_x_y`.
 
 We can align the target with the resulting dataframe automatically from within a
-pipeline as well, by utilizing feature-engine's pipeline.
+pipeline as well, by utilising feature-engine's pipeline.
 
 Let's start by importing the necessary libraries:
 

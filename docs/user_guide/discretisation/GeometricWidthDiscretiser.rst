@@ -6,26 +6,30 @@ GeometricWidthDiscretiser
 =========================
 
 The :class:`GeometricWidthDiscretiser()` divides continuous numerical variables into
-intervals of increasing width. The width of each succeeding interval is larger than the
-previous interval by a constant amount (cw).
+intervals of increasing width, where each interval boundary is obtained by raising a
+constant factor (cw) to increasing powers.
 
-The constant amount is calculated as:
+The constant factor is calculated as:
 
 .. math::
 
         cw = (Max - Min)^{1/n}
 
-were Max and Min are the variable's maximum and minimum value, and n is the number of
+where Max and Min are the variable's maximum and minimum value, and n is the number of
 intervals.
 
-The sizes of the intervals themselves are calculated with a geometric progression:
+The upper boundary of the i-th interval is then calculated as:
 
 .. math::
 
-        a_{i+1} = a_i cw
+        b_i = Min + cw^i
 
-Thus, the first interval's width equals cw, the second interval's width equals 2 * cw,
-and so on.
+Because boundaries increase as powers of cw, interval widths grow multiplicatively as i
+increases: each interval is roughly cw times wider than the one before it. The first
+interval is the exception, as it is anchored directly to the variable's minimum rather
+than to the next power of cw in the sequence, so it is narrower than this pattern would
+suggest. You can see this in practice in the "Interval width" section below, where the
+width of the first interval breaks from the otherwise constant growth ratio of the rest.
 
 .. note::
 
@@ -203,7 +207,7 @@ histogram of the original variable next to a bar plot of the discretised variabl
 	plt.tight_layout(w_pad=2)
 	plt.show()
 
-We can see on the right panel (bar plot) that the intervals contain different number of
+We can see on the right panel (bar plot) that the intervals contain different numbers of
 observations. We can also see that the shape from the distribution changed from skewed
 (left panel) to a more "bell shaped" distribution (right panel).
 

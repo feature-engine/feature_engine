@@ -96,7 +96,7 @@ discrete intervals. You can do this by preprocessing the variable using any of
 feature-engine's discretisers.
 
 Some authors have extended the Weight of Evidence approach to neural networks and other
-algorithms, and although they have shown good results, the predictive modeling performance
+algorithms, and although they have shown good results, the predictive modelling performance
 of Weight of Evidence was superior when used with logistic regression models (see
 reference below).
 
@@ -368,8 +368,8 @@ We see the resulting dataframe below:
     1193  0.012075
     686   0.012075
 
-Finally, we can visualise the values of the WoE encoded variables respect to the original
-values to corroborate the sigmoid function shape, which is the expected behavior of the
+Finally, we can visualise the values of the WoE encoded variables compared to the original
+values to corroborate the sigmoid function shape, which is the expected behaviour of the
 WoE:
 
 .. code:: python
@@ -416,7 +416,7 @@ In the following plot, we can see the WoE for different categories of the variab
 |
 
 The WoE values are in the y-axis, and the categories are in the x-axis. We see that the
-WoE values are monotonically increasing, which is the expected behavior of the WoE. If
+WoE values are monotonically increasing, which is the expected behaviour of the WoE. If
 we look at category 4, we can see the WoE is around -0.45 which means that in this age
 bracket there was a small portion of positive cases (people who survived) compared to
 negative cases (non-survivors). In other words, people within this age interval had
@@ -482,7 +482,7 @@ more predictive the variable is. So the combination of WoE with information valu
 used for feature selection for binary classification problems.
 
 
-Weight of Evidence and Information Value within Feature-engine
+Weight of Evidence and Information Value within feature-engine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you're asking yourself whether feature-engine allows you to automate this process,

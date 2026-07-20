@@ -148,7 +148,7 @@ In the following output, we see the interval limits calculated for each variable
 	  inf]}
 
 
-Note that the lower and upper boundaries are set to -inf and inf, respectively. This behavior ensures that the transformer
+Note that the lower and upper boundaries are set to -inf and inf, respectively. This behaviour ensures that the transformer
 is able to allocate to the extreme bins values that are smaller or greater than the observed minimum and maximum
 values in the training set.
 
@@ -296,7 +296,7 @@ intervals varies. In other words, they don't have the same width, contrarily to 
 	1037  (12208.2, 14570.7]  (1601.6, 1717.7]
 
 Unlike the variables discretised into integers, these variables cannot be used to train machine learning models; however,
-they are still highly helpful for data analysis in this format, and we can use any Feature-engine encoder with them for
+they are still highly helpful for data analysis in this format, and we can use any feature-engine encoder with them for
 additional processing.
 
 Binning skewed data
@@ -388,11 +388,11 @@ See Also
 For alternative binning techniques, check out the following resources:
 
 - Other feature-engine :ref:`discretisers / binning methods <discretization_transformers>`
-- Scikit-learn's `KBinsDiscretizer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html#sklearn.preprocessing.KBinsDiscretizer>`_.
+- scikit-learn's `KBinsDiscretizer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html#sklearn.preprocessing.KBinsDiscretizer>`_.
 
 Check out also:
 
-- `Pandas qcut <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.qcut.html>`_.
+- `pandas qcut <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.qcut.html>`_.
 
 
 Additional resources

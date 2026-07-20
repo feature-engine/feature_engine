@@ -42,29 +42,32 @@ from feature_engine.discretisation.base_discretiser import BaseDiscretiser
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
     power="{1/n}",
-    subindex="{i+1}",
+    bin_index="{i}",
 )
 class GeometricWidthDiscretiser(BaseDiscretiser):
     """
     The `GeometricWidthDiscretiser()` divides continuous numerical variables into
-    intervals of increasing width. The width of each succeeding interval is larger
-    than the previous interval by a constant amount (cw).
+    intervals of increasing width, where each interval boundary is obtained by
+    raising a constant factor (cw) to increasing powers.
 
-    The constant amount is calculated as:
+    The constant factor is calculated as:
 
         .. math::
             cw = (Max - Min)^{power}
 
-    were Max and Min are the variable's maximum and minimum value, and n is the number
-    of intervals.
+    where Max and Min are the variable's maximum and minimum value, and n is the
+    number of intervals.
 
-    The sizes of the intervals themselves are calculated with a geometric progression:
+    The upper boundary of the i-th interval is then calculated as:
 
         .. math::
-            a_{subindex} = a_i cw
+            b_{bin_index} = Min + cw^{bin_index}
 
-    Thus, the first interval's width equals cw, the second interval's width equals
-    2 * cw, and so on.
+    Because boundaries increase as powers of cw, interval widths grow multiplicatively
+    as i increases: each interval is roughly cw times wider than the one before it.
+    The first interval is the exception, as it is anchored directly to the variable's
+    minimum rather than to the next power of cw in the sequence, so it is narrower
+    than this pattern would suggest.
 
     Note that the proportion of observations per interval may vary.
 

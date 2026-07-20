@@ -18,7 +18,7 @@ Python implementation
 ---------------------
 
 Let's take a look at how this transformer works. We'll use the california housing dataset that comes
-with Scikit-learn.
+with scikit-learn.
 
 Let's load the dataset:
 
