@@ -107,7 +107,7 @@ commonly used to transform raw data. However, pandas is not compatible with skle
 to learn and store the feature engineering parameters.
 
 Feature-engine’s transformers wrap pandas functionality around an API that exposes `fit` and `transform` methods to learn
-and store parameters from data and then use these parameters to transform the variables. Like this, Feature-engine makes
+and store parameters from data and then use these parameters to transform the variables. Like this, feature-engine makes
 the awesome functionality available in pandas fully compatible with scikit-Learn.
 
 
@@ -384,7 +384,7 @@ Feature-engine is supported by `Train in Data <https://www.trainindata.com/>`_ a
 
 `Train in Data <https://www.trainindata.com/>`_ is your go-to online school for mastering machine learning. We offer
 intermediate and advanced courses in Python programming, data science and machine
-learning, taught by industry experts with extensive experience in developing, optimizing,
+learning, taught by industry experts with extensive experience in developing, optimising,
 and deploying machine learning models in enterprise production environments.
 
 We focus on building a solid, intuitive grasp of machine learning concepts, backed by

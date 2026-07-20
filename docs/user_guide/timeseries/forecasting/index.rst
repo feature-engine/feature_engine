@@ -17,7 +17,7 @@ and convert the data into a tabular format, so that it can be framed as a regres
 
 Feature-engine's time series forecasting transformers give us the ability to extract and generate
 useful features from time series to use for forecasting. They are built on top of Python libraries
-such as Pandas and offer an interface to extract various features from temporal data simultaneously.
+such as pandas and offer an interface to extract various features from temporal data simultaneously.
 
 Time series forecasting involves learning from historical data observations to predict future values.
 Feature-engine's offers various transformers for creating features from the past values.
@@ -26,7 +26,7 @@ Feature-engine's offers various transformers for creating features from the past
 Lag and Window Features
 -----------------------
 
-Trend and seasonality can be captured using lag and window features. In Feature-engine, we have
+Trend and seasonality can be captured using lag and window features. In feature-engine, we have
 three transformers to extract these features.
 
 Lag features
@@ -52,7 +52,7 @@ such as rolling window or expanding window features.
 Window features
 ~~~~~~~~~~~~~~~
 
-:class:`WindowFeatures`, also known as rolling window features, are used to summarize past behavior over a
+:class:`WindowFeatures`, also known as rolling window features, are used to summarise past behaviour over a
 fixed time period by computing statistics like mean, standard deviation, min, max, sum, etc. on the
 time series variable. For instance, in sales forecasting, calculating the "mean" sales value of the
 previous 4 weeks of data is a window feature.
@@ -67,7 +67,7 @@ which adds more depth to the feature set. This approach helps us generate a larg
 and can capture both short-term and long-term patterns in historical data.
 
 To determine which window sizes or lag combinations are useful, you can either perform time series
-analyses to identify relevant window sizes, or you can use Feature-engine's
+analyses to identify relevant window sizes, or you can use feature-engine's
 :ref:`feature selection transformers <selection_user_guide>`.
 These are used to drop subsets of variables that are uninformative and have low predictive power
 which in turn improves model performance. We can set aside validation data while training the
@@ -89,7 +89,7 @@ This helps to capture long-term trends in the data and also model cumulative eff
 thus improving forecast accuracy.
 
 Expanding window features are helpful in various data science use cases like demand forecasting
-for supply chain optimization, stock price prediction etc.
+for supply chain optimisation, stock price prediction etc.
 
 Just like rolling window features, expanding window features can be used with various statistical
 methods like mean, sum, standard deviation, min, max, among others. Unlike rolling window, we
@@ -99,7 +99,7 @@ don't need to specify a window size as the window is expanded automatically at e
 Datetime Features
 -----------------
 
-In addition to lag and window features, Feature-engine also offers transformers to extract
+In addition to lag and window features, feature-engine also offers transformers to extract
 other attributes from the time series such as day_of_week, day_of_month, quarter, year, hour,
 minute etc. directly from the datetime variable using :obj:`DatetimeFeatures <feature_engine.datetime.DatetimeFeatures>`.
 These features are important to identify seasonal patterns, daily trends, especially when certain
@@ -112,7 +112,7 @@ Cyclical Features
 In time series data, certain time-based attributes, such as month_of_year, day_of_week, etc. are
 inherently cyclical. For example, after 12th month, the calendar resets to 1st month, and after
 the 7th weekday, the calendar resets to 1st weekday. To inform the model of this periodic structure,
-Feature-engine allows us to capture this behavior through the
+feature-engine allows us to capture this behaviour through the
 :obj:`CyclicalFeatures <feature_engine.creation.CyclicalFeatures>` transformer.
 
 CyclicalFeatures represents datetime variables using the sine and cosine transformation,
@@ -172,7 +172,7 @@ Our courses are suitable for beginners and more advanced data scientists looking
 forecast time series using traditional machine learning models, like linear regression
 or gradient boosting machines.
 
-By purchasing them you are supporting Sole, the main developer of Feature-engine.
+By purchasing them you are supporting Sole, the main developer of feature-engine.
 
 Forecasting Features Transformers
 ---------------------------------

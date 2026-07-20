@@ -51,7 +51,7 @@ return fewer features.
 Python example
 --------------
 
-Let's see how to use this transformer with the diabetes dataset that comes in Scikit-learn.
+Let's see how to use this transformer with the diabetes dataset that comes in scikit-learn.
 First, we load the data:
 
 .. code:: python
@@ -92,10 +92,10 @@ we leave the parameter `threshold` to the default value which is 0.01.
 
 .. code:: python
 
-    # initialize linear regression estimator
+    # initialise linear regression estimator
     linear_model = LinearRegression()
 
-    # initialize feature selector
+    # initialise feature selector
     tr = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=3)
 
 With `fit()` the model finds the most useful features, that is, features that when added,
@@ -304,7 +304,7 @@ These features were not deemed important by the RFA process:
     ['age', 'sex', 's2', 's3', 's4', 's6']
 
 :class:`RecursiveFeatureAddition` also has the `get_support()` method that works exactly
-like that of Scikit-learn's feature selection classes:
+like that of scikit-learn's feature selection classes:
 
 ..  code:: python
 
@@ -370,4 +370,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

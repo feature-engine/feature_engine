@@ -21,7 +21,7 @@ Read more about `"Why Contribute to Open-Source" <https://opensource.guide/how-t
 Ways to contribute
 ------------------
 
-There are many ways to contribute to Feature-engine:
+There are many ways to contribute to feature-engine:
 
 - Create a new transformer
 - Enhance functionality of current transformers
@@ -31,7 +31,7 @@ There are many ways to contribute to Feature-engine:
 - Add a Jupyter notebook to our `Jupyter notebooks example gallery <https://github.com/feature-engine/feature-engine-examples>`_.
 - Improve our documentation, i.e., fix typos, improve grammar, or add more code examples.
 - Write a blog, tweet, or share our project with others.
-- Use Feature-engine in your lectures if you teach.
+- Use feature-engine in your lectures if you teach.
 
 
 With plenty of ways to get involved, we would be happy for you to support the project.

@@ -28,7 +28,7 @@ series data.
 A window feature is, then, a feature created after computing mathematical
 functions (e.g., mean, min, max, etc.) within a window over the past data.
 
-In Python, we can create window features by utilizing pandas method `rolling`. For example,
+In Python, we can create window features by utilising pandas method `rolling`. For example,
 by executing:
 
 .. code:: python
@@ -48,7 +48,7 @@ algorithms, we also need to shift the window forward with pandas method `shift`:
 Shifting is important to ensure that we are using values strictly in the past, respect
 to the point that we want to forecast.
 
-Sliding window features with Feature-engine
+Sliding window features with feature-engine
 -------------------------------------------
 
 :class:`WindowFeatures` can automatically create and add window features to the dataframe, by performing
@@ -92,7 +92,7 @@ forward the value 2 weeks forward.
 
 :class:`WindowFeatures` will add the new features with a representative name to the
 original dataframe. It also has the methods `fit()` and `transform()` that make it
-compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
+compatible with the scikit-learn's `Pipeline` and cross-validation functions.
 
 Note that, in the current implementation, :class:`WindowFeatures` only works with dataframes whose index,
 containing the time series timestamp, contains unique values and no NaN.
@@ -385,7 +385,7 @@ Imputing rows with nan
 ~~~~~~~~~~~~~~~~~~~~~~
 
 If instead of removing the row with nan in the window features, we want to impute those
-values, we can do so with any of Feature-engine's imputers. Here, we will replace nan with
+values, we can do so with any of feature-engine's imputers. Here, we will replace nan with
 the arbitrary value -99, using the `ArbitraryNumberImputer` within a pipeline:
 
 
@@ -665,4 +665,4 @@ Our courses are suitable for beginners and more advanced data scientists looking
 forecast time series using traditional machine learning models, like linear regression
 or gradient boosting machines.
 
-By purchasing them you are supporting Sole, the main developer of Feature-engine.
+By purchasing them you are supporting Sole, the main developer of feature-engine.

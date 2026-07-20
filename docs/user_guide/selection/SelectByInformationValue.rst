@@ -181,7 +181,7 @@ The attribute :code:`information_values_` shows the IV scores for each variable.
 We see that the transformer correctly selected the features that have an IV score greater
 than the :code:`threshold` which was set to 0.2.
 
-The transformer also has the method `get_support` with similar functionality to Scikit-learn's
+The transformer also has the method `get_support` with similar functionality to scikit-learn's
 selectors method. If you execute `sel.get_support()`, you obtain:
 
 .. code:: python
@@ -329,4 +329,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

@@ -51,7 +51,7 @@ F-statistic
 ~~~~~~~~~~~
 
 The F-statistic determines the degree of linear association between the features and the target.
-If the target is categorical, the F-statistic is calculated using Scikit-learn's `f_classif`
+If the target is categorical, the F-statistic is calculated using scikit-learn's `f_classif`
 function. If the target is continuous, the F-statistic is determined using `f_regression`.
 
 Note that in both cases, these statistic is useful when the features are continuous. For discrete
@@ -157,7 +157,7 @@ compute, impacting the speed of selection of MRMR.
 Python examples
 ---------------
 
-Let's see how to implement :class:`MRMR()`. We'll start by using Scikit-learn's breast cancer
+Let's see how to implement :class:`MRMR()`. We'll start by using scikit-learn's breast cancer
 dataset. The target variable is binary, representing malignant or benign tumors. All
 predictor variables are continuous.
 
@@ -360,7 +360,7 @@ ratio between the random forest importance and Pearson's correlation coefficient
 
 Lets, set up :class:`MRMR()` to use a random forests classifier for the relevance. Note that we
 need to specify a cross-validation scheme, a performance metric, and we have the option to pass
-a grid with hyperparameters to optimize:
+a grid with hyperparameters to optimise:
 
 .. code:: python
 
@@ -422,7 +422,7 @@ Mutual information
 ~~~~~~~~~~~~~~~~~~
 
 If we have non-linear associations and / or categorical or discrete variables, a better
-option is to obtain the relevance and redundancy utilizing mutual information.
+option is to obtain the relevance and redundancy utilising mutual information.
 
 The mutual information is calculated differently for numerical and categorical variables,
 so it is best to flag discrete features with a boolean array.
@@ -495,7 +495,7 @@ examined by MRMR are retained in the transformed dataset:
     3  5.6431      52.0          1         2     37.85    -122.25
     4  3.8462      52.0          1         2     37.85    -122.25
 
-For compatibility with Scikit-learn, :class:`MRMR()` also supports the
+For compatibility with scikit-learn, :class:`MRMR()` also supports the
 method `get_support()`:
 
 .. code:: python
@@ -568,4 +568,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

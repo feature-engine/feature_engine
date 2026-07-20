@@ -197,7 +197,7 @@ were added, removed and altered. We can switch off the messages through the para
 When to use the transformer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-These transformer is useful in "predict then optimize type of problems". In such cases,
+This transformer is useful in "predict then optimise type of problems". In such cases,
 a machine learning model is trained on a certain dataset, with certain input features.
 Then, test sets are "post-processed" according to scenarios that want to be modelled.
 For example, "what would have happened if the customer received an email campaign"?

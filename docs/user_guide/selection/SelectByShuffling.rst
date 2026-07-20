@@ -28,7 +28,7 @@ Python Example
 --------------
 
 Let's see how to use :class:`SelectByShuffling()` with the diabetes dataset that comes
-with Scikit-learn. First, we load the data:
+with scikit-learn. First, we load the data:
 
 .. code:: python
 
@@ -268,4 +268,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

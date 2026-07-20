@@ -1,7 +1,7 @@
 Courses
 =======
 
-You can learn more about how to use Feature-engine and, feature engineering and feature
+You can learn more about how to use feature-engine and, feature engineering and feature
 selection in general in the following online courses:
 
 .. figure::  ../images/feml.png

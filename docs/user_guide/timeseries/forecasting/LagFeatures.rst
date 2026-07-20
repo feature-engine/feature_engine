@@ -51,7 +51,7 @@ same time. Also, unlike `pandas.shift`, we can only lag features forward.
 
 - First, it can create features with multiple values of k at the same time.
 - Second, it adds the features with a name to the original dataframe.
-- Third, it has the methods `fit()` and `transform()` that make it compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
+- Third, it has the methods `fit()` and `transform()` that make it compatible with the scikit-learn's `Pipeline` and cross-validation functions.
 
 Note that, in the current implementation, :class:`LagFeatures` only works with dataframes whose index,
 containing the time series timestamp, contains unique values and no NaN.
@@ -363,7 +363,7 @@ We see that 2 rows were dropped from train set and target:
 Lag features based on datetime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can also lag features utilizing information in the timestamp of the dataframe, which
+We can also lag features utilising information in the timestamp of the dataframe, which
 is commonly cast as datetime.
 
 Let's for example create features by lagging 2 of the numerical variables 30 minutes
@@ -595,7 +595,7 @@ all the features in the output dataframe.
 Determining the right lag
 -------------------------
 
-We can create multiple lag features by utilizing various lags. But how do we decide which
+We can create multiple lag features by utilising various lags. But how do we decide which
 lag is a good lag?
 
 There are multiple ways to do this.
@@ -629,7 +629,7 @@ Check out the additional transformers to create window features through the use 
 rolling windows (:class:`WindowFeatures`) or expanding windows (:class:`ExpandingWindowFeatures`).
 
 If you want to use :class:`LagFeatures` as part of a feature engineering pipeline,
-check out Feature-engine's `Pipeline`.
+check out feature-engine's `Pipeline`.
 
 Tutorials and courses
 ---------------------
@@ -679,4 +679,4 @@ Our courses are suitable for beginners and more advanced data scientists looking
 forecast time series using traditional machine learning models, like linear regression
 or gradient boosting machines.
 
-By purchasing them you are supporting Sole, the main developer of Feature-engine.
+By purchasing them you are supporting Sole, the main developer of feature-engine.

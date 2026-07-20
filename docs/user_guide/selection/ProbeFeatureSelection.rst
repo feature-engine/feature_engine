@@ -104,7 +104,7 @@ Python examples
 ---------------
 
 Let's see how to use this transformer to select variables from UC Irvine's Breast Cancer
-Wisconsin (Diagnostic) dataset, which can be found `here`_. We will use Scikit-learn to load
+Wisconsin (Diagnostic) dataset, which can be found `here`_. We will use scikit-learn to load
 the dataset. This dataset concerns breast cancer diagnoses. The target variable is binary, i.e.,
 malignant or benign. The data is solely comprised of numerical data.
 
@@ -405,7 +405,7 @@ transformed datasets:
      'worst symmetry',
      'worst fractal dimension']
 
-For compatibility with Scikit-learn selection transformers, :class:`ProbeFeatureSelection()`
+For compatibility with scikit-learn selection transformers, :class:`ProbeFeatureSelection()`
 also supports the method `get_support()`:
 
 .. code:: python
@@ -687,4 +687,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

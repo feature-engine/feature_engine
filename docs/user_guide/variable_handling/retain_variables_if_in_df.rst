@@ -67,5 +67,5 @@ under the hood, to select those variables that were entered by the user and that
 remain in the dataset, before applying the selection algorithm.
 
 We've now decided to expose this function as part of the `variable_handling` module. It
-might be useful, for example, if you are creating `Feature-engine` compatible selection
+might be useful, for example, if you are creating `feature-engine` compatible selection
 transformers.

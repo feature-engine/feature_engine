@@ -9,7 +9,7 @@ Feature Selection
 
 Feature-engine's feature selection transformers identify features with low predictive
 performance and drop them from the dataset. Most of the feature selection algorithms
-supported by Feature-engine are not yet available in other libraries. These algorithms
+supported by feature-engine are not yet available in other libraries. These algorithms
 have been gathered from data science competitions or used in the industry.
 
 
@@ -49,11 +49,11 @@ machine learning model as well as reducing the feature space.
 Selectors Characteristics Overview
 ----------------------------------
 
-Some Feature-engine's selectors work with categorical variables off-the-shelf and/or allow
+Some feature-engine's selectors work with categorical variables off-the-shelf and/or allow
 missing data in the variables. These gives you the opportunity to quickly screen features
 before jumping into any feature engineering.
 
-In the following tables, we highlight the main Feature-engine selectors characteristics:
+In the following tables, we highlight the main feature-engine selectors characteristics:
 
 Selection based on feature characteristics
 ------------------------------------------
@@ -86,7 +86,7 @@ Selection based on a machine learning model
 :class:`RecursiveFeatureAddition()`             ×                         ×             Adds features recursively by evaluating model performance
 ============================================ ======================= ============= ====================================================================================
 
-Selection procedures that require training a machine learning model from Scikit-learn
+Selection procedures that require training a machine learning model from scikit-learn
 require numerical variables without missing data.
 
 Selection methods commonly used in finance
@@ -202,4 +202,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

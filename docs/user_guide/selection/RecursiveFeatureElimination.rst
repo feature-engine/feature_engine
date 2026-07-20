@@ -8,9 +8,9 @@ RecursiveFeatureElimination
 :class:`RecursiveFeatureElimination` implements recursive feature elimination. Recursive
 feature elimination (RFE) is a backward feature selection process.
 
-In Feature-engine's implementation of RFE, a feature will be kept or removed based on the
+In feature-engine's implementation of RFE, a feature will be kept or removed based on the
 resulting change in model performance resulting of adding that feature to a
-machine learning. This differs from Scikit-learn's implementation of
+machine learning. This differs from scikit-learn's implementation of
 `RFE <https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html>`_
 where a feature will be kept or removed based on the feature importance derived from a
 machine learning model via it's coefficients parameters or 'feature_importances_` attribute.
@@ -34,7 +34,7 @@ this model is worse than the performance from the previus model, then, the featu
 compares its performance to the previous model, determines if it should remove or retain the feature,
 and moves on to the next variable until it evaluates all the features in the dataset.
 
-Note that, in Feature-engine's implementation of RFE, the feature importance is used
+Note that, in feature-engine's implementation of RFE, the feature importance is used
 just to rank features and thus determine the order in which the features will be eliminated.
 But whether to retain a feature is determined based on the decrease in the performance of the
 model after the feature elimination.
@@ -59,7 +59,7 @@ return fewer features.
 Python example
 --------------
 
-Let's see how to use this transformer with the diabetes dataset that comes in Scikit-learn.
+Let's see how to use this transformer with the diabetes dataset that comes in scikit-learn.
 First, we load the data:
 
 
@@ -100,10 +100,10 @@ we leave the parameter `threshold` to the default value which is 0.01.
 
 .. code:: python
 
-    # initialize linear regresion estimator
+    # initialise linear regression estimator
     linear_model = LinearRegression()
 
-    # initialize feature selector
+    # initialise feature selector
     tr = RecursiveFeatureElimination(estimator=linear_model, scoring="r2", cv=3)
 
 With `fit()` the model finds the most useful features, that is, features that when removed
@@ -311,7 +311,7 @@ These features were not deemed important by the RFE process:
     ['age', 's3', 's4', 's6']
 
 :class:`RecursiveFeatureElimination`  also has the `get_support()` method that works exactly
-like that of Scikit-learn's feature selection classes:
+like that of scikit-learn's feature selection classes:
 
 ..  code:: python
 
@@ -384,4 +384,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

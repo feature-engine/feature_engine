@@ -15,7 +15,7 @@ The `retain` functions select the variables in a list if they fulfill a conditio
 
 You can use these functions to identify different sets of variables based on their
 data type to streamline your feature engineering pipelines or create your own
-Feature-engine or Scikit-learn compatible transformers.
+feature-engine or scikit-learn compatible transformers.
 
 
 .. toctree::

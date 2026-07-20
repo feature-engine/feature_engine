@@ -4,7 +4,7 @@
 Resources
 =========
 
-Here you find learning resources to know more about Feature-engine and feature
+Here you find learning resources to know more about feature-engine and feature
 engineering and selection in general.
 
 We have gathered online courses, books, blogs, videos, podcasts, jupyter notebook and

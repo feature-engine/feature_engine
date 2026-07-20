@@ -14,8 +14,8 @@ structure than, for example, 'str', and allowing faster grouping, mapping, and s
 operations on the resulting object.
 
 :class:`MatchCategories()` remembers the encodings or levels that represent each
-category, and can thus can be used to ensure that the correct encoding gets
-applied when passing categorical data to modeling packages that support this
+category, and can thus be used to ensure that the correct encoding gets
+applied when passing categorical data to modelling packages that support this
 dtype, or to prevent unseen categories from reaching a further transformer
 or estimator in a pipeline, for example.
 
@@ -105,8 +105,8 @@ dataset:
 
     Index(['C', 'Missing', 'Q', 'S'], dtype='object')
 
-If some category was not present in the training data, it will not mapped
-to any integer and will thus not get encoded. This behavior can be modified through the
+If some category was not present in the training data, it will not be mapped
+to any integer and will thus not get encoded. This behaviour can be modified through the
 parameter `errors`:
 
 .. code:: python
@@ -151,5 +151,5 @@ When to use the transformer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This transformer is useful when creating custom transformers for categorical columns,
-as well as when passing categorical columns to modeling packages which support them
+as well as when passing categorical columns to modelling packages which support them
 natively but leave the variable casting to the user, such as ``lightgbm`` or ``glum``.

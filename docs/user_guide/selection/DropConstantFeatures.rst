@@ -20,7 +20,7 @@ of the filter group of selection algorithms.
 In Python, we can find constant features by using pandas `std` or `unique` methods, and then
 remove them with `drop`.
 
-With Scikit-learn, we can find and remove constant variables with `VarianceThreshold` to quickly
+With scikit-learn, we can find and remove constant variables with `VarianceThreshold` to quickly
 reduce the number of features. `VarianceThreshold` is part of `sklearn.feature_selection`'s API.
 
 `VarianceThreshold`, however, would only work with numerical variables. Hence, we could only
@@ -29,7 +29,7 @@ preprocessing just to remove redundant variables.
 
 Feature-engine introduces :class:`DropConstantFeatures()` to find and remove constant and
 quasi-constant features from a dataframe. :class:`DropConstantFeatures()` works with numerical,
-categorical, or datetime variables. It is therefore more versatile than Scikit-learn’s transformer
+categorical, or datetime variables. It is therefore more versatile than scikit-learn’s transformer
 because it allows us to drop all duplicate variables without the need for prior data transformations.
 
 By default, :class:`DropConstantFeatures()` drops constant variables. We also have the option
@@ -181,7 +181,7 @@ We see the resulting dataframe below:
     1193                                            Missing
     686   Kingwilliamstown, Co Cork, Ireland Glens Falls...
 
-Like sklearn, Feature-engine transformers have the `fit_transform` method that allows us
+Like sklearn, feature-engine transformers have the `fit_transform` method that allows us
 to find and remove constant or quasi-constant variables in a single line of code for convenience.
 
 Like sklearn as well, `DropConstantFeatures()` has the `get_support()` method, which returns
@@ -258,4 +258,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

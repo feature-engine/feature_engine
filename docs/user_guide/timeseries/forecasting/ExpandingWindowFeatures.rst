@@ -27,7 +27,7 @@ models, like linear regression.
 Expanding window features with pandas
 --------------------------------------
 
-In Python, we can create expanding window features by utilizing pandas method `expanding`.
+In Python, we can create expanding window features by utilising pandas method `expanding`.
 For example, by executing:
 
 .. code:: python
@@ -46,7 +46,7 @@ we would also shift the window forward with pandas method `shift`:
     X[["var_1", "var_2"].expanding(min_periods=3).agg(["max", "mean"]).shift(period=1)
 
 
-Expanding window features with Feature-engine
+Expanding window features with feature-engine
 ----------------------------------------------
 
 :class:`ExpandingWindowFeatures` adds expanding window features to the dataframe.
@@ -77,7 +77,7 @@ from 2 weeks ago and before that, then we should lag the window feature column b
 
 :class:`ExpandingWindowFeatures` will add the new variables with a representative
 name to the original dataframe. It also has the methods `fit()` and `transform()`
-that make it compatible with the Scikit-learn's `Pipeline` and cross-validation
+that make it compatible with the scikit-learn's `Pipeline` and cross-validation
 functions.
 
 Note that, in the current implementation, :class:`ExpandingWindowFeatures` only works with
@@ -268,7 +268,7 @@ Imputing rows with nan
 ~~~~~~~~~~~~~~~~~~~~~~
 
 If instead of removing the row with nan in the expanding window features, we want to impute those
-values, we can do so with any of Feature-engine's imputers. Here, we will replace nan with
+values, we can do so with any of feature-engine's imputers. Here, we will replace nan with
 the median value of the resulting window features, using the `MeanMedianImputer` within
 a pipeline:
 
@@ -477,4 +477,4 @@ Our courses are suitable for beginners and more advanced data scientists looking
 forecast time series using traditional machine learning models, like linear regression
 or gradient boosting machines.
 
-By purchasing them you are supporting Sole, the main developer of Feature-engine.
+By purchasing them you are supporting Sole, the main developer of feature-engine.

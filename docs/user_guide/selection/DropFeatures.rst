@@ -10,7 +10,7 @@ dataframe. The user can pass a single variable as a string or list of variables 
 dropped.
 
 :class:`DropFeatures()` offers similar functionality to `pandas.dataframe.drop <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.drop.html>`_,
-but the difference is that :class:`DropFeatures()` can be integrated into a Scikit-learn
+but the difference is that :class:`DropFeatures()` can be integrated into a scikit-learn
 pipeline.
 
 
@@ -149,4 +149,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

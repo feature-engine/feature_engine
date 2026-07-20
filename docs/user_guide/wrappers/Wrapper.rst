@@ -5,14 +5,14 @@
 SklearnTransformerWrapper
 =========================
 
-The :class:`SklearnTransformerWrapper()` applies Scikit-learn transformers to a selected
+The :class:`SklearnTransformerWrapper()` applies scikit-learn transformers to a selected
 group of variables. It works with transformers like the SimpleImputer, OrdinalEncoder,
 OneHotEncoder, KBinsDiscretizer, all scalers and also transformers for feature selection.
 Other transformers have not been tested, but we think it should work with most of them.
 
 The :class:`SklearnTransformerWrapper()` offers similar functionality to the
 `ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
-class available in Scikit-learn. They differ in the implementation to select the
+class available in scikit-learn. They differ in the implementation to select the
 variables and the output.
 
 The :class:`SklearnTransformerWrapper()` returns a pandas dataframe with the variables
@@ -21,7 +21,7 @@ in the order of the original data. The
 returns a Numpy array, and the order of the variables may not coincide with that of the
 original dataset.
 
-In the next code snippet we show how to wrap the SimpleImputer from Scikit-learn to
+In the next code snippet we show how to wrap the SimpleImputer from scikit-learn to
 impute only the selected variables.
 
 .. code:: python
@@ -29,47 +29,59 @@ impute only the selected variables.
     import pandas as pd
     import numpy as np
     from sklearn.model_selection import train_test_split
+    from sklearn.datasets import fetch_openml
     from sklearn.impute import SimpleImputer
     from feature_engine.wrappers import SklearnTransformerWrapper
-	
+
     # Load dataset
-    data = pd.read_csv('houseprice.csv')
-    
+    data = fetch_openml(
+        name='house_prices',
+        version=1,
+        as_frame=True,
+        parser='auto',
+    ).frame
+
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1),
-    	data['SalePrice'], test_size=0.3, random_state=0)
-    	
+        data.drop(['Id', 'SalePrice'], axis=1),
+        data['SalePrice'], test_size=0.3, random_state=0)
+
     # set up the wrapper with the SimpleImputer
     imputer = SklearnTransformerWrapper(transformer = SimpleImputer(strategy='mean'),
                                         variables = ['LotFrontage', 'MasVnrArea'])
-    
-    # fit the wrapper + SimpleImputer                              
+
+    # fit the wrapper + SimpleImputer
     imputer.fit(X_train)
-	
+
     # transform the data
     X_train = imputer.transform(X_train)
     X_test = imputer.transform(X_test)
 
 
-In the next snippet of code we show how to wrap the StandardScaler from Scikit-learn
-to standardize only the selected variables.
+In the next snippet of code we show how to wrap the StandardScaler from scikit-learn
+to standardise only the selected variables.
 
 .. code:: python
 
     import pandas as pd
     import numpy as np
     from sklearn.model_selection import train_test_split
+    from sklearn.datasets import fetch_openml
     from sklearn.preprocessing import StandardScaler
     from feature_engine.wrappers import SklearnTransformerWrapper
 
     # Load dataset
-    data = pd.read_csv('houseprice.csv')
+    data = fetch_openml(
+        name='house_prices',
+        version=1,
+        as_frame=True,
+        parser='auto',
+    ).frame
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1),
-    	data['SalePrice'], test_size=0.3, random_state=0)
+        data.drop(['Id', 'SalePrice'], axis=1),
+        data['SalePrice'], test_size=0.3, random_state=0)
 
     # set up the wrapper with the StandardScaler
     scaler = SklearnTransformerWrapper(transformer = StandardScaler(),
@@ -83,7 +95,7 @@ to standardize only the selected variables.
     X_test = scaler.transform(X_test)
 
 
-In the next snippet of code we show how to wrap the SelectKBest from Scikit-learn
+In the next snippet of code we show how to wrap the SelectKBest from scikit-learn
 to select only a subset of the variables.
 
 .. code:: python
@@ -91,16 +103,22 @@ to select only a subset of the variables.
     import pandas as pd
     import numpy as np
     from sklearn.model_selection import train_test_split
+    from sklearn.datasets import fetch_openml
     from sklearn.feature_selection import f_regression, SelectKBest
     from feature_engine.wrappers import SklearnTransformerWrapper
 
     # Load dataset
-    data = pd.read_csv('houseprice.csv')
+    data = fetch_openml(
+        name='house_prices',
+        version=1,
+        as_frame=True,
+        parser='auto',
+    ).frame
 
     # Separate into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(
-    	data.drop(['Id', 'SalePrice'], axis=1),
-    	data['SalePrice'], test_size=0.3, random_state=0)
+        data.drop(['Id', 'SalePrice'], axis=1),
+        data['SalePrice'], test_size=0.3, random_state=0)
 
     cols = [var for var in X_train.columns if X_train[var].dtypes !='O']
 
@@ -116,10 +134,10 @@ to select only a subset of the variables.
     X_train_t = selector.transform(X_train.fillna(0))
     X_test_t = selector.transform(X_test.fillna(0))
 
-Even though Feature-engine has its own implementation of OneHotEncoder, you may want 
+Even though feature-engine has its own implementation of OneHotEncoder, you may want 
 to use Scikit-Learn's transformer in order to access different options, 
 such as drop first Category. 
-In the following example, we show you how to apply Scikit-learn's OneHotEncoder to a 
+In the following example, we show you how to apply scikit-learn's OneHotEncoder to a 
 subset of categories using the :class:SklearnTransformerWrapper().
 
 .. code:: python
@@ -239,7 +257,7 @@ More details
 
 In the following Jupyter notebooks you can find more details about how to navigate the
 parameters of the :class:`SklearnTransformerWrapper()` and also access the parameters
-of the Scikit-learn transformer wrapped, as well as the output of the transformations.
+of the scikit-learn transformer wrapped, as well as the output of the transformations.
 
 - `Wrap sklearn categorical encoder <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-Categorical-Encoding.ipynb>`_
 - `Wrap sklearn KBinsDiscretizer <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-KBinsDiscretizer.ipynb>`_

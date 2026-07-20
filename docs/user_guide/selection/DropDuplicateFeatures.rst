@@ -15,7 +15,7 @@ records when we merge different data sources that show some variable overlap.
 
 Checking for and removing duplicate features is a standard procedure in any data analysis
 workflow that helps us reduce the dimension of the dataset quickly and ensure data quality.
-In Python, we can find duplicate values in an attribute table very easily with Pandas.
+In Python, we can find duplicate values in an attribute table very easily with pandas.
 Dropping those duplicate features, however, requires a few more lines of code.
 
 Feature-engine aims to accelerate the process of data validation by finding and removing
@@ -197,4 +197,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

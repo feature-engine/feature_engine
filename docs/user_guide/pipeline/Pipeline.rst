@@ -5,7 +5,7 @@
 Pipeline
 ========
 :class:`Pipeline` facilitates the chaining together of multiple estimators into a unified sequence. This proves beneficial
-as data processing frequently involves a predefined series of actions, such as feature selection, normalization, and
+as data processing frequently involves a predefined series of actions, such as feature selection, normalisation, and
 training a machine learning model.
 
 Feature-engine's :class:`Pipeline` is different from scikit-learn's Pipeline in that our :class:`Pipeline` supports
@@ -21,7 +21,7 @@ The Pipeline serves various functions in this context:
 
 You need only call the `fit` and `predict` functions once on your data to fit an entire sequence of estimators.
 
-**Hyperparameter Optimization:**
+**Hyperparameter optimisation:**
 
 Grid search and random search can be performed over hyperparameters of all estimators in the pipeline simultaneously.
 
@@ -42,7 +42,7 @@ a classifier, the Pipeline can function as a classifier. Similarly, if the last 
 Setting up a Pipeline
 ---------------------
 
-The :class:`Pipeline` is constructed utilizing a list of (key, value) pairs, wherein the key represents the desired
+The :class:`Pipeline` is constructed utilising a list of (key, value) pairs, wherein the key represents the desired
 name for the step, and the value denotes an estimator or a transformer object.
 
 In the following example, we set up a :class:`Pipeline` that drops missing data, then replaces categories with ordinal
@@ -497,10 +497,10 @@ To learn more about direct forecasting and how to create features, check out our
 |
 |
 
-Hyperparameter optimization
+Hyperparameter optimisation
 ---------------------------
 
-We can optimize the hyperparameters of the transformers and the estimators from a pipeline simultaneously.
+We can optimise the hyperparameters of the transformers and the estimators from a pipeline simultaneously.
 
 We'll start by loading the titanic dataset:
 
@@ -647,4 +647,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

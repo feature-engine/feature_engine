@@ -19,7 +19,7 @@ such us:
 
 3. **Missing Data**: Features with less missing data are generally more reliable and informative.
 
-4. **Correlation with Target**: Features that show a stronger correlation with the target variable are often more predictive and should be prioritized.
+4. **Correlation with Target**: Features that show a stronger correlation with the target variable are often more predictive and should be prioritised.
 
 We can apply this selection strategies out of the box with the :class:`SmartCorrelatedSelection`.
 
@@ -329,7 +329,7 @@ And now we can print the resulting dataframe after the transformation:
     3  0.484649
     4 -0.186530
 
-Let's examine other attributes that may be useful. Like with any Scikit-learn transformer
+Let's examine other attributes that may be useful. Like with any scikit-learn transformer
 we can obtain the names of the features in the resulting dataframe as follows:
 
 .. code:: python
@@ -586,4 +586,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.

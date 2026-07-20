@@ -25,7 +25,7 @@ are between two different population samples.
 
 To determine the PSI, continuous features are sorted into discrete intervals, the
 fraction of observations per interval is then determined, and finally those values
-are compared between the 2 groups, or as we call them in Feature-engine, between the
+are compared between the 2 groups, or as we call them in feature-engine, between the
 basis and test sets, to obtain the PSI.
 
 In other words, the PSI is computed as follows:
@@ -805,7 +805,7 @@ defined (the F group).
 The `group` column contains 500 observations in the (A, B, C, D, E)
 group and 500 in the (F) group.
 
-When we pass `split_distinct=True` when initializing
+When we pass `split_distinct=True` when initialising
 the `DropHighPSIFeatures` object, the two dataframes used to compute the
 PSI will contain the same number of **unique** values in the `group`
 column (i.e., one dataframe will contain 300 rows associated to groups A, B and C
@@ -930,4 +930,4 @@ Or read our book:
 |
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting Sole, the main developer of feature-engine.
