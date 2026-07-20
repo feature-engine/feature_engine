@@ -7,19 +7,19 @@ DecisionTreeFeatures
 
 The winners of the KDD 2009 competition observed that many features had high
 mutual information with the target, but low correlation, leading them to conclude
-that the relationships were non-linear. While non-linear relationships can be
+that the relationships were non-linear.
+
+While non-linear relationships can be
 captured by non-linear models, to leverage the information from these features with
-linear models, we need to somehow transform that information into a linear, or
+linear models, we need to transform that information into a linear, or
 monotonic relationship with the target.
 
 The output of decision trees, that is, their predictions, should be monotonic with
-the target, if there is a good fit for the tree.
-
-In addition, decision trees trained on 2 or more features could capture feature
-interactions that simpler models would miss.
+the target, if there is a good fit for the tree. In addition, decision trees trained on
+2 or more features could capture feature interactions that simpler models would miss.
 
 By enriching the dataset with features resulting from the predictions of decision trees,
-we can create better performing models. On the downside the features resulting
+we can create better performing models. On the downside, the features resulting
 from decision trees, are not easy to interpret or explain.
 
 :class:`DecisionTreeFeatures()` creates and adds features resulting from the predictions
@@ -39,13 +39,13 @@ are the output of the `predict_proba` method of the model corresponding to the p
 of class 1. If the output is multiclass, on the other hand, the features are derived from
 the `predict` method, and hence return the predicted class.
 
-Examples
---------
+Python implementation
+---------------------
 
 In the rest of the document, we'll show the versatility of :class:`DecisionTreeFeatures()`
 to create multiple features by using decision trees.
 
-Let's start by loading and displaying the California housing dataset from sklearn
+Let's start by loading and displaying the California housing dataset from sklearn:
 
 .. code:: python
 
@@ -76,7 +76,7 @@ Let's split the dataset into a training and a testing set:
         X, y, test_size=0.3, random_state=0)
 
 Combining features - integers
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We'll set up :class:`DecisionTreeFeatures()` to create **all possible** combinations of 2
 features. To create all possible combinations we use integers with the `features_to_combine`
@@ -88,7 +88,7 @@ parameter:
     dtf.fit(X_train, y_train)
 
 If we leave the parameter `variables` to `None`, :class:`DecisionTreeFeatures()` will combine
-all numerical variables in the training set, in the way we indicate in `features_to_combine`.
+all numerical variables in the training set in the way we indicate in `features_to_combine`.
 Since we set `features_to_combine=2`, the transformer will create all possible combinations of
 1 or 2 variables.
 
@@ -99,7 +99,7 @@ We can find the feature combinations that will be used to train the trees as fol
     dtf.input_features_
 
 In the following output we see the combinations of 1 and 2 features that will be used
-to train decision trees, based of all the numerical variables in the training set:
+to train decision trees, based on all the numerical variables in the training set:
 
 .. code:: python
 
@@ -190,10 +190,10 @@ decision trees:
 
     [5 rows x 27 columns]
 
-Combining features - Lists
---------------------------
+Combining features - lists
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's say that we want to create features based of trees trained of 2 or more variables. Instead of using
+Let's say that we want to create features based on trees trained on 2 or more variables. Instead of using
 an integer in `features_to_combine`, we need to pass a list of integers, telling :class:`DecisionTreeFeatures()`
 to make all possible combinations of the integers mentioned in the list.
 
@@ -214,7 +214,7 @@ If we now examine the feature combinations:
 
     dtf.input_features_
 
-We see that they are based of combinations of 2 or 3 of the variables that we set in
+We see that they are based on combinations of 2 or 3 of the variables that we set in
 the `variables` parameter:
 
 .. code:: python
@@ -266,7 +266,7 @@ In the following output we see the dataframe with the new features:
     15709                                       1.843904
 
 Specifying the feature combinations - tuples
---------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can indicate precisely the features that we want to use as input of the decision trees.
 Let's make a tuple containing the features combinations. We want a tree trained with
@@ -316,7 +316,7 @@ And now we can go ahead and add the features to the data:
     test_t = dtf.transform(X_test)
 
 Examining the new features
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`DecisionTreeFeatures()` appends the word `tree` to the new features, so if
 we wanted to display only the new features, we can do so as follows
@@ -344,7 +344,7 @@ we wanted to display only the new features, we can do so as follows
 
 
 Evaluating individual trees
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can evaluate the performance of each of the trees used to create the features, if
 we so wish. Let's set up the :class:`DecisionTreeFeatures()`:
@@ -355,7 +355,7 @@ we so wish. Let's set up the :class:`DecisionTreeFeatures()`:
     dtf.fit(X_train, y_train)
 
 :class:`DecisionTreeFeatures()` trains each tree with cross-validation. If we do not
-pass a grid with hyperparameters, it will optimize the depth by default. We can find
+pass a grid with hyperparameters, it will optimise the depth by default. We can find
 the trained estimators like this:
 
 .. code:: python
@@ -382,7 +382,7 @@ the result of the search:
                   param_grid={'max_depth': [1, 2, 3, 4]},
                   scoring='neg_mean_squared_error')]
 
-If you want to inspect an individual tree and it's performance, you can do so like this:
+If you want to inspect an individual tree and its performance, you can do so like this:
 
 .. code:: python
 
@@ -396,7 +396,7 @@ of the feature **Population** to predict house price:
 
     {'max_depth': 2}
 
-If we want to check out the performance of the best tree during found in the grid search,
+If we want to check out the performance of the best tree found with the grid search,
 we can do so like this:
 
 .. code:: python
@@ -404,12 +404,15 @@ we can do so like this:
     tree.score(X_test[['Population']], y_test)
 
 The following performance value corresponds to the negative of the mean squared error
-which is the metric optimised durign the search (you can select the metric to optimize
-through the `scoring` parameter of :class:`DecisionTreeFeatures()`).
+which is the metric optimised during the search:
 
 .. code:: python
 
     -1.3308515769033213
+
+.. note::
+
+    You can select the metric to optimise through the `scoring` parameter of :class:`DecisionTreeFeatures()`.
 
 Note that you can also isolate the tree, and then obtain a performance metric:
 
@@ -418,18 +421,18 @@ Note that you can also isolate the tree, and then obtain a performance metric:
     tree.best_estimator_.score(X_test[['Population']], y_test)
 
 In this case, the following performance metric corresponds to the R2, which is the
-default metric returned by scikit-learn's DecisionTreeRegressor.
+default metric returned by scikit-learn's DecisionTreeRegressor:
 
 .. code:: python
 
     0.0017890442253447603
 
 Dropping the original variables
--------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With :class:`DecisionTreeFeatures()`, we can automatically remove from the resulting
-dataframe the features used as input from the decision trees. We need to set `drop_original`
-to `True`.
+With :class:`DecisionTreeFeatures()`, we can automatically remove the features used as
+input for the decision trees from the resulting dataframe. We need to set `drop_original`
+to `True`:
 
 .. code:: python
 
@@ -446,7 +449,7 @@ to `True`.
 
     print(test_t.head())
 
-We see in the resulting dataframe that the variables ["AveRooms", "AveBedrms", "Population"]
+We see in the resulting dataframe that the variables `AveRooms`, `AveBedrms`, `Population`
 are not there:
 
 .. code:: python
@@ -473,64 +476,27 @@ are not there:
     15709                                       1.843904
 
 Creating features for classification
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If we are creating features for a classifier instead of a regressor, the procedure is
 identical. We just need to set the parameter `regression` to False.
 
-Note that if you are creating features for binary classification, the added features
-will contain the probabilities of class 1. If you are creating features for multi-class
-classification, on the other hand, the features will contain the prediction of the class.
+.. note::
+
+    Note that if you are creating features for binary classification, the added features
+    will contain the probabilities of class 1. If you are creating features for multi-class
+    classification, on the other hand, the features will contain the prediction of the class.
 
 
 Additional resources
 --------------------
 
-For more details about this and other feature engineering methods check out these resources:
+For tutorials about this and other feature engineering methods check out these resources:
 
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

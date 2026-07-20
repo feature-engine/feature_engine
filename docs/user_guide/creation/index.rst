@@ -3,7 +3,7 @@
 Feature Creation
 ================
 
-Feature creation, is a common step during data preprocessing, and consists of constructing new
+Feature creation is a common step during data preprocessing and consists of constructing new
 variables from the dataset’s original features. By combining two or more variables, we develop
 new features that can improve the performance of a machine learning model, capture additional
 information or relationships among variables, or simply make more sense within the domain we
@@ -15,46 +15,55 @@ is a feature engineering technique used to transform a categorical feature into 
 binary variables that represent each category.
 
 Another common feature extraction procedure consist of creating new features from past
-values of time series data, for example through the use of lags and windows.
+values of time series data, for example through the use of :ref:`lags <lag_features>`
+and :ref:`windows <window_features>`.
 
-In general, creating features requires a dose of domain knowledge and significant time
-invested in analyzing the raw data, including evaluating the relationship between the independent or
-predictor variables and the dependent or target variable in the dataset.
+.. note::
+
+    In general, creating features requires a dose of domain knowledge and significant time
+    invested in analysing the raw data, including evaluating the relationship between the independent or
+    predictor variables and the dependent or target variable in the dataset.
 
 Feature creation can be one of the more creative aspects of feature engineering, and the new
 features can help improve a predictive model’s performance.
 
-Lastly, a data scientist should be mindful that creating new features may increase the dimensionality
-of the dataset quite dramatically. For example, one hot encoding of highly cardinal categorical
-features results in lots of binary variables, and so does polynomial combinations of high powers.
+A data scientist should be mindful that creating new features may increase the dimensionality
+of the dataset quite dramatically. For example, one-hot encoding of highly cardinal categorical
+features results in lots of binary variables, and so does polynomial combinations using high power binomials.
 This may have downstream effects depending on the machine learning algorithm being used. For example,
 decision trees are known for not being able to cope with huge number of features.
 
-Creating New Features with Feature-engine
+Creating new features with feature-engine
 -----------------------------------------
 
 Feature-engine has several transformers that create and add new features to the dataset. One of
-the most popular ones is the `OneHotEncoder <https://feature-engine.trainindata.com/en/latest/user_guide/encoding/OneHotEncoder.html>`_
+the most popular ones is `OneHotEncoder <https://feature-engine.trainindata.com/en/latest/user_guide/encoding/OneHotEncoder.html>`_
 that creates dummy variables from categorical features.
 
-With Feature-engine we can also create new features from time series data through lags and windows by using
+With feature-engine we can also create new features from time series data through lags and windows by using
 `LagFeatures <https://feature-engine.trainindata.com/en/latest/user_guide/timeseries/forecasting/LagFeatures.html>`_
 or `WindowFeatures <https://feature-engine.trainindata.com/en/latest/user_guide/timeseries/forecasting/WindowFeatures.html>`_.
 
-Feature-engine’s creation module, supports transformers that create and add new features to a pandas
+Feature-engine also supports the creation of new features from :ref:`datetime <datetime_module>` variables
+as well as the extraction of features from :ref:`text <text_module>`.
+
+Feature-engine’s creation module supports transformers that create and add new features to a pandas
 dataframe by either combining existing features through different mathematical or statistical operations,
 or through feature transformations. These transformers operate with numerical variables, that is, those
 with integer and float data types.
 
-Summary of Feature-engine’s feature-creation transformers:
+Summary of feature-engine’s creation transformers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **CyclicalFeatures** - Creates two new features per variable by applying the trigonometric operations sine and cosine to the original feature.
-
-- **MathFeatures** - Combines a set of features into new variables by applying basic mathematical functions like the sum, mean, maximum or standard deviation.
-
-- **RelativeFeatures** - Utilizes basic mathematical functions between a group of variables and one or more reference features, appending the new features to the pandas dataframe.
-
-- **DecisionTreeFeatures** - Creates new features as the output of decision trees trained on 1 or more feature combinations.
+================================== =====================================================================================================================================
+    Transformer                     	  Description
+================================== =====================================================================================================================================
+:class:`CyclicalFeatures()`	         Creates 2 new features per variable by applying the trigonometric operations sine and cosine.
+:class:`DecisionTreeFeatures()`      Creates new features as the output of decision trees trained on 1 or more feature combinations.
+:class:`GeoDistanceFeatures()`	     Creates distance features from latitude and longitude.
+:class:`MathFeatures()`	             Combines a set of features into new variables by applying mathematical functions like sum, mean, maximum or standard deviation.
+:class:`RelativeFeatures()`	         Combines features with math functions like subtraction, division, or modulo.
+================================== =====================================================================================================================================
 
 Feature creation module
 -----------------------
@@ -63,24 +72,24 @@ Feature creation module
    :maxdepth: 1
 
    CyclicalFeatures
-   MathFeatures
-   RelativeFeatures
    DecisionTreeFeatures
    GeoDistanceFeatures
+   MathFeatures
+   RelativeFeatures
 
-Feature-engine in Practice
+Feature-engine in practice
 --------------------------
 
-Here, you'll get a taste of the transformers from the feature creation module from Feature-engine.
+Here, you'll get a taste of the transformers from the feature creation module from feature-engine.
 We'll use the wine quality dataset. The dataset is comprised of 11 features, including `alcohol`,
-`ash`, and ``flavonoids``, and has `quality` as its target variable.
+`ash`, and `flavonoids`, and has `quality` as its target variable.
 
 Through exploratory data analysis and our domain knowledge which includes real-world
 experimentation, i.e., drinking various brands/types of wine, we believe that we can
 create better features to train our algorithm by combining original features with various
 mathematical operations.
 
-Let's load the dataset from Scikit-learn.
+Let's load the dataset from scikit-learn.
 
 .. code:: python
 
@@ -118,7 +127,7 @@ Below we see the wine quality dataset:
 
 
 Now, we create a new feature by removing non-flavonoid phenols from the total phenols to
-obtain the phenols that are not flavonoid.
+obtain the phenols that are not flavonoid:
 
 .. code:: python
 
@@ -229,7 +238,7 @@ We see the new features at the right of the resulting pandas dataframe:
 
 In the above examples, we used `RelativeFeature()` and `MathFeatures` to perform automated feature
 engineering on the input data by applying the transformations defined in the `func` parameter on
-the features identified in `variables`  and ``reference`` parameters.
+the features identified in `variables`  and `reference` parameters.
 
 The original and new features can now be used to train a regression model, or a multiclass
 classification algorithm, to predict the `quality` of the wine.
@@ -237,75 +246,36 @@ classification algorithm, to predict the `quality` of the wine.
 Summary
 -------
 
-Through feature engineering and feature creation, we can optimize the machine learning algorithm's
+Through feature engineering and feature creation, we can optimise the machine learning algorithm's
 learning process and improve its performance metrics.
 
 We'd strongly recommend the creation of features based on domain knowledge, exploratory data
 analysis and thorough data mining. We also understand that this is not always possible, particularly
 with big datasets and limited time allocated to each project. In this situation, we can combine
-the creation of features with feature selection procedures to let machine learning algorithms
+the creation of features with :ref:`feature selection <selection_user_guide>` procedures to let machine learning algorithms
 select what works best for them.
 
 Good luck with your models!
 
 
-Tutorials, books and courses
-----------------------------
+Additional resources
+--------------------
 
-For tutorials about this and other feature engineering for machine learning methods check out
-our online course:
+For tutorials about this and other feature engineering methods check out these resources:
 
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.
 
 
-Transformers in other Libraries
+Transformers in other libraries
 -------------------------------
 
-Check also the following transformer from Scikit-learn:
+Check also the following transformer from scikit-learn:
 
 * `PolynomialFeatures <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_
 * `SplineTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.SplineTransformer.html>`_
