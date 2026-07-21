@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  codecov: codecov/codecov@3.2.3
+  codecov: codecov/codecov@6.0.0
   github-cli: circleci/github-cli@3.0.0
 
 
@@ -210,7 +210,7 @@ jobs:
 
   upload_codecov:
     docker:
-      - image: cimg/python:3.10.0
+      - image: cimg/python:3.12.1
     working_directory: ~/project
     steps:
       - checkout:
