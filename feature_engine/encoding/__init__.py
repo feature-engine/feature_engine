@@ -9,6 +9,7 @@ from .one_hot import OneHotEncoder
 from .ordinal import OrdinalEncoder
 from .rare_label import RareLabelEncoder
 from .similarity_encoder import StringSimilarityEncoder
+from .string_list_binarizer import StringListBinarizer
 from .woe import WoEEncoder
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
     "OneHotEncoder",
     "OrdinalEncoder",
     "RareLabelEncoder",
+    "StringListBinarizer",
     "StringSimilarityEncoder",
     "WoEEncoder",
 ]
