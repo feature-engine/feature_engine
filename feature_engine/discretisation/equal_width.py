@@ -114,7 +114,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
     References
     ----------
     .. [1] Kotsiantis and Pintelas, "Data preprocessing for supervised leaning,"
-        International Journal of Computer Science,  vol. 1, pp. 111 117, 2006.
+        International Journal of Computer Science, vol. 1, pp. 111-117, 2006.
 
     .. [2] Dong. "Beating Kaggle the easy way". Master Thesis.
         https://www.ke.tu-darmstadt.de/lehre/arbeiten/studien/2015/Dong_Ying.pdf

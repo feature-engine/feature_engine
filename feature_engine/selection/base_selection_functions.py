@@ -184,13 +184,13 @@ def single_feature_performance(
         The variables to examine.
 
     estimator:
-        Any Scikit-learn estimator.
+        Any scikit-learn estimator.
 
     cv:
-        Cross-validation scheme. Any supported by the Scikit-learn estimator.
+        Cross-validation scheme. Any supported by the scikit-learn estimator.
 
     scoring:
-        The performance metric. Any supported by the Scikit-learn estimator.
+        The performance metric. Any supported by the scikit-learn estimator.
 
     groups: Array-like of shape (n_samples,), default=None
         Group labels for the samples used while splitting
@@ -252,14 +252,14 @@ def find_feature_importance(
        Target variable. Required to train the estimator.
 
     estimator:
-        A Scikit-learn estimator with parameters `coef_` or `feature_importances_`
+        A scikit-learn estimator with parameters `coef_` or `feature_importances_`
         after fitting.
 
     cv:
-        Cross-validation scheme. Any supported by the Scikit-learn estimator.
+        Cross-validation scheme. Any supported by the scikit-learn estimator.
 
     scoring:
-        The performance metric. Any supported by the Scikit-learn estimator.
+        The performance metric. Any supported by the scikit-learn estimator.
 
     groups: Array-like of shape (n_samples,), default=None
         Group labels for the samples used while splitting

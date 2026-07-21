@@ -99,7 +99,7 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         For int/None inputs, if the estimator is a classifier and y is either binary or
         multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
         splitters are instantiated with `shuffle=False` so the splits will be the same
-        across calls. For more details check Scikit-learn's `cross_validate`'s
+        across calls. For more details check scikit-learn's `cross_validate`'s
         documentation.
 
     scoring: str, default='neg_mean_squared_error'
@@ -110,7 +110,7 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
     param_grid: dictionary, default=None
         The hyperparameters for the decision tree to test with a grid search. The
-        `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
+        `param_grid` can contain any of the permitted hyperparameters for scikit-learn's
         DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then param_grid
         will optimise the 'max_depth' over `[1, 2, 3, 4]`.
 
@@ -120,7 +120,7 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
     random_state: int, default=None
         The random_state to initialise the training of the decision tree. It is one
-        of the parameters of the Scikit-learn's DecisionTreeRegressor() or
+        of the parameters of scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 

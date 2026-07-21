@@ -88,8 +88,8 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
     {features_to_combine}
 
     precision: int, default=None
-        The precision of the predictions. In other words, the number of decimals after
-        the comma for the new feature values.
+        The precision of the predictions. In other words, the number of decimal
+        places for the new feature values.
 
     cv: int, cross-validation generator or an iterable, default=3
         Determines the cross-validation splitting strategy. Possible inputs for cv are:
@@ -106,7 +106,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         For int/None inputs, if the estimator is a classifier and y is either binary or
         multiclass, StratifiedKFold is used. In all other cases, KFold is used. These
         splitters are instantiated with `shuffle=False` so the splits will be the same
-        across calls. For more details check Scikit-learn's `cross_validate`'s
+        across calls. For more details check scikit-learn's `cross_validate`'s
         documentation.
 
     scoring: str, default='neg_mean_squared_error'
@@ -117,17 +117,17 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
 
     param_grid: dictionary, default=None
         The hyperparameters for the decision tree to test with a grid search. The
-        `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
+        `param_grid` can contain any of the permitted hyperparameters for scikit-learn's
         DecisionTreeRegressor() or DecisionTreeClassifier(). If None, then param_grid
         will optimise the 'max_depth' over `[1, 2, 3, 4]`.
 
     regression: boolean, default=True
-        Indicates whether the discretiser should train a regression or a classification
+        Indicates whether the transformer should train a regression or a classification
         decision tree.
 
     random_state : int, default=None
         The random_state to initialise the training of the decision tree. It is one
-        of the parameters of the Scikit-learn's DecisionTreeRegressor() or
+        of the parameters of scikit-learn's DecisionTreeRegressor() or
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
@@ -329,12 +329,12 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
 
         Parameters
         ----------
-        X: Pandas DataFrame of shame = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: Pandas dataframe.
+        X_new: pandas dataframe.
             Either the original dataframe plus the new features or
             a dataframe of only the new features.
         """
@@ -434,7 +434,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         Returns
         -------
         combos: list.
-            The list of feature combinations that will be used to train the deicion
+            The list of feature combinations that will be used to train the decision
             trees.
         """
         combos = []

@@ -207,10 +207,10 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
         X: pandas dataframe of shape = [n_samples, n_features]
             The training input samples.
-            Can be the entire dataframe, not just seleted variables.
+            Can be the entire dataframe, not just selected variables.
 
         y: pandas series, default=None
-            Target. It is not needed in this encoded. You can pass y or
+            Target. It is not needed in this encoder. You can pass y or
             None.
         """
 
@@ -269,7 +269,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         -------
         X_new: pandas dataframe.
             The transformed dataframe. The shape of the dataframe will be different from
-            the original as it includes the dummy variables in place of the of the
+            the original as it includes the dummy variables in place of the
             original categorical ones.
         """
 

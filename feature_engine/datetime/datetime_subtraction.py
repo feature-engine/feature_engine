@@ -86,7 +86,7 @@ class DatetimeSubtraction(BaseCreation):
 
     new_variables_names: list, default=None
         Names of the new variables. You have the option to pass a list with the names
-        you'd like to assing to the new variables. If `None`, the transformer will
+        you'd like to assign to the new variables. If `None`, the transformer will
         assign arbitrary names.
 
     output_unit: string, default='D'
@@ -114,7 +114,7 @@ class DatetimeSubtraction(BaseCreation):
 
         - If True parses dates with the year first, e.g. 10/11/12 is parsed as
           2010-11-12.
-        - If both dayfirst and yearfirst are True, yearfirst is preceded.
+        - If both dayfirst and yearfirst are True, yearfirst takes precedence.
 
     utc: bool, default=None
         Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
@@ -131,7 +131,7 @@ class DatetimeSubtraction(BaseCreation):
     ----------
     variables_:
         The list with datetime variables from which the variables in `reference` will
-        be substracted. It is created after the transformer corroborates that the
+        be subtracted. It is created after the transformer corroborates that the
         variables in `variables` are, or can be parsed to datetime.
 
     reference_:
@@ -285,7 +285,7 @@ class DatetimeSubtraction(BaseCreation):
 
         Returns
         -------
-        X_new: Pandas dataframe
+        X_new: pandas dataframe
             The input dataframe plus the new variables.
         """
 
@@ -319,7 +319,7 @@ class DatetimeSubtraction(BaseCreation):
         return X
 
     def _to_datetime(self, X: pd.DataFrame):
-        """covert variables to datetime."""
+        """convert variables to datetime."""
         # convert datetime variables
         datetime_df = pd.concat(
             [

@@ -162,7 +162,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -190,7 +190,7 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be inverse transformed.
 
         Returns

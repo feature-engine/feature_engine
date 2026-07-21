@@ -61,7 +61,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 class SelectByTargetMeanPerformance(BaseSelector):
     """
     SelectByTargetMeanPerformance() uses the mean value of the target per category or
-    per interval(if the variable is numerical), as proxy for target estimation. With
+    per interval (if the variable is numerical), as proxy for target estimation. With
     this proxy, the selector determines the performance of each feature based on a
     metric of choice, and then selects the features based on this performance value.
 
@@ -96,8 +96,8 @@ class SelectByTargetMeanPerformance(BaseSelector):
     4. Determines the performance of the transformed variable in the test fold.
 
 
-    Finally, it selects the features which performance is bigger than the indicated
-    threshold. If the threshold if left to None, it selects features which performance
+    Finally, it selects the features whose performance is bigger than the indicated
+    threshold. If the threshold is left to None, it selects features whose performance
     is bigger than the mean performance of all features.
 
     All the steps are performed with cross-validation. That means, that intervals and
@@ -197,7 +197,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
     4   0   0   1
     5   0   1   1
 
-    This transformer also works with Categorical examples:
+    This transformer also works with categorical examples:
 
     >>> X = pd.DataFrame(dict(x1 = ["a","b","a","a","b","b"],
     >>>             x2 = ["a","a","a","b","b","b"]))

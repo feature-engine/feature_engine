@@ -109,7 +109,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
     missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. If 'raise' the
-        transformer will return an error if the the datasets to `fit` or `transform`
+        transformer will return an error if the datasets to `fit` or `transform`
         contain missing values. If 'ignore', missing data will be ignored when
         performing the feature extraction. Missing data is only evaluated in the
         variables that will be used to derive the date and time features. If features
@@ -127,7 +127,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
         - If True parses dates with the year first, e.g. 10/11/12 is parsed as
           2010-11-12.
-        - If both dayfirst and yearfirst are True, yearfirst is preceded.
+        - If both dayfirst and yearfirst are True, yearfirst takes precedence.
 
     utc: bool, default=None
         Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
@@ -313,7 +313,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
         Returns
         -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features x n_df_features]
+        X_new: pandas dataframe, shape = [n_samples, n_features x n_df_features]
             The dataframe with the original variables plus the new variables.
         """
 

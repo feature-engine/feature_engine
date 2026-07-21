@@ -4,7 +4,7 @@ Feature Scaling
 ===============
 
 Feature-engine's scaling transformers apply various scaling techniques to
-given columns
+given columns.
 
 .. toctree::
    :maxdepth: 1

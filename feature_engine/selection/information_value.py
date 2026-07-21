@@ -181,7 +181,7 @@ class SelectByInformationValue(BaseSelector, WoE):
 
         if not isinstance(threshold, (int, float)):
             raise ValueError(
-                f"threshold must be a an integer or a float. Got {threshold} "
+                f"threshold must be an integer or a float. Got {threshold} "
                 "instead."
             )
 

@@ -21,9 +21,9 @@ def retain_variables_if_in_df(X, variables):
     Returns
     -------
     variables_in_df: List.
-        The subset of `variables` that is present `X`.
+        The subset of `variables` that is present in `X`.
 
-        Examples
+    Examples
     --------
     >>> import pandas as pd
     >>> from feature_engine.variable_handling import retain_variables_if_in_df

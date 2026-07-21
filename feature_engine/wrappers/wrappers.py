@@ -75,7 +75,7 @@ _INVERSE_TRANSFORM = [
 
 class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
     """
-    Wrapper to apply Scikit-learn transformers to a selected group of variables. It
+    Wrapper to apply scikit-learn transformers to a selected group of variables. It
     supports the following transformers:
 
     - Binarizer and KBinsDiscretizer (only when encoding=Ordinal)
@@ -84,14 +84,14 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
     - OrdinalEncoder and OneHotEncoder (only when sparse is False)
     - MaxAbsScaler, MinMaxScaler, StandardScaler, RobustScaler, Normalizer
     - All selection transformers including VarianceThreshold
-    - PolynomialFeautures
+    - PolynomialFeatures
 
     More details in the :ref:`User Guide <sklearn_wrapper>`.
 
     Parameters
     ----------
     transformer: sklearn transformer
-        The desired Scikit-learn transformer.
+        The desired scikit-learn transformer.
 
     variables: list, default=None
         The list of variables to be transformed. If None, the wrapper will select all
@@ -125,7 +125,7 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
     Methods
     -------
     fit:
-        Fit Scikit-learn transformer.
+        Fit scikit-learn transformer.
 
     fit_transform:
         Fit to data, then transform it.
@@ -143,12 +143,12 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
         Convert the data back to the original representation.
 
     transform:
-        Transform data with the Scikit-learn transformer.
+        Transform data with the scikit-learn transformer.
 
     Notes
     -----
     This transformer offers similar functionality to the ColumnTransformer from
-    Scikit-learn, but it allows entering the transformations directly into a
+    scikit-learn, but it allows entering the transformations directly into a
     Pipeline and returns pandas dataframes.
 
     See Also
@@ -252,11 +252,11 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
     def fit(self, X: pd.DataFrame, y: Optional[str] = None):
         """
-        Fits the Scikit-learn transformer to the selected variables.
+        Fits the scikit-learn transformer to the selected variables.
 
         Parameters
         ----------
-        X: Pandas DataFrame
+        X: pandas DataFrame
             The dataset to fit the transformer.
 
         y: pandas Series, default=None
@@ -314,10 +314,10 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
         Apply the transformation to the dataframe. Only the selected variables will be
         modified.
 
-        If the Scikit-learn transformer is the OneHotEncoder or the  PolynomialFeatures,
+        If the scikit-learn transformer is the OneHotEncoder or the PolynomialFeatures,
         the new features will be concatenated to the input dataset.
 
-        If the Scikit-learn transformer is for feature selection, the non-selected
+        If the scikit-learn transformer is for feature selection, the non-selected
         features will be dropped from the dataframe.
 
         For all other transformers, the original variables will be replaced by the
@@ -325,12 +325,12 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: Pandas DataFrame
+        X: pandas DataFrame
             The data to transform.
 
         Returns
         -------
-        X_new: Pandas DataFrame
+        X_new: pandas DataFrame
             The transformed dataset.
         """
         check_is_fitted(self)
@@ -376,13 +376,13 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Convert the transformed variables back to the original values. Only
-        implemented for the following Scikit-learn transformers:
+        implemented for the following scikit-learn transformers:
 
         PowerTransformer, QuantileTransformer, OrdinalEncoder,
         MaxAbsScaler, MinMaxScaler, StandardScaler, RobustScaler.
 
         If you would like this method implemented for additional transformers,
-        please check if they have the inverse_transform method in Scikit-learn and then
+        please check if they have the inverse_transform method in scikit-learn and then
         raise an issue in our repo.
 
         Parameters

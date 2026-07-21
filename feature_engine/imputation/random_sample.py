@@ -64,7 +64,7 @@ class RandomSampleImputer(BaseImputer):
 
     **Note**
 
-    The Random samples used to replace missing values may vary from execution to
+    The random samples used to replace missing values may vary from execution to
     execution. This may affect the results of your work. Thus, it is advisable to set a
     seed.
 
@@ -81,7 +81,7 @@ class RandomSampleImputer(BaseImputer):
     random_state: int, str or list, default=None
         The random_state can take an integer to set the seed when extracting the
         random samples. Alternatively, it can take a variable name or a list of
-        variables, which values will be used to determine the seed, observation per
+        variables, whose values will be used to determine the seed, observation per
         observation.
 
     seed: str, default='general'
@@ -96,7 +96,7 @@ class RandomSampleImputer(BaseImputer):
         observation.
 
     seeding_method: str, default='add'
-        If more than one variable are indicated to seed the random sampling per
+        If more than one variable is indicated to seed the random sampling per
         observation, you can choose to combine those values as an addition or a
         multiplication. Can take the values 'add' or 'multiply'.
 
@@ -114,7 +114,7 @@ class RandomSampleImputer(BaseImputer):
     Methods
     -------
     fit:
-        Make a copy of the train set
+        Make a copy of the train set.
 
     {fit_transform}
 

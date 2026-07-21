@@ -13,7 +13,7 @@ def load_titanic(
     The load_titanic() function returns the well-known titanic dataset.
 
     Note that you need to have an internet connection for this function to work, as we
-    are calling the dataset stored in `openML <https://www.openml.org/d/40945>`_ which
+    are calling the dataset stored in `OpenML <https://www.openml.org/d/40945>`_ which
     can be downloaded from
     `here <https://www.openml.org/data/get_csv/16826755/phpMYEkMl>`_.
 
@@ -25,8 +25,8 @@ def load_titanic(
         and target.
 
     predictors_only: bool, default=False
-        If `False`, it returns all the variables from the original Titanic Dataset. If
-        `True`, it reurns only relevant predictors.
+        If `False`, it returns all the variables from the original Titanic dataset. If
+        `True`, it returns only relevant predictors.
 
     handle_missing: bool, default=False
         If `False`, it returns the original dataset with missing values. If `True`,

@@ -115,7 +115,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features].
+        X: pandas DataFrame of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
@@ -141,7 +141,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -172,7 +172,7 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns

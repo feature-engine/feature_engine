@@ -39,7 +39,7 @@ from feature_engine._docstrings.substitute import Substitution
 )
 class MeanNormalizationScaler(BaseNumericalTransformer):
     """
-    MeanNormalizationScaler() applies mean normalization, which consists of subtracting
+    MeanNormalizationScaler() applies mean normalisation, which consists of subtracting
     the mean of each feature and then dividing the result by the value range, that is,
     the difference between its maximum and minimum value. The method aims to center the
     variables at 0, and rescale the distribution between -1 and 1.
@@ -64,7 +64,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         Dictionary containing the mean of the variables.
 
     range_:
-        Dictionary containing the value range of of the variables.
+        Dictionary containing the value range of the variables.
 
     {variables_}
 
@@ -82,7 +82,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
     {inverse_transform}
 
     transform:
-        Scale the variables using mean normalization.
+        Scale the variables using mean normalisation.
 
     Examples
     --------
@@ -121,7 +121,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features].
+        X: pandas dataframe of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
@@ -146,11 +146,11 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Transform the variables using mean normalization.
+        Transform the variables using mean normalisation.
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -173,7 +173,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns

@@ -48,8 +48,8 @@ class MatchCategories(
     operations on the resulting object.
 
     MatchCategories() remembers the encodings or levels that represent each
-    category, and can thus can be used to ensure that the correct encoding gets
-    applied when passing categorical data to modeling packages that support this
+    category, and can thus be used to ensure that the correct encoding gets
+    applied when passing categorical data to modelling packages that support this
     dtype, or to prevent unseen categories from reaching a further transformer
     or estimator in a pipeline, for example.
 
