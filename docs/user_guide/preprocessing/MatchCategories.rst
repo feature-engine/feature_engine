@@ -19,6 +19,17 @@ applied when passing categorical data to modelling packages that support this
 dtype, or to prevent unseen categories from reaching a further transformer
 or estimator in a pipeline, for example.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`MatchCategories()` used to
+    raise an error if the dataframe contained no categorical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip matching the categories instead, leaving the
+    dataframe unchanged. This lets you reuse the same pipeline across different
+    datasets or projects, some of which may not contain categorical variables,
+    without building a tailored pipeline for each one. `return_empty` will default to
+    `True` from version 2.1 onwards.
+
 Let's explore this with an example. We start with the imports:
 
 .. code:: python
@@ -72,17 +83,6 @@ Here are the mappings learnt for each categorical variable:
      'sex': Index(['female', 'male'], dtype='object'),
      'cabin': Index(['A', 'B', 'C', 'D', 'E', 'F', 'M', 'T'], dtype='object'),
      'embarked': Index(['C', 'Missing', 'Q', 'S'], dtype='object')}
-
-.. note::
-
-    **New in version 2.0:** When `variables` is `None`, :class:`MatchCategories()` used to
-    raise an error if the dataframe contained no categorical variables. You can now
-    set the new parameter `return_empty` to `True` to make the transformer return an
-    empty list of variables and skip matching the categories instead, leaving the
-    dataframe unchanged. This lets you reuse the same pipeline across different
-    datasets or projects, some of which may not contain categorical variables,
-    without building a tailored pipeline for each one. `return_empty` will default to
-    `True` from version 2.1 onwards.
 
 To see why this matters, let's compare the order in which the categories of `embarked`
 appear in the raw train and test sets. This is the order in the train set:

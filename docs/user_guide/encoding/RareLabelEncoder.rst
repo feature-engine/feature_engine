@@ -44,7 +44,7 @@ The parameter `max_n_categories` specifies the maximum number of unique categori
 allowed in the encoded variable. If `max_n_categories = 5`, the five most frequent
 categories are retained after encoding, and all others are grouped into a single category.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`RareLabelEncoder()` used to
     raise an error if the dataframe contained no categorical variables. You can now

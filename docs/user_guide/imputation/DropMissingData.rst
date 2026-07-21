@@ -81,7 +81,7 @@ You have the option to remove nan values from all columns or only from a subset 
 them. Alternatively, you can remove rows if they have more than a certain percentage of
 nan values.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`DropMissingData()` used to
     raise an error if the dataframe contained no variables. You can now

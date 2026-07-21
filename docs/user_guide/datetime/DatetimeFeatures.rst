@@ -65,6 +65,16 @@ components added as columns:
     18 2019-03-23  2019        1      3
     19 2019-03-24  2019        1      3
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`DatetimeFeatures()` used to
+    raise an error if the dataframe contained no datetime variables. You can now set the new
+    parameter `return_empty` to `True` to make the transformer return an empty list of
+    variables and skip extracting the datetime features instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or projects,
+    some of which may not contain datetime variables, without building a tailored pipeline
+    for each one. `return_empty` will default to `True` from version 2.1 onwards.
+
 Datetime features with feature-engine
 -------------------------------------
 
@@ -220,16 +230,6 @@ In the following output we see the name of the datatime variables identified by 
 .. code:: python
 
     ['var_time1', 'var_time2']
-
-.. note::
-
-    **New in version 2.0:** When `variables` is `None`, :class:`DatetimeFeatures()` used to
-    raise an error if the dataframe contained no datetime variables. You can now set the new
-    parameter `return_empty` to `True` to make the transformer return an empty list of
-    variables and skip extracting the datetime features instead, leaving the dataframe
-    unchanged. This lets you reuse the same pipeline across different datasets or projects,
-    some of which may not contain datetime variables, without building a tailored pipeline
-    for each one. `return_empty` will default to `True` from version 2.1 onwards.
 
 .. note::
 

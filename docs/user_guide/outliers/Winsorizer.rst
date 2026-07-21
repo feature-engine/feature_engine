@@ -73,7 +73,7 @@ mean, median, standard deviation, IQR, and MAD all describe the same thing.
 .. figure::  ../../images/outlier-methods-normal.png
    :align:   center
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`Winsorizer()` used to
     raise an error if the dataframe contained no numerical variables. You can now

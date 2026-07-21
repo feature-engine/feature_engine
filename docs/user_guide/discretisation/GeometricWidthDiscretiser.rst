@@ -49,7 +49,7 @@ This discretisation technique is great when the distribution of the variable is 
 variables to discretise can be indicated, or the discretiser will automatically select
 all numerical variables in the train set.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`GeometricWidthDiscretiser()` used to
     raise an error if the dataframe contained no numerical variables. You can now

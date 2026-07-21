@@ -100,6 +100,16 @@ We see the new variable now expressing the difference in years, at the right of 
 If you wanted to subtract various datetime variables, you would have to write lines of code
 for every subtraction. Fortunately, we can automate this procedure with :class:`DatetimeSubtraction()`.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` or `reference` is `None`, :class:`DatetimeSubtraction()`
+    used to raise an error if the dataframe contained no datetime variables. You can now set
+    the new parameter `return_empty` to `True` to make the transformer return an empty list
+    of variables and skip the subtraction instead, leaving the dataframe unchanged. This lets
+    you reuse the same pipeline across different datasets or projects, some of which may not
+    contain datetime variables, without building a tailored pipeline for each one.
+    `return_empty` will default to `True` from version 2.1 onwards.
+
 Datetime subtraction with feature-engine
 ----------------------------------------
 
@@ -144,16 +154,6 @@ original variables and also the new variables with the time difference:
     2 2019-03-07 2018-03-25         0.950054
     3 2019-03-08 2018-04-01         0.933626
     4 2019-03-09 2018-04-08         0.917199
-
-.. note::
-
-    **New in version 2.0:** When `variables` or `reference` is `None`, :class:`DatetimeSubtraction()`
-    used to raise an error if the dataframe contained no datetime variables. You can now set
-    the new parameter `return_empty` to `True` to make the transformer return an empty list
-    of variables and skip the subtraction instead, leaving the dataframe unchanged. This lets
-    you reuse the same pipeline across different datasets or projects, some of which may not
-    contain datetime variables, without building a tailored pipeline for each one.
-    `return_empty` will default to `True` from version 2.1 onwards.
 
 
 Drop original variables after computation

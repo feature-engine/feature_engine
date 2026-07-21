@@ -14,7 +14,7 @@ You can select the variables for which the missing indicators should be created 
 a variable list to the `variables` parameter. Alternatively, the imputer will
 automatically add indicators to all variables.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`AddMissingIndicator()` used to
     raise an error if the dataframe contained no variables. You can now

@@ -11,17 +11,6 @@ can be indicated, or the imputer will automatically impute all variables in the 
 
 .. note::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`RandomSampleImputer()` used to
-    raise an error if the dataframe contained no variables to impute. You can now
-    set the new parameter `return_empty` to `True` to make the transformer return an
-    empty list of variables and skip the imputation instead, leaving the dataframe
-    unchanged. This lets you reuse the same pipeline across different datasets or
-    projects, some of which may not contain variables to impute, without building a
-    tailored pipeline for each one. `return_empty` will default to `True` from version
-    2.1 onwards.
-
-.. note::
-
     The random samples used to replace missing values may vary from execution to
     execution. This may affect the results of your work. Thus, it is advisable to set a
     seed.
@@ -76,6 +65,17 @@ This estimator stores a copy of the training set when the `fit()` method is
 called. Therefore, the object can become quite heavy. Also, it may not be GDPR
 compliant if your training data set contains Personal Information. Please check
 if this behaviour is allowed within your organisation.
+
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`RandomSampleImputer()` used to
+    raise an error if the dataframe contained no variables to impute. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the imputation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain variables to impute, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
 
 Python implementation
 ---------------------

@@ -141,7 +141,7 @@ evidence for a given set of features. By default, :class:`WoEEncoder()` will enc
 categorical variables. You can encode just a subset by passing the variables names in a
 list to the `variables` parameter.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`WoEEncoder()` used to
     raise an error if the dataframe contained no categorical variables. You can now

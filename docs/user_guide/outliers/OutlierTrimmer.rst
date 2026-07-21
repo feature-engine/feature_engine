@@ -23,7 +23,7 @@ The :class:`OutlierTrimmer()` can identify outliers by using all of these method
 Hence, we’ll begin this guide with data analysis, showing how we can identify outliers through these statistical methods
 and boxplots, and then we will remove outliers by using the :class:`OutlierTrimmer()`.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`OutlierTrimmer()` used to
     raise an error if the dataframe contained no numerical variables. You can now

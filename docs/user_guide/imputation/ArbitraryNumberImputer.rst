@@ -12,7 +12,7 @@ The :class:`ArbitraryNumberImputer()` can find and impute all numerical variable
 automatically. Alternatively, you can pass a list of the variables you want to impute
 to the `variables` parameter.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`ArbitraryNumberImputer()` used to
     raise an error if the dataframe contained no numerical variables. You can now

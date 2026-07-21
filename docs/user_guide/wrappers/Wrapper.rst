@@ -21,7 +21,7 @@ in the order of the original data. The
 returns a Numpy array, and the order of the variables may not coincide with that of the
 original dataset.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`SklearnTransformerWrapper()`
     used to raise an error if the dataframe contained no variables of the relevant

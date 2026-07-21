@@ -53,7 +53,7 @@ By default, :class:`CountFrequencyEncoder()` will encode only categorical data. 
 want to encode numerical values, we need to explicitly say so by setting the parameter
 `ignore_format` to True.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`CountFrequencyEncoder()` used to
     raise an error if the dataframe contained no categorical variables. You can now

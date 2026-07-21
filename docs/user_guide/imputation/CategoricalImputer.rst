@@ -32,6 +32,17 @@ Originally, we designed this imputer to work only with categorical variables. In
 numerical variables with this functionality. This is because, in some cases, variables
 that are by nature categorical have numerical values.﻿
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`CategoricalImputer()` used to
+    raise an error if the dataframe contained no categorical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the imputation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain categorical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 
@@ -239,17 +250,6 @@ dataframe:
      ...
      'SaleType',
      'SaleCondition']
-
-.. note::
-
-    **New in version 2.0:** When `variables` is `None`, :class:`CategoricalImputer()` used to
-    raise an error if the dataframe contained no categorical variables. You can now
-    set the new parameter `return_empty` to `True` to make the transformer return an
-    empty list of variables and skip the imputation instead, leaving the dataframe
-    unchanged. This lets you reuse the same pipeline across different datasets or
-    projects, some of which may not contain categorical variables, without building a
-    tailored pipeline for each one. `return_empty` will default to `True` from version
-    2.1 onwards.
 
 Categorical features with 2 modes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

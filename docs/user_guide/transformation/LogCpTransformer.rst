@@ -24,6 +24,17 @@ Alternatively, :class:`LogCpTransformer()` will find the necessary value to make
 values of the variable positive. For strictly positive variables, C will be 0, and the
 transformation will be log(x).
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`LogCpTransformer()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the transformation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 
@@ -241,17 +252,6 @@ All numerical variables were selected for the transformation:
     ['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6']
 
 You can now apply `transform()` to transform all these variables.
-
-.. note::
-
-    **New in version 2.0:** When `variables` is `None`, :class:`LogCpTransformer()` used to
-    raise an error if the dataframe contained no numerical variables. You can now
-    set the new parameter `return_empty` to `True` to make the transformer return an
-    empty list of variables and skip the transformation instead, leaving the dataframe
-    unchanged. This lets you reuse the same pipeline across different datasets or
-    projects, some of which may not contain numerical variables, without building a
-    tailored pipeline for each one. `return_empty` will default to `True` from version
-    2.1 onwards.
 
 Adding different user defined constants
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

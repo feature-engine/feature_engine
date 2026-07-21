@@ -57,7 +57,7 @@ of the decision tree for the category.
 The motivation for the :class:`DecisionTreeEncoder()` is to try and create monotonic
 relationships between the categorical variables and the target.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`DecisionTreeEncoder()` used to
     raise an error if the dataframe contained no categorical variables. You can now

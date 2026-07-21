@@ -137,7 +137,7 @@ string categorical variables if needed.
 encode numerical variables as well. This is useful, when the values of the numerical variables are more
 useful as strings, than as numbers. For example, for variables like barcode.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`StringSimilarityEncoder()` used to
     raise an error if the dataframe contained no categorical variables. You can now

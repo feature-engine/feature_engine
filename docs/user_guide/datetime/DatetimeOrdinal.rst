@@ -62,7 +62,7 @@ functionalities are:
 - It can compute the ordinal number relative to a `start_date`.
 - It can automatically find and select datetime variables.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`DatetimeOrdinal()` used to
     raise an error if the dataframe contained no datetime variables. You can now set the new

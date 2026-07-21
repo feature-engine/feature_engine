@@ -23,7 +23,7 @@ numerical variables.
     between 0 and 1. If the variable contains a value outside of this range, the
     transformer will raise an error.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`ArcsinTransformer()` used to
     raise an error if the dataframe contained no numerical variables. You can now

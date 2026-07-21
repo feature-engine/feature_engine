@@ -83,7 +83,7 @@ numerical variables. You can pass the
 list of variables you want to impute, or alternatively, :class:`MeanMedianImputer()` 
 will automatically impute all numerical variables in the training set.
 
-.. note::
+.. attention::
 
     **New in version 2.0:** When `variables` is `None`, :class:`MeanMedianImputer()` used to
     raise an error if the dataframe contained no numerical variables. You can now
