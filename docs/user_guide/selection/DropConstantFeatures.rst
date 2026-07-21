@@ -20,7 +20,7 @@ of the filter group of selection algorithms.
 In Python, we can find constant features by using pandas `std` or `unique` methods, and then
 remove them with `drop`.
 
-With Scikit-learn, we can find and remove constant variables with `VarianceThreshold` to quickly
+With scikit-learn, we can find and remove constant variables with `VarianceThreshold` to quickly
 reduce the number of features. `VarianceThreshold` is part of `sklearn.feature_selection`'s API.
 
 `VarianceThreshold`, however, would only work with numerical variables. Hence, we could only
@@ -29,7 +29,7 @@ preprocessing just to remove redundant variables.
 
 Feature-engine introduces :class:`DropConstantFeatures()` to find and remove constant and
 quasi-constant features from a dataframe. :class:`DropConstantFeatures()` works with numerical,
-categorical, or datetime variables. It is therefore more versatile than Scikit-learn’s transformer
+categorical, or datetime variables. It is therefore more versatile than scikit-learn’s transformer
 because it allows us to drop all duplicate variables without the need for prior data transformations.
 
 By default, :class:`DropConstantFeatures()` drops constant variables. We also have the option
@@ -41,14 +41,15 @@ it offers a straightforward way of reducing the feature subset.
 
 Be mindful, though, that depending on the context, quasi-constant variables could be useful.
 
-**Example**
+Python implementation
+---------------------
 
-Let’s see how to use :class:`DropConstantFeatures()` by using the Titanic dataset. This dataset
+Let's see how to use :class:`DropConstantFeatures()` by using the Titanic dataset. This dataset
 does not contain constant or quasi-constant variables, so for the sake of the demonstration,
 we will consider quasi-constant those features that show the same value in more than 70% of
 the rows.
 
-We first load the data and separate it into a training set and a test set:
+We start with the imports:
 
 .. code:: python
 
@@ -56,11 +57,14 @@ We first load the data and separate it into a training set and a test set:
     from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropConstantFeatures
 
+Next, we load the Titanic dataset and separate it into a training set and a test set:
+
+.. code:: python
+
     X, y = load_titanic(
         return_X_y_frame=True,
         handle_missing=True,
     )
-
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=0,
@@ -89,6 +93,8 @@ The variables to drop are stored in the attribute `features_to_drop_`:
 
     transformer.features_to_drop_
 
+These are the 4 features that show the same value in more than 70% of the rows:
+
 .. code:: python
 
     ['parch', 'cabin', 'embarked', 'body']
@@ -100,6 +106,8 @@ the observations as follows:
 .. code:: python
 
     X_train['embarked'].value_counts(normalize = True)
+
+We obtain the following proportions:
 
 .. code:: python
 
@@ -117,6 +125,8 @@ Let's now evaluate `parch`:
 .. code:: python
 
     X_train['parch'].value_counts(normalize = True)
+
+We obtain the following proportions:
 
 .. code:: python
 
@@ -181,7 +191,7 @@ We see the resulting dataframe below:
     1193                                            Missing
     686   Kingwilliamstown, Co Cork, Ireland Glens Falls...
 
-Like sklearn, Feature-engine transformers have the `fit_transform` method that allows us
+Like sklearn, feature-engine transformers have the `fit_transform` method that allows us
 to find and remove constant or quasi-constant variables in a single line of code for convenience.
 
 Like sklearn as well, `DropConstantFeatures()` has the `get_support()` method, which returns
@@ -191,6 +201,9 @@ will be dropped.
 .. code:: python
 
     transformer.get_support()
+
+We obtain a boolean vector with `True` for the features that will be retained, and
+`False` for those that will be dropped:
 
 .. code:: python
 
@@ -212,50 +225,9 @@ selection algorithms and then train a Logistic regression estimator:
 
 For more details about this and other feature selection methods check out these resources:
 
-
-.. figure::  ../../images/fsml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
-
-   Feature Selection for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/fsmlbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-in-machine-learning-book
-
-   Feature Selection in Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature Selection in Machine Learning <https://www.trainindata.com/p/feature-selection-in-machine-learning-book>`_, book.
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

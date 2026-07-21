@@ -8,12 +8,18 @@ check_datetime_variables
 :class:`check_datetime_variables()` checks that the variables in the list are, or can
 be parsed as datetime.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import check_datetime_variables
+
+Now, we create the dataset:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -62,8 +68,6 @@ object.
 Let's check that a list of variables can be parsed as datetime:
 
 .. code:: python
-
-    from feature_engine.variable_handling import check_datetime_variables
 
     var_date = check_datetime_variables(X, ["date2", "date3"])
 

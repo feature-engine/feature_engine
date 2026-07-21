@@ -48,11 +48,11 @@ Regarding the threshold, this parameter needs a bit of hand tuning. Higher thres
 return fewer features.
 
 
-Python example
---------------
+Python implementation
+---------------------
 
-Let's see how to use this transformer with the diabetes dataset that comes in Scikit-learn.
-First, we load the data:
+Let's see how to use this transformer with the diabetes dataset that comes in scikit-learn.
+We start with the imports:
 
 .. code:: python
 
@@ -61,6 +61,10 @@ First, we load the data:
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
     from feature_engine.selection import RecursiveFeatureAddition
+
+Next, we load the diabetes dataset:
+
+.. code:: python
 
     # load dataset
     X, y = load_diabetes(return_X_y=True, as_frame=True)
@@ -92,10 +96,10 @@ we leave the parameter `threshold` to the default value which is 0.01.
 
 .. code:: python
 
-    # initialize linear regression estimator
+    # initialise linear regression estimator
     linear_model = LinearRegression()
 
-    # initialize feature selector
+    # initialise feature selector
     tr = RecursiveFeatureAddition(estimator=linear_model, scoring="r2", cv=3)
 
 With `fit()` the model finds the most useful features, that is, features that when added,
@@ -304,7 +308,7 @@ These features were not deemed important by the RFA process:
     ['age', 'sex', 's2', 's3', 's4', 's6']
 
 :class:`RecursiveFeatureAddition` also has the `get_support()` method that works exactly
-like that of Scikit-learn's feature selection classes:
+like that of scikit-learn's feature selection classes:
 
 ..  code:: python
 
@@ -317,57 +321,16 @@ be dropped:
 
     [False, False, True, True, True, False, False, False, True, False]
 
-And that's it! You now now how to select features by recursively adding them to a dataset.
+And that's it! You now know how to select features by recursively adding them to a dataset.
 
 Additional resources
 --------------------
 
 For more details about this and other feature selection methods check out these resources:
 
-
-.. figure::  ../../images/fsml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
-
-   Feature Selection for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/fsmlbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-in-machine-learning-book
-
-   Feature Selection in Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature Selection in Machine Learning <https://www.trainindata.com/p/feature-selection-in-machine-learning-book>`_, book.
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

@@ -8,12 +8,18 @@ check_all_variables
 With :class:`check_all_variables()` we can check that the variables in a list are
 present in the dataframe.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import check_all_variables
+
+Now, we create the dataset:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -58,11 +64,9 @@ We see the resulting dataframe below:
 
 
 We can use :class:`check_all_variables()` with a list of variable names to verify that
-the variables in the list are in the dataframe.
+the variables in the list are in the dataframe:
 
 .. code:: python
-
-    from feature_engine.variable_handling import check_all_variables
 
     checked_vars = check_all_variables(X, ["num_var_1", "cat_var1", "date1"])
 

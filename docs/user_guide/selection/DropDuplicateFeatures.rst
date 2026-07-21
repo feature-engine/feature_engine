@@ -15,7 +15,7 @@ records when we merge different data sources that show some variable overlap.
 
 Checking for and removing duplicate features is a standard procedure in any data analysis
 workflow that helps us reduce the dimension of the dataset quickly and ensure data quality.
-In Python, we can find duplicate values in an attribute table very easily with Pandas.
+In Python, we can find duplicate values in an attribute table very easily with pandas.
 Dropping those duplicate features, however, requires a few more lines of code.
 
 Feature-engine aims to accelerate the process of data validation by finding and removing
@@ -29,10 +29,11 @@ works with numerical and categorical features alike.
 
 So let’s see how to set up :class:`DropDuplicateFeatures()`.
 
-**Example**
+Python implementation
+---------------------
 
 In this demo, we will use the Titanic dataset and introduce a few duplicated features
-manually:
+manually. We start with the imports:
 
 .. code:: python
 
@@ -40,6 +41,10 @@ manually:
     from sklearn.model_selection import train_test_split
     from feature_engine.datasets import load_titanic
     from feature_engine.selection import DropDuplicateFeatures
+
+Next, we load the Titanic dataset and manually duplicate 3 of its columns:
+
+.. code:: python
 
     data = load_titanic(
         handle_missing=True,
@@ -107,6 +112,8 @@ attribute:
 
     transformer.features_to_drop_
 
+These are the 3 duplicated features that will be removed:
+
 .. code:: python
 
     {'age_dup', 'sex_dup', 'sibsp_dup'}
@@ -125,16 +132,20 @@ the duplicated features are not there any more:
 
     train_t.columns
 
+We confirm that the duplicated features are gone:
+
 .. code:: python
 
     Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'cabin', 'embarked'], dtype='object')
 
 The transformer also stores the groups of duplicated features, which is useful for data
-analysis and validation.
+analysis and validation:
 
 .. code:: python
 
     transformer.duplicated_feature_sets_
+
+We see each original feature grouped together with the duplicates that were found for it:
 
 .. code:: python
 
@@ -151,50 +162,9 @@ feature selection algorithms:
 
 For more details about this and other feature selection methods check out these resources:
 
-
-.. figure::  ../../images/fsml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
-
-   Feature Selection for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/fsmlbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-in-machine-learning-book
-
-   Feature Selection in Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature Selection in Machine Learning <https://www.trainindata.com/p/feature-selection-in-machine-learning-book>`_, book.
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

@@ -4,7 +4,7 @@ Governance
 ==========
 
 The purpose of this document is to formalize the governance process used by the
-Feature-engine project and clarify how decisions are made and how the community works
+feature-engine project and clarify how decisions are made and how the community works
 together. This is the first version of our governance policy and will be updated as our
 community grows and more of us take on different roles.
 
@@ -26,7 +26,7 @@ Core Contributors are community members who are dedicated to the continued devel
 of the project through ongoing engagement with the community. Core Contributors are
 expected to review code contributions, can approve and merge pull requests, can decide
 on the fate of pull requests, and can be involved in deciding major changes to the
-Feature-engine API. Core Contributors determine who can join as a Core Contributor.
+feature-engine API. Core Contributors determine who can join as a Core Contributor.
 
 
 Founder and Leadership
@@ -38,7 +38,7 @@ dissemination of the project. In the tradition of Python, Sole is referred to as
 “benevolent dictator for life” (BDFL) of the project, or simply, “the founder”. From a
 governance perspective, the BDFL has a special role in that they provide vision,
 thought leadership, and high-level direction for the project’s members and contributors.
-The BDFL has the authority to make all final decisions for the Feature-engine Project.
+The BDFL has the authority to make all final decisions for the feature-engine Project.
 However, in practice, the BDFL, chooses to defer that authority to the consensus of the
 community discussion channels and the Core Contributors. The BDFL can also propose and
 vote for new Core Contributors.

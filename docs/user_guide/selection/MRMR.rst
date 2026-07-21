@@ -51,7 +51,7 @@ F-statistic
 ~~~~~~~~~~~
 
 The F-statistic determines the degree of linear association between the features and the target.
-If the target is categorical, the F-statistic is calculated using Scikit-learn's `f_classif`
+If the target is categorical, the F-statistic is calculated using scikit-learn's `f_classif`
 function. If the target is continuous, the F-statistic is determined using `f_regression`.
 
 Note that in both cases, these statistic is useful when the features are continuous. For discrete
@@ -99,17 +99,17 @@ the dataset: Pearson's correlation coefficient or mutual information.
 Correlation
 ~~~~~~~~~~~
 
-To determine each features's redundancy, :class:`MRMR()` obtains Pearson's correlation
+To determine each feature's redundancy, :class:`MRMR()` obtains Pearson's correlation
 coefficient between each feature and the features selected in previous rounds. Next, it
 takes the average of the absolute value of the coefficients.
 
-Note that correlation assumes that all features are continuous, so this metric may returned biased
+Note that correlation assumes that all features are continuous, so this metric may return biased
 results for categorical and discrete variables.
 
 Mutual information
 ~~~~~~~~~~~~~~~~~~
 
-To determine each features's redundancy, :class:`MRMR()` caclulates the mutual information
+To determine each feature's redundancy, :class:`MRMR()` calculates the mutual information
 between each feature and the features selected in former iterations, and then takes the average.
 
 
@@ -154,10 +154,10 @@ detects linear and non-linear associations, but for continuous features it takes
 compute, impacting the speed of selection of MRMR.
 
 
-Python examples
----------------
+Python implementation
+----------------------
 
-Let's see how to implement :class:`MRMR()`. We'll start by using Scikit-learn's breast cancer
+Let's see how to implement :class:`MRMR()`. We'll start by using scikit-learn's breast cancer
 dataset. The target variable is binary, representing malignant or benign tumors. All
 predictor variables are continuous.
 
@@ -341,7 +341,7 @@ In the following output we see the test set with a reduced number of features:
 In the final dataset we only have the "relevant features". And by relevant, we mean those
 with high association with the target, and low association with other features.
 
-Since we left the parameter `'max_features'` as `None, :class:`MRMR()` selected 20% of the
+Since we left the parameter `'max_features'` as `None`, :class:`MRMR()` selected 20% of the
 features in the training set. The training set contained 30 features, so 6 features remain
 after applying MRMR.
 
@@ -358,9 +358,9 @@ correlation coefficient.
 In a similar way, the MRMR feature selection algorithm will compute the feature importance as the
 ratio between the random forest importance and Pearson's correlation coefficient.
 
-Lets, set up :class:`MRMR()` to use a random forests classifier for the relevance. Note that we
+Let's set up :class:`MRMR()` to use a random forests classifier for the relevance. Note that we
 need to specify a cross-validation scheme, a performance metric, and we have the option to pass
-a grid with hyperparameters to optimize:
+a grid with hyperparameters to optimise:
 
 .. code:: python
 
@@ -422,7 +422,7 @@ Mutual information
 ~~~~~~~~~~~~~~~~~~
 
 If we have non-linear associations and / or categorical or discrete variables, a better
-option is to obtain the relevance and redundancy utilizing mutual information.
+option is to obtain the relevance and redundancy utilising mutual information.
 
 The mutual information is calculated differently for numerical and categorical variables,
 so it is best to flag discrete features with a boolean array.
@@ -495,7 +495,7 @@ examined by MRMR are retained in the transformed dataset:
     3  5.6431      52.0          1         2     37.85    -122.25
     4  3.8462      52.0          1         2     37.85    -122.25
 
-For compatibility with Scikit-learn, :class:`MRMR()` also supports the
+For compatibility with scikit-learn, :class:`MRMR()` also supports the
 method `get_support()`:
 
 .. code:: python
@@ -513,7 +513,7 @@ Considerations
 --------------
 
 The maximum relevance minimum redundancy feature selection method is fast, and therefore allows
-scrutinizing fairly big datasets. Computing the F-statistic is fast. That's one of the reasons
+scrutinising fairly big datasets. Computing the F-statistic is fast. That's one of the reasons
 that made it gain popularity.
 
 
@@ -522,50 +522,9 @@ Additional resources
 
 For more details about this and other feature selection methods check out these resources:
 
-
-.. figure::  ../../images/fsml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
-
-   Feature Selection for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/fsmlbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-in-machine-learning-book
-
-   Feature Selection in Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature Selection in Machine Learning <https://www.trainindata.com/p/feature-selection-in-machine-learning-book>`_, book.
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

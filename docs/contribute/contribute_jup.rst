@@ -4,7 +4,7 @@ Contribute Jupyter notebooks
 ============================
 
 We created a collection of Jupyter notebooks that showcase the main functionality of
-Feature-engine's transformers. We link these notebooks throughout the main documentation
+feature-engine's transformers. We link these notebooks throughout the main documentation
 to offer users more examples and details about transformers and how to use them.
 
 **Note** that the Jupyter notebooks are hosted in a separate

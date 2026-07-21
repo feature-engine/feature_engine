@@ -3,7 +3,7 @@
 Blogs, Videos and More
 ======================
 
-Here you find articles and videos about Feature-engine and feature engineering and
+Here you find articles and videos about feature-engine and feature engineering and
 selection in general.
 
 Blogs
@@ -12,9 +12,9 @@ Blogs
 Feature engineering
 ~~~~~~~~~~~~~~~~~~~
 
-- `Feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
+- `feature-engine: A new open-source Python package for feature engineering <https://trainindata.medium.com/feature-engine-a-new-open-source-python-package-for-feature-engineering-29a0ab88ea7c/>`_.
 - `Practical Code Implementations of Feature Engineering for Machine Learning with Python <https://towardsdatascience.com/practical-code-implementations-of-feature-engineering-for-machine-learning-with-python-f13b953d4bcd>`_.
-- `Streamlining Feature Engineering Pipelines with Feature-engine <https://towardsdatascience.com/streamlining-feature-engineering-pipelines-with-feature-engine-e781d551f470?gi=e0fa6e5c0c1a/>`_.
+- `Streamlining Feature Engineering Pipelines with feature-engine <https://towardsdatascience.com/streamlining-feature-engineering-pipelines-with-feature-engine-e781d551f470?gi=e0fa6e5c0c1a/>`_.
 - `Feature Engineering for Machine Learning: A comprehensive Overview <https://www.blog.trainindata.com/feature-engineering-for-machine-learning/>`_.
 - `Variance Stabilizing Transformations <https://www.blog.trainindata.com/variance-stabilizing-transformations-in-machine-learning/>`_.
 
@@ -33,14 +33,14 @@ YouTube
 Playlists
 ~~~~~~~~~
 
-- `One minute to Feature-engine <https://www.youtube.com/watch?v=nisuJQTyDSA&list=PL_7uaHXkQmKVXh06fCWRxdQRZsl3wva5k>`_
-- `Feature-engine <https://www.youtube.com/watch?v=maRloknVxVg&list=PL_7uaHXkQmKVlqlvgQJuaWEKjagHbERtp>`_
+- `One minute to feature-engine <https://www.youtube.com/watch?v=nisuJQTyDSA&list=PL_7uaHXkQmKVXh06fCWRxdQRZsl3wva5k>`_
+- `feature-engine <https://www.youtube.com/watch?v=maRloknVxVg&list=PL_7uaHXkQmKVlqlvgQJuaWEKjagHbERtp>`_
 
 Videos
 ~~~~~~
 
-- `Streamlining Feature Engineering Pipes with Feature-engine <https://www.youtube.com/watch?v=0V3_uXX30Ko>`_, Data Science Festival, 2020.
-- `Optimising Feature Engineering Pipelines with Feature-engine <https://www.youtube.com/watch?v=qT-3KUaFYmk/>`_, Pydata Cambridge 2020, from minute 51:43.
+- `Streamlining Feature Engineering Pipes with feature-engine <https://www.youtube.com/watch?v=0V3_uXX30Ko>`_, Data Science Festival, 2020.
+- `Optimising Feature Engineering Pipelines with feature-engine <https://www.youtube.com/watch?v=qT-3KUaFYmk/>`_, Pydata Cambridge 2020, from minute 51:43.
 - `Feature selection in machine learning - DataTalks.Club <https://www.youtube.com/watch?v=blvmNWbcPDo>`_, DataTalks.Club 2022.
 - `Feature engineering for time series forecasting <https://www.youtube.com/watch?v=2vMNiSeNUjI>`_ DataTalks.Club 2022.
 

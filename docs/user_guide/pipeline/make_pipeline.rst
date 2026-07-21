@@ -13,7 +13,7 @@ Setting up a Pipeline with make_pipeline
 ----------------------------------------
 
 In the following example, we set up a `Pipeline` that drops missing data, then replaces categories with ordinal
-numbers, and finally fits a Lasso regression model.
+numbers, and finally fits a Lasso regression model. We start with the imports:
 
 .. code:: python
 
@@ -25,6 +25,10 @@ numbers, and finally fits a Lasso regression model.
 
     from sklearn.linear_model import Lasso
 
+Next, we create a toy dataframe with missing data in a numerical and a categorical variable, plus a target variable:
+
+.. code:: python
+
     X = pd.DataFrame(
         dict(
             x1=[2, 1, 1, 0, np.nan],
@@ -33,12 +37,20 @@ numbers, and finally fits a Lasso regression model.
     )
     y = pd.Series([1, 2, 3, 4, 5])
 
+Now, we assemble the 3 steps with :class:`make_pipeline`, without naming them ourselves:
+
+.. code:: python
+
     pipe = make_pipeline(
         DropMissingData(),
         OrdinalEncoder(encoding_method="arbitrary"),
         Lasso(random_state=10),
     )
-    # predict
+
+Finally, we fit the pipeline and use it to make predictions:
+
+.. code:: python
+
     pipe.fit(X, y)
     preds_pipe = pipe.predict(X)
     preds_pipe
@@ -49,11 +61,13 @@ In the output we see the predictions made by the pipeline:
 
     array([2., 2.])
 
-The names of the pipeline were assigned automatically:
+If we print the pipeline, we can check that the names of the steps were assigned automatically:
 
 .. code:: python
 
    print(pipe)
+
+Each step took the lowercased class name as its step name:
 
 .. code:: python
 
@@ -61,7 +75,7 @@ The names of the pipeline were assigned automatically:
                     ('ordinalencoder', OrdinalEncoder(encoding_method='arbitrary')),
                     ('lasso', Lasso(random_state=10))])
 
-The pipeline returned by :class:`make_pipeline` has exactly the same characteristics than
+The pipeline returned by :class:`make_pipeline` has exactly the same characteristics as
 :class:`Pipeline`. Hence, for additional guidelines, check out the :class:`Pipeline`
 documentation.
 
@@ -91,12 +105,18 @@ We'll use the Australia electricity demand dataset described here:
 Godahewa, Rakshitha, Bergmeir, Christoph, Webb, Geoff, Hyndman, Rob, & Montero-Manso, Pablo. (2021). Australian
 Electricity Demand Dataset (Version 1) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.4659727
 
+Let's load the data and drop the `Industrial` column, which we won't use in this example:
+
 .. code:: python
 
     url = "https://raw.githubusercontent.com/tidyverts/tsibbledata/master/data-raw/vic_elec/VIC2015/demand.csv"
     df = pd.read_csv(url)
 
     df.drop(columns=["Industrial"], inplace=True)
+
+The date and time of each reading are stored as integers, so next, we convert them into an actual datetime index:
+
+.. code:: python
 
     # Convert the integer Date to an actual date with datetime type
     df["date"] = df["Date"].apply(
@@ -108,6 +128,10 @@ Electricity Demand Dataset (Version 1) [Data set]. Zenodo. https://doi.org/10.52
         pd.to_timedelta((df["Period"] - 1) * 30, unit="m")
 
     df.dropna(inplace=True)
+
+Finally, we keep only the demand column, rename it, and resample the data to an hourly frequency:
+
+.. code:: python
 
     # Rename columns
     df = df[["date_time", "OperationalLessIndustrial"]]
@@ -172,7 +196,7 @@ Next, we split the data into a training set and a test set:
     X_test  = df.loc[begin_test:]
     y_test = y.loc[begin_test:]
 
-Next, we set up `LagFeatures` and `WindowFeatures` to create features from lags and windows:
+Next, we set up `LagFeatures` to create 3 lagged versions of the demand variable:
 
 .. code:: python
 
@@ -183,6 +207,9 @@ Next, we set up `LagFeatures` and `WindowFeatures` to create features from lags 
         drop_na=True,
     )
 
+And we set up `WindowFeatures` to add the rolling 3-hour mean of the demand variable:
+
+.. code:: python
 
     winf = WindowFeatures(
         variables=["demand"],
@@ -255,65 +282,19 @@ We see the 3 hr ahead energy demand prediction for each hour:
     4  6646.981390  6970.501840  7308.359237
 
 
+Additional resources
+--------------------
+
 To learn more about direct forecasting and how to create features, check out our courses:
 
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Forecasting with Machine Learning <https://www.courses.trainindata.com/p/forecasting-with-machine-learning>`_, online course.
 
-.. figure::  ../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
+To learn more about feature engineering more generally, check out our course and book:
 
-   Feature Engineering for Time Series Forecasting
+- `Feature Engineering for Machine Learning <https://www.trainindata.com/p/feature-engineering-for-machine-learning>`_, online course.
+- `Python Feature Engineering Cookbook <https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587>`_, book.
 
-.. figure::  ../../images/fwml.png
-   :width: 300
-   :figclass: align-center
-   :align: right
-   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
-
-   Forecasting with Machine Learning
-
-.. figure::  ../../images/feml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-machine-learning
-
-   Feature Engineering for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-.. figure::  ../../images/cookbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.packtpub.com/en-us/product/python-feature-engineering-cookbook-9781835883587
-
-   Python Feature Engineering Cookbook
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+Both our book and courses are suitable for beginners and more advanced data scientists
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

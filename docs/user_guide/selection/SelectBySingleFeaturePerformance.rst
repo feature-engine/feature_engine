@@ -17,11 +17,11 @@ process works as follows:
 If the `threshold` parameter is set to `None`, the algorithm will select features with
 performance above the average of all individual features.
 
-Python Example
---------------
+Python implementation
+---------------------
 
 Let's see how to use :class:`SelectBySingleFeaturePerformance()` with the diabetes
-dataset that comes with Scikit-learn. First, we load the data:
+dataset that comes with scikit-learn. We start with the imports:
 
 .. code:: python
 
@@ -30,6 +30,10 @@ dataset that comes with Scikit-learn. First, we load the data:
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
     from feature_engine.selection import SelectBySingleFeaturePerformance
+
+Next, we load the diabetes dataset:
+
+.. code:: python
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
     print(X.head())
@@ -58,7 +62,7 @@ which r2 > 0.01.
 
 .. code:: python
 
-    # initialize feature selector
+    # initialise feature selector
     sel = SelectBySingleFeaturePerformance(
             estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01)
 
@@ -77,11 +81,11 @@ The features that will be dropped are stored in the following attribute:
     sel.features_to_drop_
 
 Only one feature will be dropped, because a linear model trained using this feature showed
-an r2 smaller than 0. 1:
+an r2 smaller than 0.01:
 
 .. code:: python
 
-    [sex]
+    ['sex']
 
 Evaluating feature importance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,53 +207,9 @@ All notebooks can be found in a `dedicated repository <https://github.com/featur
 
 For more details about this and other feature selection methods check out these resources:
 
-For more details about this and other feature selection methods check out these resources:
-
-
-.. figure::  ../../images/fsml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
-
-   Feature Selection for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/fsmlbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-in-machine-learning-book
-
-   Feature Selection in Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
+- `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature Selection in Machine Learning <https://www.trainindata.com/p/feature-selection-in-machine-learning-book>`_, book.
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

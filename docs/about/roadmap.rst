@@ -2,7 +2,7 @@ Roadmap
 =======
 
 This document provides general directions on what the core contributors would like to
-see developed in Feature-engine. As resources are limited, we can't promise when or if
+see developed in feature-engine. As resources are limited, we can't promise when or if
 the transformers listed here will be included in the library. We welcome all the help
 we can get to support this vision. If you are interested in contributing, please get in
 touch.
@@ -18,7 +18,7 @@ Feature-engine makes data engineering easy by allowing the selection of feature 
 directly within its transformers. It also interlaces well with exploratory data analysis
 (EDA) by returning dataframes for easy data exploration.
 
-Feature-engine’s transformers preserve Scikit-learn functionality with the methods fit()
+Feature-engine’s transformers preserve scikit-learn functionality with the methods fit()
 and transform() and can be integrated into a Pipeline to simplify putting the model in
 production.
 
@@ -32,14 +32,14 @@ unwanted stages of the development.
 Vision
 ------
 
-At the moment, Feature-engine's functionality is tailored to tabular data, with numerical,
+At the moment, feature-engine's functionality is tailored to tabular data, with numerical,
 categorical, or datetime variables. We started supporting the creation of features for
 time series forecasting in 2022.
 
-But we would like to extend Feature-engine's functionality to work with text and time
+But we would like to extend feature-engine's functionality to work with text and time
 series, as well as, expand its current functionality for tabular data.
 
-In the following figure we show the overall structure and vision for Feature-engine:
+In the following figure we show the overall structure and vision for feature-engine:
 
 .. figure::  ../images/FeatureEnginePackageStructure.png
    :align:   center
@@ -59,9 +59,9 @@ in the package:
 
    Transformers for tabular data
 
-The current transformations supported by Feature-engine return features that are easy
+The current transformations supported by feature-engine return features that are easy
 to interpret, and the effects of the transformations are clear and easy to understand.
-The original aim of Feature-engine was to provide technology that is suitable to create
+The original aim of feature-engine was to provide technology that is suitable to create
 models that will be used in real settings, and return understandable variables.
 
 Having said this, more and more, users are requesting features to combine or transform
@@ -99,7 +99,7 @@ Goals
 Our main goals are:
 
 - Continue maintaining a high-quality, well-documented collection of canonical tools for data processing.
-- Expand the documentation with more examples about Feature-engine's functionality.
+- Expand the documentation with more examples about feature-engine's functionality.
 - Expand the documentation with more detail on how to contribute to the package.
 - Expand the library's functionality as per the precedent paragraphs.
 

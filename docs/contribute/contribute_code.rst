@@ -5,10 +5,10 @@
 Contribute Code
 ===============
 
-Contributing code to Feature-engine is fun and easy. If you want to make a code contribution,
+Contributing code to feature-engine is fun and easy. If you want to make a code contribution,
 you can check the `issue tracker <https://github.com/feature-engine/feature_engine/issues/>`_
 for already requested and wanted functionality. Alternatively, you can create a new issue
-with functionality you would like to see included in Feature-engine and then work it through.
+with functionality you would like to see included in feature-engine and then work it through.
 
 
 Contributing workflow
@@ -28,7 +28,7 @@ A typical contributing workflow goes like this:
 10. **Test** the code.
 11. **Review** the code with us.
 12. Make the **changes** and commit them to your fork, using the same branch created in 5.
-13. When it is ready, we will **merge** your contribution into Feature-engine's source code base.
+13. When it is ready, we will **merge** your contribution into feature-engine's source code base.
 
 To avoid extra work or duplication, it is important that we communicate right from the
 beginning, so we can build together a clear understanding of how you would like to get involved
@@ -39,10 +39,10 @@ In the rest of the document, we will describe steps 3 to 13 in more detail.
 Fork the Repository
 -------------------
 
-When you fork the repository, you create a copy of Feature-engine's source code into
-your Github account, which you can edit. To fork Feature-engine's repository, click the
+When you fork the repository, you create a copy of feature-engine's source code into
+your Github account, which you can edit. To fork feature-engine's repository, click the
 **fork** button in the upper right corner of
-`Feature-engine's Repository <https://github.com/feature-engine/feature_engine>`_.
+`feature-engine's Repository <https://github.com/feature-engine/feature_engine>`_.
 
 .. figure::  ../images/fork.png
    :figclass: align-center
@@ -57,7 +57,7 @@ Once you forked the repository, clone the fork to your local machine.
 
     $ git clone https://github.com/<YOURUSERNAME>/feature_engine
 
-2. Set up an ``upstream`` remote from where you can pull the latest code changes occurring in the main Feature-engine repository::
+2. Set up an ``upstream`` remote from where you can pull the latest code changes occurring in the main feature-engine repository::
 
     $ git remote add upstream https://github.com/feature-engine/feature_engine.git
 
@@ -72,7 +72,7 @@ You should see both your fork (origin) and the main repository (upstream) linked
     upstream  https://github.com/feature-engine/feature_engine.git (fetch)
     upstream  https://github.com/feature-engine/feature_engine.git (push)
 
-Keep in mind that Feature-engine is being actively developed, so you may need to update
+Keep in mind that feature-engine is being actively developed, so you may need to update
 your fork regularly. See below how to **Keep your fork up to date**.
 
 Set up the Development Environment
@@ -81,13 +81,13 @@ Set up the Development Environment
 After creating a local copy of the repo, you need to set up the development environment.
 Setting up a development environment will ensure that you have all the libraries
 you need for the development, no more and no less. These libraries include
-`Feature-engine dependencies <https://github.com/feature-engine/feature_engine/blob/main/pyproject.toml>`_,
-like Pandas, NumPy and Scikit-learn and also
+`feature-engine dependencies <https://github.com/feature-engine/feature_engine/blob/main/pyproject.toml>`_,
+like pandas, NumPy and scikit-learn and also
 `software development libraries <https://github.com/feature-engine/feature_engine/blob/main/pyproject.toml>`_
 like pytest, mypy, flake8, isort and black.
 
 It is optional but highly advisable that you create a virtual environment. A virtual environment
-is a "separate space", where you can install Feature-engine's dependencies. To create a virtual
+is a "separate space", where you can install feature-engine's dependencies. To create a virtual
 environment, use any virtual environment tool of your choice. Some examples include:
 
 1. `venv <https://docs.python.org/3/library/venv.html>`_
@@ -137,7 +137,7 @@ Install dependencies
 ~~~~~~~~~~~~~~~~~~~~
 
 Now, you are ready to install all dependencies, that is, all the Python libraries used by
-Feature-engine. First, navigate to your clone of Feature-engine::
+feature-engine. First, navigate to your clone of feature-engine::
 
         $ cd feature_engine
 
@@ -146,7 +146,7 @@ Now, install Feature_engine in developer mode::
         $ pip install -e ".[docs,tests]"
 
 Don't forget the `.[docs,tests]` after the `-e`.
-This will add Feature-engine to your PYTHONPATH so your code edits
+This will add feature-engine to your PYTHONPATH so your code edits
 are automatically picked up, and there is no need to re-install the package after each
 code change. This will also install Feature'engine's core dependencies,
 as well as the dependencies needed for documentation and testing. 
@@ -316,7 +316,7 @@ our tests. To evaluate the code coverage, you need to run pytest with coverage::
 
     $ coverage run -m pytest
 
-And then, you can visualize the report like this::
+And then, you can visualise the report like this::
 
     $ coverage report
 
@@ -410,7 +410,7 @@ important thing is that you do not get any red warning during the build process.
 Using tox
 ~~~~~~~~~
 
-In Feature-engine, we use tox to run all our tests automatically. If you want to run all
+In feature-engine, we use tox to run all our tests automatically. If you want to run all
 the tests using tox locally:
 
 1. Install tox in your development environment::
@@ -426,7 +426,7 @@ the tests using tox locally:
     $ tox
 
 Just writing `tox`, will trigger automatically the functionality tests, code styling tests,
-typehint tests and documentation test. These will test the entire Feature-engine ecosystem
+typehint tests and documentation test. These will test the entire feature-engine ecosystem
 and not just your new scripts, so it will be more time consuming.
 
 If the tests pass, the code is in optimal condition :)
@@ -462,13 +462,13 @@ will try to help.
 through the PR as well.**
 
 Once the submission is reviewed and provided the continuous integration tests have
-passed and the code is up to date with Feature-engine's main branch, we will be ready
-to "Squash and Merge" your contribution into the ``main`` branch of Feature-engine.
+passed and the code is up to date with feature-engine's main branch, we will be ready
+to "Squash and Merge" your contribution into the ``main`` branch of feature-engine.
 "Squash and Merge" combines all of your commits into a single commit which helps keep
 the history of the repository clean and tidy.
 
 Once your contribution has been merged into main, you will be listed as a
-Feature-engine contributor :)
+feature-engine contributor :)
 
 
 Merge Pull Requests
@@ -486,7 +486,7 @@ Releases
 
 After a few features have been added to the main branch by yourself and other
 contributors, we will merge main into a release branch, e.g. 1.2.X, to release a new
-version of Feature-engine to PyPI and conda-forge.
+version of feature-engine to PyPI and conda-forge.
 
 
 Keep your Fork up to Date
@@ -520,7 +520,7 @@ some conflicting files. You will need to resolve these conflicts and continue th
     $ git push -f origin main
 
 The previous command will update your fork (remote) so that your fork's main branch is in sync with
-Feature-engine's main. Now, you need to rebase main onto your feature branch.
+feature-engine's main. Now, you need to rebase main onto your feature branch.
 
 4. Check out your feature branch::
 

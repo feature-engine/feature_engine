@@ -24,11 +24,11 @@ The algorithm operates as follows:
 6. If the performance drops beyond a predefined threshold, retain the feature.
 7. Repeat steps 3-6 for each feature until all have been evaluated.
 
-Python Example
---------------
+Python implementation
+---------------------
 
 Let's see how to use :class:`SelectByShuffling()` with the diabetes dataset that comes
-with Scikit-learn. First, we load the data:
+with scikit-learn. We start with the imports:
 
 .. code:: python
 
@@ -37,6 +37,10 @@ with Scikit-learn. First, we load the data:
     from sklearn.datasets import load_diabetes
     from sklearn.linear_model import LinearRegression
     from feature_engine.selection import SelectByShuffling
+
+Next, we load the diabetes dataset:
+
+.. code:: python
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
     print(X.head())
@@ -80,7 +84,7 @@ the performance drop is bigger than the mean drop caused by all features.
         random_state=0,
     )
 
-The `fit`()` method identifies important variables—those whose value permutations lead
+The `fit()` method identifies important variables—those whose value permutations lead
 to a decline in model performance. The `transform()` method then removes these variables
 from the dataset.
 
@@ -223,49 +227,9 @@ Additional resources
 
 For more details about this and other feature selection methods check out these resources:
 
-.. figure::  ../../images/fsml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-for-machine-learning
-
-   Feature Selection for Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
-Or read our book:
-
-.. figure::  ../../images/fsmlbook.png
-   :width: 200
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-selection-in-machine-learning-book
-
-   Feature Selection in Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
+- `Feature Selection for Machine Learning <https://www.trainindata.com/p/feature-selection-for-machine-learning>`_, online course.
+- `Feature Selection in Machine Learning <https://www.trainindata.com/p/feature-selection-in-machine-learning-book>`_, book.
 
 Both our book and course are suitable for beginners and more advanced data scientists
-alike. By purchasing them you are supporting Sole, the main developer of Feature-engine.
+alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

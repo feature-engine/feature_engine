@@ -8,12 +8,18 @@ find_categorical_variables
 With :class:`find_categorical_variables()` you can capture in a list the names of all
 the variables of type object, string or categorical in the dataset.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import find_categorical_variables
+
+Now, we create the dataset:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -57,13 +63,10 @@ We see the resulting dataframe below:
     4 2020-02-24 00:04:00 2021-09-29 04:00:00  2020-02-24
 
 We can use :class:`find_categorical_variables()` to capture the names of all
-variables of type object, string or categorical in a list.
-
-So let's do that and then display the list:
+variables of type object, string or categorical in a list. So let's do that and
+then display the list:
 
 .. code:: python
-
-    from feature_engine.variable_handling import find_categorical_variables
 
     var_cat = find_categorical_variables(X)
 
@@ -86,4 +89,4 @@ a `TypeError` because the subset of the dataset contains only numerical variable
 To return an empty list instead of the error we need to set `return_empty` to `True` as
 follows: `find_categorical_variables(X[colnames], return_empty=True)`.
 
-The previous commands returns an empty list: `[]`.
+The previous command returns an empty list: `[]`.

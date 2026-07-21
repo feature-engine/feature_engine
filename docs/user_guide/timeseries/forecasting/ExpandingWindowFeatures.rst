@@ -27,7 +27,7 @@ models, like linear regression.
 Expanding window features with pandas
 --------------------------------------
 
-In Python, we can create expanding window features by utilizing pandas method `expanding`.
+In Python, we can create expanding window features by utilising pandas method `expanding`.
 For example, by executing:
 
 .. code:: python
@@ -46,7 +46,7 @@ we would also shift the window forward with pandas method `shift`:
     X[["var_1", "var_2"].expanding(min_periods=3).agg(["max", "mean"]).shift(period=1)
 
 
-Expanding window features with Feature-engine
+Expanding window features with feature-engine
 ----------------------------------------------
 
 :class:`ExpandingWindowFeatures` adds expanding window features to the dataframe.
@@ -55,7 +55,7 @@ Window features are the result of applying an aggregation operation (e.g., mean,
 min, max, etc.) to a variable over a window of past data.
 
 When forecasting the future values of a variable, the past values of that variable are
-likely to be predictive. To capitalize on the past values of a variable, we can simply
+likely to be predictive. To capitalise on the past values of a variable, we can simply
 lag features with :class:`LagFeatures`. We can also create features that summarise the
 past values into a single quantity utilising :class:`ExpandingWindowFeatures`.
 
@@ -77,14 +77,14 @@ from 2 weeks ago and before that, then we should lag the window feature column b
 
 :class:`ExpandingWindowFeatures` will add the new variables with a representative
 name to the original dataframe. It also has the methods `fit()` and `transform()`
-that make it compatible with the Scikit-learn's `Pipeline` and cross-validation
+that make it compatible with the scikit-learn's `Pipeline` and cross-validation
 functions.
 
 Note that, in the current implementation, :class:`ExpandingWindowFeatures` only works with
 dataframes whose index, containing the time series timestamp, contains unique values and no NaN.
 
-Examples
---------
+Python implementation
+----------------------
 
 Let's create a toy dataset to demonstrate the functionality of :class:`ExpandingWindowFeatures`.
 The dataframe contains 3 numerical variables, a categorical variable, and a datetime
@@ -143,11 +143,16 @@ Below we see the target variable:
 Now we will create expanding window features from the numerical variables. In `functions`,
 we indicate all the operations that we want to perform over those windows. In
 our example below, we want to calculate the mean and the standard deviation of the
-data within those windows and also find the maximum value within the windows.
+data within those windows and also find the maximum value within the windows. Let's
+start with the import:
 
 .. code:: python
 
     from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
+
+Now, we set up the transformer and fit it to the data:
+
+.. code:: python
 
     win_f = ExpandingWindowFeatures(functions=["mean", "max", "std"])
 
@@ -209,6 +214,8 @@ attribute of the :class:`ExpandingWindowFeatures`.
 
     win_f.variables_
 
+These are the 3 numerical variables used to create the expanding window features:
+
 .. code:: python
 
     ['ambient_temp', 'module_temp', 'irradiation']
@@ -219,6 +226,8 @@ We can obtain the names of the variables in the returned dataframe using the
 .. code:: python
 
     win_f.get_feature_names_out()
+
+We see the original variables, followed by the new expanding window features:
 
 .. code:: python
 
@@ -261,14 +270,14 @@ We see that the resulting dataframe contains less rows than the original datafra
 
 .. code:: python
 
-    (8, 4), (8,), (6, 13), (6,))
+    ((8, 4), (8,), (6, 13), (6,))
 
 
 Imputing rows with nan
 ~~~~~~~~~~~~~~~~~~~~~~
 
 If instead of removing the row with nan in the expanding window features, we want to impute those
-values, we can do so with any of Feature-engine's imputers. Here, we will replace nan with
+values, we can do so with any of feature-engine's imputers. Here, we will replace nan with
 the median value of the resulting window features, using the `MeanMedianImputer` within
 a pipeline:
 
@@ -334,6 +343,8 @@ The following is a pandas Series:
 
     X['ambient_temp']
 
+This is the resulting output:
+
 .. code:: python
 
     2020-05-15 12:00:00    31.31
@@ -357,6 +368,8 @@ it to a pandas Dataframe using the method `to_frame()`:
     X_tr = win_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
+
+We obtain the following dataframe with the 2 new expanding window features:
 
 .. code:: python
 
@@ -389,6 +402,8 @@ just need to remember to drop the original series after the transformation:
 
     X_tr.head()
 
+The original variable is no longer in the output dataframe:
+
 .. code:: python
 
                          ambient_temp_expanding_mean  ambient_temp_expanding_max
@@ -411,6 +426,8 @@ We can easily obtain the name of the original and new variables with the method
     win_f.fit(X)
 
     win_f.get_feature_names_out()
+
+We obtain the names of the original variables plus the new expanding window features:
 
 .. code:: python
 
@@ -435,46 +452,12 @@ Tutorials and courses
 For tutorials about this and other feature engineering methods for time series forecasting
 check out our online courses:
 
-.. figure::  ../../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-.. figure::  ../../../images/fwml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
-
-   Forecasting with Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Forecasting with Machine Learning <https://www.courses.trainindata.com/p/forecasting-with-machine-learning>`_, online course.
 
 Our courses are suitable for beginners and more advanced data scientists looking to
 forecast time series using traditional machine learning models, like linear regression
 or gradient boosting machines.
 
-By purchasing them you are supporting Sole, the main developer of Feature-engine.
+By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

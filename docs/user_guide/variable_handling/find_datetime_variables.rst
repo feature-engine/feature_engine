@@ -9,12 +9,18 @@ With :class:`find_datetime_variables()` you can automatically capture in a list
 the names of all datetime variables in a dataset, whether they are parsed as datetime
 or object.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import find_datetime_variables
+
+Now, we create the dataset:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -64,8 +70,6 @@ We can use :class:`find_datetime_variables()` to capture all datetime variables
 regardless of their data type. So let's do that and then display the list:
 
 .. code:: python
-
-    from feature_engine.variable_handling import find_datetime_variables
 
     var_date = find_datetime_variables(X)
 

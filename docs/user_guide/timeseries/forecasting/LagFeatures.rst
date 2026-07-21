@@ -6,7 +6,6 @@ LagFeatures
 ===========
 
 Lag features are commonly used in data science to forecast time series with traditional
-
 machine learning models, like linear regression or random forests. A lag feature is a
 feature with information about a prior time step of the time series.
 
@@ -51,13 +50,13 @@ same time. Also, unlike `pandas.shift`, we can only lag features forward.
 
 - First, it can create features with multiple values of k at the same time.
 - Second, it adds the features with a name to the original dataframe.
-- Third, it has the methods `fit()` and `transform()` that make it compatible with the Scikit-learn's `Pipeline` and cross-validation functions.
+- Third, it has the methods `fit()` and `transform()` that make it compatible with the scikit-learn's `Pipeline` and cross-validation functions.
 
 Note that, in the current implementation, :class:`LagFeatures` only works with dataframes whose index,
 containing the time series timestamp, contains unique values and no NaN.
 
-Examples
---------
+Python implementation
+----------------------
 
 Let's create a toy dataset to show how to add lag features with :class:`LagFeatures`.
 The dataframe contains 3 numerical variables, a categorical variable, and a datetime
@@ -97,6 +96,8 @@ And here we print and show the target variable:
 .. code:: python
 
     y
+
+This is our target variable:
 
 .. code:: python
 
@@ -152,6 +153,8 @@ The variables to lag are stored in the `variables_` attribute of the
 
     lag_f.variables_
 
+These are the 3 numerical variables that were lagged:
+
 .. code:: python
 
     ['ambient_temp', 'module_temp', 'irradiation']
@@ -162,6 +165,8 @@ returned in the transformed dataframe using the `get_feature_names_out()` method
 .. code:: python
 
     lag_f.get_feature_names_out()
+
+We see the original variables, followed by the new lag features:
 
 .. code:: python
 
@@ -212,6 +217,8 @@ Alternatively, we can drop the rows with missing values in the lag features, lik
     X_tr = lag_f.fit_transform(X)
 
     print(X_tr.head())
+
+We see that the row with missing data was removed from the dataframe:
 
 .. code:: python
 
@@ -291,6 +298,9 @@ We can get the names of features in the resulting dataframe as follows:
 
     lag_f.get_feature_names_out()
 
+We see the original variables, followed by the 2 lag features created from each
+numerical variable:
+
 .. code:: python
 
     ['ambient_temp',
@@ -363,7 +373,7 @@ We see that 2 rows were dropped from train set and target:
 Lag features based on datetime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can also lag features utilizing information in the timestamp of the dataframe, which
+We can also lag features utilising information in the timestamp of the dataframe, which
 is commonly cast as datetime.
 
 Let's for example create features by lagging 2 of the numerical variables 30 minutes
@@ -496,6 +506,8 @@ The following is a pandas Series:
 
     X['ambient_temp']
 
+This is the resulting output:
+
 .. code:: python
 
     2020-05-15 12:00:00    31.31
@@ -518,6 +530,8 @@ pandas Series if we convert it to a pandas Dataframe using the method `to_frame(
     X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
+
+We obtain the following dataframe with the 3 lag features:
 
 .. code:: python
 
@@ -545,6 +559,8 @@ just need to remember to drop the original series after the transformation:
     X_tr = lag_f.fit_transform(X['ambient_temp'].to_frame())
 
     X_tr.head()
+
+The original variable is no longer in the output dataframe:
 
 .. code:: python
 
@@ -578,6 +594,8 @@ all the features in the output dataframe.
 
     lag_f.get_feature_names_out()
 
+We obtain the names of the original variables plus the new lag features:
+
 .. code:: python
 
     ['ambient_temp',
@@ -595,7 +613,7 @@ all the features in the output dataframe.
 Determining the right lag
 -------------------------
 
-We can create multiple lag features by utilizing various lags. But how do we decide which
+We can create multiple lag features by utilising various lags. But how do we decide which
 lag is a good lag?
 
 There are multiple ways to do this.
@@ -613,6 +631,7 @@ to use features that capture seasonality and trend, and much more.
 
 Lags from the target vs lags from predictor variables
 -----------------------------------------------------
+
 Very often, we want to forecast the values of just one time series. For example, we want
 to forecast sales in the next month. The sales variable is our target variable, and we can
 create features by lagging past sales values.
@@ -629,7 +648,7 @@ Check out the additional transformers to create window features through the use 
 rolling windows (:class:`WindowFeatures`) or expanding windows (:class:`ExpandingWindowFeatures`).
 
 If you want to use :class:`LagFeatures` as part of a feature engineering pipeline,
-check out Feature-engine's `Pipeline`.
+check out feature-engine's `Pipeline`.
 
 Tutorials and courses
 ---------------------
@@ -637,46 +656,12 @@ Tutorials and courses
 For tutorials about this and other feature engineering methods for time series forecasting
 check out our online courses:
 
-.. figure::  ../../../images/fetsf.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.trainindata.com/p/feature-engineering-for-forecasting
-
-   Feature Engineering for Time Series Forecasting
-
-.. figure::  ../../../images/fwml.png
-   :width: 300
-   :figclass: align-center
-   :align: left
-   :target: https://www.courses.trainindata.com/p/forecasting-with-machine-learning
-
-   Forecasting with Machine Learning
-
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-|
-
+- `Feature Engineering for Time Series Forecasting <https://www.trainindata.com/p/feature-engineering-for-forecasting>`_, online course.
+- `Forecasting with Machine Learning <https://www.courses.trainindata.com/p/forecasting-with-machine-learning>`_, online course.
 
 Our courses are suitable for beginners and more advanced data scientists looking to
 forecast time series using traditional machine learning models, like linear regression
 or gradient boosting machines.
 
-By purchasing them you are supporting Sole, the main developer of Feature-engine.
+By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
+the main developer of feature-engine.

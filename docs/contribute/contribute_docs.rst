@@ -8,7 +8,7 @@ Contribute Docs
 If you contribute a new transformer, or enhance the functionality of a current transformer,
 most likely, you would have to add or update the documentation as well.
 
-This is Feature-engine's documentation ecosystem:
+This is feature-engine's documentation ecosystem:
 
 - Feature-engine documentation is built using `Sphinx <https://www.sphinx-doc.org>`_ and is hosted on `Read the Docs <https://readthedocs.org/>`_.
 - We use the `pydata sphinx theme <https://pypi.org/project/pydata-sphinx-theme/>`_.
@@ -20,7 +20,7 @@ To learn more about Sphinx check the `Sphinx Quickstart documentation <https://w
 Documents organisation
 ----------------------
 
-Feature-engine has just adopted Scikit-learn's documentation style, were we offer API
+Feature-engine has just adopted scikit-learn's documentation style, were we offer API
 documentation, as well as, a User Guide with examples on how to use the different transformers.
 
 The API documentation is built directly from the docstrings from each transformer. If you
@@ -34,7 +34,7 @@ Docstrings
 ----------
 
 The quickest way to get started with writing the transformer docstrings, is too look at the docstrings
-of some of the classes we already have in Feature-engine. Then simply copy and paste
+of some of the classes we already have in feature-engine. Then simply copy and paste
 those docstrings and edit the bits that you need. If you copy and paste, make sure to delete
 irrelevant parameters and methods.
 
@@ -77,7 +77,7 @@ dependencies. If you set up the development environment as we described in the
 :ref:`contribute code guide <contribute_code>`, you should have those installed already.
 
 Alternatively, first activate your environment. Then navigate to the root folder of
-Feature-engine. And now install the requirements for the documentation::
+feature-engine. And now install the requirements for the documentation::
 
         $ pip install -r docs/requirements.txt
 

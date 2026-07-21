@@ -8,12 +8,18 @@ check_categorical_variables
 :class:`check_categorical_variables()` checks that the variables in the list are of
 type object or categorical.
 
-Let's create a toy dataset with numerical, categorical and datetime variables:
+Let's create a toy dataset with numerical, categorical and datetime variables. We start
+with the imports:
 
 .. code:: python
 
     import pandas as pd
     from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import check_categorical_variables
+
+Now, we create the dataset:
+
+.. code:: python
 
     X, y = make_classification(
         n_samples=1000,
@@ -57,11 +63,9 @@ We see the resulting dataframe below:
     4 2020-02-24 00:04:00 2021-09-29 04:00:00  2020-02-24
 
 
-Let's now check that 3 of the variables are of type numerical:
+Let's now check that 2 of the variables are of type categorical:
 
 .. code:: python
-
-    from feature_engine.variable_handling import check_categorical_variables
 
     var_cat = check_categorical_variables(X, ["cat_var1", "date3"])
 
