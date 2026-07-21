@@ -42,58 +42,6 @@ jobs:
   # Test matrix
   # ------------------------
 
-  test_feature_engine_py39:
-    docker:
-      - image: cimg/python:3.9.0
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests (Python 3.9)
-          command: |
-            tox -e py39
-
-  test_feature_engine_py310:
-    docker:
-      - image: cimg/python:3.10.0
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests (Python 3.10)
-          command: |
-            tox -e py310
-
-  test_feature_engine_py311_sklearn150:
-    docker:
-      - image: cimg/python:3.11.7
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests (Python 3.11, scikit-learn 1.5)
-          command: |
-            tox -e py311-sklearn150
-
-  test_feature_engine_py311_sklearn160:
-    docker:
-      - image: cimg/python:3.11.7
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests (Python 3.11, scikit-learn 1.6)
-          command: |
-            tox -e py311-sklearn160
-
   test_feature_engine_py311_sklearn170:
     docker:
       - image: cimg/python:3.11.7
@@ -277,10 +225,6 @@ workflows:
 
   test-all:
     jobs:
-      - test_feature_engine_py39
-      - test_feature_engine_py310
-      - test_feature_engine_py311_sklearn150
-      - test_feature_engine_py311_sklearn160
       - test_feature_engine_py311_sklearn170
       - test_feature_engine_py312_pandas230
       - test_feature_engine_py312_pandas300
@@ -298,10 +242,6 @@ workflows:
 
       - package_and_upload_to_pypi:
           requires:
-            - test_feature_engine_py39
-            - test_feature_engine_py310
-            - test_feature_engine_py311_sklearn150
-            - test_feature_engine_py311_sklearn160
             - test_feature_engine_py311_sklearn170
             - test_feature_engine_py312_pandas230
             - test_feature_engine_py312_pandas300
