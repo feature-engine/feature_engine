@@ -125,6 +125,16 @@ to train decision trees, based on all the numerical variables in the training se
      ['AveBedrms', 'AveOccup'],
      ['Population', 'AveOccup']]
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`DecisionTreeFeatures()` used
+    to raise an error if the dataframe contained no numerical variables. You can now set the
+    new parameter `return_empty` to `True` to make the transformer return an empty list of
+    variables and skip creating the new features instead, leaving the dataframe unchanged.
+    This lets you reuse the same pipeline across different datasets or projects, some of
+    which may not contain numerical variables, without building a tailored pipeline for each
+    one. `return_empty` will default to `True` from version 2.1 onwards.
+
 Let's now add the new features to the data:
 
 .. code:: python

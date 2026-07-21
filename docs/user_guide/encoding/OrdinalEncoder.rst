@@ -191,6 +191,17 @@ integers assigned arbitrarily:
     :class:`OrdinalEncoder()` will encode **all** categorical variables in the training set by default, unless we specify
     which variables to encode, as we did in the previous code block.
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`OrdinalEncoder()` used to
+    raise an error if the dataframe contained no categorical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the encoding instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain categorical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Let's fit the encoder so that it learns the mappings for each category:
 
 .. code:: python

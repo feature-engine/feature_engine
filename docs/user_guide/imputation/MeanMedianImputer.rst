@@ -83,6 +83,17 @@ numerical variables. You can pass the
 list of variables you want to impute, or alternatively, :class:`MeanMedianImputer()` 
 will automatically impute all numerical variables in the training set.
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`MeanMedianImputer()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the imputation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 

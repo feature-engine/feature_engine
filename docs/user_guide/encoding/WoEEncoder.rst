@@ -141,6 +141,17 @@ evidence for a given set of features. By default, :class:`WoEEncoder()` will enc
 categorical variables. You can encode just a subset by passing the variables names in a
 list to the `variables` parameter.
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`WoEEncoder()` used to
+    raise an error if the dataframe contained no categorical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the encoding instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain categorical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 By default, :class:`WoEEncoder()` will not encode numerical variables, instead, it will
 raise an error. If you want to encode numerical, for example discrete variables, set
 `ignore_format` to `True`.

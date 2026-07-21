@@ -44,6 +44,17 @@ The parameter `max_n_categories` specifies the maximum number of unique categori
 allowed in the encoded variable. If `max_n_categories = 5`, the five most frequent
 categories are retained after encoding, and all others are grouped into a single category.
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`RareLabelEncoder()` used to
+    raise an error if the dataframe contained no categorical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the encoding instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain categorical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 

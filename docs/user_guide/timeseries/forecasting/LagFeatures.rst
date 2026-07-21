@@ -159,6 +159,16 @@ These are the 3 numerical variables that were lagged:
 
     ['ambient_temp', 'module_temp', 'irradiation']
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`LagFeatures()` used to
+    raise an error if the dataframe contained no numerical variables. You can now set the
+    new parameter `return_empty` to `True` to make the transformer return an empty list of
+    variables and skip creating the lag features instead, leaving the dataframe unchanged.
+    This lets you reuse the same pipeline across different datasets or projects, some of
+    which may not contain numerical variables, without building a tailored pipeline for
+    each one. `return_empty` will default to `True` from version 2.1 onwards.
+
 We can obtain the names of the original variables plus the lag features that are the
 returned in the transformed dataframe using the `get_feature_names_out()` method:
 

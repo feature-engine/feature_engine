@@ -163,6 +163,16 @@ predictions of the decision tree.
     The scoring and cv parameter work exactly as those from any scikit-learn estimator. So we can pass
     any value that is also valid for those estimators. Check scikit-learn's documentation for more information.
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`DecisionTreeDiscretiser()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the discretisation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
 
 With `fit()` the transformer fits a decision tree for each one of the continuous features. Then,
 we can go ahead replace the variable values by the predictions of the trees and display the transformed

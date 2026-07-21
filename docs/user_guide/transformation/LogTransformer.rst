@@ -109,6 +109,17 @@ With `fit()`, this transformer does not learn any parameters, but it checks that
 
 .. note::
 
+    **New in version 2.0:** When `variables` is `None`, :class:`LogTransformer()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the transformation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
+.. note::
+
     To apply the logarithm in base 10, pass `'10'` to the `base` parameter when setting up the transformer.
 
 Now, we can go ahead and transform the data:

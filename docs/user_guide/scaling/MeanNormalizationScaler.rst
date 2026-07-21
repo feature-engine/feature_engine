@@ -24,6 +24,17 @@ Mean normalisation is given by the following formula:
     :class:`MeanNormalizationScaler()` only works with non-constant numerical variables.
     If the variable is constant, the scaler will raise an error.
 
+.. note::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`MeanNormalizationScaler()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the scaling instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 

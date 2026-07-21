@@ -223,6 +223,16 @@ In the following output we see the name of the datatime variables identified by 
 
 .. note::
 
+    **New in version 2.0:** When `variables` is `None`, :class:`DatetimeFeatures()` used to
+    raise an error if the dataframe contained no datetime variables. You can now set the new
+    parameter `return_empty` to `True` to make the transformer return an empty list of
+    variables and skip extracting the datetime features instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or projects,
+    some of which may not contain datetime variables, without building a tailored pipeline
+    for each one. `return_empty` will default to `True` from version 2.1 onwards.
+
+.. note::
+
     The original datetime variables are dropped from the data by default. This leaves the
     dataset ready to train machine learning algorithms like linear regression or random forests.
 
