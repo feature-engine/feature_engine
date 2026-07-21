@@ -22,9 +22,9 @@ _features_to_combine = """features_to_combine: integer, list or tuple, default=N
 
         If `list`, the list must contain integers indicating the number of features that
         should be used as input of a decision tree. For example, if the data has 4
-        variables, ["var_A", "var_B", "var_C", "var_D"] and and
-        `features_to_combine = [2,3]`, then all possible combinations of 2 and 3 v
-        ariables will be returned. That'll result in the following combinations:
+        variables, ["var_A", "var_B", "var_C", "var_D"] and
+        `features_to_combine = [2,3]`, then all possible combinations of 2 and 3
+        variables will be returned. That'll result in the following combinations:
         ("var_A", "var_B"), ("var_A", "var_C"), ("var_A", "var_D"), ("var_B", "var_C"),
         ("var_B", "var_D"), ("var_C", "var_D"), ("var_A", "var_B", "var_C"),
         ("var_A", "var_B", "var_D"), ("var_A", "var_C", "var_D"), and

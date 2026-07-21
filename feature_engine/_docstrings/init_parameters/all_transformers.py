@@ -18,7 +18,7 @@ _drop_original_docstring = """drop_original: bool, default=False
 
 _missing_values_docstring = """missing_values: string, default='raise'
         Indicates if missing values should be ignored or raised. If `'raise'` the
-        transformer will return an error if the the datasets to `fit` or `transform`
+        transformer will return an error if the datasets to `fit` or `transform`
         contain missing values. If `'ignore'`, missing data will be ignored when
         learning parameters or performing the transformation.
         """.rstrip()

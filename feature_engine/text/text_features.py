@@ -263,7 +263,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        X_new: Pandas dataframe
+        X_new: pandas dataframe
             The dataframe with the original columns plus the new text features.
         """
 

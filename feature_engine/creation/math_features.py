@@ -23,7 +23,7 @@ from feature_engine.creation.base_creation import BaseCreation
 _PANDAS_LT_3 = int(pd.__version__.split(".")[0]) < 3
 
 # In pandas < 3, agg() maps these callables to the pandas methods and warns that
-# this will change; the string alias keeps that behavior (e.g., np.std ->
+# this will change; the string alias keeps that behaviour (e.g., np.std ->
 # Series.std with ddof=1) without the warning. In pandas >= 3 the callables are
 # used directly (np.std applies ddof=0), so they must not be aliased.
 _FUNC_TO_STRING_ALIAS = {
@@ -53,7 +53,7 @@ _FUNC_TO_STRING_ALIAS = {
 )
 class MathFeatures(BaseCreation):
     """
-    MathFeatures(() applies functions across multiple features returning one or more
+    MathFeatures() applies functions across multiple features returning one or more
     additional features as a result. It uses `pandas.agg()` to create the features,
     setting `axis=1`.
 
@@ -220,7 +220,7 @@ class MathFeatures(BaseCreation):
 
         Returns
         -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features + n_operations]
+        X_new: pandas dataframe, shape = [n_samples, n_features + n_operations]
             The input dataframe plus the new variables.
         """
         X = self._check_transform_input_and_state(X)

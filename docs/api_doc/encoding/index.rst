@@ -6,15 +6,15 @@ Categorical Encoding
 Feature-engine's categorical encoders replace the categories of the variable with
 estimated or arbitrary numbers.
 
-**Summary of Feature-engine's encoders characteristics**
+**Summary of feature-engine's encoders characteristics**
 
 ================================= ============ ================= ============== ===============================================================
     Transformer                    Regression	 Classification	   Multi-class    Description
 ================================= ============ ================= ============== ===============================================================
 :class:`OneHotEncoder()`	           √	            √               √         Adds dummy variables to represent each category
 :class:`OrdinalEncoder()`	           √	            √    	        √         Replaces categories with an integer
-:class:`CountFreuencyEncoder()`	       √	            √               √         Replaces categories with their count or frequency
-:class:`MeanEncoder()`                 √	            √               x         Replaces categories with the targe mean value
+:class:`CountFrequencyEncoder()`	       √	            √               √         Replaces categories with their count or frequency
+:class:`MeanEncoder()`                 √	            √               x         Replaces categories with the target mean value
 :class:`WoEEncoder()`	               x	            √	            x         Replaces categories with the weight of the evidence
 :class:`DecisionTreeEncoder()`	       √	            √     	        √         Replaces categories with the predictions of a decision tree
 :class:`RareLabelEncoder()`	           √	            √     	        √         Groups infrequent categories into a single one

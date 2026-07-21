@@ -65,13 +65,13 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     and the values would be for the observation dog: 1, 0.66 , 0. For the observation
     dig they would be 0.66, 1, 0. And for cat, they would be 0, 0, 1.
 
-    The encoder has the option to generate similarity variables only  for the most
+    The encoder has the option to generate similarity variables only for the most
     popular categories, that is, the categories present in most observations. This
     behaviour can be specified with the parameter `top_categories`.
 
     **Missing values**
 
-    StringSimilarityEncoder() will rreplace missing data with an empty string and
+    StringSimilarityEncoder() will replace missing data with an empty string and
     then return the similarity to the remaining variables by default. Alternatively,
     it can be set to return an error if the variable has missing values, or to ignore
     them.
@@ -231,7 +231,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             Can be the entire dataframe, not just the variables to encode.
 
         y: pandas series, default=None
-            Target. It is not needed in this encoded. You can pass y or None.
+            Target. It is not needed in this encoder. You can pass y or None.
         """
 
         X = check_X(X)

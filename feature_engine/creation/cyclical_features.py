@@ -169,12 +169,12 @@ class CyclicalFeatures(
 
         Parameters
         ----------
-        X: Pandas DataFrame of shame = [n_samples, n_features]
+        X: pandas dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: Pandas dataframe.
+        X_new: pandas dataframe.
             The original dataframe plus the additional features.
         """
         X = self._check_transform_input_and_state(X)

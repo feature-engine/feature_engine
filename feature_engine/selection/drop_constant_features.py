@@ -65,7 +65,7 @@ class DropConstantFeatures(BaseSelector):
         if tol=0.98, the transformer will remove variables that show the same value in
         98% of the observations.
 
-    missing_values: str, default=raises
+    missing_values: str, default='raise'
         Whether the missing values should be raised as error, ignored or included as an
         additional value of the variable. Takes values 'raise', 'ignore', 'include'.
 
@@ -96,7 +96,7 @@ class DropConstantFeatures(BaseSelector):
 
     Notes
     -----
-    This transformer is a similar concept to the VarianceThreshold from Scikit-learn,
+    This transformer is a similar concept to the VarianceThreshold from scikit-learn,
     but it evaluates number of unique values instead of variance.
 
     See Also
@@ -119,7 +119,7 @@ class DropConstantFeatures(BaseSelector):
     2  b  False
     3  c   True
 
-    Additionally, you can set the Threshold for quasi-constant features:
+    Additionally, you can set the threshold for quasi-constant features:
 
     >>> X = pd.DataFrame(dict(x1 = [1,1,1,1],
     >>>                      x2 = ["a", "a", "b", "c"],

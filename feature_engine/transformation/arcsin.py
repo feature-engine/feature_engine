@@ -50,7 +50,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
     between 0 and 1.
 
     The arcsin square root transformation helps in dealing with probabilities,
-    percents, and proportions. It aims to stabilize the variance of the variable and
+    percents, and proportions. It aims to stabilise the variance of the variable and
     return more evenly distributed (Gaussian looking) values.
 
     The ArcsinTransformer() only works with numerical variables which values are
@@ -124,7 +124,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features].
+        X: pandas DataFrame of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
@@ -150,7 +150,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -180,7 +180,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns

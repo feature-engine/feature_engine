@@ -191,7 +191,7 @@ class LagFeatures(BaseForecastTransformer):
 
         Returns
         -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features + lag_features]
+        X_new: pandas dataframe, shape = [n_samples, n_features + lag_features]
             The dataframe with the original plus the new variables.
         """
         # Common dataframe checks and setting up.

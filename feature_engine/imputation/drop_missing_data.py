@@ -36,7 +36,7 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
 class DropMissingData(BaseImputer, TransformXyMixin):
     """
     DropMissingData() deletes rows containing missing values. It provides
-    similar functionality to `pandas.drop_na()`, but within the `fit` and `transform`
+    similar functionality to `pandas.dropna()`, but within the `fit` and `transform`
     framework.
 
     It works for numerical and categorical variables. You can enter the list of
@@ -68,8 +68,8 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         Require that percentage of non-NA values in a row to keep it. If
         `threshold=1`, all variables need to have data to keep the row. If
         `threshold=0.5`, 50% of the variables need to have data to keep the row.
-        If `threshold=0.01`, 10% of the variables need to have data to keep the row.
-        If `thresh=None`, rows with NA in any of the variables will be dropped.
+        If `threshold=0.01`, 1% of the variables need to have data to keep the row.
+        If `threshold=None`, rows with NA in any of the variables will be dropped.
 
     Attributes
     ----------

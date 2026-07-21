@@ -35,7 +35,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     coordinate pairs (latitude/longitude) and adds the result as a new feature.
 
     This transformer is useful for location-based machine learning problems such as
-    real estate pricing, delivery route optimization, ride-sharing applications,
+    real estate pricing, delivery route optimisation, ride-sharing applications,
     and any domain where geographic proximity is relevant.
 
     The transformer supports different distance calculation methods:
@@ -288,7 +288,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         Returns
         -------
-        X_new: Pandas dataframe
+        X_new: pandas dataframe
             The dataframe with the new distance column added.
         """
 

@@ -35,7 +35,7 @@ class Pipeline(pipeline.Pipeline):
 
     `Pipeline` allows you to sequentially apply a list of transformers to
     preprocess the data and, if desired, conclude the sequence with a final
-    `predictor` for predictive modeling.
+    `predictor` for predictive modelling.
 
     Intermediate steps of the pipeline must be 'transforms', that is, they
     must implement `fit` and `transform` methods.
@@ -199,11 +199,11 @@ class Pipeline(pipeline.Pipeline):
         Parameters
         ----------
         X : iterable
-            Training data. Must fulfill input requirements of first step of the
+            Training data. Must fulfil input requirements of first step of the
             pipeline.
 
         y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps of
+            Training targets. Must fulfil label requirements for all steps of
             the pipeline.
 
         **params : dict of str -> object
@@ -262,11 +262,11 @@ class Pipeline(pipeline.Pipeline):
         Parameters
         ----------
         X : iterable
-            Training data. Must fulfill input requirements of first step of the
+            Training data. Must fulfil input requirements of first step of the
             pipeline.
 
         y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps of
+            Training targets. Must fulfil label requirements for all steps of
             the pipeline.
 
         **params : dict of str -> object
@@ -328,11 +328,11 @@ class Pipeline(pipeline.Pipeline):
         Parameters
         ----------
         X : iterable
-            Training data. Must fulfill input requirements of first step of
+            Training data. Must fulfil input requirements of first step of
             the pipeline.
 
         y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps
+            Training targets. Must fulfil label requirements for all steps
             of the pipeline.
 
         **params : dict of str -> object
@@ -403,11 +403,11 @@ class Pipeline(pipeline.Pipeline):
         Parameters
         ----------
         X : iterable
-            Training data. Must fulfill input requirements of first step of the
+            Training data. Must fulfil input requirements of first step of the
             pipeline.
 
         y : iterable
-            Training targets. Must fulfill label requirements for all steps of
+            Training targets. Must fulfil label requirements for all steps of
             the pipeline.
 
         **params : dict of str -> object
@@ -465,11 +465,11 @@ class Pipeline(pipeline.Pipeline):
         Parameters
         ----------
         X : iterable
-            Data to predict on. Must fulfill input requirements of first step
+            Data to predict on. Must fulfil input requirements of first step
             of the pipeline.
 
         y : iterable, default=None
-            Targets used for scoring. Must fulfill label requirements for all
+            Targets used for scoring. Must fulfil label requirements for all
             steps of the pipeline.
 
         sample_weight : array-like, default=None

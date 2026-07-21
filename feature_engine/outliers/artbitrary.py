@@ -62,7 +62,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
         the distribution of each variable to cap (maximum values).
 
     min_capping_dict: dictionary, default=None
-        Dictionary containing user specified capping values for the eft tail of the
+        Dictionary containing user specified capping values for the left tail of the
         distribution of each variable to cap (minimum values).
 
     {missing_values}

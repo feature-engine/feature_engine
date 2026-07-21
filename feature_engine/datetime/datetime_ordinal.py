@@ -212,7 +212,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        X_new: Pandas dataframe, shape = [n_samples, n_features x n_df_features]
+        X_new: pandas dataframe, shape = [n_samples, n_features x n_df_features]
             The dataframe with the original variables plus the new features.
         """
 

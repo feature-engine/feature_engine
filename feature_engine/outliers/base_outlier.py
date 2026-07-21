@@ -28,23 +28,23 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across outlier transformers"""
 
     def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Checks that the input is a dataframe and of the same size than the one used
+        """Checks that the input is a dataframe and of the same size as the one used
         in the fit method. Checks absence of NA.
 
         Parameters
         ----------
-        X: Pandas DataFrame
+        X: pandas DataFrame
 
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
+            If the input is not a pandas DataFrame
         ValueError
             If the dataframe is not of same size as that used in fit()
 
         Returns
         -------
-        X: Pandas DataFrame
+        X: pandas DataFrame
             The same dataframe entered by the user.
         """
         # check if class was fitted
@@ -110,7 +110,7 @@ class WinsorizerBase(BaseOutlier):
     an outlier are determined using:
 
     - a Gaussian approximation
-    - the inter-quantile range proximity rule (IQR)
+    - the inter-quartile range proximity rule (IQR)
     - MAD-median rule (MAD)
     - percentiles
 
@@ -131,7 +131,7 @@ class WinsorizerBase(BaseOutlier):
     - right tail: median + 3.29* MAD
     - left tail:  median - 3.29* MAD
 
-    where MAD is the median absoulte deviation from the median.
+    where MAD is the median absolute deviation from the median.
 
     **percentiles:**
 

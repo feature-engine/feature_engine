@@ -60,7 +60,7 @@ Alternative feature selection methods
 ============================================ ======================= ============= ====================================================================================
 :class:`SelectByShuffling()`	                ×	                      ×	            Selects features if shuffling their values causes a drop in model performance
 :class:`SelectByTargetMeanPerformance()`        √                         ×             Using the target mean as performance proxy, selects high performing features
-:class:`ProbeFeatureSelection()`                ×                         ×             Selects features who importance is greater than those of random variables
+:class:`ProbeFeatureSelection()`                ×                         ×             Selects features whose importance is greater than those of random variables
 ============================================ ======================= ============= ====================================================================================
 
 
@@ -88,9 +88,9 @@ Other Feature Selection Libraries
 
 For additional feature selection algorithms visit the following open-source libraries:
 
-* `Scikit-learn selection <https://scikit-learn.org/stable/modules/feature_selection.html>`_
+* `scikit-learn selection <https://scikit-learn.org/stable/modules/feature_selection.html>`_
 * `MLXtend selection <http://rasbt.github.io/mlxtend/api_subpackages/mlxtend.feature_selection/>`_
 
-Scikit-learn hosts multiple filter and embedded methods that select features based on
+scikit-learn hosts multiple filter and embedded methods that select features based on
 statistical tests or machine learning model derived importance. MLXtend hosts greedy
 (wrapper) feature selection methods.

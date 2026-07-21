@@ -1,6 +1,6 @@
 _return_object_docstring = """return_object: bool, default=False
-        Whether the the discrete variable should be returned as type numeric or type
-        object. If you would like to encode the discrete variables with Feature-engine's
+        Whether the discrete variable should be returned as type numeric or type
+        object. If you would like to encode the discrete variables with feature-engine's
         categorical encoders, use True. Alternatively, keep the default to False.
     """.rstrip()
 

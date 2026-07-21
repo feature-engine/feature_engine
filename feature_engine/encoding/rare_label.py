@@ -56,7 +56,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     with the parameter `replace_with`.
 
     The encoder will encode only categorical variables by default (type 'object' or
-    'categorical'). You can pass a list of variables to encode.Alternatively, the
+    'categorical'). You can pass a list of variables to encode. Alternatively, the
     encoder will find and encode all categorical variables (type 'object' or
     'categorical').
 
@@ -88,7 +88,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         considered frequent. If you enter 5, only the 5 most frequent categories will
         be retained and the rest grouped.
 
-    replace_with: string, intege or float, default='Rare'
+    replace_with: string, integer or float, default='Rare'
         The value that will be used to replace infrequent categories.
 
     {variables}
