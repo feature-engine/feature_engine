@@ -53,7 +53,7 @@ class EndTailImputer(BaseImputer):
 
     The imputer first calculates the values at the end of the distribution for each
     variable (fit). The values at the end of the distribution are determined using
-    the Gaussian limits, the the IQR proximity rule limits, or a factor of the maximum
+    the Gaussian limits, the IQR proximity rule limits, or a factor of the maximum
     value:
 
     Gaussian limits:

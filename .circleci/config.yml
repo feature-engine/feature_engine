@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   codecov: codecov/codecov@6.0.0
+  github-cli: circleci/github-cli@3.0.0
 
 
 # --------------------------------------------------
@@ -245,6 +246,27 @@ jobs:
             ls -l dist
             twine upload dist/*
 
+  create_github_release:
+    docker:
+      - image: cimg/base:current
+    working_directory: ~/project
+    steps:
+      - checkout
+      - github-cli/setup
+      - run:
+          name: Create GitHub release for this version
+          command: |
+            VERSION=$(cat feature_engine/VERSION)
+            if gh release view "$VERSION" --repo "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME" > /dev/null 2>&1; then
+              echo "Release $VERSION already exists on GitHub, skipping."
+            else
+              gh release create "$VERSION" \
+                --repo "$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME" \
+                --target "$CIRCLE_SHA1" \
+                --title "$VERSION" \
+                --generate-notes
+            fi
+
 
 # --------------------------------------------------
 # Workflows
@@ -288,6 +310,14 @@ workflows:
             - test_style
             - test_docs
             - test_type
+          filters:
+            branches:
+              only:
+                - 1.9.X
+
+      - create_github_release:
+          requires:
+            - package_and_upload_to_pypi
           filters:
             branches:
               only:

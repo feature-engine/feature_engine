@@ -78,7 +78,7 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
     Parameters
     ----------
     estimator: object
-        A Scikit-learn estimator for regression or classification.
+        A scikit-learn estimator for regression or classification.
 
     {variables}
 

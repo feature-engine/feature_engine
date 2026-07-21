@@ -46,10 +46,11 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     are determined by the user. Thus, it works only with numerical variables.
 
     You need to enter a dictionary with variable names as keys, and a list with
-    the limits of the intervals as values. For example the key could be the variable
-    name 'var1' and the value the following list: [0, 10, 100, 1000]. The
-    ArbitraryDiscretiser() will then sort var1 values into the intervals 0-10,
-    10-100, 100-1000, and var2 into 5-10, 10-15 and 15-20. Similar to `pandas.cut`.
+    the limits of the intervals as values. For example, the key could be the variable
+    name 'var1' with the value [0, 10, 100, 1000], and another key could be the
+    variable name 'var2' with the value [5, 10, 15, 20]. The ArbitraryDiscretiser()
+    will then sort var1 values into the intervals 0-10, 10-100, 100-1000, and var2
+    values into 5-10, 10-15 and 15-20. Similar to `pandas.cut`.
 
     More details in the :ref:`User Guide <arbitrary_discretiser>`.
 
@@ -153,7 +154,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         # check input dataframe
         X = super()._fit_from_dict(X, self.binning_dict)
 
-        # for consistency wit the rest of the discretisers, we add this attribute
+        # for consistency with the rest of the discretisers, we add this attribute
         self.binner_dict_ = self.binning_dict
 
         return self

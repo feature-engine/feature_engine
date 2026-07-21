@@ -67,7 +67,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     each model's performance. If the performance of the model is greater than a user
     specified threshold, then the feature is retained, otherwise removed.
 
-    The models are trained on each individual features using cross-validation.
+    The models are trained on each individual feature using cross-validation.
     The performance metric to evaluate and the machine learning model to train are
     specified by the user.
 

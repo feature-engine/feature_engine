@@ -60,11 +60,11 @@ class ProbeFeatureSelection(BaseSelector):
     'uniform', 'discrete_uniform', 'poisson', or 'all'. 'all' creates `n_probes` of
     each of the five aforementioned distributions.
 
-    Using cross validation, ProbeFeatureSelection() fits a Scikit-learn estimator
+    Using cross validation, ProbeFeatureSelection() fits a scikit-learn estimator
     to the provided variables plus the probe features. Next, it derives the
     feature importance for each variable and probe feature from the fitted model.
 
-    Alternatively, ProbeFeatureSelection() fits a Scikit-learn estimator per feature
+    Alternatively, ProbeFeatureSelection() fits a scikit-learn estimator per feature
     and probe feature (single feature models), and then determines the performance
     returned by that model using a metric of choice.
 
@@ -81,7 +81,7 @@ class ProbeFeatureSelection(BaseSelector):
     Parameters
     ----------
     estimator: object
-        A Scikit-learn estimator for regression or classification. If `collective=True`,
+        A scikit-learn estimator for regression or classification. If `collective=True`,
         the estimator must have either a `feature_importances_` or a `coef_` attribute
         after fitting.
 
@@ -112,7 +112,7 @@ class ProbeFeatureSelection(BaseSelector):
         Indicates how to combine the importance of the probe features as threshold for
         the feature selection. If 'mean', then features are selected if their
         importance is greater than the mean of the probes. If 'max', then features are
-        selected if their importance is greater than the maximun importance of all
+        selected if their importance is greater than the maximum importance of all
         probes. If 'mean_plus_std', then features are selected if their importance is
         greater than the mean plus three times the standard deviation of the probes.
 

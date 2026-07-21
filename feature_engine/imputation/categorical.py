@@ -92,7 +92,7 @@ class CategoricalImputer(BaseImputer):
 
     ignore_format: bool, default=False
         Whether the format in which the categorical variables are cast should be
-        ignored. If false, the imputer will automatically select variables of type
+        ignored. If False, the imputer will automatically select variables of type
         object or categorical, or check that the variables entered by the user are of
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.

@@ -34,5 +34,5 @@ into continuous intervals.
 Additional transformers for discretisation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For discretisation using K-means, check Scikit-learn's
+For discretisation using K-means, check scikit-learn's
 `KBinsDiscretizer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html>`_.

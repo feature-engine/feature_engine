@@ -50,7 +50,7 @@ class ArcSinhTransformer(BaseNumericalTransformer):
     The transformation is: x → arcsinh((x - loc) / scale)
 
     For large values of x, arcsinh(x) behaves like ln(x) + ln(2), providing similar
-    variance-stabilizing properties as the log transformation. For small values of x,
+    variance-stabilising properties as the log transformation. For small values of x,
     it behaves approximately linearly (i.e., arcsinh(x) ≈ x). This makes it ideal for
     variables like net worth, profit/loss, or any metric that can be positive or
     negative.
@@ -71,7 +71,7 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         The transformation becomes: arcsinh((x - loc) / scale)
 
     scale: float, default=1.0
-        Scale parameter for normalizing the data before transformation.
+        Scale parameter for normalising the data before transformation.
         Must be greater than 0. The transformation becomes: arcsinh((x - loc) / scale)
 
     Attributes
@@ -158,7 +158,7 @@ class ArcSinhTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features].
+        X: pandas DataFrame of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
@@ -182,7 +182,7 @@ class ArcSinhTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -210,7 +210,7 @@ class ArcSinhTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be inverse transformed.
 
         Returns

@@ -6,14 +6,14 @@ Variable handling functions
 This set of functions find variables of a specific type in a dataframe, or check that a
 list of variables is of a specified data type.
 
-The `find` functions take a dataframe as an argument and returns a list with the names
+The `find` functions take a dataframe as an argument and return a list with the names
 of the variables of the desired type.
 
 The `check` functions check that the list of variables are all of the desired data type.
 
-The `retain` functions select the variables in a list if they fulfill a condition.
+The `retain` functions select the variables in a list if they fulfil a condition.
 
-These functions are used under-the-hood by all Feature-engine transformers to select the
+These functions are used under-the-hood by all feature-engine transformers to select the
 variables that they will modify.
 
 .. toctree::

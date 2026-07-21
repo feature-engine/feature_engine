@@ -122,7 +122,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     dataset. If this happens, try grouping infrequent categories using the
     RareLabelEncoder().
 
-    There is a similar implementation in the the open-source package
+    There is a similar implementation in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
     See Also

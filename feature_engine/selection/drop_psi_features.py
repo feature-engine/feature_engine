@@ -55,7 +55,7 @@ PSI = """PSI = sum ( (test_i - basis_i) x ln(test_i/basis_i) )""".rstrip()
 )
 class DropHighPSIFeatures(BaseSelector):
     r"""
-    DropHighPSIFeatures() drops features which Population Stability Index (PSI) is
+    DropHighPSIFeatures() drops features whose Population Stability Index (PSI) is
     above a given threshold.
 
     The PSI is used to compare distributions. Higher PSI values mean greater changes in
@@ -441,7 +441,7 @@ class DropHighPSIFeatures(BaseSelector):
             raise ValueError(
                 "The number of rows in the basis and test datasets that will be used "
                 f"in the PSI calculations must be at least larger than {self.bins}. "
-                "After slitting the original dataset based on the given cut_off or"
+                "After splitting the original dataset based on the given cut_off or"
                 f"split_frac we have {basis_df.shape[0]} samples in the basis set, "
                 f"and {test_df.shape[0]} samples in the test set. "
                 "Please adjust the value of the cut_off or split_frac."
@@ -539,7 +539,7 @@ class DropHighPSIFeatures(BaseSelector):
         numerical and categorical variables for which the PSI should be calculated.
 
         If `None`, select all numerical variables.
-        If `"all", select all numerical and categorical variables.
+        If `"all"`, select all numerical and categorical variables.
         If string, int, or list, split into lists of numerical or categorical variables.
         """
 

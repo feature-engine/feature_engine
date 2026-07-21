@@ -19,7 +19,7 @@ by either combining or transforming existing features.
 Transformers in other Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Check also the following transformer from Scikit-learn:
+Check also the following transformer from scikit-learn:
 
 * `PolynomialFeatures <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_
 * `SplineTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.SplineTransformer.html>`_

@@ -119,7 +119,7 @@ class DropCorrelatedFeatures(BaseSelector):
     Notes
     -----
     If you want to select from each group of correlated features those that are perhaps
-    more predictive or more complete, check Feature-engine's SmartCorrelationSelection.
+    more predictive or more complete, check feature-engine's SmartCorrelationSelection.
 
     See Also
     --------

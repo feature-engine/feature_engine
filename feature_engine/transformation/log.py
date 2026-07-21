@@ -130,7 +130,7 @@ class LogTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features].
+        X: pandas DataFrame of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
@@ -155,7 +155,7 @@ class LogTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -189,7 +189,7 @@ class LogTransformer(BaseNumericalTransformer):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -364,7 +364,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features].
+        X: pandas DataFrame of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
@@ -400,7 +400,7 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
@@ -437,12 +437,12 @@ class LogCpTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         Parameters
         ----------
-        X: Pandas DataFrame of shape = [n_samples, n_features]
+        X: pandas DataFrame of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_tr: Pandas dataframe
+        X_tr: pandas dataframe
             The dataframe with the transformed variables.
         """
 

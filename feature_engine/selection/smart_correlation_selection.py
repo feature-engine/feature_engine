@@ -168,7 +168,7 @@ class SmartCorrelatedSelection(BaseSelector):
 
     Notes
     -----
-    For brute-force correlation selection, check Feature-engine's
+    For brute-force correlation selection, check feature-engine's
     DropCorrelatedFeatures().
 
     See Also

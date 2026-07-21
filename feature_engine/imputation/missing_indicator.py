@@ -36,7 +36,7 @@ class AddMissingIndicator(BaseImputer):
     """
     The AddMissingIndicator() adds binary variables that indicate if data is
     missing (one indicator per variable). The added variables (missing indicators) are
-    named with the original variable name plus ‘_na’.
+    named with the original variable name plus '_na'.
 
     The AddMissingIndicator() works for both numerical and categorical variables. You
     can pass a list with the variables for which the missing indicators should be
@@ -59,7 +59,7 @@ class AddMissingIndicator(BaseImputer):
         **True**: indicators will be created only for those variables that showed
         missing data during `fit()`.
 
-        **False**: indicators will be created for all variables
+        **False**: indicators will be created for all variables.
 
     variables: list, default=None
         The list of variables to impute. If None, the imputer will find and
@@ -168,7 +168,7 @@ class AddMissingIndicator(BaseImputer):
         -------
 
         X_new : pandas dataframe of shape = [n_samples, n_features]
-            The dataframe containing the additional binary variables..
+            The dataframe containing the additional binary variables.
         """
 
         X = self._transform(X)

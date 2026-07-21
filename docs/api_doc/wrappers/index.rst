@@ -5,7 +5,7 @@
 Scikit-learn Wrapper
 ====================
 
-Feature-engine's Scikit-learn wrappers wrap Scikit-learn transformers allowing their
+Feature-engine's scikit-learn wrappers wrap scikit-learn transformers allowing their
 implementation only on a selected subset of features.
 
 .. toctree::
@@ -18,5 +18,5 @@ Other wrappers
 
 The :class:`SklearnTransformerWrapper()` offers a similar function to the
 `ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
-class available in Scikit-learn. They differ in the implementation to select the
+class available in scikit-learn. They differ in the implementation to select the
 variables.

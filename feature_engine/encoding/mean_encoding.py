@@ -144,7 +144,7 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     dataset. If this happens, try grouping infrequent categories using the
     RareLabelEncoder().
 
-    Check also the related transformers in the the open-source package
+    Check also the related transformers in the open-source package
     `Category encoders <https://contrib.scikit-learn.org/category_encoders/>`_
 
     See Also

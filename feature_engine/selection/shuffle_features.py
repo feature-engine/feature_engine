@@ -132,7 +132,7 @@ class SelectByShuffling(BaseSelector):
     Notes
     -----
     This transformer is a similar concept to the `permutation_importance` from
-    Scikit-learn. The function in Scikit-learn is used to evaluate feature importance
+    scikit-learn. The function in scikit-learn is used to evaluate feature importance
     instead of to select features.
 
     See Also

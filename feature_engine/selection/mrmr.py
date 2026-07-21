@@ -91,9 +91,9 @@ class MRMR(BaseSelector):
     MRMR is an iterative algorithm. It first determines the relevance of all features
     and selects the one whose value is the highest.
 
-    In the second round, it determines the redundance of all features respect to the
-    selected one, calculates the importance score, and selects the one with the highest
-    value.
+    In the second round, it determines the redundance of all features with respect to
+    the selected one, calculates the importance score, and selects the one with the
+    highest value.
 
     After that, it repeats the procedure from the second step, this time taking the
     average redundance of the remaining features to those already selected.
@@ -148,7 +148,7 @@ class MRMR(BaseSelector):
 
     param_grid: dictionary, default=None
         The hyperparameters to optimize for the random forest through a grid search.
-        `param_grid` can contain any of the permitted hyperparameters for Scikit-learn's
+        `param_grid` can contain any of the permitted hyperparameters for scikit-learn's
         RandomForestRegressor() or RandomForestClassifier(). If None, then param_grid
         will optimize the 'max_depth' over `[1, 2, 3, 4]`. Only used when `method` is
         `'RFCQ'`.
@@ -176,7 +176,7 @@ class MRMR(BaseSelector):
 
     relevance_:
         Array with the mutual information, f-statistic or random forest derived
-        importance for each feature respect to the target.
+        importance for each feature with respect to the target.
 
     {features_to_drop_}
 
