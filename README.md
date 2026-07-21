@@ -275,7 +275,7 @@ Feature-engine documentation is built using [Sphinx](https://www.sphinx-doc.org)
 
 To build the documentation make sure you have the dependencies installed: from the root directory: 
 ```
-pip install -r docs/requirements.txt
+pip install -e ".[docs]"
 ```
 
 Now you can build the docs using: 
