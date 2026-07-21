@@ -130,6 +130,17 @@ OneHotEncoder
 Feature-engine's :class:`OneHotEncoder()` encodes categorical data as a one-hot numeric
 dataframe.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`OneHotEncoder()` used to
+    raise an error if the dataframe contained no categorical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the encoding instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain categorical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 :class:`OneHotEncoder()` can encode into k or k-1 dummy variables. The behaviour is
 specified through the `drop_last` parameter, which can be set to `False` for k, or to
 `True` for k-1 dummy variables.
@@ -356,7 +367,6 @@ Here we see the resulting dataframe:
     402            1           0
     1193           0           1
     686            0           1
-
 
 Encoding variables of type numeric
 ----------------------------------

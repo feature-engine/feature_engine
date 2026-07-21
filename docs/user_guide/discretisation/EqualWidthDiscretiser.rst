@@ -65,6 +65,17 @@ variables.
 **Integration with scikit-learn:** :class:`EqualWidthDiscretiser()` and all other feature-engine transformers seamlessly
 integrate with scikit-learn `pipelines <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`EqualWidthDiscretiser()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the discretisation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 

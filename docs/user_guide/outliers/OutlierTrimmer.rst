@@ -23,6 +23,17 @@ The :class:`OutlierTrimmer()` can identify outliers by using all of these method
 Hence, we’ll begin this guide with data analysis, showing how we can identify outliers through these statistical methods
 and boxplots, and then we will remove outliers by using the :class:`OutlierTrimmer()`.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`OutlierTrimmer()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip removing the outliers instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Identifying outliers
 --------------------
 

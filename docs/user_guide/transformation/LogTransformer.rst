@@ -32,6 +32,17 @@ LogTransformer
 
 To transform non-positive variables you can add a constant to shift the data points towards positive values. You can do this by using :class:`LogCpTransformer()`.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`LogTransformer()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the transformation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 

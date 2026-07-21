@@ -49,6 +49,17 @@ This discretisation technique is great when the distribution of the variable is 
 variables to discretise can be indicated, or the discretiser will automatically select
 all numerical variables in the train set.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`GeometricWidthDiscretiser()` used to
+    raise an error if the dataframe contained no numerical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the discretisation instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain numerical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 

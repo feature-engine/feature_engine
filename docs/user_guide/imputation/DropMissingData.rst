@@ -81,6 +81,17 @@ You have the option to remove nan values from all columns or only from a subset 
 them. Alternatively, you can remove rows if they have more than a certain percentage of
 nan values.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`DropMissingData()` used to
+    raise an error if the dataframe contained no variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip checking for missing data instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Let's better illustrate :class:`DropMissingData()`'s functionality through code examples.
 
 Python implementation

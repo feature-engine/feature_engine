@@ -57,6 +57,17 @@ of the decision tree for the category.
 The motivation for the :class:`DecisionTreeEncoder()` is to try and create monotonic
 relationships between the categorical variables and the target.
 
+.. attention::
+
+    **New in version 2.0:** When `variables` is `None`, :class:`DecisionTreeEncoder()` used to
+    raise an error if the dataframe contained no categorical variables. You can now
+    set the new parameter `return_empty` to `True` to make the transformer return an
+    empty list of variables and skip the encoding instead, leaving the dataframe
+    unchanged. This lets you reuse the same pipeline across different datasets or
+    projects, some of which may not contain categorical variables, without building a
+    tailored pipeline for each one. `return_empty` will default to `True` from version
+    2.1 onwards.
+
 Python implementation
 ---------------------
 
