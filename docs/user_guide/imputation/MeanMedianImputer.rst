@@ -204,7 +204,7 @@ Imputing missing values alongside missing indicators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Mean or median imputation are commonly done alongside adding missing indicators.
-We can add missing indicators with :class:`AddMissingIndicator()` from Feature-engine.
+We can add missing indicators with :class:`AddMissingIndicator()` from feature-engine.
 
 We can chain :class:`AddMissingIndicator()` with :class:`MeanMedianImputer()` using a 
 `scikit-learn pipeline <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html>`_.
@@ -269,7 +269,7 @@ left panel and the distribution after imputation on the right panel:
 
 .. code:: python
 
-	# Customize plot
+	# Customise plot
 	sns.set(style="ticks")
 	plt.rcParams['axes.grid'] = True
 	plt.rcParams['grid.alpha'] = 0.5
@@ -285,7 +285,7 @@ left panel and the distribution after imputation on the right panel:
 	sns.histplot(data=mmi.transform(X_train), x='LotFrontage', kde=True, ax=axes[1])
 	axes[1].set_title('Imputed', weight='bold', y=1.05)
 
-	# Further customize plot
+	# Further customise plot
 	sns.despine(offset=10, trim=True)
 	plt.tight_layout(w_pad=4)
 
@@ -310,4 +310,4 @@ For tutorials about missing data imputation methods check out these resources:
 
 Both our book and courses are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
-the main developer of Feature-engine.
+the main developer of feature-engine.

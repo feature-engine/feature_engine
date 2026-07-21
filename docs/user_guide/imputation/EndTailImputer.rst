@@ -120,4 +120,4 @@ For tutorials about missing data imputation methods check out these resources:
 
 Both our book and courses are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
-the main developer of Feature-engine.
+the main developer of feature-engine.

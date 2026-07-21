@@ -37,10 +37,10 @@ Consequences of missing data
 Missing data can significantly impact machine learning models and statistical analysis for several reasons:
 
 - It introduces bias into machine learning model predictions or statistical tests.
-- Certain machine learning models, such as those from Scikit-learn, cannot handle datasets with missing values.
+- Certain machine learning models, such as those from scikit-learn, cannot handle datasets with missing values.
 
 Popular machine learning algorithms like linear regression, logistic regression, support vector machine (SVM), or k-nearest
-neighbors (kNN) are not equipped to manage datasets containing NaN (Not a Number) or null values. Consequently, attempting
+neighbours (kNN) are not equipped to manage datasets containing NaN (Not a Number) or null values. Consequently, attempting
 to fit these models with incomplete data will result in errors.
 
 These factors underscore the importance of addressing missing data prior to model training, highlighting the necessity of
@@ -67,16 +67,16 @@ Alternatively, the missing data can be filled with arbitrary predefined values, 
 Multivariate data imputation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In multivariate data imputation, we utilize observations from other variables in the dataset to estimate the values of
+In multivariate data imputation, we utilise observations from other variables in the dataset to estimate the values of
 missing observations. These methods essentially impute missing values by treating the imputation as a regression, using
-algorithms such as k-nearest neighbors or linear regression to estimate the missing values.
+algorithms such as k-nearest neighbours or linear regression to estimate the missing values.
 
 For example, let's say we have a dataset containing information on students' grades, ages, and IQ scores, all of which
 have missing values. In this scenario, we can predict the missing grade values by employing a regression model trained
 on existing grade data, using age and IQ as predictors. Subsequently, we can apply the same regression imputation approach
 to the other variables (age and IQ) in subsequent iterations.
 
-Feature-engine currenty supports univariate imputation strategies. For multivariate imputation, check out Scikit-learn's `iterative imputer <https://scikit-learn.org/stable/modules/generated/sklearn.impute.IterativeImputer.html>`_.
+Feature-engine currently supports univariate imputation strategies. For multivariate imputation, check out scikit-learn's `iterative imputer <https://scikit-learn.org/stable/modules/generated/sklearn.impute.IterativeImputer.html>`_.
 
 
 Feature-engine's imputation methods
@@ -95,8 +95,8 @@ Feature-engine supports the following data imputation methods:
 
 |
 
-Feature-engine's imputers main characteristics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Feature-engine's imputers' main characteristics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ================================== ===================== ======================= ====================================================================================
     Transformer                     Numerical variables	  Categorical variables	    Description
@@ -304,7 +304,7 @@ The :class:`DropMissingData()` implements complete case analysis.
 Wrapping up
 -----------
 
-All Feature-engine supported data imputation methods are univariate imputation
+All of feature-engine's supported data imputation methods are univariate imputation
 methods.
 
 There are alternative data imputation techniques that data scientists could also use, like:
@@ -331,7 +331,7 @@ For tutorials about missing data imputation methods check out these resources:
 
 Both our book and courses are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
-the main developer of Feature-engine.
+the main developer of feature-engine.
 
 
 Imputers

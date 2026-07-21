@@ -35,7 +35,7 @@ equivalent of `pandas.sample(1, random_state=var1+var2)` if the `seeding_method`
 set to `add` or `pandas.sample(1, random_state=var1*var2)` if the `seeding_method`
 is set to `multiply`.
 
-For example, if the observation shows variables color: np.nan, height: 152, weight:52,
+For example, if the observation shows variables colour: np.nan, height: 152, weight:52,
 and we set the imputer as:
 
 .. code:: python
@@ -151,4 +151,4 @@ For tutorials about missing data imputation methods check out these resources:
 
 Both our book and courses are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
-the main developer of Feature-engine.
+the main developer of feature-engine.
