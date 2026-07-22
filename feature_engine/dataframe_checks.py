@@ -7,7 +7,6 @@ from typing import List, Union
 import narwhals as nw
 import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
 from scipy.sparse import issparse
 from sklearn.utils.validation import (
     _check_y,
@@ -19,9 +18,10 @@ from sklearn.utils.validation import (
 
 def check_X(X):
     """
-    Checks that X is a pandas or polars dataframe, or a numpy array, and returns a
-    copy. Copying is an important step so that we don't accidentally modify the
-    original dataset entered by the user.
+    Checks that X is a dataframe from any library supported by narwhals (for example
+    pandas, polars, modin, cuDF or PyArrow), or a numpy array, and returns a copy.
+    Copying is an important step so that we don't accidentally modify the original
+    dataset entered by the user.
 
     Numpy arrays are converted to a pandas DataFrame, with column names that are
     strings representing the column index starting at 0. This, together with
@@ -32,21 +32,25 @@ def check_X(X):
     - be used within a Scikit-learn Pipeline, next to Scikit-learn transformers like
       the `SimpleImputer`, which return numpy arrays by default.
 
+    Pandas is only imported, lazily, when X is a numpy array. If you pass a dataframe
+    from any other narwhals-supported library, pandas does not need to be installed.
+
     Parameters
     ----------
-    X : pandas or polars DataFrame, or numpy array.
+    X : dataframe (pandas, polars, or any other library supported by narwhals), or
+        numpy array.
         The input to check and copy or transform.
 
     Raises
     ------
     TypeError
-        If the input is not a pandas or polars DataFrame, or a numpy array.
+        If the input is not a recognised dataframe, or a numpy array.
     ValueError
         If the input has duplicated column names, or 0 columns or rows.
 
     Returns
     -------
-    X : pandas or polars DataFrame.
+    X : dataframe.
         A copy of the original dataframe, or the numpy array converted to a pandas
         DataFrame.
     """
@@ -62,14 +66,16 @@ def check_X(X):
         return nw_X.clone().to_native()
 
     if isinstance(X, (np.generic, np.ndarray)) or issparse(X):
+        import pandas as pd
+
         X = check_array(
             X, accept_sparse=False, dtype=None, ensure_all_finite=False, ensure_2d=True
         )
         return pd.DataFrame(X, columns=[f"x{i}" for i in range(X.shape[1])])
 
     raise TypeError(
-        "X must be a numpy array or a pandas or polars dataframe. "
-        f"Got {type(X)} instead."
+        "X must be a numpy array or a dataframe from a library supported by "
+        f"narwhals (e.g. pandas, polars). Got {type(X)} instead."
     )
 
 
@@ -81,16 +87,21 @@ def _copy_series(y: nw.Series):
 
 
 def check_y(
-    y: Union[np.generic, np.ndarray, pd.Series, pd.DataFrame, List],
+    y: Union[np.generic, np.ndarray, List],
     y_numeric: bool = False,
 ):
     """
-    Checks that y is a pandas or polars Series or DataFrame, or alternatively, if it
-    can be converted to a pandas Series or DataFrame.
+    Checks that y is a Series or DataFrame from a library supported by narwhals (for
+    example pandas or polars), or alternatively, if it can be converted to a pandas
+    Series or DataFrame.
+
+    Pandas is only imported, lazily, when y is not already a narwhals-recognised
+    Series or DataFrame (e.g. when it is a numpy array or a list).
 
     Parameters
     ----------
-    y : pandas or polars Series or DataFrame, np.array, list
+    y : Series or DataFrame (pandas, polars, or any other library supported by
+        narwhals), np.array, list
         The input to check and copy or transform.
 
     y_numeric : bool, default=False
@@ -99,7 +110,7 @@ def check_y(
 
     Returns
     -------
-    y: pandas or polars Series or DataFrame
+    y: Series or DataFrame
     """
     if y is None:
         raise ValueError(
@@ -127,6 +138,8 @@ def check_y(
             raise ValueError("y contains infinity values.")
         return nw_y.clone().to_native()
 
+    import pandas as pd
+
     try:
         y = column_or_1d(y)
         y = _check_y(y, multi_output=False, y_numeric=y_numeric)
@@ -139,7 +152,7 @@ def check_y(
 
 def check_X_y(
     X,
-    y: Union[np.generic, np.ndarray, pd.Series, List],
+    y: Union[np.generic, np.ndarray, List],
     y_numeric: bool = False,
 ):
     """
@@ -148,10 +161,12 @@ def check_X_y(
 
     Parameters
     ----------
-    X: pandas or polars DataFrame, or numpy ndarray
+    X: dataframe (pandas, polars, or any other library supported by narwhals), or
+        numpy ndarray
         The input to check and copy or transform.
 
-    y: pandas or polars Series, np.array, list
+    y: Series (pandas, polars, or any other library supported by narwhals), np.array,
+        list
         The input to check and copy or transform.
 
     y_numeric : bool, default=False
@@ -166,26 +181,31 @@ def check_X_y(
 
     Returns
     -------
-    X: pandas or polars DataFrame
-    y: pandas or polars Series
+    X: dataframe
+    y: Series
     """
     # Whether the raw inputs already carried a meaningful pandas index, before
     # check_X/check_y potentially convert them (e.g. a numpy array gets a default
     # index, which should be overridden by the other input's index, if it has one).
-    x_had_index = isinstance(X, pd.DataFrame)
-    y_had_index = isinstance(y, (pd.Series, pd.DataFrame))
+    # These checks, unlike `isinstance(X, pd.DataFrame)`, don't require pandas to be
+    # installed.
+    x_had_index = nwd.is_pandas_dataframe(X)
+    y_had_index = nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y)
 
     X = check_X(X)
     y = check_y(y, y_numeric=y_numeric)
     check_consistent_length(X, y)
 
+    x_has_index = nwd.is_pandas_dataframe(X)
+    y_has_index = nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y)
+
     if x_had_index and y_had_index:
-        if not X.index.equals(y.index):
+        if not X.index.equals(y.index):  # type: ignore[union-attr]
             raise ValueError("The indexes of X and y do not match.")
-    elif x_had_index and isinstance(y, (pd.Series, pd.DataFrame)):
-        y.index = X.index
-    elif y_had_index and isinstance(X, pd.DataFrame):
-        X.index = y.index
+    elif x_had_index and y_has_index:
+        y.index = X.index  # type: ignore[union-attr,method-assign]
+    elif y_had_index and x_has_index:
+        X.index = y.index  # type: ignore[union-attr]
     # else: neither raw input carried a pandas index to reconcile (e.g. polars
     # objects), so check_consistent_length above is the only check that applies.
 
@@ -199,7 +219,7 @@ def _check_X_matches_training_df(X, reference: int) -> None:
 
     Parameters
     ----------
-    X : pandas or polars DataFrame
+    X : dataframe
         The df to be checked
     reference : int
         The number of columns in the dataframe that was used with the fit() method.
@@ -225,7 +245,7 @@ def _check_contains_na(
 
     Parameters
     ----------
-    X : pandas or polars DataFrame
+    X : dataframe
 
     variables : List
         The selected group of variables in which null values will be examined.
@@ -249,7 +269,7 @@ def _check_optional_contains_na(X, variables: List[Union[str, int]]) -> None:
 
     Parameters
     ----------
-    X : pandas or polars DataFrame
+    X : dataframe
 
     variables : List
         The selected group of variables in which null values will be examined.
@@ -274,7 +294,7 @@ def _check_contains_inf(X, variables: List[Union[str, int]]) -> None:
 
     Parameters
     ----------
-    X : pandas or polars DataFrame
+    X : dataframe
     variables : List
         The selected group of variables in which infinite values will be examined.
 

@@ -304,7 +304,7 @@ def test_check_X_errors():
     # Test incorrect type error
     with pytest.raises(TypeError) as record:
         check_X("not a dataframe")
-    assert record.match("X must be a numpy array or a pandas or polars dataframe")
+    assert record.match("X must be a numpy array or a dataframe from a library")
 
 
 # ------------------------
