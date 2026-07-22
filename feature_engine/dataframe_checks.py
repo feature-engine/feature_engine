@@ -23,17 +23,17 @@ def check_X(X):
     Copying is an important step so that we don't accidentally modify the original
     dataset entered by the user.
 
-    Numpy arrays are converted to a pandas DataFrame, with column names that are
-    strings representing the column index starting at 0. This, together with
-    accepting numpy arrays at all, allows Feature-engine transformers to:
+    Numpy arrays are validated but otherwise returned as numpy arrays, unchanged.
+    Feature-engine accepts numpy arrays, in addition to dataframes, so that:
 
-    - be evaluated with Scikit-learn's `check_estimator`, which passes numpy arrays
-      to `fit()` and `transform()`.
-    - be used within a Scikit-learn Pipeline, next to Scikit-learn transformers like
-      the `SimpleImputer`, which return numpy arrays by default.
+    - transformers can be evaluated with Scikit-learn's `check_estimator`, which
+      passes numpy arrays to `fit()` and `transform()`.
+    - transformers can be used within a Scikit-learn Pipeline, next to Scikit-learn
+      transformers like the `SimpleImputer`, which return numpy arrays by default.
 
-    Pandas is only imported, lazily, when X is a numpy array. If you pass a dataframe
-    from any other narwhals-supported library, pandas does not need to be installed.
+    This module never imports pandas. Feature-engine is dataframe-library agnostic,
+    so a user working only with numpy arrays, or with a narwhals-supported dataframe
+    library other than pandas, is not required to have pandas installed.
 
     Parameters
     ----------
@@ -50,9 +50,8 @@ def check_X(X):
 
     Returns
     -------
-    X : dataframe.
-        A copy of the original dataframe, or the numpy array converted to a pandas
-        DataFrame.
+    X : dataframe or numpy array.
+        A copy of the original dataframe, or the validated numpy array.
     """
     if nwd.is_into_dataframe(X):
         # from_native() raises narwhals.exceptions.DuplicateError, a ValueError
@@ -66,12 +65,9 @@ def check_X(X):
         return nw_X.clone().to_native()
 
     if isinstance(X, (np.generic, np.ndarray)) or issparse(X):
-        import pandas as pd
-
-        X = check_array(
+        return check_array(
             X, accept_sparse=False, dtype=None, ensure_all_finite=False, ensure_2d=True
         )
-        return pd.DataFrame(X, columns=[f"x{i}" for i in range(X.shape[1])])
 
     raise TypeError(
         "X must be a numpy array or a dataframe from a library supported by "
@@ -92,11 +88,8 @@ def check_y(
 ):
     """
     Checks that y is a Series or DataFrame from a library supported by narwhals (for
-    example pandas or polars), or alternatively, if it can be converted to a pandas
-    Series or DataFrame.
-
-    Pandas is only imported, lazily, when y is not already a narwhals-recognised
-    Series or DataFrame (e.g. when it is a numpy array or a list).
+    example pandas or polars), or alternatively, if it can be converted to a numpy
+    array. This module never imports pandas.
 
     Parameters
     ----------
@@ -110,7 +103,7 @@ def check_y(
 
     Returns
     -------
-    y: Series or DataFrame
+    y: Series, DataFrame, or numpy array
     """
     if y is None:
         raise ValueError(
@@ -138,16 +131,11 @@ def check_y(
             raise ValueError("y contains infinity values.")
         return nw_y.clone().to_native()
 
-    import pandas as pd
-
     try:
         y = column_or_1d(y)
-        y = _check_y(y, multi_output=False, y_numeric=y_numeric)
-        y = pd.Series(y)
+        return _check_y(y, multi_output=False, y_numeric=y_numeric)
     except ValueError:
-        y = _check_y(y, multi_output=True, y_numeric=y_numeric)
-        y = pd.DataFrame(y)
-    return y
+        return _check_y(y, multi_output=True, y_numeric=y_numeric)
 
 
 def check_X_y(
@@ -181,33 +169,21 @@ def check_X_y(
 
     Returns
     -------
-    X: dataframe
-    y: Series
+    X: dataframe or numpy array
+    y: Series, DataFrame, or numpy array
     """
-    # Whether the raw inputs already carried a meaningful pandas index, before
-    # check_X/check_y potentially convert them (e.g. a numpy array gets a default
-    # index, which should be overridden by the other input's index, if it has one).
-    # These checks, unlike `isinstance(X, pd.DataFrame)`, don't require pandas to be
-    # installed.
-    x_had_index = nwd.is_pandas_dataframe(X)
-    y_had_index = nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y)
-
     X = check_X(X)
     y = check_y(y, y_numeric=y_numeric)
     check_consistent_length(X, y)
 
-    x_has_index = nwd.is_pandas_dataframe(X)
-    y_has_index = nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y)
-
-    if x_had_index and y_had_index:
+    # A numpy array, or a dataframe/Series from a library other than pandas, has no
+    # index to reconcile. `is_pandas_dataframe`/`is_pandas_series`, unlike
+    # `isinstance(X, pd.DataFrame)`, don't require pandas to be installed.
+    if nwd.is_pandas_dataframe(X) and (
+        nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y)
+    ):
         if not X.index.equals(y.index):  # type: ignore[union-attr]
             raise ValueError("The indexes of X and y do not match.")
-    elif x_had_index and y_has_index:
-        y.index = X.index  # type: ignore[union-attr,method-assign]
-    elif y_had_index and x_has_index:
-        X.index = y.index  # type: ignore[union-attr]
-    # else: neither raw input carried a pandas index to reconcile (e.g. polars
-    # objects), so check_consistent_length above is the only check that applies.
 
     return X, y
 

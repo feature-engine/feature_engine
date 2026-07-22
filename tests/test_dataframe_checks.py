@@ -22,13 +22,14 @@ def test_check_X_returns_df(df_vartypes):
     assert_frame_equal(check_X(df_vartypes), df_vartypes)
 
 
-def test_check_X_converts_numpy_to_pandas():
+def test_check_X_returns_numpy_array_unchanged():
     a1D = np.array([1, 2, 3, 4])
     a2D = np.array([[1, 2], [3, 4]])
     a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
 
-    df_2D = pd.DataFrame(a2D, columns=["x0", "x1"])
-    assert_frame_equal(df_2D, check_X(a2D))
+    X = check_X(a2D)
+    assert isinstance(X, np.ndarray)
+    np.testing.assert_array_equal(a2D, X)
 
     with pytest.raises(ValueError):
         check_X(a3D)
@@ -67,16 +68,18 @@ def test_check_y_returns_dataframe():
     assert_frame_equal(check_y(d), d)
 
 
-def test_check_y_converts_np_array():
+def test_check_y_returns_numpy_array_unchanged():
     a1D = np.array([1, 2, 3, 4])
-    s = pd.Series(a1D)
-    assert_series_equal(check_y(a1D), s)
+    y = check_y(a1D)
+    assert isinstance(y, np.ndarray)
+    np.testing.assert_array_equal(a1D, y)
 
 
-def test_check_y_converts_np_array_2D():
+def test_check_y_returns_2D_numpy_array_unchanged():
     a2D = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(2, 4)
-    d = pd.DataFrame(a2D)
-    assert_frame_equal(check_y(a2D), d)
+    y = check_y(a2D)
+    assert isinstance(y, np.ndarray)
+    np.testing.assert_array_equal(a2D, y)
 
 
 def test_check_y_raises_none_error():
@@ -161,69 +164,50 @@ def test_check_X_y_raises_error_when_pandas_index_dont_match():
     assert str(record.value) == msg
 
 
-def test_check_x_y_reassings_index_when_only_one_input_is_pandas():
-    # X is dataframe, y is 1D array
+def test_check_x_y_numpy_side_has_no_index_to_reconcile():
+    # X is dataframe, y is 1D array: y has no index, so X keeps its own, and y is
+    # returned as a numpy array, unchanged.
     df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
     s = np.array([1, 2, 3, 4])
-    s_exp = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
     x, y = check_X_y(df, s)
     assert_frame_equal(df, x)
-    assert_series_equal(s_exp.astype(int), y.astype(int))
+    assert isinstance(y, np.ndarray)
+    np.testing.assert_array_equal(s, y)
 
     # X is dataframe, y is 2d array
     s = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2)
-    s_exp = pd.DataFrame(s, index=[22, 99, 101, 212])
     x, y = check_X_y(df, s)
     assert_frame_equal(df, x)
-    assert_frame_equal(s_exp.astype(int), y.astype(int))
+    assert isinstance(y, np.ndarray)
+    np.testing.assert_array_equal(s, y)
 
-    # X is not a df, y is a series
+    # X is a numpy array, y is a series: X has no index, so y keeps its own, and X is
+    # returned as a numpy array, unchanged.
     df = np.array([[1, 2, 3, 4], [5, 6, 7, 8]]).T
     s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
-    df_exp = pd.DataFrame(df, columns=["x0", "x1"])
-    df_exp.index = s.index
     x, y = check_X_y(df, s)
-    assert_frame_equal(df_exp, x)
+    assert isinstance(x, np.ndarray)
+    np.testing.assert_array_equal(df, x)
     assert_series_equal(s, y)
 
-    # X is not a df, y is a dataframe
+    # X is a numpy array, y is a dataframe
     s = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2)
     s = pd.DataFrame(s, index=[22, 99, 101, 212])
     df = np.array([[1, 2, 3, 4], [5, 6, 7, 8]]).T
-    df_exp = pd.DataFrame(df, columns=["x0", "x1"])
-    df_exp.index = s.index
     x, y = check_X_y(df, s)
-    assert_frame_equal(df_exp, x)
+    assert isinstance(x, np.ndarray)
+    np.testing.assert_array_equal(df, x)
     assert_frame_equal(s, y)
 
 
-def test_check_x_y_converts_numpy_to_pandas():
+def test_check_x_y_with_numpy_arrays_on_both_sides():
     a2D = np.array([[1, 2], [3, 4], [3, 4], [3, 4]])
-    df2D = pd.DataFrame(a2D, columns=["x0", "x1"])
-
     a1D = np.array([1, 2, 3, 4])
-    s1D = pd.Series(a1D)
 
-    # X is df and y is array
-    x, y = check_X_y(df2D, a1D)
-    assert_frame_equal(df2D, x)
-    assert_series_equal(s1D, y)
-
-    # X is array and y is series
-    x, y = check_X_y(a2D, s1D)
-    assert_frame_equal(df2D, x)
-    assert_series_equal(s1D, y)
-
-    # X is df and y is 2d array
-    y2D = pd.DataFrame(a2D, columns=[0, 1])
-    x, y = check_X_y(df2D, a2D)
-    assert_frame_equal(df2D, x)
-    assert_frame_equal(y2D, y)
-
-    # X is array and y multioutput df
-    x, y = check_X_y(a2D, df2D)
-    assert_frame_equal(df2D, x)
-    assert_frame_equal(df2D, y)
+    x, y = check_X_y(a2D, a1D)
+    assert isinstance(x, np.ndarray) and isinstance(y, np.ndarray)
+    np.testing.assert_array_equal(a2D, x)
+    np.testing.assert_array_equal(a1D, y)
 
 
 def test_check_x_y_raises_error_when_inconsistent_length(df_vartypes):
@@ -368,6 +352,16 @@ def test_check_x_y_polars_raises_error_when_inconsistent_length():
     s = pl.Series([0, 1])
     with pytest.raises(ValueError):
         check_X_y(df, s)
+
+
+def test_check_x_y_mixed_pandas_and_polars_has_no_index_to_reconcile():
+    # Polars has no index, so there is nothing to compare or reassign: only the row
+    # count, checked via check_consistent_length, applies.
+    df = pd.DataFrame({"a": [1, 2, 3]}, index=[22, 99, 101])
+    s = pl.Series("target", [0, 1, 2])
+    x, y = check_X_y(df, s)
+    assert_frame_equal(df, x)
+    pl_assert_series_equal(s, y)
 
 
 def test_check_X_matches_training_df_with_polars():
