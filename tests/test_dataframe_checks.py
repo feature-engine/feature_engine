@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
+from polars.testing import assert_frame_equal as pl_assert_frame_equal
+from polars.testing import assert_series_equal as pl_assert_series_equal
 from scipy.sparse import csr_matrix
 
 from feature_engine.dataframe_checks import (
@@ -44,7 +47,7 @@ def test_check_X_raises_error_with_complex_data():
     rng = np.random.RandomState(0)
     X = rng.uniform(size=10) + 1j * rng.uniform(size=10)
     X = X.reshape(-1, 1)
-    with pytest.raises(TypeError, match=msg):
+    with pytest.raises(ValueError, match=msg):
         assert check_X(X)
 
 
@@ -284,21 +287,126 @@ def test_check_X_raises_error_on_duplicated_column_names():
     df.columns = ["var_A", "var_A", "var_B", "var_C"]
     with pytest.raises(ValueError) as err_txt:
         check_X(df)
-    assert err_txt.match("Input data contains duplicated variable names.")
+    assert err_txt.match("Expected unique column names")
 
 
 def test_check_X_errors():
-    # Test scalar array error (line 58)
+    # Test scalar array error
     with pytest.raises(ValueError) as record:
         check_X(np.array(1))
     assert record.match("Expected 2D array, got scalar array instead")
 
-    # Test 1D array error (line 65)
+    # Test 1D array error
     with pytest.raises(ValueError) as record:
         check_X(np.array([1, 2, 3]))
     assert record.match("Expected 2D array, got 1D array instead")
 
-    # Test incorrect type error (line 80)
+    # Test incorrect type error
     with pytest.raises(TypeError) as record:
         check_X("not a dataframe")
-    assert record.match("X must be a numpy array or pandas dataframe")
+    assert record.match("X must be a numpy array or a pandas or polars dataframe")
+
+
+# ------------------------
+# polars support
+# ------------------------
+
+
+def test_check_X_accepts_polars_and_returns_a_copy():
+    df = pl.DataFrame({"a": [1, 2, 3], "b": [4.0, 5.0, 6.0]})
+    X = check_X(df)
+    assert isinstance(X, pl.DataFrame)
+    pl_assert_frame_equal(X, df)
+    assert X is not df
+
+
+def test_check_X_polars_raises_error_if_empty():
+    with pytest.raises(ValueError):
+        check_X(pl.DataFrame({"a": []}))
+
+
+def test_check_y_accepts_polars_series_and_returns_a_copy():
+    s = pl.Series("target", [0, 1, 2, 3, 4])
+    y = check_y(s)
+    assert isinstance(y, pl.Series)
+    pl_assert_series_equal(y, s)
+    assert y is not s
+
+
+def test_check_y_polars_raises_nan_error():
+    s = pl.Series("target", [0.0, None, 2.0])
+    with pytest.raises(ValueError) as record:
+        check_y(s)
+    assert str(record.value) == "y contains NaN values."
+
+
+def test_check_y_polars_raises_inf_error():
+    s = pl.Series("target", [0.0, float("inf"), 2.0])
+    with pytest.raises(ValueError) as record:
+        check_y(s)
+    assert str(record.value) == "y contains infinity values."
+
+
+def test_check_y_polars_converts_string_to_number():
+    s = pl.Series("target", ["0", "1", "2"])
+    y = check_y(s, y_numeric=True)
+    assert y.dtype.is_numeric()
+    pl_assert_series_equal(y, pl.Series("target", [0.0, 1.0, 2.0]))
+
+
+def test_check_x_y_polars_returns_polars():
+    df = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    s = pl.Series("target", [0, 1, 2])
+    X, y = check_X_y(df, s)
+    assert isinstance(X, pl.DataFrame) and isinstance(y, pl.Series)
+    pl_assert_frame_equal(X, df)
+    pl_assert_series_equal(y, s)
+
+
+def test_check_x_y_polars_raises_error_when_inconsistent_length():
+    df = pl.DataFrame({"a": [1, 2, 3]})
+    s = pl.Series([0, 1])
+    with pytest.raises(ValueError):
+        check_X_y(df, s)
+
+
+def test_check_X_matches_training_df_with_polars():
+    df = pl.DataFrame({"a": [1, 2], "b": [3, 4]})
+    with pytest.raises(ValueError):
+        _check_X_matches_training_df(df, 3)
+
+
+def test_contains_na_with_polars():
+    df = pl.DataFrame({"Name": ["tom", None], "City": ["London", "Manchester"]})
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    with pytest.raises(ValueError) as record:
+        _check_contains_na(df, ["Name", "City"])
+    assert str(record.value) == msg
+
+
+def test_optional_contains_na_with_polars():
+    df = pl.DataFrame({"Name": ["tom", None], "City": ["London", "Manchester"]})
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    with pytest.raises(ValueError) as record:
+        _check_optional_contains_na(df, ["Name", "City"])
+    assert str(record.value) == msg
+
+
+def test_contains_inf_with_polars():
+    msg = (
+        "Some of the variables to transform contain inf values. Check and "
+        "remove those before using this transformer."
+    )
+    df = pl.DataFrame({"A": [1.1, float("inf"), 3.3]})
+    with pytest.raises(ValueError, match=msg):
+        _check_contains_inf(df, ["A"])
+
+    df_ok = pl.DataFrame({"A": [1.1, 2.2, 3.3]})
+    assert _check_contains_inf(df_ok, ["A"]) is None
