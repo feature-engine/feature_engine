@@ -1,8 +1,9 @@
+.. _winsoriser:
 .. _winsorizer:
 
 .. currentmodule:: feature_engine.outliers
 
-Winsorizer
+Winsoriser
 ==========
 
 Outliers are data points that significantly differ from the majority of the observations
@@ -21,8 +22,10 @@ maximum values.
 
 .. note::
 
-    :class:`Winsorizer()` caps maximum and/or minimum values of a variable at automatically
+    :class:`Winsoriser()` caps maximum and/or minimum values of a variable at automatically
     determined values.
+
+    ``Winsorizer`` remains available as a backward-compatible alias.
 
 Calculating the capping values
 ------------------------------
@@ -63,7 +66,7 @@ Percentiles or quantiles
 
     The factor that multiplies the `std`, `IQR`, or `MAD`, as well as the percentiles to
     use to find the capping values can be changed to make the capping more or less stringent.
-    The values used by default by :class:`Winsorizer()` are those suggested as optimal
+    The values used by default by :class:`Winsoriser()` are those suggested as optimal
     in statistical studies.
 
 The following image shows the four methods applied to a normal distribution. Their capping
@@ -75,7 +78,7 @@ mean, median, standard deviation, IQR, and MAD all describe the same thing.
 
 .. attention::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`Winsorizer()` used to
+    **New in version 2.0:** When `variables` is `None`, :class:`Winsoriser()` used to
     raise an error if the dataframe contained no numerical variables. You can now
     set the new parameter `return_empty` to `True` to make the transformer return an
     empty list of variables and skip capping the outliers instead, leaving the dataframe
@@ -87,7 +90,7 @@ mean, median, standard deviation, IQR, and MAD all describe the same thing.
 Python implementation
 ---------------------
 
-In this section, we'll show how to cap variables using :class:`Winsorizer()`.
+In this section, we'll show how to cap variables using :class:`Winsoriser()`.
 
 We'll use the house prices dataset. Let's load the data and separate
 it into train and test:
@@ -194,7 +197,7 @@ We observe that both variables are right skewed and also that they seem to have 
     expected distributions, but they can't unequivocally confirm if they are true outliers or
     mere rare occurrences. Determining true outliers requires domain knowledge and further data exploration.
 
-We will set :class:`Winsorizer()` to cap outliers in the previous variables at the right
+We will set :class:`Winsoriser()` to cap outliers in the previous variables at the right
 side of the distribution (param `tail`'s default functionality). We want the maximum
 values to be determined using the interquartile range proximity rule (param `capping_method`)
 using 1.5 of the IQR to find those limits (param `fold`).
@@ -208,9 +211,9 @@ using 1.5 of the IQR to find those limits (param `fold`).
 
     from feature_engine.imputation import MeanMedianImputer
     from feature_engine.pipeline import Pipeline
-    from feature_engine.outliers import Winsorizer
+    from feature_engine.outliers import Winsoriser
 
-    w = Winsorizer(
+    w = Winsoriser(
         capping_method="iqr",
         fold=1.5,
         variables=['GrLivArea', 'MasVnrArea'],
@@ -229,7 +232,7 @@ In the previous code, we created a pipeline that first imputes variables with th
 and then caps the variables `'GrLivArea'` and `'MasVnrArea'` at a maximum value determined
 using the IQR proximity rule.
 
-With `fit()`, :class:`Winsorizer()` finds the values at which it should cap the variables.
+With `fit()`, :class:`Winsoriser()` finds the values at which it should cap the variables.
 These values are stored in the following attribute:
 
 .. code:: python
@@ -242,7 +245,7 @@ Below, we see the maximum values for each variable:
 
     {'GrLivArea': 2764.625, 'MasVnrArea': 425.0}
 
-:class:`Winsorizer()` also has a `left_tail_caps_` attribute, which in this case should
+:class:`Winsoriser()` also has a `left_tail_caps_` attribute, which in this case should
 be empty. Let's check that out:
 
 .. code:: python
@@ -277,7 +280,7 @@ As an alternative, let's cap the variables at their 10th percentile on the right
 
 .. code:: python
 
-    w = Winsorizer(
+    w = Winsoriser(
         capping_method="quantiles",
         tail = "right",
         fold = 0.1,
@@ -338,7 +341,7 @@ percentile methods stay anchored to the observations.
 Setting up the stringency (param `fold`)
 ----------------------------------------
 
-By default, :class:`Winsorizer()` automatically determines the parameter `fold` based
+By default, :class:`Winsoriser()` automatically determines the parameter `fold` based
 on the chosen `capping_method`. This parameter determines the multiplier for standard
 deviation, interquartile range (IQR), or median absolute deviation (MAD), or
 sets the percentile at which to cap the variables.

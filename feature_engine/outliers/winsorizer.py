@@ -44,21 +44,23 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class Winsorizer(WinsorizerBase):
+class Winsoriser(WinsorizerBase):
     """
-    The Winsorizer() caps maximum and/or minimum values of a variable at automatically
+    The Winsoriser() caps maximum and/or minimum values of a variable at automatically
     determined values, and optionally adds indicators.
 
     {intro_docstring}
 
-    The Winsorizer() works only with numerical variables. A list of variables can
-    be indicated. Alternatively, the Winsorizer() will select and cap all numerical
+    The Winsoriser() works only with numerical variables. A list of variables can
+    be indicated. Alternatively, the Winsoriser() will select and cap all numerical
     variables in the train set.
 
     The transformer first finds the values at one or both tails of the distributions
     (fit). The transformer then caps the variables (transform).
 
-    More details in the :ref:`User Guide <winsorizer>`.
+    More details in the :ref:`User Guide <winsoriser>`.
+
+    The ``Winsorizer`` spelling remains available as a backward-compatible alias.
 
     Parameters
     ----------
@@ -126,10 +128,10 @@ class Winsorizer(WinsorizerBase):
 
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from feature_engine.outliers import Winsorizer
+    >>> from feature_engine.outliers import Winsoriser
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
-    >>> wz = Winsorizer(capping_method='mad', tail='both', fold=3)
+    >>> wz = Winsoriser(capping_method='mad', tail='both', fold=3)
     >>> wz.fit(X)
     >>> wz.transform(X)
               x
@@ -146,10 +148,10 @@ class Winsorizer(WinsorizerBase):
 
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from feature_engine.outliers import Winsorizer
+    >>> from feature_engine.outliers import Winsoriser
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
-    >>> wz = Winsorizer(capping_method='mad', tail='both', fold=3)
+    >>> wz = Winsoriser(capping_method='mad', tail='both', fold=3)
     >>> wz.fit(X)
     >>> wz.transform(X)
               x
@@ -253,3 +255,7 @@ class Winsorizer(WinsorizerBase):
         if self.add_indicators is True:
             feature_names = feature_names + self._get_new_features_name()
         return feature_names
+
+
+# Backward-compatible alias for the original American spelling.
+Winsorizer = Winsoriser

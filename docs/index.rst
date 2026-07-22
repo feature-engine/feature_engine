@@ -227,7 +227,7 @@ models and statistical tests are sensitive to outliers. In some cases, we may wa
 permitted values.
 
 -  :doc:`api_doc/outliers/ArbitraryOutlierCapper`: caps maximum and minimum values at user defined values
--  :doc:`api_doc/outliers/Winsorizer`: caps maximum or minimum values using statistical parameters
+-  :doc:`Winsoriser <api_doc/outliers/Winsorizer>`: caps maximum or minimum values using statistical parameters
 -  :doc:`api_doc/outliers/OutlierTrimmer`: removes outliers from the dataset
 
 Numerical Transformation: Transformers

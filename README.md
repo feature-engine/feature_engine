@@ -113,7 +113,7 @@ Please share your story by answering 1 quick question
 * ArbitraryDiscreriser
 
 ### Outlier Handling methods
-* Winsorizer
+* Winsoriser
 * ArbitraryOutlierCapper
 * OutlierTrimmer
 
