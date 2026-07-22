@@ -4,8 +4,13 @@ import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.scaling import MeanNormalizationScaler
+from feature_engine.scaling import MeanNormalisationScaler, MeanNormalizationScaler
 from tests.estimator_checks.fit_functionality_checks import check_return_empty
+
+
+def test_mean_normalization_scaler_is_backward_compatible_alias():
+    assert MeanNormalizationScaler is MeanNormalisationScaler
+    assert MeanNormalizationScaler().__class__ is MeanNormalisationScaler
 
 
 def test_transforming_int_vars():
@@ -26,7 +31,7 @@ def test_transforming_int_vars():
         }
     )
 
-    transformer = MeanNormalizationScaler(variables=None)
+    transformer = MeanNormalisationScaler(variables=None)
     X = transformer.fit_transform(df)
 
     pd.testing.assert_frame_equal(X, expected_df)
@@ -39,7 +44,7 @@ def test_transforming_int_vars():
 
 def test_mean_normalization_plus_automatically_find_variables(df_vartypes):
     # test case 1: automatically select variables
-    transformer = MeanNormalizationScaler(variables=None)
+    transformer = MeanNormalisationScaler(variables=None)
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
@@ -68,7 +73,7 @@ def test_mean_normalization_plus_automatically_find_variables(df_vartypes):
 
 def test_mean_normalization_plus_user_passes_var_list(df_vartypes):
     # test case 2: user passes variables
-    transformer = MeanNormalizationScaler(variables="Age")
+    transformer = MeanNormalisationScaler(variables="Age")
     X = transformer.fit_transform(df_vartypes)
 
     # expected output
@@ -95,21 +100,21 @@ def test_mean_normalization_plus_user_passes_var_list(df_vartypes):
 
 def test_fit_raises_error_if_na_in_df(df_na):
     # test case 3: when dataset contains na, fit method
-    transformer = MeanNormalizationScaler()
+    transformer = MeanNormalisationScaler()
     with pytest.raises(ValueError):
         transformer.fit(df_na)
 
 
 def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
     # test case 4: when dataset contains na, transform method
-    transformer = MeanNormalizationScaler()
+    transformer = MeanNormalisationScaler()
     transformer.fit(df_vartypes)
     with pytest.raises(ValueError):
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
 def test_non_fitted_error(df_vartypes):
-    transformer = MeanNormalizationScaler()
+    transformer = MeanNormalisationScaler()
     with pytest.raises(NotFittedError):
         transformer.transform(df_vartypes)
 
@@ -124,10 +129,10 @@ def test_constant_columns_error():
         }
     )
 
-    transformer = MeanNormalizationScaler()
+    transformer = MeanNormalisationScaler()
     with pytest.raises(ValueError, match=re.escape("Division by zero is not allowed")):
         transformer.fit(df)
 
 
 def test_check_return_empty():
-    check_return_empty(MeanNormalizationScaler())
+    check_return_empty(MeanNormalisationScaler())

@@ -2,12 +2,12 @@
 
 .. currentmodule:: feature_engine.scaling
 
-MeanNormalizationScaler
+MeanNormalisationScaler
 =======================
 
 .. attention::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`MeanNormalizationScaler()` used to
+    **New in version 2.0:** When `variables` is `None`, :class:`MeanNormalisationScaler()` used to
     raise an error if the dataframe contained no numerical variables. You can now
     set the new parameter `return_empty` to `True` to make the transformer return an
     empty list of variables and skip the scaling instead, leaving the dataframe
@@ -28,23 +28,25 @@ Mean normalisation is given by the following formula:
 
     X' = (X - Mean(X)) / (Max(X) - Min(X))
 
-:class:`MeanNormalizationScaler()` scales variables using mean normalisation.
+:class:`MeanNormalisationScaler()` scales variables using mean normalisation.
 
 .. note::
 
-    :class:`MeanNormalizationScaler()` only works with non-constant numerical variables.
+    :class:`MeanNormalisationScaler()` only works with non-constant numerical variables.
     If the variable is constant, the scaler will raise an error.
+
+    ``MeanNormalizationScaler`` remains available as a backward-compatible alias.
 
 Python implementation
 ---------------------
 
-We'll show how to use :class:`MeanNormalizationScaler()` through a toy dataset. Let's create
+We'll show how to use :class:`MeanNormalisationScaler()` through a toy dataset. Let's create
 a toy dataset:
 
 .. code:: python
 
     import pandas as pd
-    from feature_engine.scaling import MeanNormalizationScaler
+    from feature_engine.scaling import MeanNormalisationScaler
 
     df = pd.DataFrame.from_dict(
         {
@@ -81,12 +83,12 @@ First, let's make a list with the variable names:
       'Height',
     ]
 
-Now, let's set up :class:`MeanNormalizationScaler()`:
+Now, let's set up :class:`MeanNormalisationScaler()`:
 
 .. code:: python
 
     # set up the scaler
-    scaler = MeanNormalizationScaler(variables = vars)
+    scaler = MeanNormalisationScaler(variables = vars)
 
     # fit the scaler
     scaler.fit(df)

@@ -328,7 +328,7 @@ procedures to a subset of the variables only, check out the :doc:`api_doc/wrappe
 
 Feature-engine extends scikit-learn's scaling functionality with the following transformer:
 
-- :doc:`api_doc/scaling/MeanNormalizationScaler`: scale variables using mean normalisation
+- :doc:`MeanNormalisationScaler <api_doc/scaling/MeanNormalizationScaler>`: scale variables using mean normalisation
 
 
 Scikit-learn Wrapper:

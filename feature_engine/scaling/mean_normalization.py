@@ -37,9 +37,9 @@ from feature_engine._docstrings.substitute import Substitution
     fit_transform=_fit_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanNormalizationScaler(BaseNumericalTransformer):
+class MeanNormalisationScaler(BaseNumericalTransformer):
     """
-    MeanNormalizationScaler() applies mean normalisation, which consists of subtracting
+    MeanNormalisationScaler() applies mean normalisation, which consists of subtracting
     the mean of each feature and then dividing the result by the value range, that is,
     the difference between its maximum and minimum value. The method aims to center the
     variables at 0, and rescale the distribution between -1 and 1.
@@ -51,6 +51,8 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     More details in the :ref:`User Guide <mean_normalisation_scaler>`.
 
+    The ``MeanNormalizationScaler`` spelling remains available as a
+    backward-compatible alias.
 
     Parameters
     ----------
@@ -89,10 +91,10 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from feature_engine.scaling import MeanNormalizationScaler
+    >>> from feature_engine.scaling import MeanNormalisationScaler
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
-    >>> mns = MeanNormalizationScaler()
+    >>> mns = MeanNormalisationScaler()
     >>> mns.fit(X)
     >>> X = mns.transform(X)
     >>> X.head()
@@ -189,3 +191,7 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         X[self.variables_] = X[self.variables_] * self.range_ + self.mean_
 
         return X
+
+
+# Backward-compatible alias for the original American spelling.
+MeanNormalizationScaler = MeanNormalisationScaler
