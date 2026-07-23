@@ -19,9 +19,7 @@ from sklearn.utils.validation import (
 def check_X(X):
     """
     Checks that X is a dataframe from any library supported by narwhals (for example
-    pandas, polars, modin, cuDF or PyArrow), or a numpy array, and returns a copy.
-    Copying is an important step so that we don't accidentally modify the original
-    dataset entered by the user.
+    pandas, polars, modin, cuDF, or PyArrow), or a numpy array, and returns a copy.
 
     Numpy arrays are validated but otherwise returned as numpy arrays, unchanged.
     Feature-engine accepts numpy arrays, in addition to dataframes, so that:
@@ -30,10 +28,6 @@ def check_X(X):
       passes numpy arrays to `fit()` and `transform()`.
     - transformers can be used within a Scikit-learn Pipeline, next to Scikit-learn
       transformers like the `SimpleImputer`, which return numpy arrays by default.
-
-    This module never imports pandas. Feature-engine is dataframe-library agnostic,
-    so a user working only with numpy arrays, or with a narwhals-supported dataframe
-    library other than pandas, is not required to have pandas installed.
 
     Parameters
     ----------
@@ -62,7 +56,7 @@ def check_X(X):
                 f"Found array with 0 feature(s) (shape={nw_X.shape}) while a "
                 "minimum of 1 is required."
             )
-        return nw_X.clone().to_native()
+        return nw_X.to_native()
 
     if isinstance(X, (np.generic, np.ndarray)) or issparse(X):
         return check_array(
@@ -89,7 +83,7 @@ def check_y(
     """
     Checks that y is a Series or DataFrame from a library supported by narwhals (for
     example pandas or polars), or alternatively, if it can be converted to a numpy
-    array. This module never imports pandas.
+    array.
 
     Parameters
     ----------
