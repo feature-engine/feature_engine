@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Literal, Union
 
 import numpy as np
@@ -59,8 +60,6 @@ class Winsoriser(WinsorizerBase):
     (fit). The transformer then caps the variables (transform).
 
     More details in the :ref:`User Guide <winsoriser>`.
-
-    The ``Winsorizer`` spelling remains available as a backward-compatible alias.
 
     Parameters
     ----------
@@ -257,5 +256,30 @@ class Winsoriser(WinsorizerBase):
         return feature_names
 
 
-# Backward-compatible alias for the original American spelling.
-Winsorizer = Winsoriser
+class Winsorizer(Winsoriser):
+    def __init__(
+        self,
+        capping_method: str = "gaussian",
+        tail: str = "right",
+        fold: Union[int, float, Literal["auto"]] = "auto",
+        add_indicators: bool = False,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+        missing_values: str = "raise",
+    ) -> None:
+        warnings.warn(
+            "Winsorizer was deprecated in favour of Winsoriser in version 2.0.0 "
+            "and will be removed in version 2.1.0. To silence this warning, use "
+            "Winsoriser instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            capping_method=capping_method,
+            tail=tail,
+            fold=fold,
+            add_indicators=add_indicators,
+            variables=variables,
+            return_empty=return_empty,
+            missing_values=missing_values,
+        )

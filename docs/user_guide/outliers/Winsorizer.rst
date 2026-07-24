@@ -25,8 +25,6 @@ maximum values.
     :class:`Winsoriser()` caps maximum and/or minimum values of a variable at automatically
     determined values.
 
-    ``Winsorizer`` remains available as a backward-compatible alias.
-
 Calculating the capping values
 ------------------------------
 

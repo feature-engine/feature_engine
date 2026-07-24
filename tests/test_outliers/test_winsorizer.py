@@ -1,4 +1,5 @@
 import math
+import re
 
 import numpy as np
 import pandas as pd
@@ -6,15 +7,37 @@ import pytest
 
 from feature_engine.outliers import Winsoriser, Winsorizer
 
+DEPRECATION_WARNING = (
+    "Winsorizer was deprecated in favour of Winsoriser in version 2.0.0 and will "
+    "be removed in version 2.1.0. To silence this warning, use Winsoriser instead."
+)
 
-def test_winsorizer_is_backward_compatible_alias():
-    assert Winsorizer is Winsoriser
-    assert Winsorizer().__class__ is Winsoriser
+
+@pytest.fixture(
+    params=[Winsoriser, Winsorizer],
+    ids=["Winsoriser", "Winsorizer"],
+)
+def transformer_class(request):
+    return request.param
 
 
-def test_gaussian_capping_right_tail_with_fold_1(df_normal_dist):
+def make_transformer(transformer_class, **kwargs):
+    if transformer_class is Winsorizer:
+        with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
+            return transformer_class(**kwargs)
+    return transformer_class(**kwargs)
+
+
+def test_winsorizer_raises_future_warning():
+    with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
+        Winsorizer()
+
+
+def test_gaussian_capping_right_tail_with_fold_1(df_normal_dist, transformer_class):
     # test case 1: mean and std, right tail
-    transformer = Winsoriser(capping_method="gaussian", tail="right", fold=1)
+    transformer = make_transformer(
+        transformer_class, capping_method="gaussian", tail="right", fold=1
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -35,9 +58,11 @@ def test_gaussian_capping_right_tail_with_fold_1(df_normal_dist):
     assert math.isclose(df_transf["var"].max(), 0.1067690260251065)
 
 
-def test_gaussian_capping_both_tails_with_fold_2(df_normal_dist):
+def test_gaussian_capping_both_tails_with_fold_2(df_normal_dist, transformer_class):
     # test case 2: mean and std, both tails, different fold value
-    transformer = Winsoriser(capping_method="gaussian", tail="both", fold=2)
+    transformer = make_transformer(
+        transformer_class, capping_method="gaussian", tail="both", fold=2
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -55,9 +80,11 @@ def test_gaussian_capping_both_tails_with_fold_2(df_normal_dist):
     assert math.isclose(df_transf["var"].min(), -0.1955956473898675)
 
 
-def test_iqr_capping_both_tails_with_fold_1(df_normal_dist):
+def test_iqr_capping_both_tails_with_fold_1(df_normal_dist, transformer_class):
     # test case 3: IQR, both tails, fold 1
-    transformer = Winsoriser(capping_method="iqr", tail="both", fold=1)
+    transformer = make_transformer(
+        transformer_class, capping_method="iqr", tail="both", fold=1
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -75,9 +102,11 @@ def test_iqr_capping_both_tails_with_fold_1(df_normal_dist):
     assert math.isclose(df_transf["var"].min(), -0.20247907173293223)
 
 
-def test_iqr_capping_left_tail_with_fold_2(df_normal_dist):
+def test_iqr_capping_left_tail_with_fold_2(df_normal_dist, transformer_class):
     # test case 4: IQR, left tail, fold 2
-    transformer = Winsoriser(capping_method="iqr", tail="left", fold=0.8)
+    transformer = make_transformer(
+        transformer_class, capping_method="iqr", tail="left", fold=0.8
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -93,9 +122,13 @@ def test_iqr_capping_left_tail_with_fold_2(df_normal_dist):
     assert math.isclose(df_transf["var"].min(), -0.17486039103044)
 
 
-def test_quantile_capping_both_tails_with_fold_10_percent(df_normal_dist):
+def test_quantile_capping_both_tails_with_fold_10_percent(
+    df_normal_dist, transformer_class
+):
     # test case 5: quantiles, both tails, fold 10%
-    transformer = Winsoriser(capping_method="quantiles", tail="both", fold=0.1)
+    transformer = make_transformer(
+        transformer_class, capping_method="quantiles", tail="both", fold=0.1
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -113,9 +146,13 @@ def test_quantile_capping_both_tails_with_fold_10_percent(df_normal_dist):
     assert math.isclose(df_transf["var"].min(), -0.12366227743232801)
 
 
-def test_quantile_capping_right_tail_with_fold_15_percent(df_normal_dist):
+def test_quantile_capping_right_tail_with_fold_15_percent(
+    df_normal_dist, transformer_class
+):
     # test case 6: quantiles, right tail, fold 15%
-    transformer = Winsoriser(capping_method="quantiles", tail="right", fold=0.15)
+    transformer = make_transformer(
+        transformer_class, capping_method="quantiles", tail="right", fold=0.15
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -135,15 +172,19 @@ def test_quantile_capping_right_tail_with_fold_15_percent(df_normal_dist):
     "strings,expected",
     [("gaussian", 3), ("iqr", 1.5), ("mad", 3.29), ("quantiles", 0.05)],
 )
-def test_auto_fold_default_value(strings, expected, df_normal_dist):
-    transformer = Winsoriser(capping_method=strings, fold="auto")
+def test_auto_fold_default_value(strings, expected, df_normal_dist, transformer_class):
+    transformer = make_transformer(
+        transformer_class, capping_method=strings, fold="auto"
+    )
     transformer.fit(df_normal_dist)
     assert transformer.fold_ == expected
 
 
-def test_mad_capping_right_tail_with_fold_1(df_normal_dist):
+def test_mad_capping_right_tail_with_fold_1(df_normal_dist, transformer_class):
     # test case 1: median and mad, right tail
-    transformer = Winsoriser(capping_method="mad", tail="right", fold=1)
+    transformer = make_transformer(
+        transformer_class, capping_method="mad", tail="right", fold=1
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -164,9 +205,11 @@ def test_mad_capping_right_tail_with_fold_1(df_normal_dist):
     assert math.isclose(df_transf["var"].max(), 0.10995521088494983)
 
 
-def test_mad_capping_both_tails_with_fold_2(df_normal_dist):
+def test_mad_capping_both_tails_with_fold_2(df_normal_dist, transformer_class):
     # test case 2: mean and std, both tails, different fold value
-    transformer = Winsoriser(capping_method="mad", tail="both", fold=2)
+    transformer = make_transformer(
+        transformer_class, capping_method="mad", tail="both", fold=2
+    )
     X = transformer.fit_transform(df_normal_dist)
 
     # expected output
@@ -184,32 +227,45 @@ def test_mad_capping_both_tails_with_fold_2(df_normal_dist):
     assert math.isclose(df_transf["var"].min(), -0.1916815859385002)
 
 
-def test_indicators_are_added(df_normal_dist):
-    transformer = Winsoriser(
-        tail="both", capping_method="quantiles", fold=0.1, add_indicators=True
+def test_indicators_are_added(df_normal_dist, transformer_class):
+    transformer = make_transformer(
+        transformer_class,
+        tail="both",
+        capping_method="quantiles",
+        fold=0.1,
+        add_indicators=True,
     )
     X = transformer.fit_transform(df_normal_dist)
     # test that the number of output variables is correct
     assert X.shape[1] == 3 * df_normal_dist.shape[1]
     assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
-    transformer = Winsoriser(
-        tail="left", capping_method="quantiles", fold=0.1, add_indicators=True
+    transformer = make_transformer(
+        transformer_class,
+        tail="left",
+        capping_method="quantiles",
+        fold=0.1,
+        add_indicators=True,
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
     assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
-    transformer = Winsoriser(
-        tail="right", capping_method="quantiles", fold=0.1, add_indicators=True
+    transformer = make_transformer(
+        transformer_class,
+        tail="right",
+        capping_method="quantiles",
+        fold=0.1,
+        add_indicators=True,
     )
     X = transformer.fit_transform(df_normal_dist)
     assert X.shape[1] == 2 * df_normal_dist.shape[1]
     assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
 
 
-def test_indicators_filter_variables(df_vartypes):
-    transformer = Winsoriser(
+def test_indicators_filter_variables(df_vartypes, transformer_class):
+    transformer = make_transformer(
+        transformer_class,
         variables=["Age", "Marks"],
         tail="both",
         capping_method="quantiles",
@@ -228,9 +284,13 @@ def test_indicators_filter_variables(df_vartypes):
     assert X.shape[1] == df_vartypes.shape[1] + 2
 
 
-def test_indicators_are_correct():
-    transformer = Winsoriser(
-        tail="left", capping_method="quantiles", fold=0.1, add_indicators=True
+def test_indicators_are_correct(transformer_class):
+    transformer = make_transformer(
+        transformer_class,
+        tail="left",
+        capping_method="quantiles",
+        fold=0.1,
+        add_indicators=True,
     )
     df = pd.DataFrame({"col": np.arange(100).astype(np.float64)})
     df_out = transformer.fit_transform(df)
@@ -263,9 +323,10 @@ def test_indicators_are_correct():
     )
 
 
-def test_transformer_ignores_na_in_df(df_na):
+def test_transformer_ignores_na_in_df(df_na, transformer_class):
     # test case 7: dataset contains na and transformer is asked to ignore them
-    transformer = Winsoriser(
+    transformer = make_transformer(
+        transformer_class,
         capping_method="gaussian",
         tail="right",
         fold=1,
@@ -292,77 +353,96 @@ def test_transformer_ignores_na_in_df(df_na):
     assert math.isclose(df_transf["Marks"].max(), 0.8784116651786605)
 
 
-def test_error_if_capping_method_not_permitted():
+def test_error_if_capping_method_not_permitted(transformer_class):
     # test error raises
     with pytest.raises(ValueError):
-        Winsoriser(capping_method="other")
+        make_transformer(transformer_class, capping_method="other")
 
 
-def test_error_if_tail_value_not_permitted():
+def test_error_if_tail_value_not_permitted(transformer_class):
     with pytest.raises(ValueError):
-        Winsoriser(tail="other")
+        make_transformer(transformer_class, tail="other")
 
 
-def test_error_if_missing_values_not_permited():
+def test_error_if_missing_values_not_permited(transformer_class):
     with pytest.raises(ValueError):
-        Winsoriser(missing_values="other")
+        make_transformer(transformer_class, missing_values="other")
 
 
-def test_error_if_fold_value_not_permitted():
+def test_error_if_fold_value_not_permitted(transformer_class):
     with pytest.raises(ValueError):
-        Winsoriser(fold=-1)
+        make_transformer(transformer_class, fold=-1)
 
 
-def test_error_if_capping_method_quantiles_and_fold_value_not_permitted():
+def test_error_if_capping_method_quantiles_and_fold_value_not_permitted(
+    transformer_class,
+):
     with pytest.raises(ValueError):
-        Winsoriser(capping_method="quantiles", fold=0.3)
+        make_transformer(transformer_class, capping_method="quantiles", fold=0.3)
 
 
-def test_error_if_add_incators_not_permitted():
+def test_error_if_add_incators_not_permitted(transformer_class):
     with pytest.raises(ValueError):
-        Winsoriser(add_indicators=-1)
+        make_transformer(transformer_class, add_indicators=-1)
     with pytest.raises(ValueError):
-        Winsoriser(add_indicators=())
+        make_transformer(transformer_class, add_indicators=())
     with pytest.raises(ValueError):
-        Winsoriser(add_indicators=[True])
+        make_transformer(transformer_class, add_indicators=[True])
 
 
-def test_fit_raises_error_if_na_in_inut_df(df_na):
+def test_fit_raises_error_if_na_in_inut_df(df_na, transformer_class):
     # test case 8: when dataset contains na, fit method
     with pytest.raises(ValueError):
-        transformer = Winsoriser()
+        transformer = make_transformer(transformer_class)
         transformer.fit(df_na)
 
 
-def test_transform_raises_error_if_na_in_input_df(df_vartypes, df_na):
+def test_transform_raises_error_if_na_in_input_df(
+    df_vartypes, df_na, transformer_class
+):
     # test case 9: when dataset contains na, transform method
     with pytest.raises(ValueError):
-        transformer = Winsoriser()
+        transformer = make_transformer(transformer_class)
         transformer.fit(df_vartypes)
         transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
 
 
-def test_get_feature_names_out(df_na):
+def test_get_feature_names_out(df_na, transformer_class):
     original_features = df_na.columns.to_list()
     input_features = ["Age", "Marks"]
 
     # when indicators is false, we've got the generic check.
     # We need to test only when true
-    tr = Winsoriser(tail="left", add_indicators=True, missing_values="ignore")
+    tr = make_transformer(
+        transformer_class,
+        tail="left",
+        add_indicators=True,
+        missing_values="ignore",
+    )
     tr.fit(df_na)
 
     out = [f + "_left" for f in input_features]
     assert tr.get_feature_names_out() == original_features + out
     assert tr.get_feature_names_out(original_features) == original_features + out
 
-    tr = Winsoriser(tail="right", add_indicators=True, missing_values="ignore")
+    tr = make_transformer(
+        transformer_class,
+        tail="right",
+        add_indicators=True,
+        missing_values="ignore",
+    )
     tr.fit(df_na)
 
     out = [f + "_right" for f in input_features]
     assert tr.get_feature_names_out() == original_features + out
     assert tr.get_feature_names_out(original_features) == original_features + out
 
-    tr = Winsoriser(tail="both", add_indicators=True, missing_values="ignore")
+    tr = make_transformer(
+        transformer_class,
+        tail="both",
+        add_indicators=True,
+        missing_values="ignore",
+    )
     tr.fit(df_na)
 
     out = ["Age_left", "Age_right", "Marks_left", "Marks_right"]
@@ -370,7 +450,7 @@ def test_get_feature_names_out(df_na):
     assert tr.get_feature_names_out(original_features) == original_features + out
 
 
-def test_low_variation(df_normal_dist):
-    transformer = Winsoriser(capping_method="mad")
+def test_low_variation(df_normal_dist, transformer_class):
+    transformer = make_transformer(transformer_class, capping_method="mad")
     with pytest.raises(ValueError):
         transformer.fit(df_normal_dist // 10)
