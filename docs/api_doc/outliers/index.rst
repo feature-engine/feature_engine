@@ -11,7 +11,7 @@ arbitrary or derived value. The OutlierTrimmer removes outliers from the dataset
 =================================== ==============================================================
  Transformer                          Description
 =================================== ==============================================================
-:class:`Winsorizer()`                 Caps variables at automatically determined extreme values
+:class:`Winsoriser()`                 Caps variables at automatically determined extreme values
 :class:`ArbitraryOutlierCapper()`     Caps variables at values determined by the user
 :class:`OutlierTrimmer()`             Removes outliers from the dataframe
 =================================== ==============================================================

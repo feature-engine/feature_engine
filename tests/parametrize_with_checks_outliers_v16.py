@@ -6,12 +6,12 @@ Works from sklearn > 1.6.
 
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsorizer
+from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsoriser
 from feature_engine.tags import _return_tags
 
 aoc = ArbitraryOutlierCapper(max_capping_dict={"x0": 10})
 ot = OutlierTrimmer()
-wz = Winsorizer()
+wz = Winsoriser()
 
 FAILED_CHECKS = _return_tags()["_xfail_checks"]
 FAILED_CHECKS_AOC = _return_tags()["_xfail_checks"]
@@ -31,7 +31,7 @@ FAILED_CHECKS_AOC.update(
 EXPECTED_FAILED_CHECKS = {
     "ArbitraryOutlierCapper": FAILED_CHECKS_AOC,
     "OutlierTrimmer": FAILED_CHECKS,
-    "Winsorizer": FAILED_CHECKS,
+    "Winsoriser": FAILED_CHECKS,
 }
 
 

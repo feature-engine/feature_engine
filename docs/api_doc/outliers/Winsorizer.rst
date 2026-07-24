@@ -1,6 +1,6 @@
-Winsorizer
+Winsoriser
 ==========
 
-.. autoclass:: feature_engine.outliers.Winsorizer
+.. autoclass:: feature_engine.outliers.Winsoriser
     :members:
 
