@@ -191,6 +191,7 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
         return X
 
 
+# TODO: remove in version 2.1.0
 class MeanNormalizationScaler(MeanNormalisationScaler):
     def __init__(
         self,
