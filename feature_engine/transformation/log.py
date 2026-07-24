@@ -291,11 +291,10 @@ class LogCpTransformer(LogTransformer):
     LogCpTransformer() applies the transformation log(x + C), where x is the
     variable to transform and C is a positive constant.
 
-    .. deprecated:: (next release)
-        `LogCpTransformer` is deprecated and will be removed in a future release.
-        Use :class:`LogTransformer` with ``C="auto"`` instead, i.e.
-        ``LogTransformer(C="auto")`` reproduces `LogCpTransformer`'s default
-        behavior exactly.
+    .. note::
+    `LogCpTransformer` is being consolidated into `LogTransformer`. New code
+    should prefer ``LogTransformer(C="auto")``, which reproduces
+    `LogCpTransformer`'s default behavior exactly.
 
     See :class:`LogTransformer` for the full parameter and attribute reference.
 
