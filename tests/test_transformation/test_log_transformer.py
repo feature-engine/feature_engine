@@ -138,6 +138,7 @@ def test_inverse_e_plus_user_passes_var_list(df_vartypes):
     # test transform output
     pd.testing.assert_frame_equal(X, df_vartypes)
 
+
 def test_default_C_preserves_original_fail_fast_behavior():
     """LogTransformer()'s default C=0 must raise at fit() time, with the
     original exact message, matching pre-merge behavior. See #957."""
