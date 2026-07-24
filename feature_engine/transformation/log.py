@@ -292,9 +292,9 @@ class LogCpTransformer(LogTransformer):
     variable to transform and C is a positive constant.
 
     .. note::
-    `LogCpTransformer` is being consolidated into `LogTransformer`. New code
-    should prefer ``LogTransformer(C="auto")``, which reproduces
-    `LogCpTransformer`'s default behavior exactly.
+        `LogCpTransformer` is being consolidated into `LogTransformer`. New
+        code should prefer ``LogTransformer(C="auto")``, which reproduces
+        `LogCpTransformer`'s default behavior exactly.
 
     See :class:`LogTransformer` for the full parameter and attribute reference.
 
@@ -340,4 +340,3 @@ class LogCpTransformer(LogTransformer):
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         return tags
-        
