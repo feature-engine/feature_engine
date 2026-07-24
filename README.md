@@ -128,7 +128,7 @@ Please share your story by answering 1 quick question
 * ArcSinhTransformer
 
 ### Variable Scaling methods
-* MeanNormalizationScaler
+* MeanNormalisationScaler
 
 ### Variable Creation:
  * MathFeatures

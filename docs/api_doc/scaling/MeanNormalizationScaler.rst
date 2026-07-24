@@ -1,6 +1,6 @@
-MeanNormalizationScaler
+MeanNormalisationScaler
 =======================
 
-.. autoclass:: feature_engine.scaling.MeanNormalizationScaler
+.. autoclass:: feature_engine.scaling.MeanNormalisationScaler
     :members:
 
