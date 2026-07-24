@@ -1,6 +1,7 @@
 # Authors: Vasco Schiavo <vasco.schiavo@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -50,9 +51,6 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
     Constant variables will raise an error due to division by zero.
 
     More details in the :ref:`User Guide <mean_normalisation_scaler>`.
-
-    The ``MeanNormalizationScaler`` spelling remains available as a
-    backward-compatible alias.
 
     Parameters
     ----------
@@ -193,5 +191,18 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
         return X
 
 
-# Backward-compatible alias for the original American spelling.
-MeanNormalizationScaler = MeanNormalisationScaler
+class MeanNormalizationScaler(MeanNormalisationScaler):
+    def __init__(
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+    ) -> None:
+        warnings.warn(
+            "MeanNormalizationScaler was deprecated in favour of "
+            "MeanNormalisationScaler in version 2.0.0 and will be removed in "
+            "version 2.1.0. To silence this warning, use MeanNormalisationScaler "
+            "instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(variables=variables, return_empty=return_empty)

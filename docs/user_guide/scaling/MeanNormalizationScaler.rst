@@ -35,8 +35,6 @@ Mean normalisation is given by the following formula:
     :class:`MeanNormalisationScaler()` only works with non-constant numerical variables.
     If the variable is constant, the scaler will raise an error.
 
-    ``MeanNormalizationScaler`` remains available as a backward-compatible alias.
-
 Python implementation
 ---------------------
 
