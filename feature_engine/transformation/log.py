@@ -340,4 +340,4 @@ class LogCpTransformer(LogTransformer):
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         return tags
-        
+
