@@ -137,3 +137,18 @@ def test_inverse_e_plus_user_passes_var_list(df_vartypes):
     assert transformer.n_features_in_ == 5
     # test transform output
     pd.testing.assert_frame_equal(X, df_vartypes)
+
+def test_default_C_preserves_original_fail_fast_behavior():
+    """LogTransformer()'s default C=0 must raise at fit() time, with the
+    original exact message, matching pre-merge behavior. See #957."""
+    df = pd.DataFrame({"x": [1, 2, 0, 4]})
+    tr = LogTransformer()
+
+    assert tr.C == 0
+
+    with pytest.raises(ValueError) as record:
+        tr.fit(df)
+
+    assert str(record.value) == (
+        "Some variables contain zero or negative values, can't apply log"
+    )

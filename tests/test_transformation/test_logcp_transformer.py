@@ -14,7 +14,7 @@ def test_base_parameter(base):
 
 @pytest.mark.parametrize("base", [False, 1, 10])
 def test_base_raises_error(base):
-    msg = f"base can take only '10' or 'e' as values. Got {base} instead."
+    msg = "base can take only '10' or 'e' as values"
     with pytest.raises(ValueError) as record:
         LogCpTransformer(base=base)
     assert str(record.value) == msg
