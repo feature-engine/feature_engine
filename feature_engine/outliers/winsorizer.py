@@ -256,6 +256,7 @@ class Winsoriser(WinsorizerBase):
         return feature_names
 
 
+# TODO: remove in version 2.1.0
 class Winsorizer(Winsoriser):
     def __init__(
         self,

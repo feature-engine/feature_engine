@@ -20,6 +20,6 @@ arbitrary or derived value. The OutlierTrimmer removes outliers from the dataset
    :maxdepth: 1
    :hidden:
 
-   Winsorizer
+   Winsoriser
    ArbitraryOutlierCapper
    OutlierTrimmer

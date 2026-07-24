@@ -9,6 +9,6 @@ arbitrary or derived value. :class:`OutlierTrimmer()` removes outliers from the 
 .. toctree::
    :maxdepth: 1
 
-   Winsorizer
+   Winsoriser
    ArbitraryOutlierCapper
    OutlierTrimmer
