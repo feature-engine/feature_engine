@@ -33,7 +33,7 @@ from feature_engine.imputation import (
     MeanMedianImputer,
     RandomSampleImputer,
 )
-from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsorizer
+from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsoriser
 from feature_engine.selection import (
     MRMR,
     DropConstantFeatures,
@@ -127,7 +127,7 @@ def test_sklearn_compatible_encoder(estimator, check):
     [
         ArbitraryOutlierCapper(max_capping_dict={"x0": 10}),
         OutlierTrimmer(),
-        Winsorizer(),
+        Winsoriser(),
     ]
 )
 def test_sklearn_compatible_outliers(estimator, check):

@@ -5,14 +5,14 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.fixes import parse_version
 
-from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsorizer
+from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsoriser
 from feature_engine.tags import _return_tags
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
     ArbitraryOutlierCapper(max_capping_dict={"x0": 10}),
     OutlierTrimmer(),
-    Winsorizer(),
+    Winsoriser(),
 ]
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
@@ -75,7 +75,7 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
 
-    if transformer.__class__.__name__ == "Winsorizer":
+    if transformer.__class__.__name__ == "Winsoriser":
         transformer.set_params(add_indicators=True)
 
         pipe = Pipeline([("trs", transformer)]).set_output(transform="pandas")
