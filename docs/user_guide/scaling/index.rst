@@ -59,4 +59,4 @@ Scalers
 .. toctree::
    :maxdepth: 1
 
-   MeanNormalizationScaler
+   MeanNormalisationScaler
