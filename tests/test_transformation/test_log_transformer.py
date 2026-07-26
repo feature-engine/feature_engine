@@ -78,8 +78,11 @@ def test_log_base_10_plus_user_passes_var_list(df_vartypes):
 
 
 def test_error_if_base_value_not_allowed():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as record:
         LogTransformer(base="other")
+    assert str(record.value) == (
+        "base can take only '10' or 'e' as values. Got other instead."
+    )
 
 
 def test_fit_raises_error_if_na_in_df(df_na):

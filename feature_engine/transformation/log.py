@@ -137,7 +137,9 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
     ) -> None:
 
         if base not in ["e", "10"]:
-            raise ValueError("base can take only '10' or 'e' as values")
+            raise ValueError(
+                f"base can take only '10' or 'e' as values. Got {base} instead."
+            )
 
         if not isinstance(C, (int, float, dict)) and C != "auto":
             raise ValueError(
