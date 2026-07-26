@@ -158,11 +158,12 @@ class MeanImputer(BaseImputer):
 
 class MeanMedianImputer(MeanImputer):
     def __init__(
-        self,
-        imputation_method: str = "median",
-        variables=None,
-        return_empty: bool = False,
-    ):
+            self,
+            imputation_method: str = "median",
+            variables: Union[None, int, str, List[Union[str, int]]] = None,
+            return_empty: bool = False,
+        ) -> None:
+        
         warnings.warn(
             (
                 "MeanMedianImputer was deprecated in version 2.0.0 "
