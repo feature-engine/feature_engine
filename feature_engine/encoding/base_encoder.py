@@ -20,7 +20,7 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
-    _check_optional_contains_na,
+    _check_contains_na,
     _check_X_matches_training_df,
     check_X,
 )
@@ -123,7 +123,7 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
     def _check_na(self, X: pd.DataFrame, variables):
         if self.missing_values == "raise":
-            _check_optional_contains_na(X, variables)
+            _check_contains_na(X, variables, error_msg="optional")
 
     def _check_or_select_variables(self, X: pd.DataFrame):
         """
@@ -225,7 +225,7 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            _check_optional_contains_na(X, self.variables_)
+            _check_contains_na(X, self.variables_, error_msg="optional")
 
         X = self._encode(X)
 
