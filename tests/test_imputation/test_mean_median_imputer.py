@@ -1,12 +1,13 @@
 import pandas as pd
 import pytest
 
-from feature_engine.imputation import MeanMedianImputer
+from feature_engine.imputation import MeanImputer, MeanMedianImputer
 
 
-def test_mean_imputation_and_automatically_select_variables(df_na):
+@pytest.mark.parametrize("imputer_cls", [MeanImputer, MeanMedianImputer])
+def test_mean_imputation_and_automatically_select_variables(df_na, imputer_cls):
     # set up transformer
-    imputer = MeanMedianImputer(imputation_method="mean", variables=None)
+    imputer = imputer_cls(imputation_method="mean", variables=None)
     X_transformed = imputer.fit_transform(df_na)
 
     # set up reference result
@@ -29,17 +30,16 @@ def test_mean_imputation_and_automatically_select_variables(df_na):
     }
     assert imputer.n_features_in_ == 6
 
-    # test transform output:
-    # selected variables should have no NA
-    # not selected variables should still have NA
+    # test transform output
     assert X_transformed[["Age", "Marks"]].isnull().sum().sum() == 0
     assert X_transformed[["Name", "City"]].isnull().sum().sum() > 0
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_median_imputation_when_user_enters_single_variables(df_na):
-    # set up trasnformer
-    imputer = MeanMedianImputer(imputation_method="median", variables=["Age"])
+@pytest.mark.parametrize("imputer_cls", [MeanImputer, MeanMedianImputer])
+def test_median_imputation_when_user_enters_single_variables(df_na, imputer_cls):
+    # set up transformer
+    imputer = imputer_cls(imputation_method="median", variables=["Age"])
     X_transformed = imputer.fit_transform(df_na)
 
     # set up reference output
@@ -59,6 +59,15 @@ def test_median_imputation_when_user_enters_single_variables(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_error_with_wrong_imputation_method():
+@pytest.mark.parametrize("imputer_cls", [MeanImputer, MeanMedianImputer])
+def test_error_with_wrong_imputation_method(imputer_cls):
     with pytest.raises(ValueError):
-        MeanMedianImputer(imputation_method="arbitrary")
+        imputer_cls(imputation_method="arbitrary")
+
+
+def test_mean_median_imputer_deprecation_warning():
+    with pytest.warns(
+        FutureWarning,
+        match="Use MeanImputer instead",
+    ):
+        MeanMedianImputer()

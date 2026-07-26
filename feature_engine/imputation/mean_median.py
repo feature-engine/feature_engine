@@ -2,8 +2,8 @@
 # License: BSD 3 clause
 
 from typing import List, Optional, Union
-
 import pandas as pd
+import warnings
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -43,13 +43,13 @@ from feature_engine.variable_handling import (
     transform=_transform_imputers_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class MeanMedianImputer(BaseImputer):
+class MeanImputer(BaseImputer):
     """
-    The MeanMedianImputer() replaces missing data by the mean or median value of the
+    The MeanImputer() replaces missing data by the mean or median value of the
     variable. It works only with numerical variables.
 
     You can pass a list of variables to impute. Alternatively, the
-    MeanMedianImputer() will automatically select all variables of type numeric in the
+    MeanImputer() will automatically select all variables of type numeric in the
     training set.
 
     More details in the :ref:`User Guide <mean_median_imputer>`.
@@ -87,12 +87,12 @@ class MeanMedianImputer(BaseImputer):
 
     >>> import pandas as pd
     >>> import numpy as np
-    >>> from feature_engine.imputation import MeanMedianImputer
+    >>> from feature_engine.imputation import MeanImputer
     >>> X = pd.DataFrame(dict(
     >>>        x1 = [np.nan,1,1,0,np.nan],
     >>>        x2 = ["a", np.nan, "b", np.nan, "a"],
     >>>        ))
-    >>> mmi = MeanMedianImputer(imputation_method='median')
+    >>> mmi = MeanImputer(imputation_method='median')
     >>> mmi.fit(X)
     >>> mmi.transform(X)
         x1   x2
@@ -151,3 +151,30 @@ class MeanMedianImputer(BaseImputer):
         self._get_feature_names_in(X)
 
         return self
+
+
+
+# TODO remove in version 2.1.0
+
+class MeanMedianImputer(MeanImputer):
+    def __init__(
+        self,
+        imputation_method: str = "median",
+        variables=None,
+        return_empty: bool = False,
+    ):
+        warnings.warn(
+            (
+                "MeanMedianImputer was deprecated in version 2.0.0 "
+                "and will be removed in version 2.1.0. "
+                "Use MeanImputer instead."
+            ),
+            FutureWarning,
+            stacklevel=2,
+        )
+
+        super().__init__(
+            imputation_method=imputation_method,
+            variables=variables,
+            return_empty=return_empty,
+        )

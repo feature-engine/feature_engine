@@ -6,12 +6,13 @@ from .arbitrary_number import ArbitraryNumberImputer
 from .categorical import CategoricalImputer
 from .drop_missing_data import DropMissingData
 from .end_tail import EndTailImputer
-from .mean_median import MeanMedianImputer
+from .mean_median import MeanMedianImputer, MeanImputer
 from .missing_indicator import AddMissingIndicator
 from .random_sample import RandomSampleImputer
 
 __all__ = [
-    "MeanMedianImputer",
+    "MeanMedianImputer", # deprecated
+    "MeanImputer",
     "ArbitraryNumberImputer",
     "CategoricalImputer",
     "EndTailImputer",
@@ -19,3 +20,4 @@ __all__ = [
     "RandomSampleImputer",
     "DropMissingData",
 ]
+
