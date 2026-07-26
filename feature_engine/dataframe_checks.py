@@ -150,7 +150,7 @@ def check_X_y(
 
     if nwd.is_pandas_dataframe(X):
         if nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y):
-            if not X.index.equals(y.index):  # type: ignore[union-attr]
+            if not X.index.equals(y.index):
                 raise ValueError("The indexes of X and y do not match.")
 
     return X, y
