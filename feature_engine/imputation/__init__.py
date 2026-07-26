@@ -2,7 +2,7 @@
 The module imputation includes classes to perform missing data imputation
 """
 
-from .arbitrary_number import ArbitraryNumberImputer
+from .arbitrary_number import ArbitraryNumberImputer, ArbitraryImputer
 from .categorical import CategoricalImputer
 from .drop_missing_data import DropMissingData
 from .end_tail import EndTailImputer
@@ -11,12 +11,13 @@ from .missing_indicator import AddMissingIndicator, MissingIndicator
 from .random_sample import RandomSampleImputer
 
 __all__ = [
-    "MeanMedianImputer", # deprecated
+    "MeanMedianImputer",      # deprecated
+    "ArbitraryNumberImputer", # deprecated
+    "AddMissingIndicator",    # deprecated
     "MeanImputer",
-    "ArbitraryNumberImputer",
+    "ArbitaryImputer",
     "CategoricalImputer",
     "EndTailImputer",
-    "AddMissingIndicator", # deprecated
     "MissingIndicator",
     "RandomSampleImputer",
     "DropMissingData",
