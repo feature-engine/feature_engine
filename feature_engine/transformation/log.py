@@ -143,7 +143,8 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         if not isinstance(C, (int, float, dict)) and C != "auto":
             raise ValueError(
-                f"C can take only 'auto', integers or floats. Got {C} instead."
+                "C can take only 'auto', integers, floats or dictionaries. "
+                f"Got {C} instead."
             )
 
         _check_return_empty_is_bool(return_empty)

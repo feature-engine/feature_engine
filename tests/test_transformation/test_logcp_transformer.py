@@ -28,7 +28,7 @@ def test_c_parameter(c):
 
 @pytest.mark.parametrize("c", ["string", [1, 2]])
 def test_c_raises_error(c):
-    msg = f"C can take only 'auto', integers or floats. Got {c} instead."
+    msg = f"C can take only 'auto', integers, floats or dictionaries. Got {c} instead."
     with pytest.raises(ValueError) as record:
         LogCpTransformer(C=c)
     assert str(record.value) == msg
