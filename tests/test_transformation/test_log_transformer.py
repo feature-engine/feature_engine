@@ -153,3 +153,111 @@ def test_default_C_preserves_original_fail_fast_behavior():
     assert str(record.value) == (
         "Some variables contain zero or negative values, can't apply log"
     )
+
+
+@pytest.fixture(scope="module")
+def df_c():
+    df = pd.DataFrame(
+        {
+            "vara": [0, 1, 2, 3],
+            "varb": [5, 5, 6, 7],
+            "varc": [-2, -1, 0, 4],
+            "vard": [-3, -2, -1, -5],
+            "vare": ["a", "b", "c", "d"],
+        }
+    )
+    return df
+
+
+@pytest.mark.parametrize("c", [1, 0.1, {"var1": 1, "var2": 2}, "auto"])
+def test_c_parameter(c):
+    tr = LogTransformer(C=c)
+    assert tr.C == c
+
+
+@pytest.mark.parametrize("c", ["string", [1, 2]])
+def test_c_raises_error(c):
+    msg = f"C can take only 'auto', integers or floats. Got {c} instead."
+    with pytest.raises(ValueError) as record:
+        LogTransformer(C=c)
+    assert str(record.value) == msg
+
+
+def test_C_when_auto(df_c):
+    tr = LogTransformer(C="auto")
+    tr.fit(df_c)
+    c = {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
+    assert tr.C_ == c
+
+
+def test_C_when_dict(df_c):
+    c = {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
+    tr = LogTransformer(C=c)
+    tr.fit(df_c)
+    assert tr.C_ == c
+
+
+def test_C_when_int(df_c):
+    tr = LogTransformer(C=10)
+    tr.fit(df_c)
+    assert tr.C_ == 10
+
+
+def test_raises_error_when_transformed_data_has_negative_values_with_C(df_c):
+    tr = LogTransformer(C="auto")
+    tr.fit(df_c)
+    dft = df_c.copy()
+    dft["vara"] = dft["vara"] - 2
+    msg = (
+        "Some variables contain zero or negative values after adding constant C, "
+        "can't apply log."
+    )
+    with pytest.raises(ValueError) as record:
+        tr.transform(dft)
+    assert str(record.value) == msg
+
+
+def test_log_base_e_with_C(df_c):
+    dft = LogTransformer(C="auto").fit_transform(df_c)
+    exp = np.log(
+        df_c[["vara", "varb", "varc", "vard"]]
+        + {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
+    )
+    exp["vare"] = df_c["vare"]
+    pd.testing.assert_frame_equal(dft, exp)
+
+    dft = LogTransformer(C=10).fit_transform(df_c)
+    exp = np.log(df_c[["vara", "varb", "varc", "vard"]] + 10)
+    exp["vare"] = df_c["vare"]
+    pd.testing.assert_frame_equal(dft, exp)
+
+
+def test_log_base_10_with_C(df_c):
+    dft = LogTransformer(C="auto", base="10").fit_transform(df_c)
+    exp = np.log10(
+        df_c[["vara", "varb", "varc", "vard"]]
+        + {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
+    )
+    exp["vare"] = df_c["vare"]
+    pd.testing.assert_frame_equal(dft, exp)
+
+    dft = LogTransformer(C=10, base="10").fit_transform(df_c)
+    exp = np.log10(df_c[["vara", "varb", "varc", "vard"]] + 10)
+    exp["vare"] = df_c["vare"]
+    pd.testing.assert_frame_equal(dft, exp)
+
+
+def test_inverse_transform_with_C(df_c):
+    tr = LogTransformer(C="auto", base="10")
+    dft = tr.fit_transform(df_c)
+    orig = tr.inverse_transform(dft)
+    pd.testing.assert_frame_equal(
+        orig, df_c, check_dtype=False, check_exact=False, rtol=0.1
+    )
+
+    tr = LogTransformer(C=10, base="e")
+    dft = tr.fit_transform(df_c)
+    orig = tr.inverse_transform(dft)
+    pd.testing.assert_frame_equal(
+        orig, df_c, check_dtype=False, check_exact=False, rtol=0.1
+    )

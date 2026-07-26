@@ -28,9 +28,10 @@ LogTransformer
 
 .. note::
 
-    Note that the logarithm can only be applied to positive values. Thus, if the variable contains 0 or negative values, this transformer will return an error.
+    By default (``C=0``), the logarithm can only be applied to positive values. If the variable contains 0 or negative values, the transformer will return an error, unless you use the ``C`` parameter described below.
 
-To transform non-positive variables you can add a constant to shift the data points towards positive values. You can do this by using :class:`LogCpTransformer()`.
+To transform non-positive variables, pass a value to the ``C`` parameter to shift
+the data points towards positive values, as shown in the section below.
 
 .. attention::
 
@@ -159,6 +160,64 @@ In the following plots we see histograms showing the variables in their original
 .. tip::
 
     Following the transformations with scatter plots and residual analysis of the regression models helps understand if the transformations are useful in our regression analysis.
+
+
+Transforming non-positive variables with C
+------------------------------------------
+
+:class:`LogTransformer()` can also transform variables that contain zero or
+negative values, by adding a constant ``C`` before applying the logarithm,
+i.e. ``log(x + C)``.
+
+Let's load the diabetes dataset that comes with scikit-learn, which contains
+variables with negative values:
+
+.. code:: python
+
+    from sklearn.model_selection import train_test_split
+    from sklearn.datasets import load_diabetes
+    from feature_engine.transformation import LogTransformer
+
+    # Load dataset
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+
+    # Separate into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=0)
+
+Let's set up :class:`LogTransformer()` with ``C="auto"``, so it automatically
+finds the constant needed to shift each variable's distribution to positive
+values before applying the logarithm:
+
+.. code:: python
+
+    logt = LogTransformer(variables=["bmi", "s3"], C="auto")
+    logt.fit(X_train)
+
+We can inspect the constant values that will be added to each variable in the
+``C_`` attribute:
+
+.. code:: python
+
+    logt.C_
+
+Since these variables are not strictly positive, the transformer found the
+minimum value needed to make their values positive:
+
+.. code:: python
+
+    {'bmi': 1.0848862355291056, 's3': 1.102307050517416}
+
+We can now transform the data:
+
+.. code:: python
+
+    train_t = logt.transform(X_train)
+    test_t = logt.transform(X_test)
+
+You can also pass a fixed constant to all variables (``C=5``), or a dictionary
+mapping each variable to its own constant (``C={"bmi": 2, "s3": 3}``), the same
+way you would with the deprecated :class:`LogCpTransformer()`.
 
 
 Additional resources
