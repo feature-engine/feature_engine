@@ -208,6 +208,7 @@ def test_check_y_dataframe_raises_inf_error(make_df):
     [
         np.array([1, 2, 3, 4]),
         np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(2, 4),
+        [1, 2, 3, 4],
     ],
 )
 def test_check_y_array_returns_unchanged(a):
@@ -255,6 +256,27 @@ def test_check_X_y_returns_df_and_multioutput_y_unchanged(make_df, assert_frame_
     X, y = check_X_y(df, d)
     assert_frame_fn(X, df)
     assert_frame_fn(y, d)
+
+
+@pytest.mark.parametrize(
+    "make_df, assert_frame_fn",
+    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+)
+@pytest.mark.parametrize(
+    "y",
+    [
+        np.array([0, 1, 2]),
+        [0, 1, 2],
+        np.array([[0, 1], [2, 3], [4, 5]]),
+    ],
+)
+def test_check_X_y_with_array_like_y_returns_check_y_output(
+    make_df, assert_frame_fn, y
+):
+    df = make_df({"a": [1, 2, 3], "b": [4, 5, 6]})
+    X, y_out = check_X_y(df, y)
+    assert_frame_fn(X, df)
+    np.testing.assert_array_equal(y_out, check_y(y))
 
 
 def test_check_X_y_returns_pandas_with_non_typical_index():
@@ -344,6 +366,12 @@ def test_contains_na_passes_when_no_nan(make_df):
     assert _check_contains_na(df, ["Name", "City"]) is None
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_ignores_columns_not_in_variables(make_df):
+    df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
+    assert _check_contains_na(df, ["City"]) is None
+
+
 # --------------------------
 # test _check_contains_inf
 # --------------------------
@@ -364,3 +392,9 @@ def test_contains_inf_raises_on_inf(make_df):
 def test_contains_inf_passes_without_inf(make_df):
     df = make_df({"A": [1.1, 2.2, 3.3]})
     assert _check_contains_inf(df, ["A"]) is None
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_inf_ignores_columns_not_in_variables(make_df):
+    df = make_df({"A": [1.1, float("inf"), 3.3], "B": [1.0, 2.0, 3.0]})
+    assert _check_contains_inf(df, ["B"]) is None
