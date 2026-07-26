@@ -179,31 +179,33 @@ class ArbitraryImputer(BaseImputer):
 
 # TODO remove in version 2.1.0
 
+
 class ArbitraryNumberImputer(ArbitraryImputer):
     """Deprecated alias for ArbitraryImputer."""
+
     def __init__(
-            self,
-            arbitrary_number: Union[int, float] = 999,
-            variables: Union[None, int, str, List[Union[str, int]]] = None,
-            return_empty: bool = False,
-            imputer_dict: Optional[dict] = None,
-        ) -> None:
+        self,
+        arbitrary_number: Union[int, float] = 999,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+        imputer_dict: Optional[dict] = None,
+    ) -> None:
 
         warnings.warn(
-                (
-                    "ArbitraryNumberImputer was deprecated in version 2.0.0 "
-                    "in favour of ArbitraryImputer and will be removed in version 2.1.0. "
-                    "Use ArbitraryImputer instead."
-                ),
-                FutureWarning,
-                stacklevel=2,
-            )
+            (
+                "ArbitraryNumberImputer was deprecated in version 2.0.0 "
+                "in favour of ArbitraryImputer and will be removed in version 2.1.0. "
+                "Use ArbitraryImputer instead."
+            ),
+            FutureWarning,
+            stacklevel=2,
+        )
 
         super().__init__(
             arbitrary_number=arbitrary_number,
             variables=variables,
             return_empty=return_empty,
-            imputer_dict=imputer_dict
+            imputer_dict=imputer_dict,
         )
 
 
