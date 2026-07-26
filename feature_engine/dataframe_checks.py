@@ -11,7 +11,7 @@ from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.utils.validation import _check_y, check_consistent_length, column_or_1d
 
 
-def check_X(X):
+def check_X(X: IntoDataFrame):
     """
     Checks that X is a dataframe from any library supported by narwhals (for example
     pandas, polars, modin, cuDF, or PyArrow).
@@ -109,7 +109,7 @@ def check_y(
 
 
 def check_X_y(
-    X,
+    X: IntoDataFrame,
     y: Union[IntoSeries, IntoDataFrame, np.generic, np.ndarray, List],
     y_numeric: bool = False,
 ):
@@ -156,7 +156,7 @@ def check_X_y(
     return X, y
 
 
-def _check_X_matches_training_df(X, reference: int) -> None:
+def _check_X_matches_training_df(X: IntoDataFrame, reference: int) -> None:
     """
     Checks that the dataframe to transform has the same number of columns as the
     dataframe used with the fit() method.
@@ -181,7 +181,7 @@ def _check_X_matches_training_df(X, reference: int) -> None:
 
 
 def _check_contains_na(
-    X,
+    X: IntoDataFrame,
     variables: List[Union[str, int]],
     error_msg: str = "simple",
 ) -> None:
@@ -220,7 +220,7 @@ def _check_contains_na(
             raise ValueError(error_msg_ignore)
 
 
-def _check_contains_inf(X, variables: List[Union[str, int]]) -> None:
+def _check_contains_inf(X: IntoDataFrame, variables: List[Union[str, int]]) -> None:
     """
     Checks if the dataframe contains inf values in the selected columns.
 
