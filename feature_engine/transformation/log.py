@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -47,9 +48,10 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
     The LogTransformer() applies the natural logarithm or the base 10 logarithm to
     numerical variables, optionally after adding a constant C, i.e., log(x + C).
 
-    By default, C=0, so LogTransformer() only works with positive values and
-    behaves exactly as it always has: if a variable contains a zero or a negative
-    value, the transformer raises an error.
+    By default, C=0, so LogTransformer() only works with positive values.
+    If a variable contains a zero or a negative value, the transformer raises
+    an error. Note that the default value of C will change from 0 to "auto"
+    in version 2.1.0.
 
     To transform variables that contain zero or negative values, pass a non-zero
     C: either an explicit constant, "auto" to let the transformer determine a
@@ -74,19 +76,20 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         The constant C to add to the variable before the logarithm, i.e., log(x + C).
 
         - If 0 (the default), no constant is added and the variable must be
-          strictly positive, matching the transformer's original behavior.
+          strictly positive.
         - If int or float, then log(x + C).
         - If "auto", then C = abs(min(x)) + 1.
         - If dict, dictionary mapping the constant C to apply to each variable.
 
-        Note, when C is a dictionary, the parameter `variables` is ignored.
+        Note, when C is a dictionary, the parameter `variables` is ignored, because
+        the variables to transform are taken from the dictionary keys.
 
     Attributes
     ----------
     {variables_}
 
     C_:
-        The constant C added to each variable. Equal to C, unless C = "auto", in
+        The constant C added to each variable. Equal to `C`, unless `C = "auto"`, in
         which case it is a dictionary with C = abs(min(variable)) + 1. For strictly
         positive variables, C = 0.
 
@@ -153,10 +156,6 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         Learn the constant C to add to the variable before the logarithm
         transformation, if C="auto". Otherwise, this transformer does not learn
         parameters.
-
-        Selects the numerical variables and, when C=0 (the default), determines
-        whether the logarithm can be applied on the selected variables, i.e., it
-        checks that the variables are positive.
 
         Parameters
         ----------
@@ -286,15 +285,17 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         return tags
 
 
+# TODO: remove in version 2.1.0
 class LogCpTransformer(LogTransformer):
     """
     LogCpTransformer() applies the transformation log(x + C), where x is the
     variable to transform and C is a positive constant.
 
     .. note::
-        `LogCpTransformer` is being consolidated into `LogTransformer`. New
-        code should prefer ``LogTransformer(C="auto")``, which reproduces
-        `LogCpTransformer`'s default behavior exactly.
+        `LogCpTransformer` is consolidated into `LogTransformer` and deprecated
+        in version 2.0.0. It will be removed in version 2.1.0. New code should prefer
+        ``LogTransformer(C="auto")``, which reproduces `LogCpTransformer`'s
+        default behavior exactly.
 
     See :class:`LogTransformer` for the full parameter and attribute reference.
 
@@ -329,6 +330,12 @@ class LogCpTransformer(LogTransformer):
     ) -> None:
         super().__init__(
             variables=variables, return_empty=return_empty, base=base, C=C
+        )
+        warnings.warn(
+            "LogCpTransformer was deprecated in version 2.0.0 in favour of "
+            "LogTransformer and will be removed in version 2.1.0. "
+            'Use LogTransformer(C="auto") instead.',
+            FutureWarning,
         )
 
     def _more_tags(self):
