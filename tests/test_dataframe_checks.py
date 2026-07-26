@@ -82,9 +82,9 @@ def test_check_X_raises_error_on_duplicated_column_names():
         }
     )
     df.columns = ["var_A", "var_A", "var_B", "var_C"]
-    with pytest.raises(ValueError) as err_txt:
+    msg = "Expected unique column names"
+    with pytest.raises(ValueError, match=msg):
         check_X(df)
-    assert err_txt.match("Expected unique column names")
 
 
 @pytest.mark.parametrize(
@@ -217,7 +217,8 @@ def test_check_y_array_returns_unchanged(a):
 
 
 def test_check_y_raises_none_error():
-    with pytest.raises(ValueError):
+    msg = "requires y to be passed, but the target y"
+    with pytest.raises(ValueError, match=msg):
         check_y(None)
 
 
