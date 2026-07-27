@@ -82,3 +82,32 @@ def test_dictionary_of_imputation_values(df_na):
 def imputer_error_when_dictionary_value_is_string():
     with pytest.raises(ValueError):
         ArbitraryNumberImputer(imputer_dict={"Age": "arbitrary_number"})
+
+
+def test_missing_only_selects_numerical_variables_with_na(df_na):
+    imputer = ArbitraryNumberImputer(arbitrary_number=99, missing_only=True)
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [333] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    expected_results_df = df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(99)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(99)
+    expected_results_df["Var_No_Nulls"] = [333] * X.shape[0]
+
+    assert imputer.variables_ == ["Age", "Marks"]
+    assert imputer.imputer_dict_ == {"Age": 99, "Marks": 99}
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
+
+
+def test_missing_only_ignored_when_imputer_dict_provided(df_na):
+    imputer = ArbitraryNumberImputer(
+        imputer_dict={"Age": -42, "Marks": -999},
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Marks"] = [0.9] * X.shape[0]
+    imputer.fit(X)
+
+    assert imputer.variables_ == ["Age", "Marks"]
+    assert imputer.imputer_dict_ == {"Age": -42, "Marks": -999}

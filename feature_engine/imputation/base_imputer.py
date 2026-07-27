@@ -12,6 +12,21 @@ _PANDAS_LT_3 = int(pd.__version__.split(".")[0]) < 3
 class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across imputers"""
 
+    def __init__(
+        self,
+        missing_only: bool = False,
+    ) -> None:
+        if not isinstance(missing_only, bool):
+            raise ValueError(
+                f"missing_only must be a boolean. Got {missing_only} instead."
+            )
+
+        self.missing_only = missing_only
+
+    def _filter_variables_with_na(self, X: pd.DataFrame, variables):
+        """Return variables that contain missing values."""
+        return [var for var in variables if X[var].isnull().any()]
+
     def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Common checks before transforming data:

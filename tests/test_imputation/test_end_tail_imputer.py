@@ -101,3 +101,24 @@ def test_error_when_tail_is_string():
 def test_error_when_fold_is_1():
     with pytest.raises(ValueError):
         EndTailImputer(fold=-1)
+
+
+def test_missing_only_selects_numerical_variables_with_na(df_na):
+    imputer = EndTailImputer(
+        imputation_method="iqr",
+        tail="right",
+        fold=1.5,
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [1984] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    expected_results_df = df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(65.5)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(1.0625)
+    expected_results_df["Var_No_Nulls"] = [1984] * X.shape[0]
+
+    assert imputer.variables_ == ["Age", "Marks"]
+    assert "Var_No_Nulls" not in imputer.imputer_dict_
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)

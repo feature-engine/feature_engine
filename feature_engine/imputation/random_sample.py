@@ -24,6 +24,9 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _return_empty_docstring
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -50,6 +53,7 @@ def _define_seed(
 @Substitution(
     variables_=_variables_attribute_docstring,
     return_empty=_return_empty_docstring,
+    missing_only=_missing_only_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=_transform_imputers_docstring,
@@ -100,6 +104,8 @@ class RandomSampleImputer(BaseImputer):
         observation, you can choose to combine those values as an addition or a
         multiplication. Can take the values 'add' or 'multiply'.
 
+    {missing_only}
+
     Attributes
     ----------
     X_:
@@ -148,6 +154,7 @@ class RandomSampleImputer(BaseImputer):
         random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
         seeding_method: str = "add",
+        missing_only: bool = False,
     ) -> None:
 
         if seed not in ["general", "observation"]:
@@ -167,6 +174,8 @@ class RandomSampleImputer(BaseImputer):
                 "if seed == 'observation' the random state must take the name of one "
                 "or more variables which will be used to seed the imputer"
             )
+
+        super().__init__(missing_only)
 
         self.variables = _check_variables_input_value(variables)
 
@@ -199,6 +208,8 @@ class RandomSampleImputer(BaseImputer):
         # find variables to impute
         if self.variables is None:
             self.variables_ = find_all_variables(X, self.return_empty)
+            if self.missing_only:
+                self.variables_ = self._filter_variables_with_na(X, self.variables_)
         else:
             self.variables_ = check_all_variables(X, self.variables)
 

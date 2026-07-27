@@ -20,6 +20,9 @@ from feature_engine._docstrings.fit_attributes import (
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _variables_numerical_docstring, _return_empty_docstring
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
@@ -36,6 +39,7 @@ from feature_engine.variable_handling import (
 @Substitution(
     variables=_variables_numerical_docstring,
     return_empty=_return_empty_docstring,
+    missing_only=_missing_only_docstring,
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     feature_names_in_=_feature_names_in_docstring,
@@ -62,6 +66,8 @@ class MeanMedianImputer(BaseImputer):
     {variables}
 
     {return_empty}
+
+    {missing_only}
 
     Attributes
     ----------
@@ -108,10 +114,13 @@ class MeanMedianImputer(BaseImputer):
         imputation_method: str = "median",
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_empty: bool = False,
+        missing_only: bool = False,
     ) -> None:
 
         if imputation_method not in ["median", "mean"]:
             raise ValueError("imputation_method takes only values 'median' or 'mean'")
+
+        super().__init__(missing_only)
 
         self.imputation_method = imputation_method
         self.variables = _check_variables_input_value(variables)
@@ -138,6 +147,8 @@ class MeanMedianImputer(BaseImputer):
         # find or check for numerical variables
         if self.variables is None:
             self.variables_ = find_numerical_variables(X, self.return_empty)
+            if self.missing_only:
+                self.variables_ = self._filter_variables_with_na(X, self.variables_)
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 

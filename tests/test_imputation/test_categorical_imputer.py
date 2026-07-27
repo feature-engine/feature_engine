@@ -305,3 +305,39 @@ def test_error_when_ignore_format_is_not_boolean(ignore_format):
 
     # check that error message matches
     assert str(record.value) == msg
+
+
+def test_missing_only_selects_categorical_variables_with_na(df_na):
+    imputer = CategoricalImputer(
+        imputation_method="missing",
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Cat_No_Nulls"] = ["pasta"] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    expected_results_df = df_na.copy()
+    expected_results_df["Name"] = expected_results_df["Name"].fillna("Missing")
+    expected_results_df["City"] = expected_results_df["City"].fillna("Missing")
+    expected_results_df["Studies"] = expected_results_df["Studies"].fillna("Missing")
+    expected_results_df["Cat_No_Nulls"] = ["pasta"] * X.shape[0]
+
+    assert imputer.variables_ == ["Name", "City", "Studies"]
+    assert "Cat_No_Nulls" not in imputer.imputer_dict_
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
+
+
+def test_missing_only_with_ignore_format_selects_all_variables_with_na(df_na):
+    imputer = CategoricalImputer(
+        imputation_method="missing",
+        fill_value="Missing",
+        ignore_format=True,
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [333] * X.shape[0]
+    imputer.fit(X)
+
+    assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
+    assert "Var_No_Nulls" not in imputer.variables_
+    assert "dob" not in imputer.variables_

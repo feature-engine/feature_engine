@@ -62,3 +62,61 @@ def test_median_imputation_when_user_enters_single_variables(df_na):
 def test_error_with_wrong_imputation_method():
     with pytest.raises(ValueError):
         MeanMedianImputer(imputation_method="arbitrary")
+
+
+def test_missing_only_selects_numerical_variables_with_na(df_na):
+    imputer = MeanMedianImputer(
+        imputation_method="mean",
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [333] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    expected_results_df = df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(28.714285714285715)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(
+        0.6833333333333332
+    )
+    expected_results_df["Var_No_Nulls"] = [333] * X.shape[0]
+
+    assert imputer.variables_ == ["Age", "Marks"]
+    assert "Var_No_Nulls" not in imputer.imputer_dict_
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
+
+
+def test_missing_only_with_median(df_na):
+    imputer = MeanMedianImputer(
+        imputation_method="median",
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Var_No_Nulls"] = [333] * X.shape[0]
+    X_transformed = imputer.fit_transform(X)
+
+    expected_results_df = df_na.copy()
+    expected_results_df["Age"] = expected_results_df["Age"].fillna(23.0)
+    expected_results_df["Marks"] = expected_results_df["Marks"].fillna(0.75)
+    expected_results_df["Var_No_Nulls"] = [333] * X.shape[0]
+
+    assert imputer.variables_ == ["Age", "Marks"]
+    pd.testing.assert_frame_equal(X_transformed, expected_results_df)
+
+
+def test_missing_only_ignored_when_variables_provided(df_na):
+    imputer = MeanMedianImputer(
+        imputation_method="median",
+        variables=["Age", "Marks"],
+        missing_only=True,
+    )
+    X = df_na.copy()
+    X["Marks"] = [0.9] * X.shape[0]
+    imputer.fit(X)
+
+    assert imputer.variables_ == ["Age", "Marks"]
+    assert set(imputer.imputer_dict_.keys()) == {"Age", "Marks"}
+
+
+def test_error_when_missing_only_not_bool():
+    with pytest.raises(ValueError):
+        MeanMedianImputer(missing_only="yes")

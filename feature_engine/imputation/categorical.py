@@ -24,6 +24,9 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _return_empty_docstring
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -40,6 +43,7 @@ from feature_engine.variable_handling import (
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     return_empty=_return_empty_docstring,
+    missing_only=_missing_only_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     transform=_transform_imputers_docstring,
@@ -97,6 +101,8 @@ class CategoricalImputer(BaseImputer):
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    {missing_only}
+
     Attributes
     ----------
     {imputer_dict_}
@@ -145,6 +151,7 @@ class CategoricalImputer(BaseImputer):
         return_empty: bool = False,
         return_object: bool = False,
         ignore_format: bool = False,
+        missing_only: bool = False,
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -153,6 +160,8 @@ class CategoricalImputer(BaseImputer):
 
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
+
+        super().__init__(missing_only)
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value
@@ -189,6 +198,9 @@ class CategoricalImputer(BaseImputer):
                 self.variables_ = find_categorical_variables(X, self.return_empty)
             else:
                 self.variables_ = check_categorical_variables(X, self.variables)
+
+        if self.variables is None and self.missing_only:
+            self.variables_ = self._filter_variables_with_na(X, self.variables_)
 
         if self.imputation_method == "missing":
             self.imputer_dict_ = {var: self.fill_value for var in self.variables_}

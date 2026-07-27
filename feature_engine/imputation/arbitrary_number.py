@@ -28,6 +28,9 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.init_parameters.all_transformers import (
     _return_empty_docstring
 )
+from feature_engine._docstrings.init_parameters.imputers import (
+    _missing_only_docstring,
+)
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -41,6 +44,7 @@ from feature_engine.variable_handling import (
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
     return_empty=_return_empty_docstring,
+    missing_only=_missing_only_docstring,
     feature_names_in_=_feature_names_in_docstring,
     n_features_in_=_n_features_in_docstring,
     fit=_fit_not_learn_docstring,
@@ -75,6 +79,8 @@ class ArbitraryNumberImputer(BaseImputer):
     imputer_dict: dict, default=None
         The dictionary of variables and the arbitrary numbers for their imputation. If
         specified, it overrides the above parameters.
+
+    {missing_only}
 
 
     Attributes
@@ -126,12 +132,15 @@ class ArbitraryNumberImputer(BaseImputer):
         variables: Union[None, int, str, List[Union[str, int]]] = None,
         return_empty: bool = False,
         imputer_dict: Optional[dict] = None,
+        missing_only: bool = False,
     ) -> None:
 
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
             self.arbitrary_number = arbitrary_number
         else:
             raise ValueError("arbitrary_number must be numeric of type int or float")
+
+        super().__init__(missing_only)
 
         _check_numerical_dict(imputer_dict)
 
@@ -168,6 +177,8 @@ class ArbitraryNumberImputer(BaseImputer):
         else:
             if self.variables is None:
                 self.variables_ = find_numerical_variables(X, self.return_empty)
+                if self.missing_only:
+                    self.variables_ = self._filter_variables_with_na(X, self.variables_)
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
             self.imputer_dict_ = {var: self.arbitrary_number for var in self.variables_}
