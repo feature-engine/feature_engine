@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -32,13 +33,13 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class AddMissingIndicator(BaseImputer):
+class MissingIndicator(BaseImputer):
     """
-    The AddMissingIndicator() adds binary variables that indicate if data is
+    The MissingIndicator() adds binary variables that indicate if data is
     missing (one indicator per variable). The added variables (missing indicators) are
     named with the original variable name plus '_na'.
 
-    The AddMissingIndicator() works for both numerical and categorical variables. You
+    The MissingIndicator() works for both numerical and categorical variables. You
     can pass a list with the variables for which the missing indicators should be
     added. Alternatively, the imputer will select and add missing indicators to all
     variables in the training set.
@@ -91,12 +92,12 @@ class AddMissingIndicator(BaseImputer):
 
     >>> import pandas as pd
     >>> import numpy as np
-    >>> from feature_engine.imputation import AddMissingIndicator
+    >>> from feature_engine.imputation import MissingIndicator
     >>> X = pd.DataFrame(dict(
     >>>        x1 = [np.nan,1,1,0,np.nan],
     >>>        x2 = ["a", np.nan, "b", np.nan, "a"],
     >>>        ))
-    >>> ami = AddMissingIndicator()
+    >>> ami = MissingIndicator()
     >>> ami.fit(X)
     >>> ami.transform(X)
         x1   x2  x1_na  x2_na
@@ -200,3 +201,25 @@ class AddMissingIndicator(BaseImputer):
         tags = super().__sklearn_tags__()
         tags.input_tags.allow_nan = True
         return tags
+
+
+# TODO: remove in version 2.1.0
+class AddMissingIndicator(MissingIndicator):
+    def __init__(
+        self,
+        missing_only: bool = True,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+    ) -> None:
+        warnings.warn(
+            "AddMissingIndicator was deprecated in favour of MissingIndicator in "
+            "version 2.0.0 and will be removed in version 2.1.0. To silence this "
+            "warning, use MissingIndicator instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            missing_only=missing_only,
+            variables=variables,
+            return_empty=return_empty,
+        )

@@ -25,12 +25,12 @@ from feature_engine.encoding import (
     WoEEncoder,
 )
 from feature_engine.imputation import (
-    AddMissingIndicator,
-    ArbitraryNumberImputer,
+    ArbitraryImputer,
     CategoricalImputer,
     DropMissingData,
     EndTailImputer,
-    MeanMedianImputer,
+    MeanImputer,
+    MissingIndicator,
     RandomSampleImputer,
 )
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsoriser
@@ -87,11 +87,11 @@ def test_sklearn_compatible_creator(estimator, check):
 # imputation
 @parametrize_with_checks(
     [
-        MeanMedianImputer(),
-        ArbitraryNumberImputer(),
+        MeanImputer(),
+        ArbitraryImputer(),
         CategoricalImputer(fill_value=0, ignore_format=True),
         EndTailImputer(),
-        AddMissingIndicator(),
+        MissingIndicator(),
         RandomSampleImputer(),
         DropMissingData(),
     ]

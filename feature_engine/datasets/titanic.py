@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
+from feature_engine.imputation import CategoricalImputer, MeanImputer
 
 
 # TODO: loading the dataset from the internet is not the best, we need to store it
@@ -95,7 +95,7 @@ def load_titanic(
                     "categorical_imputer",
                     CategoricalImputer(imputation_method="missing"),
                 ),
-                ("mean_median_imputer", MeanMedianImputer(imputation_method="mean")),
+                ("mean_imputer", MeanImputer(imputation_method="mean")),
             ]
         )
 

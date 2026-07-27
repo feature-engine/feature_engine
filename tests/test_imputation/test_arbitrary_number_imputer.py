@@ -1,12 +1,40 @@
+import re
+
 import pandas as pd
 import pytest
 
-from feature_engine.imputation import ArbitraryNumberImputer
+from feature_engine.imputation import ArbitraryImputer, ArbitraryNumberImputer
+
+DEPRECATION_WARNING = (
+    "ArbitraryNumberImputer was deprecated in favour of ArbitraryImputer in "
+    "version 2.0.0 and will be removed in version 2.1.0. To silence this "
+    "warning, use ArbitraryImputer instead."
+)
 
 
-def test_impute_with_99_and_automatically_select_variables(df_na):
+@pytest.fixture(
+    params=[ArbitraryImputer, ArbitraryNumberImputer],
+    ids=["ArbitraryImputer", "ArbitraryNumberImputer"],
+)
+def imputer_class(request):
+    return request.param
+
+
+def make_imputer(imputer_class, **kwargs):
+    if imputer_class is ArbitraryNumberImputer:
+        with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
+            return imputer_class(**kwargs)
+    return imputer_class(**kwargs)
+
+
+def test_arbitrary_number_imputer_raises_future_warning():
+    with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
+        ArbitraryNumberImputer()
+
+
+def test_impute_with_99_and_automatically_select_variables(df_na, imputer_class):
     # set up the transformer
-    imputer = ArbitraryNumberImputer(arbitrary_number=99, variables=None)
+    imputer = make_imputer(imputer_class, arbitrary_number=99, variables=None)
     X_transformed = imputer.fit_transform(df_na)
 
     # set up output reference
@@ -31,9 +59,9 @@ def test_impute_with_99_and_automatically_select_variables(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_impute_with_1_and_single_variable_entered_by_user(df_na):
+def test_impute_with_1_and_single_variable_entered_by_user(df_na, imputer_class):
     # set up transformer
-    imputer = ArbitraryNumberImputer(arbitrary_number=-1, variables=["Age"])
+    imputer = make_imputer(imputer_class, arbitrary_number=-1, variables=["Age"])
     X_transformed = imputer.fit_transform(df_na)
 
     # set up output reference
@@ -54,14 +82,14 @@ def test_impute_with_1_and_single_variable_entered_by_user(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_error_when_arbitrary_number_is_string():
+def test_error_when_arbitrary_number_is_string(imputer_class):
     with pytest.raises(ValueError):
-        ArbitraryNumberImputer(arbitrary_number="arbitrary")
+        make_imputer(imputer_class, arbitrary_number="arbitrary")
 
 
-def test_dictionary_of_imputation_values(df_na):
+def test_dictionary_of_imputation_values(df_na, imputer_class):
     # set up transformer
-    imputer = ArbitraryNumberImputer(imputer_dict={"Age": -42, "Marks": -999})
+    imputer = make_imputer(imputer_class, imputer_dict={"Age": -42, "Marks": -999})
     X_transformed = imputer.fit_transform(df_na)
 
     # set up expected output
@@ -79,6 +107,6 @@ def test_dictionary_of_imputation_values(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def imputer_error_when_dictionary_value_is_string():
+def test_error_when_dictionary_value_is_string(imputer_class):
     with pytest.raises(ValueError):
-        ArbitraryNumberImputer(imputer_dict={"Age": "arbitrary_number"})
+        make_imputer(imputer_class, imputer_dict={"Age": "arbitrary_number"})

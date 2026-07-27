@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -47,9 +48,9 @@ from feature_engine.variable_handling import (
     transform=_transform_imputers_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class ArbitraryNumberImputer(BaseImputer):
+class ArbitraryImputer(BaseImputer):
     """
-    The ArbitraryNumberImputer() replaces missing data by an arbitrary
+    The ArbitraryImputer() replaces missing data by an arbitrary
     value determined by the user. It works only with numerical variables.
 
     You can impute all variables with the same number by defining
@@ -104,12 +105,12 @@ class ArbitraryNumberImputer(BaseImputer):
 
     >>> import pandas as pd
     >>> import numpy as np
-    >>> from feature_engine.imputation import ArbitraryNumberImputer
+    >>> from feature_engine.imputation import ArbitraryImputer
     >>> X = pd.DataFrame(dict(
     >>>        x1 = [np.nan,1,1,0,np.nan],
     >>>        x2 = ["a", np.nan, "b", np.nan, "a"],
     >>>       ))
-    >>> ani = ArbitraryNumberImputer(arbitrary_number=-999)
+    >>> ani = ArbitraryImputer(arbitrary_number=-999)
     >>> ani.fit(X)
     >>> ani.transform(X)
           x1   x2
@@ -175,3 +176,27 @@ class ArbitraryNumberImputer(BaseImputer):
         self._get_feature_names_in(X)
 
         return self
+
+
+# TODO: remove in version 2.1.0
+class ArbitraryNumberImputer(ArbitraryImputer):
+    def __init__(
+        self,
+        arbitrary_number: Union[int, float] = 999,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+        imputer_dict: Optional[dict] = None,
+    ) -> None:
+        warnings.warn(
+            "ArbitraryNumberImputer was deprecated in favour of ArbitraryImputer in "
+            "version 2.0.0 and will be removed in version 2.1.0. To silence this "
+            "warning, use ArbitraryImputer instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            arbitrary_number=arbitrary_number,
+            variables=variables,
+            return_empty=return_empty,
+            imputer_dict=imputer_dict,
+        )
