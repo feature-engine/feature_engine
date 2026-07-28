@@ -53,7 +53,7 @@ class MeanImputer(BaseImputer):
     MeanImputer() will automatically select all variables of type numeric in the
     training set.
 
-    More details in the :ref:`User Guide <mean_median_imputer>`.
+    More details in the :ref:`User Guide <mean_imputer>`.
 
     Parameters
     ----------
