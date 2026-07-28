@@ -34,6 +34,17 @@ def test_c_raises_error(c):
     assert str(record.value) == msg
 
 
+def test_instantiation_raises_future_warning():
+    msg = (
+        "LogCpTransformer was deprecated in version 2.0.0 in favour of "
+        "LogTransformer and will be removed in version 2.1.0. "
+        'Use LogTransformer(C="auto") instead.'
+    )
+    with pytest.warns(FutureWarning) as record:
+        LogCpTransformer()
+    assert str(record[0].message) == msg
+
+
 @pytest.fixture(scope="module")
 def df():
     df = pd.DataFrame(

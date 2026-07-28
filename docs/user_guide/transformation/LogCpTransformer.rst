@@ -13,6 +13,12 @@ positive values.
 adding a constant to move distributions towards positive values. For more details about
 the logarithm transformation, check out the :ref:`LogTransformer()'s user Guide <log_transformer>`.
 
+.. warning::
+
+    :class:`LogCpTransformer()` was deprecated in version 2.0.0 and will be removed in
+    version 2.1.0. Use ``LogTransformer(C="auto")`` instead, which reproduces
+    :class:`LogCpTransformer()`'s default behavior exactly.
+
 Defining C
 ----------
 

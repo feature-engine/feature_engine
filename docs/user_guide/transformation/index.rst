@@ -24,18 +24,17 @@ See the following illustration:
 Supported transformations
 -------------------------
 
-================================ ================================================ ============================================================================================= ====================
-Transformer                      Description                                      Suitable for                                                                                  Limitations
-================================ ================================================ ============================================================================================= ====================
-:class:`LogTransformer()`        Applies natural or decimal logarithm.            Positive continuous variables with right skew.                                                Not valid for x<=0
-:class:`LogCpTransformer()`      Applies logarithm after adding a constant value. Continuous variables with a right skew.                                                       None
-:class:`ReciprocalTransformer()` Applies the reciprocal transformation: 1/x.      Variables representing ratios or proportions, like tons per acre.                             Not defined for x=0
-:class:`ArcsinTransformer()`     Applies the arcsin square root transformation.   Probabilities or proportion variables with values between 0 and 1.                            0<= x <= 1
-:class:`ArcSinhTransformer()`    Applies the inverse hyperbolic sine function.    Similar to log but retaining zero values in a variable.                                       None
-:class:`PowerTransformer()`      Applies any power transformation x = x**n.       Square root is suitable for count variables. Other powers vary.                               None
-:class:`BoxCoxTransformer()`     Applies the Box-Cox transformation.              Positive continuous variables when the optimal transformation is unknown.                     Not defined for x<=0
-:class:`YeoJohnsonTransformer()` Applies the Yeo-Johnson transformation.          Continuous variables with zero or negative values when the optimal transformation is unknown. None
-================================ ================================================ ============================================================================================= ====================
+================================ ===================================================================== ============================================================================================= ======================================================
+Transformer                      Description                                                           Suitable for                                                                                  Limitations
+================================ ===================================================================== ============================================================================================= ======================================================
+:class:`LogTransformer()`        Applies natural or decimal logarithm, optionally adding a constant C. Positive continuous variables with right skew.                                                Not valid for x<=0 unless C is used to shift the data.
+:class:`ReciprocalTransformer()` Applies the reciprocal transformation: 1/x.                           Variables representing ratios or proportions, like tons per acre.                             Not defined for x=0
+:class:`ArcsinTransformer()`     Applies the arcsin square root transformation.                        Probabilities or proportion variables with values between 0 and 1.                            0<= x <= 1
+:class:`ArcSinhTransformer()`    Applies the inverse hyperbolic sine function.                         Similar to log but retaining zero values in a variable.                                       None
+:class:`PowerTransformer()`      Applies any power transformation x = x**n.                            Square root is suitable for count variables. Other powers vary.                               None
+:class:`BoxCoxTransformer()`     Applies the Box-Cox transformation.                                   Positive continuous variables when the optimal transformation is unknown.                     Not defined for x<=0
+:class:`YeoJohnsonTransformer()` Applies the Yeo-Johnson transformation.                               Continuous variables with zero or negative values when the optimal transformation is unknown. None
+================================ ===================================================================== ============================================================================================= ======================================================
 
 .. note::
 
@@ -49,7 +48,6 @@ Transformers
    :maxdepth: 1
 
    LogTransformer
-   LogCpTransformer
    ReciprocalTransformer
    ArcsinTransformer
    ArcSinhTransformer

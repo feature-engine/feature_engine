@@ -237,7 +237,6 @@ We normally use variance stabilising transformations to make the data meet the a
 like ANOVA, and machine learning models, like linear regression. Feature-engine supports the following transformations:
 
 - :doc:`api_doc/transformation/LogTransformer`: performs logarithmic transformation of numerical variables
-- :doc:`api_doc/transformation/LogCpTransformer`: performs logarithmic transformation after adding a constant value
 - :doc:`api_doc/transformation/ReciprocalTransformer`: performs reciprocal transformation of numerical variables
 - :doc:`api_doc/transformation/PowerTransformer`: performs power transformation of numerical variables
 - :doc:`api_doc/transformation/BoxCoxTransformer`: performs Box-Cox transformation of numerical variables

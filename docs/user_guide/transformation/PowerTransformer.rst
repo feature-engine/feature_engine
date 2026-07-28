@@ -74,7 +74,6 @@ Other transformers
 Feature-engine also provides the following power transformers:
 
 - :class:`LogTransformer`
-- :class:`LogCpTransformer`
 - :class:`ReciprocalTransformer`
 - :class:`ArcsinTransformer`
 

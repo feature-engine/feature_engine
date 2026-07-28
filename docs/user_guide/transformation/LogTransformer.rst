@@ -28,10 +28,7 @@ LogTransformer
 
 .. note::
 
-    By default (``C=0``), the logarithm can only be applied to positive values. If the variable contains 0 or negative values, the transformer will return an error, unless you use the ``C`` parameter described below.
-
-To transform non-positive variables, pass a value to the ``C`` parameter to shift
-the data points towards positive values, as shown in the section below.
+    The logarithm can only be applied to positive values; if the variable contains 0 or negative values, the transformer will raise an error. To avoid this, add a constant to the variables by using the `C` parameter (more details below).
 
 .. attention::
 
@@ -163,7 +160,7 @@ In the following plots we see histograms showing the variables in their original
 
 
 Transforming non-positive variables with C
-------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`LogTransformer()` can also transform variables that contain zero or
 negative values, by adding a constant ``C`` before applying the logarithm,
@@ -174,8 +171,8 @@ variables with negative values:
 
 .. code:: python
 
-    from sklearn.model_selection import train_test_split
     from sklearn.datasets import load_diabetes
+    from sklearn.model_selection import train_test_split
     from feature_engine.transformation import LogTransformer
 
     # Load dataset
