@@ -207,5 +207,3 @@ class ArbitraryNumberImputer(ArbitraryImputer):
             return_empty=return_empty,
             imputer_dict=imputer_dict,
         )
-
-

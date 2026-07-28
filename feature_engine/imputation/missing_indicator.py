@@ -202,9 +202,7 @@ class MissingIndicator(BaseImputer):
         return tags
 
 
-
 # TODO remove in version 2.1.0
-
 
 class AddMissingIndicator(MissingIndicator):
     """
