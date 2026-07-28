@@ -11,13 +11,13 @@ from feature_engine.imputation import (
     CategoricalImputer,
     DropMissingData,
     EndTailImputer,
-    MeanMedianImputer,
+    MeanImputer,
     RandomSampleImputer,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
-    MeanMedianImputer(),
+    MeanImputer(),
     ArbitraryNumberImputer(),
     CategoricalImputer(fill_value=0, ignore_format=True),
     EndTailImputer(),

@@ -1,12 +1,40 @@
+import re
+
 import pandas as pd
 import pytest
 
-from feature_engine.imputation import MeanMedianImputer
+from feature_engine.imputation import MeanImputer, MeanMedianImputer
+
+DEPRECATION_WARNING = (
+    "MeanMedianImputer was deprecated in favour of MeanImputer in version "
+    "2.0.0 and will be removed in version 2.1.0. To silence this warning, "
+    "use MeanImputer instead."
+)
 
 
-def test_mean_imputation_and_automatically_select_variables(df_na):
+@pytest.fixture(
+    params=[MeanImputer, MeanMedianImputer],
+    ids=["MeanImputer", "MeanMedianImputer"],
+)
+def imputer_class(request):
+    return request.param
+
+
+def make_imputer(imputer_class, **kwargs):
+    if imputer_class is MeanMedianImputer:
+        with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
+            return imputer_class(**kwargs)
+    return imputer_class(**kwargs)
+
+
+def test_mean_median_imputer_raises_future_warning():
+    with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
+        MeanMedianImputer()
+
+
+def test_mean_imputation_and_automatically_select_variables(df_na, imputer_class):
     # set up transformer
-    imputer = MeanMedianImputer(imputation_method="mean", variables=None)
+    imputer = make_imputer(imputer_class, imputation_method="mean", variables=None)
     X_transformed = imputer.fit_transform(df_na)
 
     # set up reference result
@@ -37,9 +65,9 @@ def test_mean_imputation_and_automatically_select_variables(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_median_imputation_when_user_enters_single_variables(df_na):
+def test_median_imputation_when_user_enters_single_variables(df_na, imputer_class):
     # set up trasnformer
-    imputer = MeanMedianImputer(imputation_method="median", variables=["Age"])
+    imputer = make_imputer(imputer_class, imputation_method="median", variables=["Age"])
     X_transformed = imputer.fit_transform(df_na)
 
     # set up reference output
@@ -59,6 +87,6 @@ def test_median_imputation_when_user_enters_single_variables(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def test_error_with_wrong_imputation_method():
+def test_error_with_wrong_imputation_method(imputer_class):
     with pytest.raises(ValueError):
-        MeanMedianImputer(imputation_method="arbitrary")
+        make_imputer(imputer_class, imputation_method="arbitrary")

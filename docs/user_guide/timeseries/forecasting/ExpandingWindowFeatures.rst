@@ -289,20 +289,20 @@ Imputing rows with nan
 
 If instead of removing the row with nan in the expanding window features, we want to impute those
 values, we can do so with any of feature-engine's imputers. Here, we will replace nan with
-the median value of the resulting window features, using the `MeanMedianImputer` within
+the median value of the resulting window features, using the `MeanImputer` within
 a pipeline:
 
 
 .. code:: python
 
-    from feature_engine.imputation import MeanMedianImputer
+    from feature_engine.imputation import MeanImputer
     from feature_engine.pipeline import Pipeline
 
     win_f = ExpandingWindowFeatures(functions=["mean", "std"])
 
     pipe = Pipeline([
         ("windows", win_f),
-        ("imputer", MeanMedianImputer(imputation_method="median"))
+        ("imputer", MeanImputer(imputation_method="median"))
     ])
 
     X_tr = pipe.fit_transform(X, y)

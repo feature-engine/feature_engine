@@ -30,7 +30,7 @@ from feature_engine.imputation import (
     CategoricalImputer,
     DropMissingData,
     EndTailImputer,
-    MeanMedianImputer,
+    MeanImputer,
     RandomSampleImputer,
 )
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsoriser
@@ -87,7 +87,7 @@ def test_sklearn_compatible_creator(estimator, check):
 # imputation
 @parametrize_with_checks(
     [
-        MeanMedianImputer(),
+        MeanImputer(),
         ArbitraryNumberImputer(),
         CategoricalImputer(fill_value=0, ignore_format=True),
         EndTailImputer(),

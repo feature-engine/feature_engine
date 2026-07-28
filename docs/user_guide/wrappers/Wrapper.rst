@@ -268,7 +268,7 @@ scikit-learn's PolynomialFeatures. We start with the imports:
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.pipeline import Pipeline
     from feature_engine.datasets import load_titanic
-    from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
+    from feature_engine.imputation import CategoricalImputer, MeanImputer
     from feature_engine.encoding import OrdinalEncoder
     from feature_engine.wrappers import SklearnTransformerWrapper
 
@@ -292,7 +292,7 @@ Now, we assemble the pipeline. The last step wraps scikit-learn's PolynomialFeat
 
     pipeline = Pipeline(steps = [
         ('ci', CategoricalImputer(imputation_method='frequent')),
-        ('mmi', MeanMedianImputer(imputation_method='mean')),
+        ('mmi', MeanImputer(imputation_method='mean')),
         ('od', OrdinalEncoder(encoding_method='arbitrary')),
         ('pl', SklearnTransformerWrapper(
             PolynomialFeatures(interaction_only = True, include_bias=False),

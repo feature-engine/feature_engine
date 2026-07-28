@@ -1,9 +1,9 @@
-.. _mean_median_imputer:
+.. _mean_imputer:
 
 .. currentmodule:: feature_engine.imputation
 
-MeanMedianImputer
-=================
+MeanImputer
+===========
 
 Mean imputation and median imputation consist of replacing missing data in numerical 
 variables with the variable's mean or median. These simple univariate missing data 
@@ -74,18 +74,18 @@ used with decision tree-based algorithms. When the relationship among the variab
 crucial, you might want to consider better ways to estimate the missing data, such as 
 multiple imputation (aka, multivariate imputation). 
 
-MeanMedianImputer
------------------
+MeanImputer
+-----------
 
-Feature-engine's :class:`MeanMedianImputer()` replaces missing data with the variable's 
+Feature-engine's :class:`MeanImputer()` replaces missing data with the variable's 
 mean or median value, determined over the observed values. Hence, it can only impute
 numerical variables. You can pass the 
-list of variables you want to impute, or alternatively, :class:`MeanMedianImputer()` 
+list of variables you want to impute, or alternatively, :class:`MeanImputer()` 
 will automatically impute all numerical variables in the training set.
 
 .. attention::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`MeanMedianImputer()` used to
+    **New in version 2.0:** When `variables` is `None`, :class:`MeanImputer()` used to
     raise an error if the dataframe contained no numerical variables. You can now
     set the new parameter `return_empty` to `True` to make the transformer return an
     empty list of variables and skip the imputation instead, leaving the dataframe
@@ -97,7 +97,7 @@ will automatically impute all numerical variables in the training set.
 Python implementation
 ---------------------
 
-In this section, we will explore :class:`MeanMedianImputer()`'s functionality. Let's start by 
+In this section, we will explore :class:`MeanImputer()`'s functionality. Let's start by 
 importing the required libraries:
 
 .. code:: python
@@ -107,7 +107,7 @@ importing the required libraries:
 	from sklearn.datasets import fetch_openml
 	from sklearn.pipeline import make_pipeline
 	from sklearn.model_selection import train_test_split
-	from feature_engine.imputation import MeanMedianImputer
+	from feature_engine.imputation import MeanImputer
 	from feature_engine.imputation import AddMissingIndicator
 	
 
@@ -156,13 +156,13 @@ either **LotFrontage** or **MasVnrArea**:
 	1018      Gilbert          NaN        76.0
 
 
-Let's now set up and fit :class:`MeanMedianImputer()` with the strategy set to mean,
+Let's now set up and fit :class:`MeanImputer()` with the strategy set to mean,
 so we can impute the variables `LotFrontage` and `MasVnrArea`:
 
 .. code:: python
 
 	# Set up the imputer
-	mmi = MeanMedianImputer(
+	mmi = MeanImputer(
 		imputation_method='mean',
 		variables=['LotFrontage', 'MasVnrArea']
 	)
@@ -173,10 +173,10 @@ so we can impute the variables `LotFrontage` and `MasVnrArea`:
 .. note::
 
     It's worth noting that we have the flexibility to omit the `variables` parameter,
-    in which case, :class:`MeanMedianImputer()` will automatically find and impute all
+    in which case, :class:`MeanImputer()` will automatically find and impute all
     numeric features.
 
-After fitting :class:`MeanMedianImputer()`, we can check out the statistics 
+After fitting :class:`MeanImputer()`, we can check out the statistics 
 (either mean or median; mean in this case) for each of the variables to impute:
 
 .. code:: python
@@ -217,7 +217,7 @@ Imputing missing values alongside missing indicators
 Mean or median imputation are commonly done alongside adding missing indicators.
 We can add missing indicators with :class:`AddMissingIndicator()` from feature-engine.
 
-We can chain :class:`AddMissingIndicator()` with :class:`MeanMedianImputer()` using a 
+We can chain :class:`AddMissingIndicator()` with :class:`MeanImputer()` using a 
 `scikit-learn pipeline <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html>`_.
 
 For example, let's create an imputation pipeline to add missing indicators and then
@@ -228,7 +228,7 @@ impute the missing values:
 	# Create imputation pipeline
 	imputer = make_pipeline(
 		AddMissingIndicator(),
-		MeanMedianImputer()
+		MeanImputer()
 	)
 
 	# Fit the pipeline

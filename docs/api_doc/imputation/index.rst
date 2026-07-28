@@ -12,7 +12,7 @@ The following table summarises each imputer's functionality:
 ================================== ===================== ======================= ====================================================================================
     Transformer                     Numerical variables	  Categorical variables	    Description
 ================================== ===================== ======================= ====================================================================================
-:class:`MeanMedianImputer()`	        √	                 ×	                    Replaces missing values with the mean or median
+:class:`MeanImputer()`	        √	                 ×	                    Replaces missing values with the mean or median
 :class:`ArbitraryNumberImputer()`	    √	                 ×	                    Replaces missing values with an arbitrary value
 :class:`EndTailImputer()`	            √	                 ×	                    Replaces missing values with a value at the end of the distribution
 :class:`CategoricalImputer()`           ×	                 √	                    Replaces missing values with the most frequent category or an arbitrary string
@@ -27,7 +27,7 @@ Imputers
 .. toctree::
    :maxdepth: 1
 
-   MeanMedianImputer
+   MeanImputer
    ArbitraryNumberImputer
    EndTailImputer
    CategoricalImputer
