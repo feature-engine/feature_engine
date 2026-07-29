@@ -119,7 +119,7 @@ Code improvements
 ~~~~~~~~~~~~~~~~~
 
     - **Imputers**: removed looping over every variable to replace NaN. Now passing imputer dictionary to `pd.fillna()` (`Soledad Galli <https://github.com/solegalli>`_)
-    - `AddMissingIndicators`: removed looping over every variable to add missing indicators. Now using `pd.isna()` (`Soledad Galli <https://github.com/solegalli>`_)
+    - `MissingIndicator`: removed looping over every variable to add missing indicators. Now using `pd.isna()` (`Soledad Galli <https://github.com/solegalli>`_)
     - `CategoricalImputer` now captures all modes in one go, without looping over variables (`Soledad Galli <https://github.com/solegalli>`_)
     - Removed workaround to import docstrings for `transform()` method in various transformers (`Soledad Galli <https://github.com/solegalli>`_)
 

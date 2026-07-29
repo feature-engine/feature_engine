@@ -126,7 +126,7 @@ pickle (.pkl). Here is an example of how to do it:
     from feature_engine.encoding import RareLabelEncoder, MeanEncoder
     from feature_engine.discretisation import DecisionTreeDiscretiser
     from feature_engine.imputation import (
-        AddMissingIndicator,
+        MissingIndicator,
         MeanImputer,
         CategoricalImputer,
     )
@@ -169,7 +169,7 @@ pickle (.pkl). Here is an example of how to do it:
     # Set up the pipeline
     price_pipe = pipe([
         # Add a binary variable to flag NA in one variable
-        ('continuous_var_imputer', AddMissingIndicator(variables=['LotFrontage'])),
+        ('continuous_var_imputer', MissingIndicator(variables=['LotFrontage'])),
 
         # Replace NA with the median in 2 variables
         ('continuous_var_median_imputer', MeanImputer(
