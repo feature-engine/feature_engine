@@ -6,24 +6,34 @@ from typing import List, Tuple, Union
 import narwhals as nw
 import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
-from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
 
 from feature_engine.variable_handling._variable_type_checks import (
-    _is_categorical_and_is_datetime,
-    _is_categorical_and_is_not_datetime,
     _nw_is_categorical_and_is_datetime,
     _nw_is_categorical_and_is_not_datetime,
     _nw_is_date_or_datetime,
 )
-from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
 # columns of these narwhals dtypes are candidates for being "categorical" - they
 # still need to be run through the datetime-disambiguation helpers, because a
-# String/Categorical column may actually hold dates.
+# String/Categorical column may actually hold dates. `Object` covers pandas
+# columns holding a genuine mix of Python objects (e.g. strings and numbers),
+# which narwhals cannot classify as String or any other single dtype.
 _CATEGORICAL_CANDIDATE_SELECTOR = (
-    nw.selectors.categorical() | nw.selectors.enum() | nw.selectors.string()
+    nw.selectors.categorical()
+    | nw.selectors.enum()
+    | nw.selectors.string()
+    | nw.selectors.by_dtype(nw.Object)
 )
+
+
+def _categorical_candidates_in_order(nw_df) -> List[Union[str, int]]:
+    # nw.selectors' `|` combination returns matches grouped by which
+    # sub-selector matched (e.g. all categorical() hits, then all string()
+    # hits) rather than preserving the dataframe's original column order, for
+    # the pandas backend specifically. Re-sort against the dataframe's own
+    # column order so results are deterministic and backend-independent.
+    matched = set(nw_df.select(_CATEGORICAL_CANDIDATE_SELECTOR).columns)
+    return [column for column in nw_df.columns if column in matched]
 
 
 def find_numerical_variables(
@@ -135,20 +145,13 @@ def find_categorical_variables(
     >>> var_
     ['var_cat']
     """
-    if nwd.is_pandas_dataframe(X):
-        variables = [
-            column
-            for column in X.select_dtypes(include=["O", "category", "string"]).columns
-            if _is_categorical_and_is_not_datetime(X[column])
-        ]
-    else:
-        nw_X = nw.from_native(X, eager_only=True)
-        candidates = nw_X.select(_CATEGORICAL_CANDIDATE_SELECTOR).columns
-        variables = [
-            column
-            for column in candidates
-            if _nw_is_categorical_and_is_not_datetime(nw_X[column])
-        ]
+    nw_X = nw.from_native(X, eager_only=True)
+    candidates = _categorical_candidates_in_order(nw_X)
+    variables = [
+        column
+        for column in candidates
+        if _nw_is_categorical_and_is_not_datetime(nw_X.get_column(column))
+    ]
 
     if len(variables) == 0:
         if return_empty is False:
@@ -202,13 +205,10 @@ def find_datetime_variables(
 
     Notes
     -----
-    For pandas dataframes, string columns are parsed with pandas' flexible,
-    dateutil-backed date guessing (the same as `pandas.to_datetime`), so formats
-    like "01-Jan-2010" or "10/11/12" are recognised. For polars (and other
-    non-pandas dataframes), only ISO-8601 strings and native `Date`/`Datetime`
-    columns are recognised automatically - polars has no equivalent flexible
-    guesser. Pass `variables` explicitly to a transformer if your polars date
-    strings use a different format.
+    String columns are parsed with flexible, dateutil-backed date guessing, so
+    formats like "01-Jan-2010" or "10/11/12" are recognised, in addition to
+    ISO-8601 strings and native `Date`/`Datetime` columns, regardless of the
+    dataframe library backing `X`.
 
     Examples
     --------
@@ -223,23 +223,16 @@ def find_datetime_variables(
     >>> var_date
     ['var_date']
     """
-    if nwd.is_pandas_dataframe(X):
-        variables = [
-            column
-            for column in X.select_dtypes(exclude="number").columns
-            if is_datetime(X[column]) or _is_categorical_and_is_datetime(X[column])
-        ]
-    else:
-        nw_X = nw.from_native(X, eager_only=True)
-        non_numeric = [
-            column for column in nw_X.columns if not nw_X.schema[column].is_numeric()
-        ]
-        variables = [
-            column
-            for column in non_numeric
-            if _nw_is_date_or_datetime(nw_X.schema[column])
-            or _nw_is_categorical_and_is_datetime(nw_X[column])
-        ]
+    nw_X = nw.from_native(X, eager_only=True)
+    non_numeric = [
+        column for column in nw_X.columns if not nw_X.schema[column].is_numeric()
+    ]
+    variables = [
+        column
+        for column in non_numeric
+        if _nw_is_date_or_datetime(nw_X.schema[column])
+        or _nw_is_categorical_and_is_datetime(nw_X.get_column(column))
+    ]
 
     if len(variables) == 0:
         if return_empty is False:
@@ -304,32 +297,19 @@ def find_all_variables(
     >>> vars_all
     ['var_num', 'var_cat', 'var_date']
     """
-    if nwd.is_pandas_dataframe(X):
-        if exclude_datetime is True:
-            variables = X.select_dtypes(exclude=DATETIME_TYPES).columns.to_list()
-            variables = [
-                var
-                for var in variables
-                if is_numeric(X[var]) or not _is_categorical_and_is_datetime(X[var])
-            ]
-        else:
-            variables = X.columns.to_list()
+    nw_X = nw.from_native(X, eager_only=True)
+    if exclude_datetime is True:
+        variables = [
+            var for var in nw_X.columns if not _nw_is_date_or_datetime(nw_X.schema[var])
+        ]
+        variables = [
+            var
+            for var in variables
+            if nw_X.schema[var].is_numeric()
+            or not _nw_is_categorical_and_is_datetime(nw_X.get_column(var))
+        ]
     else:
-        nw_X = nw.from_native(X, eager_only=True)
-        if exclude_datetime is True:
-            variables = [
-                var
-                for var in nw_X.columns
-                if not _nw_is_date_or_datetime(nw_X.schema[var])
-            ]
-            variables = [
-                var
-                for var in variables
-                if nw_X.schema[var].is_numeric()
-                or not _nw_is_categorical_and_is_datetime(nw_X[var])
-            ]
-        else:
-            variables = list(nw_X.columns)
+        variables = list(nw_X.columns)
 
     if len(variables) == 0:
         if return_empty is False:
@@ -400,26 +380,15 @@ def find_categorical_and_numerical_variables(
     >>> var_cat, var_num
     (['var_cat'], ['var_num'])
     """
-    is_pandas = nwd.is_pandas_dataframe(X)
-    # cheap to build even when unused in the pandas branch below - avoids an
-    # Optional type that mypy can't narrow across the branches
     nw_X = nw.from_native(X, eager_only=True)
 
     # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
-        if is_pandas:
-            is_cat = X[
-                variables
-            ].dtype.name == "category" or _is_categorical_and_is_not_datetime(
-                X[variables]
-            )
-            is_num = is_numeric(X[variables])
-        else:
-            s = nw_X[variables]
-            is_cat = isinstance(
-                s.dtype, (nw.Categorical, nw.Enum)
-            ) or _nw_is_categorical_and_is_not_datetime(s)
-            is_num = s.dtype.is_numeric()
+        s = nw_X.get_column(variables)
+        is_cat = isinstance(
+            s.dtype, (nw.Categorical, nw.Enum)
+        ) or _nw_is_categorical_and_is_not_datetime(s)
+        is_num = s.dtype.is_numeric()
 
         if is_cat:
             variables_cat = [variables]
@@ -445,23 +414,13 @@ def find_categorical_and_numerical_variables(
 
     # If user leaves default None parameter.
     elif variables is None:
-        if is_pandas:
-            variables_cat = [
-                column
-                for column in X.select_dtypes(
-                    include=["O", "category", "string"]
-                ).columns
-                if _is_categorical_and_is_not_datetime(X[column])
-            ]
-            variables_num = list(X.select_dtypes(include="number").columns)
-        else:
-            candidates = nw_X.select(_CATEGORICAL_CANDIDATE_SELECTOR).columns
-            variables_cat = [
-                column
-                for column in candidates
-                if _nw_is_categorical_and_is_not_datetime(nw_X[column])
-            ]
-            variables_num = list(nw_X.select(nw.selectors.numeric()).columns)
+        candidates = _categorical_candidates_in_order(nw_X)
+        variables_cat = [
+            column
+            for column in candidates
+            if _nw_is_categorical_and_is_not_datetime(nw_X.get_column(column))
+        ]
+        variables_num = list(nw_X.select(nw.selectors.numeric()).columns)
 
         if len(variables_num) == 0 and len(variables_cat) == 0:
             if return_empty is False:
@@ -496,25 +455,13 @@ def find_categorical_and_numerical_variables(
                 variables_cat = []
                 variables_num = []
 
-        elif is_pandas:
-            # find categorical variables
-            variables_cat = [
-                column
-                for column in X[variables]
-                .select_dtypes(include=["O", "category", "string"])
-                .columns
-                if _is_categorical_and_is_not_datetime(X[column])
-            ]
-            # find numerical variables
-            variables_num = list(X[variables].select_dtypes(include="number").columns)
-
         else:
             sub_X = nw_X.select(variables)
-            candidates = sub_X.select(_CATEGORICAL_CANDIDATE_SELECTOR).columns
+            candidates = _categorical_candidates_in_order(sub_X)
             variables_cat = [
                 column
                 for column in candidates
-                if _nw_is_categorical_and_is_not_datetime(sub_X[column])
+                if _nw_is_categorical_and_is_not_datetime(sub_X.get_column(column))
             ]
             variables_num = list(sub_X.select(nw.selectors.numeric()).columns)
 

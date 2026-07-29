@@ -5,11 +5,6 @@ import pandas as pd
 import polars as pl
 
 from feature_engine.variable_handling._variable_type_checks import (
-    _is_categorical_and_is_datetime,
-    _is_categorical_and_is_not_datetime,
-    _is_categories_num,
-    _is_convertible_to_dt,
-    _is_convertible_to_num,
     _nw_is_categorical_and_is_datetime,
     _nw_is_categorical_and_is_not_datetime,
     _nw_is_convertible_to_dt,
@@ -25,93 +20,9 @@ def nw_series(values, dtype=None):
     return nw.from_native(s, series_only=True)
 
 
-def test_is_categories_num(df):
-    assert _is_categories_num(df["Name"]) is False
-
-    df["Age"] = df["Age"].astype("category")
-    assert _is_categories_num(df["Age"]) is True
-
-
-def test_is_convertible_to_num(df):
-    assert _is_convertible_to_num(df["Name"]) is False
-    assert _is_convertible_to_num(df["date_obj0"]) is False
-
-    df["age_str"] = ["20", "21", "19", "18"]
-    assert _is_convertible_to_num(df["age_str"]) is True
-
-
-def test_is_convertible_to_dt(df):
-    assert _is_convertible_to_dt(df["date_obj0"]) is True
-    assert _is_convertible_to_dt(df["date_range"]) is True
-    assert _is_convertible_to_dt(df["Name"]) is False
-
-    df["age_str"] = ["20", "21", "19", "18"]
-    assert _is_convertible_to_dt(df["age_str"]) is False
-
-
-def test_is_categorical_and_is_datetime(df, df_datetime):
-    assert _is_categorical_and_is_datetime(df["date_obj0"]) is True
-    assert _is_categorical_and_is_datetime(df["Name"]) is False
-    assert _is_categorical_and_is_datetime(df_datetime["date_obj1"]) is True
-
-    df["age_str"] = ["20", "21", "19", "18"]
-    assert _is_categorical_and_is_datetime(df["age_str"]) is False
-
-    df = df.copy()
-    # from pandas 3 onwards, object types that contain strings are not recognised as
-    # objects any more
-    df["Age"] = df["Age"].astype("O")
-    assert _is_categorical_and_is_datetime(df["Age"]) is False
-
-    # Object Datetime
-    s_obj_dt = pd.Series([pd.Timestamp("2020-01-01")], dtype="object")
-    assert _is_categorical_and_is_datetime(s_obj_dt) is True
-
-    # StringDtype Datetime (if convertible)
-    s_str_dt = pd.Series(["2020-01-01", "2020-01-02"], dtype="string")
-    assert _is_categorical_and_is_datetime(s_str_dt) is True
-
-    # Numeric (should be False for both if and elif branches)
-    s_num = pd.Series([1, 2, 3])
-    assert _is_categorical_and_is_datetime(s_num) is False
-
-    # Categorical (should hit the 'if' branch)
-    s_cat = pd.Series(["a", "b"], dtype="category")
-    assert _is_categorical_and_is_datetime(s_cat) is False
-
-
-def test_is_categorical_and_is_not_datetime(df):
-    assert _is_categorical_and_is_not_datetime(df["date_obj0"]) is False
-    assert _is_categorical_and_is_not_datetime(df["date_obj0"]) is False
-    assert _is_categorical_and_is_not_datetime(df["Name"]) is True
-
-    df["age_str"] = ["20", "21", "19", "18"]
-    assert _is_categorical_and_is_not_datetime(df["age_str"]) is True
-
-    # Object Integer
-    s_obj_int = pd.Series([1, 2], dtype="object")
-    assert _is_categorical_and_is_not_datetime(s_obj_int) is True
-
-    # Object Datetime should be False
-    s_obj_dt = pd.Series([pd.Timestamp("2020-01-01")], dtype="object")
-    assert _is_categorical_and_is_not_datetime(s_obj_dt) is False
-
-    # StringDtype (not convertible to numeric/datetime) should be True
-    s_str = pd.Series(["a", "b"], dtype="string")
-    assert _is_categorical_and_is_not_datetime(s_str) is True
-
-    # Numeric should be False
-    s_num = pd.Series([1, 2, 3])
-    assert _is_categorical_and_is_not_datetime(s_num) is False
-
-    # Categorical should be True (it hits the 'if' branch)
-    s_cat = pd.Series(["a", "b"], dtype="category")
-    assert _is_categorical_and_is_not_datetime(s_cat) is True
-
-
-# ---------------------------------------------------------------------------
-# narwhals (polars) equivalents
-# ---------------------------------------------------------------------------
+def nw_pandas_series(values, dtype=None):
+    s = pd.Series(values, dtype=dtype)
+    return nw.from_native(s, series_only=True)
 
 
 def test_nw_is_date_or_datetime():
@@ -132,15 +43,35 @@ def test_nw_is_convertible_to_num():
         is True
     )
 
+    # object dtype columns (pandas-only concept - narwhals classifies a plain
+    # object dtype column of ints as `nw.Object`, not `nw.String`)
+    assert _nw_is_convertible_to_num(nw_pandas_series([1, 2], dtype="object")) is True
+    assert (
+        _nw_is_convertible_to_num(
+            nw_pandas_series([pd.Timestamp("2020-01-01")], dtype="object")
+        )
+        is False
+    )
+
 
 def test_nw_is_convertible_to_dt():
     assert _nw_is_convertible_to_dt(nw_series(["2020-01-01", "2020-01-02"])) is True
     assert _nw_is_convertible_to_dt(nw_series(["a", "b"])) is False
     assert _nw_is_convertible_to_dt(nw_series(["20", "21"])) is False
 
-    # polars has no dateutil-style guesser, unlike pandas, so non-ISO date
-    # strings are not recognised
-    assert _nw_is_convertible_to_dt(nw_series(["01-Jan-2010"])) is False
+    # flexible, dateutil-backed date guessing works for every backend now, not
+    # just pandas - so non-ISO formats are recognised here too
+    assert _nw_is_convertible_to_dt(nw_series(["01-Jan-2010"])) is True
+    assert _nw_is_convertible_to_dt(nw_series(["10/11/12"])) is True
+
+    # an object dtype column holding actual datetime objects (e.g. pandas
+    # Timestamps) is trivially convertible, without needing to parse anything
+    assert (
+        _nw_is_convertible_to_dt(
+            nw_pandas_series([pd.Timestamp("2020-01-01")], dtype="object")
+        )
+        is True
+    )
 
 
 def test_nw_is_categorical_and_is_datetime():
@@ -170,6 +101,33 @@ def test_nw_is_categorical_and_is_datetime():
     # numeric should be False
     assert _nw_is_categorical_and_is_datetime(nw_series([1, 2, 3])) is False
 
+    # a numeric-backed categorical (pandas-only - polars categories are always
+    # string-backed) can never be a datetime, regardless of the categories
+    numeric_cat = nw_pandas_series([20, 21, 19, 18], dtype="category")
+    assert _nw_is_categorical_and_is_datetime(numeric_cat) is False
+
+    # a string-dtype pandas column with datetime-like values
+    assert (
+        _nw_is_categorical_and_is_datetime(
+            nw_pandas_series(["2020-01-01", "2020-01-02"], dtype="string")
+        )
+        is True
+    )
+
+    # object dtype column holding actual Timestamp objects
+    assert (
+        _nw_is_categorical_and_is_datetime(
+            nw_pandas_series([pd.Timestamp("2020-01-01")], dtype="object")
+        )
+        is True
+    )
+
+    # object dtype column holding plain ints - not a datetime
+    assert (
+        _nw_is_categorical_and_is_datetime(nw_pandas_series([1, 2], dtype="object"))
+        is False
+    )
+
 
 def test_nw_is_categorical_and_is_not_datetime():
     assert (
@@ -198,3 +156,30 @@ def test_nw_is_categorical_and_is_not_datetime():
 
     # numeric should be False
     assert _nw_is_categorical_and_is_not_datetime(nw_series([1, 2, 3])) is False
+
+    # a numeric-backed categorical is categorical-and-not-datetime
+    numeric_cat = nw_pandas_series([20, 21, 19, 18], dtype="category")
+    assert _nw_is_categorical_and_is_not_datetime(numeric_cat) is True
+
+    # object dtype column of plain ints
+    assert (
+        _nw_is_categorical_and_is_not_datetime(nw_pandas_series([1, 2], dtype="object"))
+        is True
+    )
+
+    # object dtype column holding actual Timestamp objects - is a datetime, so
+    # not "categorical and not datetime"
+    assert (
+        _nw_is_categorical_and_is_not_datetime(
+            nw_pandas_series([pd.Timestamp("2020-01-01")], dtype="object")
+        )
+        is False
+    )
+
+    # string-dtype pandas column not convertible to numeric or datetime
+    assert (
+        _nw_is_categorical_and_is_not_datetime(
+            nw_pandas_series(["a", "b"], dtype="string")
+        )
+        is True
+    )

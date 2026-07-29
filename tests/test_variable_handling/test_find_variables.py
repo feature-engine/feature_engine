@@ -101,9 +101,10 @@ def test_datetime_variables_finds_variables(make_df):
 
 
 def test_datetime_variables_finds_pandas_only_string_formats(df_datetime):
-    # "01-Jan-2010"-style, "10/11/12"-style and bare-time strings are only ever
-    # recognised through pandas' flexible, dateutil-backed guessing - polars has
-    # no equivalent, see the note in find_datetime_variables' docstring.
+    # "01-Jan-2010"-style, "10/11/12"-style and bare-time strings are
+    # recognised through flexible, dateutil-backed guessing - see the note in
+    # find_datetime_variables' docstring. This fixture is pandas-only, but the
+    # guessing itself is backend-agnostic (also works for polars).
     vars_dt = [
         "date_range",
         "date_obj0",
@@ -114,6 +115,19 @@ def test_datetime_variables_finds_pandas_only_string_formats(df_datetime):
         "time_objTZ",
     ]
     assert find_datetime_variables(df_datetime) == vars_dt
+
+
+def test_datetime_variables_finds_flexible_string_formats_in_polars_too():
+    # flexible, dateutil-backed date guessing is backend-agnostic, so polars
+    # now also recognises non-ISO formats it previously could not.
+    df = pl.DataFrame(
+        {
+            "var_num": [1, 2, 3],
+            "date_obj1": ["01-Jan-2010", "24-Feb-1945", "14-Jun-2100"],
+            "date_obj2": ["10/11/12", "12/31/09", "06/30/95"],
+        }
+    )
+    assert find_datetime_variables(df) == ["date_obj1", "date_obj2"]
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])

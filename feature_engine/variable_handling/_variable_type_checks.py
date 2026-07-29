@@ -1,90 +1,15 @@
+from datetime import date, datetime
+
 import narwhals as nw
-import pandas as pd
-from pandas.api.types import is_object_dtype, is_string_dtype
-from pandas.core.dtypes.common import is_datetime64_any_dtype as is_datetime
-from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
+from dateutil.parser import parse as _dateutil_parse
 
 # ---------------------------------------------------------------------------
-# pandas-only implementation.
+# narwhals implementation, used for every backend (pandas, polars, etc.)
 #
-# These functions rely on pandas' flexible, dateutil-backed `pd.to_datetime`
-# string guessing and on pandas' `object` dtype (which, unlike any narwhals
-# dtype, can hold arbitrary non-string Python objects). Neither has a
-# polars/narwhals equivalent, so they are kept exactly as they were before the
-# narwhals migration and are only ever called on pandas input. See the `_nw_*`
-# functions below for the polars/narwhals-backend equivalents.
-# ---------------------------------------------------------------------------
-
-
-def is_object(s) -> bool:
-    return is_object_dtype(s) or is_string_dtype(s)
-
-
-def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
-    # check for datetime only if the type of the categories is not numeric
-    # because pd.to_datetime throws an error when it is an integer
-    if isinstance(column.dtype, pd.CategoricalDtype):
-        is_cat = _is_categories_num(column) or not _is_convertible_to_dt(column)
-
-    # check for datetime only if object cannot be cast as numeric because
-    # if it could pd.to_datetime would convert it to datetime regardless
-    elif is_object(column):
-        is_cat = _is_convertible_to_num(column) or not _is_convertible_to_dt(column)
-
-    else:
-        is_cat = False
-
-    return is_cat
-
-
-def _is_categories_num(column: pd.Series) -> bool:
-    return is_numeric(column.dtype.categories)
-
-
-def _is_convertible_to_dt(column: pd.Series) -> bool:
-    try:
-        var = pd.to_datetime(column, utc=True)
-        return is_datetime(var)
-    except Exception:
-        return False
-
-
-def _is_convertible_to_num(column: pd.Series) -> bool:
-    try:
-        ser = pd.to_numeric(column)
-    except (ValueError, TypeError):
-        ser = column
-    return is_numeric(ser)
-
-
-def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
-    # check for datetime only if the type of the categories is not numeric
-    # because pd.to_datetime throws an error when it is an integer
-    if isinstance(column.dtype, pd.CategoricalDtype):
-        is_dt = not _is_categories_num(column) and _is_convertible_to_dt(column)
-
-    # check for datetime only if object cannot be cast as numeric because
-    # if it could pd.to_datetime would convert it to datetime regardless
-    elif is_object(column):
-        is_dt = not _is_convertible_to_num(column) and _is_convertible_to_dt(column)
-
-    else:
-        is_dt = False
-
-    return is_dt
-
-
-# ---------------------------------------------------------------------------
-# narwhals implementation, used for every backend other than pandas (polars,
-# in practice).
-#
-# narwhals has no lenient/"try" cast (no `strict=False`, unlike raw polars)
-# and its `str.to_datetime()` requires ISO-8601 or an explicit `format=` - it
-# cannot reproduce pandas' dateutil-based guessing. So a string column such as
-# "01-Jan-2010" or "10/11/12" is not auto-detected as datetime for polars,
-# even though it is for pandas. ISO-8601 strings and native Date/Datetime
-# columns are detected correctly. Users can always pass `variables` explicitly
-# to sidestep this.
+# Flexible date-string recognition (e.g. "01-Jan-2010", "10/11/12", not just
+# ISO-8601) is implemented directly on top of `dateutil` - the same library
+# pandas.to_datetime delegates to internally for this - so it works
+# identically regardless of the underlying dataframe library.
 # ---------------------------------------------------------------------------
 
 
@@ -94,20 +19,59 @@ def _nw_is_date_or_datetime(dtype) -> bool:
     return isinstance(dtype, (nw.Date, nw.Datetime))
 
 
-def _nw_is_convertible_to_num(s: "nw.Series") -> bool:
+_DATE_PARSE_DEFAULT_1 = datetime(1, 1, 1, 1, 1, 1)
+_DATE_PARSE_DEFAULT_2 = datetime(2, 2, 2, 2, 2, 2)
+_DATETIME_FIELDS = ("year", "month", "day", "hour", "minute", "second")
+
+
+def _looks_like_date_string(value: str) -> bool:
+    # dateutil.parser.parse() fills in any date/time component that isn't
+    # present in the string from a `default` datetime, so a bare number like
+    # "20" "parses" successfully as day=20 - it would wrongly be treated as a
+    # date. Parsing twice, with two defaults that differ in every field,
+    # reveals which fields were actually present in the string: those are the
+    # fields that agree between the two parses. Requiring at least 2 fields to
+    # be corroborated this way rejects bare numbers while still accepting real
+    # dates (including non-ISO formats like "01-Jan-2010") and bare times
+    # (like "21:45:23").
     try:
-        s.cast(nw.String()).cast(nw.Float64())
-    except Exception:
+        first = _dateutil_parse(value, default=_DATE_PARSE_DEFAULT_1)
+        second = _dateutil_parse(value, default=_DATE_PARSE_DEFAULT_2)
+    except (ValueError, OverflowError, TypeError):
+        return False
+
+    corroborated = sum(
+        1 for attr in _DATETIME_FIELDS if getattr(first, attr) == getattr(second, attr)
+    )
+    return corroborated >= 2
+
+
+def _nw_is_convertible_to_num(s: "nw.Series") -> bool:
+    values = s.drop_nulls().to_list()
+    if not values:
+        return False
+    try:
+        for value in values:
+            float(value)
+    except (ValueError, TypeError):
         return False
     return True
 
 
 def _nw_is_convertible_to_dt(s: "nw.Series") -> bool:
-    try:
-        s.cast(nw.String()).str.to_datetime()
-    except Exception:
+    values = s.drop_nulls().to_list()
+    if not values:
         return False
+    for value in values:
+        if isinstance(value, (date, datetime)):
+            continue
+        if not _looks_like_date_string(str(value)):
+            return False
     return True
+
+
+def _nw_categories_are_numeric(s: "nw.Series") -> bool:
+    return s.cat.get_categories().dtype.is_numeric()
 
 
 def _nw_is_categorical_and_is_not_datetime(s: "nw.Series") -> bool:
@@ -117,11 +81,14 @@ def _nw_is_categorical_and_is_not_datetime(s: "nw.Series") -> bool:
         return True
 
     if isinstance(s.dtype, nw.Categorical):
-        # polars categorical categories are always string-backed, unlike
-        # pandas' pd.Categorical, which can have numeric categories
-        return not _nw_is_convertible_to_dt(s)
+        # check for datetime only if the categories are not numeric, because
+        # a numeric-backed categorical (pandas-only - polars categories are
+        # always string-backed) can never hold dates
+        return _nw_categories_are_numeric(s) or not _nw_is_convertible_to_dt(s)
 
-    if isinstance(s.dtype, nw.String):
+    if isinstance(s.dtype, (nw.String, nw.Object)):
+        # check for datetime only if the column cannot be cast as numeric,
+        # because if it could, it would be a numeric column, not a date
         return _nw_is_convertible_to_num(s) or not _nw_is_convertible_to_dt(s)
 
     return False
@@ -132,9 +99,9 @@ def _nw_is_categorical_and_is_datetime(s: "nw.Series") -> bool:
         return False
 
     if isinstance(s.dtype, nw.Categorical):
-        return _nw_is_convertible_to_dt(s)
+        return not _nw_categories_are_numeric(s) and _nw_is_convertible_to_dt(s)
 
-    if isinstance(s.dtype, nw.String):
+    if isinstance(s.dtype, (nw.String, nw.Object)):
         return not _nw_is_convertible_to_num(s) and _nw_is_convertible_to_dt(s)
 
     return False

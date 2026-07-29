@@ -5,14 +5,11 @@ from typing import List, Union
 import narwhals as nw
 import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
-from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
 
 from feature_engine.variable_handling._variable_type_checks import (
-    _is_categorical_and_is_datetime,
     _nw_is_categorical_and_is_datetime,
     _nw_is_date_or_datetime,
 )
-from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
 Variables = Union[int, str, List[Union[str, int]]]
 
@@ -165,10 +162,9 @@ def check_datetime_variables(
 
     Notes
     -----
-    For pandas dataframes, string columns are parsed with pandas' flexible,
-    dateutil-backed date guessing. For polars (and other non-pandas dataframes),
-    only ISO-8601 strings and native `Date`/`Datetime` columns are recognised -
-    polars has no equivalent flexible guesser.
+    String columns are parsed with flexible, dateutil-backed date guessing, in
+    addition to ISO-8601 strings and native `Date`/`Datetime` columns,
+    regardless of the dataframe library backing `X`.
 
     Examples
     --------
@@ -187,27 +183,18 @@ def check_datetime_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X):
-        # find non datetime variables, if any:
-        non_datetime_vars = []
-        for column in X[variables].select_dtypes(exclude=DATETIME_TYPES):
-            if is_numeric(X[column]) or not _is_categorical_and_is_datetime(
-                X[column]
-            ):
-                non_datetime_vars.append(column)
-    else:
-        sub_X = nw.from_native(X, eager_only=True).select(variables)
-        candidates = [
-            column
-            for column in sub_X.columns
-            if not _nw_is_date_or_datetime(sub_X.schema[column])
-        ]
-        non_datetime_vars = [
-            column
-            for column in candidates
-            if sub_X.schema[column].is_numeric()
-            or not _nw_is_categorical_and_is_datetime(sub_X[column])
-        ]
+    sub_X = nw.from_native(X, eager_only=True).select(variables)
+    candidates = [
+        column
+        for column in sub_X.columns
+        if not _nw_is_date_or_datetime(sub_X.schema[column])
+    ]
+    non_datetime_vars = [
+        column
+        for column in candidates
+        if sub_X.schema[column].is_numeric()
+        or not _nw_is_categorical_and_is_datetime(sub_X.get_column(column))
+    ]
 
     if len(non_datetime_vars) > 0:
         raise TypeError(
