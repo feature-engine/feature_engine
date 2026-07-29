@@ -1,9 +1,11 @@
 # Authors: Vasco Schiavo <vasco.schiavo@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -37,9 +39,9 @@ from feature_engine._docstrings.substitute import Substitution
     fit_transform=_fit_transform_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class MeanNormalizationScaler(BaseNumericalTransformer):
+class MeanNormalisationScaler(BaseNumericalTransformer):
     """
-    MeanNormalizationScaler() applies mean normalisation, which consists of subtracting
+    MeanNormalisationScaler() applies mean normalisation, which consists of subtracting
     the mean of each feature and then dividing the result by the value range, that is,
     the difference between its maximum and minimum value. The method aims to center the
     variables at 0, and rescale the distribution between -1 and 1.
@@ -50,7 +52,6 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
     Constant variables will raise an error due to division by zero.
 
     More details in the :ref:`User Guide <mean_normalisation_scaler>`.
-
 
     Parameters
     ----------
@@ -89,10 +90,10 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from feature_engine.scaling import MeanNormalizationScaler
+    >>> from feature_engine.scaling import MeanNormalisationScaler
     >>> np.random.seed(42)
     >>> X = pd.DataFrame(dict(x = np.random.lognormal(size = 100)))
-    >>> mns = MeanNormalizationScaler()
+    >>> mns = MeanNormalisationScaler()
     >>> mns.fit(X)
     >>> X = mns.transform(X)
     >>> X.head()
@@ -115,24 +116,32 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Finds the mean and value range of each variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
-            variables to transform.
+            variables to transform. Accepts dataframes from libraries supported by
+            narwhals (e.g. pandas, polars, PyArrow).
 
-        y: pandas Series, default=None
+        y: series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
+        # check input dataframe / select numerical variables (shared base)
         X = super().fit(X)
-        self.mean_ = X[self.variables_].mean().to_dict()
-        self.range_ = (X[self.variables_].max() - X[self.variables_].min()).to_dict()
+
+        nw_X = nw.from_native(X, eager_only=True)
+        selected = nw_X.select(self.variables_)
+
+        self.mean_ = {col: float(selected[col].mean()) for col in self.variables_}
+        self.range_ = {
+            col: float(selected[col].max() - selected[col].min())
+            for col in self.variables_
+        }
 
         # check for constant columns
         constant_columns = [col for col, value in self.range_.items() if value == 0]
@@ -144,48 +153,78 @@ class MeanNormalizationScaler(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Transform the variables using mean normalisation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The data to be transformed.
+        X: dataframe of shape = [n_samples, n_features]
+            The data to be transformed. Accepts dataframes from libraries supported by
+            narwhals (e.g. pandas, polars, PyArrow).
 
         Returns
         -------
-        X_new: pandas dataframe
-            The dataframe with the transformed variables.
+        X_new: dataframe
+            The dataframe with the transformed variables, in the same library as the
+            input.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-        # transformation
-        X[self.variables_] = (X[self.variables_] - self.mean_) / self.range_
+        nw_X = nw.from_native(X, eager_only=True)
+        nw_X = nw_X.with_columns(
+            [
+                ((nw.col(col) - self.mean_[col]) / self.range_[col]).alias(col)
+                for col in self.variables_
+            ]
+        )
+        return nw_X.to_native()
 
-        return X
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The data to be transformed.
+        X: dataframe of shape = [n_samples, n_features]
+            The data to be transformed. Accepts dataframes from libraries supported by
+            narwhals (e.g. pandas, polars, PyArrow).
 
         Returns
         -------
-        X_tr: pandas dataframe
-            The dataframe with the transformed variables.
+        X_tr: dataframe
+            The dataframe with the transformed variables, in the same library as the
+            input.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-        # inverse transform
-        X[self.variables_] = X[self.variables_] * self.range_ + self.mean_
+        nw_X = nw.from_native(X, eager_only=True)
+        nw_X = nw_X.with_columns(
+            [
+                (nw.col(col) * self.range_[col] + self.mean_[col]).alias(col)
+                for col in self.variables_
+            ]
+        )
+        return nw_X.to_native()
 
-        return X
+
+# TODO: remove in version 2.1.0
+class MeanNormalizationScaler(MeanNormalisationScaler):
+    def __init__(
+        self,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+    ) -> None:
+        warnings.warn(
+            "MeanNormalizationScaler was deprecated in favour of "
+            "MeanNormalisationScaler in version 2.0.0 and will be removed in "
+            "version 2.1.0. To silence this warning, use MeanNormalisationScaler "
+            "instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(variables=variables, return_empty=return_empty)
