@@ -179,7 +179,7 @@ Missing Data Imputation: Imputers
 Missing data imputation consists in replacing missing values in categorical data and numerical variables with estimates
 of those nan values or arbitrary data points. Feature-engine supports the following missing data imputation methods:
 
-- :doc:`api_doc/imputation/MeanImputer`: replaces missing data in numerical variables with the mean or median
+- :doc:`api_doc/imputation/MeanMedianImputer`: replaces missing data in numerical variables with the mean or median
 - :doc:`api_doc/imputation/ArbitraryNumberImputer`: replaces missing data in numerical variables with an arbitrary number
 - :doc:`api_doc/imputation/EndTailImputer`: replaces missing data in numerical variables with numbers at the distribution tails
 - :doc:`api_doc/imputation/CategoricalImputer`: replaces missing data with an arbitrary string or with the most frequent category

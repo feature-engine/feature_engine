@@ -26,7 +26,7 @@ from feature_engine.encoding import (
 )
 from feature_engine.imputation import (
     AddMissingIndicator,
-    ArbitraryNumberImputer,
+    ArbitraryImputer,
     CategoricalImputer,
     DropMissingData,
     EndTailImputer,
@@ -87,7 +87,7 @@ def test_sklearn_compatible_creator(estimator, check):
 # imputation
 @parametrize_with_checks(
     [
-        MeanImputer(),
+        MeanMedianImputer(),
         ArbitraryNumberImputer(),
         CategoricalImputer(fill_value=0, ignore_format=True),
         EndTailImputer(),

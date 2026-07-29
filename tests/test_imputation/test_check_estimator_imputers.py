@@ -7,7 +7,7 @@ from sklearn.utils.fixes import parse_version
 
 from feature_engine.imputation import (
     MissingIndicator,
-    ArbitraryNumberImputer,
+    ArbitraryImputer,
     CategoricalImputer,
     DropMissingData,
     EndTailImputer,
@@ -17,7 +17,7 @@ from feature_engine.imputation import (
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 
 _estimators = [
-    MeanImputer(),
+    MeanMedianImputer(),
     ArbitraryNumberImputer(),
     CategoricalImputer(fill_value=0, ignore_format=True),
     EndTailImputer(),

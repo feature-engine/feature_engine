@@ -104,7 +104,7 @@ Documentation
     - Expanded user guide on how to use `CyclicalFeatures` with explanation and demos of what these features are (`Soledad Galli <https://github.com/solegalli>`_)
     - Added a Jupyter notebook with a demo of the `CyclicalFeatures` class (`Soledad Galli <https://github.com/solegalli>`_)
     - We now display all available methods in the documentation methods summary (`Soledad Galli <https://github.com/solegalli>`_)
-    - Fixes typo in `ArbitraryNumberImputer` documentation (`Tim Vink <https://github.com/timvink>`_)
+    - Fixes typo in `ArbitraryImputer` documentation (`Tim Vink <https://github.com/timvink>`_)
 
 
 Deprecations
