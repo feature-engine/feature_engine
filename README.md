@@ -119,7 +119,6 @@ Please share your story by answering 1 quick question
 
 ### Variable Transformation methods
 * LogTransformer
-* LogCpTransformer
 * ReciprocalTransformer
 * ArcsinTransformer
 * PowerTransformer
