@@ -107,8 +107,8 @@ importing the required libraries:
 	from sklearn.datasets import fetch_openml
 	from sklearn.pipeline import make_pipeline
 	from sklearn.model_selection import train_test_split
-	from feature_engine.imputation import MeanImputer
-	from feature_engine.imputation import MissingIndicator
+	from feature_engine.imputation import MeanMedianImputer
+	from feature_engine.imputation import AddMissingIndicator
 	
 
 We'll use the `house prices dataset <https://www.openml.org/search?type=data&status=active&id=42165>`_
@@ -217,7 +217,7 @@ Imputing missing values alongside missing indicators
 Mean or median imputation are commonly done alongside adding missing indicators.
 We can add missing indicators with :class:`MissingIndicator()` from feature-engine.
 
-We can chain :class:`MissingIndicator()` with :class:`MeanImputer()` using a
+We can chain :class:`AddMissingIndicator()` with :class:`MeanMedianImputer()` using a 
 `scikit-learn pipeline <https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html>`_.
 
 For example, let's create an imputation pipeline to add missing indicators and then
@@ -227,8 +227,8 @@ impute the missing values:
 
 	# Create imputation pipeline
 	imputer = make_pipeline(
-		MissingIndicator(),
-		MeanImputer()
+		AddMissingIndicator(),
+		MeanMedianImputer()
 	)
 
 	# Fit the pipeline

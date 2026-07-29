@@ -228,7 +228,7 @@ Renaming of Parameters
 We renamed a few parameters to unify the nomenclature across the Package.
 
     - **EndTailImputer**: the parameter ``distribution`` is now called ``imputation_method`` to unify convention among imputers. To impute using the IQR, we now need to pass ``imputation_method="iqr"`` instead of ``imputation_method="skewed"``.
-    - **AddMissingIndicator**: the parameter ``missing_only`` now takes the boolean values ``True`` or ``False``.
+    - **MissingIndicator**: the parameter ``missing_only`` now takes the boolean values ``True`` or ``False``.
     - **Winzoriser and OutlierTrimmer**: the parameter ``distribution`` is now called ``capping_method`` to unify names across Feature-engine transformers.
 
 

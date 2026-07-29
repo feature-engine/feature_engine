@@ -102,7 +102,7 @@ Feature-engine's imputers' main characteristics
     Transformer                     Numerical variables	  Categorical variables	    Description
 ================================== ===================== ======================= ====================================================================================
 :class:`MeanMedianImputer()`	        √	                 ×	                    Replaces missing values with the mean or median
-:class:`ArbitraryNumberImputer()`	    √	                 x	                    Replaces missing values with an arbitrary value
+:class:`ArbitraryImputer()`	    √	                 x	                    Replaces missing values with an arbitrary value
 :class:`EndTailImputer()`	            √	                 ×	                    Replaces missing values with a value at the end of the distribution
 :class:`CategoricalImputer()`           ×	                 √	                    Replaces missing values with the most frequent category or an arbitrary string
 :class:`RandomSampleImputer()`	        √	                 √	                    Replaces missing values with random value extractions from the variable
@@ -341,7 +341,7 @@ Imputers
    :maxdepth: 1
 
    MeanMedianImputer
-   ArbitraryNumberImputer
+   ArbitraryImputer
    EndTailImputer
    CategoricalImputer
    RandomSampleImputer

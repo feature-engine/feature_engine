@@ -58,7 +58,7 @@ Enhancements
 BUG
 ~~~
 
-- Fixed dataframe fragmentation warning in `AddMissingIndicator`. (`Fathy  <https://github.com/mo1998>`_)
+- Fixed dataframe fragmentation warning in `MissingIndicator`. (`Fathy  <https://github.com/mo1998>`_)
 
 Code maintenance
 ~~~~~~~~~~~~~~~~

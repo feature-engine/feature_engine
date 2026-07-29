@@ -18,7 +18,7 @@ from tests.estimator_checks.estimator_checks import check_feature_engine_estimat
 
 _estimators = [
     MeanMedianImputer(),
-    ArbitraryNumberImputer(),
+    ArbitraryImputer(),
     CategoricalImputer(fill_value=0, ignore_format=True),
     EndTailImputer(),
     MissingIndicator(),

@@ -126,8 +126,8 @@ pickle (.pkl). Here is an example of how to do it:
     from feature_engine.encoding import RareLabelEncoder, MeanEncoder
     from feature_engine.discretisation import DecisionTreeDiscretiser
     from feature_engine.imputation import (
-        MissingIndicator,
-        MeanImputer,
+        AddMissingIndicator,
+        MeanMedianImputer,
         CategoricalImputer,
     )
 

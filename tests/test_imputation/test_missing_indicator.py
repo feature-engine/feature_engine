@@ -189,6 +189,14 @@ def test_add_missing_indicator_deprecation_warning():
         FutureWarning,
         match="Use MissingIndicator instead",
     ):
+        AddMissingIndicator()
+
+
+def test_add_missing_indicator_deprecation_warning():
+    with pytest.warns(
+        FutureWarning,
+        match="Use MissingIndicator instead",
+    ):
 <<<<<<< HEAD
         AddMissingIndicator()
 =======
