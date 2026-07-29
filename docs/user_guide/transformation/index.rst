@@ -48,6 +48,7 @@ Transformers
    :maxdepth: 1
 
    LogTransformer
+   LogCpTransformer
    ReciprocalTransformer
    ArcsinTransformer
    ArcSinhTransformer
