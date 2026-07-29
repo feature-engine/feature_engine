@@ -2,11 +2,11 @@
 
 .. currentmodule:: feature_engine.imputation
 
-AddMissingIndicator
-===================
+MissingIndicator
+================
 
 
-The :class:`AddMissingIndicator()` adds a binary variable indicating if observations are
+The :class:`MissingIndicator()` adds a binary variable indicating if observations are
 missing (missing indicator). It adds missing indicators to both categorical and numerical
 variables.
 
@@ -16,7 +16,7 @@ automatically add indicators to all variables.
 
 .. attention::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`AddMissingIndicator()` used to
+    **New in version 2.0:** When `variables` is `None`, :class:`MissingIndicator()` used to
     raise an error if the dataframe contained no variables. You can now
     set the new parameter `return_empty` to `True` to make the transformer return an
     empty list of variables and skip adding the missing indicators instead, leaving the dataframe
@@ -51,7 +51,7 @@ First, let's load the data and separate it into train and test:
 
     from sklearn.datasets import fetch_openml
     from sklearn.model_selection import train_test_split
-    from feature_engine.imputation import AddMissingIndicator
+    from feature_engine.imputation import MissingIndicator
 
     # Load dataset
     data = fetch_openml(name='house_prices', as_frame=True)
@@ -70,21 +70,21 @@ Now we set up the imputer to add missing indicators to the 4 indicated variables
 .. code:: python
 
     # set up the imputer
-    addBinary_imputer = AddMissingIndicator(
+    addBinary_imputer = MissingIndicator(
         variables=['Alley', 'MasVnrType', 'LotFrontage', 'MasVnrArea'],
     )
 
     # fit the imputer
     addBinary_imputer.fit(X_train)
 
-Because we left the default value for `missing_only`, :class:`AddMissingIndicator()`
+Because we left the default value for `missing_only`, :class:`MissingIndicator()`
 will check if the variables indicated above have missing data in X_train. If they do,
 missing indicators will be added for all 4 variables looking forward. If one of them
 had not had missing data in X_train, missing indicators would have been added to the
 remaining 3 variables only.
 
 We can know which variables will have missing indicators by looking at the variable list
-in :class:`AddMissingIndicator()`'s attribute `variables_`.
+in :class:`MissingIndicator()`'s attribute `variables_`.
 
 Now, we can go ahead and add the missing indicators:
 

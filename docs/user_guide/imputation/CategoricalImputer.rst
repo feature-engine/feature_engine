@@ -309,7 +309,7 @@ unnecessary noise.
 
     Imputation with the most frequent category will blend the missing values with the most
     common values of the variable. Hence, it is common practice to add dummy variables to
-    indicate that the values were originally missing. See :class:`AddMissingIndicator`.
+    indicate that the values were originally missing. See :class:`MissingIndicator`.
 
 Combining imputation with data analysis is useful to decide the most convenient imputation
 method as well as the impact of the imputation on the variable distribution.

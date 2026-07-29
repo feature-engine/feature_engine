@@ -17,7 +17,7 @@ The following table summarises each imputer's functionality:
 :class:`EndTailImputer()`	            √	                 ×	                    Replaces missing values with a value at the end of the distribution
 :class:`CategoricalImputer()`           ×	                 √	                    Replaces missing values with the most frequent category or an arbitrary string
 :class:`RandomSampleImputer()`	        √	                 √	                    Replaces missing values with random value extractions from the variable
-:class:`AddMissingIndicator()`	        √	                 √	                    Adds a binary variable to flag missing observations
+:class:`MissingIndicator()`	        √	                 √	                    Adds a binary variable to flag missing observations
 :class:`DropMissingData()`	            √	                 √	                    Removes observations with missing data from the dataset
 ================================== ===================== ======================= ====================================================================================
 
@@ -32,5 +32,5 @@ Imputers
    EndTailImputer
    CategoricalImputer
    RandomSampleImputer
-   AddMissingIndicator
+   MissingIndicator
    DropMissingData
