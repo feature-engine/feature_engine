@@ -88,7 +88,7 @@ Please share your story by answering 1 quick question
 
 ### Imputation Methods
 * MeanMedianImputer
-* ArbitraryNumberImputer
+* ArbitraryImputer
 * RandomSampleImputer
 * EndTailImputer
 * CategoricalImputer

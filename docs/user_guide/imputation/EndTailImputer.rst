@@ -17,7 +17,7 @@ the variable distribution.
 .. tip::
 
     The :class:`EndTailImputer()` **"automates"** the work of the
-    :class:`ArbitraryNumberImputer()` by automatically finding "arbitrary values"
+    :class:`ArbitraryImputer()` by automatically finding "arbitrary values"
     far out at the end of the variable distributions.
 
 :class:`EndTailImputer()` works only with numerical variables. You can impute only a
