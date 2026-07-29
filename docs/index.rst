@@ -184,7 +184,7 @@ of those nan values or arbitrary data points. Feature-engine supports the follow
 - :doc:`api_doc/imputation/EndTailImputer`: replaces missing data in numerical variables with numbers at the distribution tails
 - :doc:`api_doc/imputation/CategoricalImputer`: replaces missing data with an arbitrary string or with the most frequent category
 - :doc:`api_doc/imputation/RandomSampleImputer`: replaces missing data by random sampling observations from the variable
-- :doc:`api_doc/imputation/AddMissingIndicator`: adds a binary indicator to flag observations with missing data
+- :doc:`api_doc/imputation/MissingIndicator`: adds a binary indicator to flag observations with missing data
 - :doc:`api_doc/imputation/DropMissingData`: removes observations (rows) containing missing values from the dataframe
 
 Categorical Encoders: Encoders

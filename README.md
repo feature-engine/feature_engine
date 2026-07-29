@@ -92,7 +92,7 @@ Please share your story by answering 1 quick question
 * RandomSampleImputer
 * EndTailImputer
 * CategoricalImputer
-* AddMissingIndicator
+* MissingIndicator
 * DropMissingData
 
 ### Encoding Methods

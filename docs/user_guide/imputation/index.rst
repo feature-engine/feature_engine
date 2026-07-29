@@ -106,7 +106,7 @@ Feature-engine's imputers' main characteristics
 :class:`EndTailImputer()`	            √	                 ×	                    Replaces missing values with a value at the end of the distribution
 :class:`CategoricalImputer()`           ×	                 √	                    Replaces missing values with the most frequent category or an arbitrary string
 :class:`RandomSampleImputer()`	        √	                 √	                    Replaces missing values with random value extractions from the variable
-:class:`AddMissingIndicator()`	        √	                 √	                    Adds a binary variable to flag missing observations
+:class:`MissingIndicator()`	        √	                 √	                    Adds a binary variable to flag missing observations
 :class:`DropMissingData()`	            √	                 √	                    Removes observations with missing data from the dataset
 ================================== ===================== ======================= ====================================================================================
 
@@ -279,7 +279,7 @@ methods, such as mean-median for numerical data or frequent category imputation 
 
 - Expands the dimensionality of the data.
 
-The :class:`AddMissingIndicator()` adds missing indicators to the dataset.
+The :class:`MissingIndicator()` adds missing indicators to the dataset.
 
 
 Complete case analysis
@@ -345,5 +345,5 @@ Imputers
    EndTailImputer
    CategoricalImputer
    RandomSampleImputer
-   AddMissingIndicator
+   MissingIndicator
    DropMissingData
