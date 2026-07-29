@@ -2,11 +2,15 @@
 
 from typing import List, Union
 
-import pandas as pd
-from pandas.api.types import is_numeric_dtype as is_numeric
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame
+from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
+    _nw_is_categorical_and_is_datetime,
+    _nw_is_date_or_datetime,
 )
 from feature_engine.variable_handling.dtypes import DATETIME_TYPES
 
@@ -14,7 +18,7 @@ Variables = Union[int, str, List[Union[str, int]]]
 
 
 def check_numerical_variables(
-    X: pd.DataFrame, variables: Variables
+    X: IntoDataFrame, variables: Variables
 ) -> List[Union[str, int]]:
     """
     Checks that the variables in the list are of type numerical.
@@ -23,8 +27,9 @@ def check_numerical_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset.
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     variables : List
         The list with the names of the variables to check.
@@ -51,7 +56,15 @@ def check_numerical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if len(X[variables].select_dtypes(exclude="number").columns) > 0:
+    if nwd.is_pandas_dataframe(X):
+        not_numerical = len(X[variables].select_dtypes(exclude="number").columns) > 0
+    else:
+        sub_X = nw.from_native(X, eager_only=True).select(variables)
+        not_numerical = any(
+            not sub_X.schema[column].is_numeric() for column in sub_X.columns
+        )
+
+    if not_numerical:
         raise TypeError(
             "Some of the variables are not numerical. Please cast them as "
             "numerical before using this transformer."
@@ -61,7 +74,7 @@ def check_numerical_variables(
 
 
 def check_categorical_variables(
-    X: pd.DataFrame, variables: Variables
+    X: IntoDataFrame, variables: Variables
 ) -> List[Union[str, int]]:
     """
     Checks that the variables in the list are of type object or categorical.
@@ -70,8 +83,9 @@ def check_categorical_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     variables : list
         The list with the names of the variables to check.
@@ -80,6 +94,13 @@ def check_categorical_variables(
     -------
     variables: List
         The names of the categorical variables.
+
+    Notes
+    -----
+    For polars (and other non-pandas dataframes), plain string columns are
+    accepted as categorical. Polars has no separate "object" dtype the way
+    pandas does, so its `String` dtype is the only way to represent free-form
+    text and is treated as categorical here.
 
     Examples
     --------
@@ -98,7 +119,18 @@ def check_categorical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0:
+    if nwd.is_pandas_dataframe(X):
+        not_categorical = (
+            len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0
+        )
+    else:
+        sub_X = nw.from_native(X, eager_only=True).select(variables)
+        not_categorical = any(
+            not isinstance(sub_X.schema[column], (nw.Categorical, nw.Enum, nw.String))
+            for column in sub_X.columns
+        )
+
+    if not_categorical:
         raise TypeError(
             "Some of the variables are not categorical. Please cast them as "
             "object or categorical before using this transformer."
@@ -108,7 +140,7 @@ def check_categorical_variables(
 
 
 def check_datetime_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     variables: Variables,
 ) -> List[Union[str, int]]:
     """
@@ -119,8 +151,9 @@ def check_datetime_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     variables : list
         The list with the names of the variables to check.
@@ -129,6 +162,13 @@ def check_datetime_variables(
     -------
     variables: List
         The names of the datetime variables.
+
+    Notes
+    -----
+    For pandas dataframes, string columns are parsed with pandas' flexible,
+    dateutil-backed date guessing. For polars (and other non-pandas dataframes),
+    only ISO-8601 strings and native `Date`/`Datetime` columns are recognised -
+    polars has no equivalent flexible guesser.
 
     Examples
     --------
@@ -147,11 +187,27 @@ def check_datetime_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    # find non datetime variables, if any:
-    non_datetime_vars = []
-    for column in X[variables].select_dtypes(exclude=DATETIME_TYPES):
-        if is_numeric(X[column]) or not _is_categorical_and_is_datetime(X[column]):
-            non_datetime_vars.append(column)
+    if nwd.is_pandas_dataframe(X):
+        # find non datetime variables, if any:
+        non_datetime_vars = []
+        for column in X[variables].select_dtypes(exclude=DATETIME_TYPES):
+            if is_numeric(X[column]) or not _is_categorical_and_is_datetime(
+                X[column]
+            ):
+                non_datetime_vars.append(column)
+    else:
+        sub_X = nw.from_native(X, eager_only=True).select(variables)
+        candidates = [
+            column
+            for column in sub_X.columns
+            if not _nw_is_date_or_datetime(sub_X.schema[column])
+        ]
+        non_datetime_vars = [
+            column
+            for column in candidates
+            if sub_X.schema[column].is_numeric()
+            or not _nw_is_categorical_and_is_datetime(sub_X[column])
+        ]
 
     if len(non_datetime_vars) > 0:
         raise TypeError(
@@ -162,7 +218,7 @@ def check_datetime_variables(
 
 
 def check_all_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     variables: Variables,
 ) -> List[Union[str, int]]:
     """
@@ -172,8 +228,9 @@ def check_all_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     variables : list
         The list with the names of the variables to check.
@@ -196,13 +253,15 @@ def check_all_variables(
     >>> vars_all
     ['var_num', 'var_cat', 'var_date']
     """
+    columns = nw.from_native(X, eager_only=True).columns
+
     if isinstance(variables, (str, int)):
-        if variables not in X.columns.to_list():
+        if variables not in columns:
             raise KeyError(f"The variable {variables} is not in the dataframe.")
         variables_ = [variables]
 
     else:
-        if not set(variables).issubset(set(X.columns)):
+        if not set(variables).issubset(set(columns)):
             raise KeyError("Some of the variables are not in the dataframe.")
 
         variables_ = variables

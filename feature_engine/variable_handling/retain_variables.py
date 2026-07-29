@@ -2,18 +2,22 @@
 
 from typing import List, Union
 
+import narwhals as nw
+from narwhals.typing import IntoDataFrame
+
 Variables = Union[int, str, List[Union[str, int]]]
 
 
-def retain_variables_if_in_df(X, variables):
+def retain_variables_if_in_df(X: IntoDataFrame, variables):
     """Returns the subset of variables in the list that are present in the dataframe.
 
     More details in the :ref:`User Guide <retain_vars>`.
 
     Parameters
     ----------
-    X:  pandas dataframe of shape = [n_samples, n_features]
-        The dataset.
+    X:  dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     variables: string, int or list of strings or int.
         The names of the variables to check.
@@ -39,7 +43,8 @@ def retain_variables_if_in_df(X, variables):
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    variables_in_df = [var for var in variables if var in X.columns]
+    columns = nw.from_native(X, eager_only=True).columns
+    variables_in_df = [var for var in variables if var in columns]
 
     # Raise an error if no column is left to work with.
     if len(variables_in_df) == 0:

@@ -1,4 +1,8 @@
+from datetime import date
+
+import narwhals as nw
 import pandas as pd
+import polars as pl
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
@@ -6,7 +10,19 @@ from feature_engine.variable_handling._variable_type_checks import (
     _is_categories_num,
     _is_convertible_to_dt,
     _is_convertible_to_num,
+    _nw_is_categorical_and_is_datetime,
+    _nw_is_categorical_and_is_not_datetime,
+    _nw_is_convertible_to_dt,
+    _nw_is_convertible_to_num,
+    _nw_is_date_or_datetime,
 )
+
+
+def nw_series(values, dtype=None):
+    s = pl.Series("x", values)
+    if dtype is not None:
+        s = s.cast(dtype)
+    return nw.from_native(s, series_only=True)
 
 
 def test_is_categories_num(df):
@@ -91,3 +107,94 @@ def test_is_categorical_and_is_not_datetime(df):
     # Categorical should be True (it hits the 'if' branch)
     s_cat = pd.Series(["a", "b"], dtype="category")
     assert _is_categorical_and_is_not_datetime(s_cat) is True
+
+
+# ---------------------------------------------------------------------------
+# narwhals (polars) equivalents
+# ---------------------------------------------------------------------------
+
+
+def test_nw_is_date_or_datetime():
+    assert _nw_is_date_or_datetime(nw_series([date(2020, 1, 1)]).dtype) is True
+    assert (
+        _nw_is_date_or_datetime(nw_series(["2020-01-01"]).str.to_datetime().dtype)
+        is True
+    )
+    assert _nw_is_date_or_datetime(nw_series(["a", "b"]).dtype) is False
+    assert _nw_is_date_or_datetime(nw_series([1, 2, 3]).dtype) is False
+
+
+def test_nw_is_convertible_to_num():
+    assert _nw_is_convertible_to_num(nw_series(["20", "21", "19"])) is True
+    assert _nw_is_convertible_to_num(nw_series(["a", "b"])) is False
+    assert (
+        _nw_is_convertible_to_num(nw_series(["20", "21"], dtype=pl.Categorical))
+        is True
+    )
+
+
+def test_nw_is_convertible_to_dt():
+    assert _nw_is_convertible_to_dt(nw_series(["2020-01-01", "2020-01-02"])) is True
+    assert _nw_is_convertible_to_dt(nw_series(["a", "b"])) is False
+    assert _nw_is_convertible_to_dt(nw_series(["20", "21"])) is False
+
+    # polars has no dateutil-style guesser, unlike pandas, so non-ISO date
+    # strings are not recognised
+    assert _nw_is_convertible_to_dt(nw_series(["01-Jan-2010"])) is False
+
+
+def test_nw_is_categorical_and_is_datetime():
+    assert (
+        _nw_is_categorical_and_is_datetime(
+            nw_series(["2020-01-01", "2020-01-02"], dtype=pl.Categorical)
+        )
+        is True
+    )
+    assert (
+        _nw_is_categorical_and_is_datetime(nw_series(["a", "b"], dtype=pl.Categorical))
+        is False
+    )
+    assert _nw_is_categorical_and_is_datetime(nw_series(["2020-01-01"])) is True
+    assert _nw_is_categorical_and_is_datetime(nw_series(["20", "21"])) is False
+    assert _nw_is_categorical_and_is_datetime(nw_series(["a", "b"])) is False
+
+    # an explicit Enum is always treated as categorical, never as datetime
+    enum_dtype = pl.Enum(["2020-01-01", "2020-01-02"])
+    assert (
+        _nw_is_categorical_and_is_datetime(
+            nw_series(["2020-01-01", "2020-01-02"], dtype=enum_dtype)
+        )
+        is False
+    )
+
+    # numeric should be False
+    assert _nw_is_categorical_and_is_datetime(nw_series([1, 2, 3])) is False
+
+
+def test_nw_is_categorical_and_is_not_datetime():
+    assert (
+        _nw_is_categorical_and_is_not_datetime(
+            nw_series(["2020-01-01", "2020-01-02"], dtype=pl.Categorical)
+        )
+        is False
+    )
+    assert (
+        _nw_is_categorical_and_is_not_datetime(
+            nw_series(["a", "b"], dtype=pl.Categorical)
+        )
+        is True
+    )
+    assert _nw_is_categorical_and_is_not_datetime(nw_series(["2020-01-01"])) is False
+    assert _nw_is_categorical_and_is_not_datetime(nw_series(["20", "21"])) is True
+    assert _nw_is_categorical_and_is_not_datetime(nw_series(["a", "b"])) is True
+
+    # an explicit Enum is always treated as categorical
+    assert (
+        _nw_is_categorical_and_is_not_datetime(
+            nw_series(["a", "b"], dtype=pl.Enum(["a", "b"]))
+        )
+        is True
+    )
+
+    # numeric should be False
+    assert _nw_is_categorical_and_is_not_datetime(nw_series([1, 2, 3])) is False

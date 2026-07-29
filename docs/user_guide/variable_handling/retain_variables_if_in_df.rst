@@ -59,6 +59,35 @@ We see the names of the subset of variables that are in the dataframe below:
 If none of variables in the list are in the dataset, :class:`retain_variables_if_in_df()`
 will raise an error.
 
+With polars
+-----------
+
+:class:`retain_variables_if_in_df()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from datetime import datetime
+    from feature_engine.variable_handling import retain_variables_if_in_df
+
+    df = pl.DataFrame({
+        "Name": ["tom", "nick", "krish", "jack"],
+        "City": ["London", "Manchester", "Liverpool", "Bristol"],
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+        "dob": [datetime(2020, 2, 24, 0, i) for i in range(4)],
+    })
+
+    vars_in_df = retain_variables_if_in_df(df, variables = ["Name", "City", "Dogs"])
+
+    vars_in_df
+
+We see the names of the subset of variables that are in the dataframe below:
+
+.. code:: python
+
+    ['Name', 'City']
+
 Uses
 ----
 
