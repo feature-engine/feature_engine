@@ -1,5 +1,3 @@
-:orphan:
-
 .. _log_cp:
 
 .. currentmodule:: feature_engine.transformation
