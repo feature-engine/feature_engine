@@ -5,7 +5,6 @@ import pytest
 from sklearn.datasets import (
     make_classification,
     load_breast_cancer,
-    fetch_california_housing,
 )
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_selection import (
@@ -300,8 +299,9 @@ def test_mrmr_mid_and_miq_classif():
     pd.testing.assert_frame_equal(X.drop(to_drop, axis=1), Xtr)
 
 
-def test_mrmr_fcd_and_fcq_regression():
-    X, y = fetch_california_housing(return_X_y=True, as_frame=True)
+def test_mrmr_fcd_and_fcq_regression(static_california_housing):
+    X = static_california_housing
+    y = X["MedHouseVal"]
 
     selected = ["MedInc", "Latitude", "HouseAge", "AveRooms", "AveOccup"]
     to_drop = [f for f in X.columns if f not in selected]
