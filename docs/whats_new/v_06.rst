@@ -81,7 +81,7 @@ Version 0.4.0
 
 Major Changes:
     - **Deprecated**: the ``FrequentCategoryImputer`` was integrated into the class ``CategoricalVariableImputer``. To perform frequent category imputation now use: ``CategoricalVariableImputer(imputation_method='frequent')``
-    - **Renamed**: the ``AddNaNBinaryImputer`` is now called ``MissingIndicator``.
+    - **Renamed**: the ``AddNaNBinaryImputer`` is now called ``AddMissingIndicator``.
     - **New**: the ``OutlierTrimmer`` was introduced into the package and allows you to remove outliers from the dataset
 
 Minor Changes:
