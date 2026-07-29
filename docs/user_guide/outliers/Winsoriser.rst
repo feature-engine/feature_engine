@@ -207,7 +207,7 @@ using 1.5 of the IQR to find those limits (param `fold`).
 
 .. code:: python
 
-    from feature_engine.imputation import MeanMedianImputer
+    from feature_engine.imputation import MeanImputer
     from feature_engine.pipeline import Pipeline
     from feature_engine.outliers import Winsoriser
 
@@ -218,7 +218,7 @@ using 1.5 of the IQR to find those limits (param `fold`).
     )
 
     pipe = Pipeline([
-        ("imputer", MeanMedianImputer()),
+        ("imputer", MeanImputer()),
         ("outlier", w),
     ])
 
@@ -286,7 +286,7 @@ As an alternative, let's cap the variables at their 10th percentile on the right
     )
 
     pipe = Pipeline([
-        ("imputer", MeanMedianImputer()),
+        ("imputer", MeanImputer()),
         ("outlier", w),
     ])
 

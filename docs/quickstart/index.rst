@@ -57,7 +57,7 @@ imputation.
     from sklearn.datasets import fetch_openml
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.imputation import MeanMedianImputer
+    from feature_engine.imputation import MeanImputer
 
     # Load dataset
     X, y = fetch_openml(
@@ -76,7 +76,7 @@ imputation.
     )
 
     # set up the imputer
-    median_imputer = MeanMedianImputer(
+    median_imputer = MeanImputer(
         imputation_method='median',
         variables=['LotFrontage', 'MasVnrArea']
     )
@@ -127,7 +127,7 @@ pickle (.pkl). Here is an example of how to do it:
     from feature_engine.discretisation import DecisionTreeDiscretiser
     from feature_engine.imputation import (
         AddMissingIndicator,
-        MeanMedianImputer,
+        MeanImputer,
         CategoricalImputer,
     )
 
@@ -172,7 +172,7 @@ pickle (.pkl). Here is an example of how to do it:
         ('continuous_var_imputer', AddMissingIndicator(variables=['LotFrontage'])),
 
         # Replace NA with the median in 2 variables
-        ('continuous_var_median_imputer', MeanMedianImputer(
+        ('continuous_var_median_imputer', MeanImputer(
             imputation_method='median', variables=['LotFrontage', 'MasVnrArea']
         )),
 

@@ -101,7 +101,7 @@ Feature-engine's imputers' main characteristics
 ================================== ===================== ======================= ====================================================================================
     Transformer                     Numerical variables	  Categorical variables	    Description
 ================================== ===================== ======================= ====================================================================================
-:class:`MeanMedianImputer()`	        √	                 ×	                    Replaces missing values with the mean or median
+:class:`MeanImputer()`	        √	                 ×	                    Replaces missing values with the mean or median
 :class:`ArbitraryNumberImputer()`	    √	                 x	                    Replaces missing values with an arbitrary value
 :class:`EndTailImputer()`	            √	                 ×	                    Replaces missing values with a value at the end of the distribution
 :class:`CategoricalImputer()`           ×	                 √	                    Replaces missing values with the most frequent category or an arbitrary string
@@ -132,7 +132,7 @@ assume that the missing values are close in value to the majority, that is, to t
 
 Data imputed with the mean or median is commonly used to train linear regression and logistic regression models.
 
-The :class:`MeanMedianImputer()` implements mean-median imputation.
+The :class:`MeanImputer()` implements mean-median imputation.
 
 Arbitrary Number Imputation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -340,7 +340,7 @@ Imputers
 .. toctree::
    :maxdepth: 1
 
-   MeanMedianImputer
+   MeanImputer
    ArbitraryNumberImputer
    EndTailImputer
    CategoricalImputer
