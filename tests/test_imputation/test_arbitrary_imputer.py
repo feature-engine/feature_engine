@@ -1,12 +1,12 @@
-import pandas as pd
 import pytest
+import pandas as pd
 
-from feature_engine.imputation import ArbitraryNumberImputer
+from feature_engine.imputation import ArbitraryImputer, ArbitraryNumberImputer
 
 
 def test_impute_with_99_and_automatically_select_variables(df_na):
     # set up the transformer
-    imputer = ArbitraryNumberImputer(arbitrary_number=99, variables=None)
+    imputer = ArbitraryImputer(arbitrary_number=99, variables=None)
     X_transformed = imputer.fit_transform(df_na)
 
     # set up output reference
@@ -33,7 +33,7 @@ def test_impute_with_99_and_automatically_select_variables(df_na):
 
 def test_impute_with_1_and_single_variable_entered_by_user(df_na):
     # set up transformer
-    imputer = ArbitraryNumberImputer(arbitrary_number=-1, variables=["Age"])
+    imputer = ArbitraryImputer(arbitrary_number=-1, variables=["Age"])
     X_transformed = imputer.fit_transform(df_na)
 
     # set up output reference
@@ -56,12 +56,12 @@ def test_impute_with_1_and_single_variable_entered_by_user(df_na):
 
 def test_error_when_arbitrary_number_is_string():
     with pytest.raises(ValueError):
-        ArbitraryNumberImputer(arbitrary_number="arbitrary")
+        ArbitraryImputer(arbitrary_number="arbitrary")
 
 
 def test_dictionary_of_imputation_values(df_na):
     # set up transformer
-    imputer = ArbitraryNumberImputer(imputer_dict={"Age": -42, "Marks": -999})
+    imputer = ArbitraryImputer(imputer_dict={"Age": -42, "Marks": -999})
     X_transformed = imputer.fit_transform(df_na)
 
     # set up expected output
@@ -79,6 +79,14 @@ def test_dictionary_of_imputation_values(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
-def imputer_error_when_dictionary_value_is_string():
+def test_imputer_error_when_dictionary_value_is_string():
     with pytest.raises(ValueError):
-        ArbitraryNumberImputer(imputer_dict={"Age": "arbitrary_number"})
+        ArbitraryImputer(imputer_dict={"Age": "arbitrary_number"})
+
+
+def test_arbitrary_number_imputer_is_deprecated():
+    """ArbitraryNumberImputer should emit a FutureWarning and still work."""
+    with pytest.warns(FutureWarning, match="ArbitraryNumberImputer was deprecated"):
+        imputer = ArbitraryNumberImputer(arbitrary_number=99)
+    assert isinstance(imputer, ArbitraryImputer)
+    assert imputer.arbitrary_number == 99

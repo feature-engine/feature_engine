@@ -1,20 +1,20 @@
-.. _arbitrary_number_imputer:
+.. _arbitrary_imputer:
 
 .. currentmodule:: feature_engine.imputation
 
-ArbitraryNumberImputer
-======================
+ArbitraryImputer
+================
 
-The :class:`ArbitraryNumberImputer()` replaces missing data with an arbitrary numerical
+The :class:`ArbitraryImputer()` replaces missing data with an arbitrary numerical
 value determined by the user. It works only with numerical variables.
 
-The :class:`ArbitraryNumberImputer()` can find and impute all numerical variables
+The :class:`ArbitraryImputer()` can find and impute all numerical variables
 automatically. Alternatively, you can pass a list of the variables you want to impute
 to the `variables` parameter.
 
 .. attention::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`ArbitraryNumberImputer()` used to
+    **New in version 2.0:** When `variables` is `None`, :class:`ArbitraryImputer()` used to
     raise an error if the dataframe contained no numerical variables. You can now
     set the new parameter `return_empty` to `True` to make the transformer return an
     empty list of variables and skip the imputation instead, leaving the dataframe
@@ -23,6 +23,12 @@ to the `variables` parameter.
     tailored pipeline for each one. `return_empty` will default to `True` from version
     2.1 onwards.
 
+.. note::
+
+    **Renamed in version 2.0:** ``ArbitraryNumberImputer`` was renamed to
+    ``ArbitraryImputer``. The old name is still available for backwards compatibility
+    but will be removed in version 2.1.0.
+
 You can impute all variables with the same number, in which case you need to define
 the variables to impute in the `variables` parameter and the imputation number in
 `arbitrary_number` parameter. For example, you can impute varA and varB with 99
@@ -30,7 +36,7 @@ like this:
 
 .. code-block:: python
 
-    transformer = ArbitraryNumberImputer(
+    transformer = ArbitraryImputer(
             variables = ['varA', 'varB'],
             arbitrary_number = 99
             )
@@ -44,7 +50,7 @@ with 99 like this:
 
 .. code-block:: python
 
-    transformer = ArbitraryNumberImputer(
+    transformer = ArbitraryImputer(
             imputer_dict = {'varA' : 1, 'varB': 99}
             )
 
@@ -64,7 +70,7 @@ First, let's load the data and separate it into train and test:
     from sklearn.datasets import fetch_openml
     from sklearn.model_selection import train_test_split
 
-    from feature_engine.imputation import ArbitraryNumberImputer
+    from feature_engine.imputation import ArbitraryImputer
 
     # Load dataset
     X, y = fetch_openml(
@@ -83,13 +89,13 @@ First, let's load the data and separate it into train and test:
         random_state=0,
     )
 
-Now we set up the :class:`ArbitraryNumberImputer()` to impute 2 variables from the
+Now we set up the :class:`ArbitraryImputer()` to impute 2 variables from the
 dataset with the number -999:
 
 .. code:: python
 
 	# set up the imputer
-	arbitrary_imputer = ArbitraryNumberImputer(
+	arbitrary_imputer = ArbitraryImputer(
             arbitrary_number=-999,
             variables=['LotFrontage', 'MasVnrArea'],
             )
