@@ -30,7 +30,7 @@ from sklearn.preprocessing import (
     StandardScaler,
 )
 
-from feature_engine.wrappers import SklearnTransformerWrapper
+from feature_engine.wrappers import SklearnTransformerWrapper, SklearnWrapper
 
 
 if skl_version < "1.7.0":
@@ -79,14 +79,14 @@ def _OneHotEncoder(sparse, drop=None, dtype=np.float64) -> OneHotEncoder:
     ],
 )
 def test_permitted_param_transformer(transformer, df_na):
-    tr = SklearnTransformerWrapper(transformer=transformer)
+    tr = SklearnWrapper(transformer=transformer)
     assert tr.transformer == transformer
 
 
 @pytest.mark.parametrize("transformer", [Lasso(), RandomForestClassifier()])
 def test_error_when_transformer_is_estimator(transformer, df_na):
     with pytest.raises(TypeError):
-        SklearnTransformerWrapper(transformer=transformer)
+        SklearnWrapper(transformer=transformer)
 
 
 if skl_version < "1.7.0":
@@ -108,7 +108,7 @@ else:
 )
 def test_error_not_implemented_transformer(transformer, df_na):
     with pytest.raises(NotImplementedError):
-        SklearnTransformerWrapper(transformer=transformer)
+        SklearnWrapper(transformer=transformer)
 
 
 @pytest.mark.parametrize("transformer", _selectors)
@@ -120,7 +120,7 @@ def test_wrap_selectors(transformer):
 
     # prepare selectors
     sel = clone(transformer)
-    sel_wrap = SklearnTransformerWrapper(transformer=transformer)
+    sel_wrap = SklearnWrapper(transformer=transformer)
 
     # Test:
     # When passing variable list
@@ -156,7 +156,7 @@ def test_wrap_transformers(transformer):
 
     # prepare selectors
     tr = clone(transformer)
-    tr_wrap = SklearnTransformerWrapper(transformer=transformer)
+    tr_wrap = SklearnWrapper(transformer=transformer)
 
     # Test:
     # When passing variable list
@@ -188,7 +188,7 @@ def test_wrap_polynomial_features():
 
     # prepare selectors
     tr = PolynomialFeatures()
-    tr_wrap = SklearnTransformerWrapper(transformer=PolynomialFeatures())
+    tr_wrap = SklearnWrapper(transformer=PolynomialFeatures())
 
     # Test:
     # When passing variable list
@@ -219,7 +219,7 @@ def test_wrap_polynomial_features_get_features_name_out():
     X = fetch_california_housing(as_frame=True).frame
 
     varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
-    tr_wrap = SklearnTransformerWrapper(
+    tr_wrap = SklearnWrapper(
         transformer=PolynomialFeatures(), variables=varlist
     )
 
@@ -277,7 +277,7 @@ def test_wrap_simple_imputer(df_na):
         if col not in variables_to_impute
     ]
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=SimpleImputer(fill_value=-999, strategy="constant"),
         variables=variables_to_impute,
     )
@@ -304,7 +304,7 @@ def test_sklearn_imputer_object_with_constant(df_na):
         if col not in variables_to_impute
     ]
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=SimpleImputer(fill_value="missing", strategy="constant"),
         variables=variables_to_impute,
     )
@@ -324,7 +324,7 @@ def test_sklearn_imputer_object_with_constant(df_na):
 
 
 def test_sklearn_imputer_allfeatures_with_constant(df_na):
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=SimpleImputer(fill_value="missing", strategy="constant")
     )
 
@@ -343,7 +343,7 @@ def test_sklearn_imputer_allfeatures_with_constant(df_na):
 def test_sklearn_ohe_object_one_feature(df_vartypes):
     variables_to_encode = ["Name"]
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=variables_to_encode,
     )
@@ -384,7 +384,7 @@ def test_sklearn_ohe_object_one_feature(df_vartypes):
 def test_sklearn_ohe_object_many_features(df_vartypes):
     variables_to_encode = ["Name", "City"]
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=variables_to_encode,
     )
@@ -429,7 +429,7 @@ def test_sklearn_ohe_object_many_features(df_vartypes):
 def test_sklearn_ohe_numeric(df_vartypes):
     variables_to_encode = ["Age"]
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=variables_to_encode,
     )
@@ -468,7 +468,7 @@ def test_sklearn_ohe_numeric(df_vartypes):
 
 
 def test_sklearn_ohe_all_features(df_vartypes):
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=_OneHotEncoder(sparse=False, dtype=np.int64)
     )
 
@@ -543,7 +543,7 @@ def test_sklearn_ohe_with_crossvalidation():
         steps=[
             (
                 "encode_cat",
-                SklearnTransformerWrapper(
+                SklearnWrapper(
                     transformer=_OneHotEncoder(drop="first", sparse=False),
                     variables=["AveBedrms_cat"],
                 ),
@@ -560,7 +560,7 @@ def test_sklearn_ohe_with_crossvalidation():
 
 
 def test_wrap_one_hot_encoder_get_features_name_out(df_vartypes):
-    ohe_wrap = SklearnTransformerWrapper(transformer=_OneHotEncoder(sparse=False))
+    ohe_wrap = SklearnWrapper(transformer=_OneHotEncoder(sparse=False))
     ohe_wrap.fit(df_vartypes)
 
     expected_features_all = [
@@ -618,7 +618,7 @@ def test_inverse_transform(transformer):
     X = fetch_california_housing(as_frame=True).frame
     X = X.drop(["Longitude"], axis=1)
 
-    tr_wrap = SklearnTransformerWrapper(transformer=transformer)
+    tr_wrap = SklearnWrapper(transformer=transformer)
 
     # When passing variable list
     varlist = ["MedInc", "HouseAge", "AveRooms", "AveBedrms"]
@@ -650,7 +650,7 @@ def test_error_when_inverse_transform_not_implemented(transformer):
     y = X["MedHouseVal"]
     X = X.drop(["MedHouseVal"], axis=1)
 
-    tr_wrap = SklearnTransformerWrapper(transformer=transformer)
+    tr_wrap = SklearnWrapper(transformer=transformer)
     tr_wrap.fit(X, y)
     X_tr = tr_wrap.transform(X)
 
@@ -664,7 +664,7 @@ def test_error_when_inverse_transform_not_implemented(transformer):
 @pytest.mark.parametrize("transformer", _transformers)
 def test_get_feature_names_out_transformers(varlist, transformer):
     X = fetch_california_housing(as_frame=True).frame
-    tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
+    tr_wrap = SklearnWrapper(transformer=transformer, variables=varlist)
     Xw = tr_wrap.fit_transform(X)
 
     assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
@@ -679,7 +679,7 @@ def test_get_feature_names_out_selectors(varlist, transformer):
     X = fetch_california_housing(as_frame=True).frame
     y = X["MedHouseVal"]
     X = X.drop(["MedHouseVal"], axis=1)
-    tr_wrap = SklearnTransformerWrapper(transformer=transformer, variables=varlist)
+    tr_wrap = SklearnWrapper(transformer=transformer, variables=varlist)
     Xw = tr_wrap.fit_transform(X, y)
 
     assert Xw.columns.to_list() == tr_wrap.get_feature_names_out()
@@ -691,7 +691,7 @@ def test_get_feature_names_out_selectors(varlist, transformer):
 )
 def test_get_feature_names_out_polynomialfeatures(varlist):
     X = fetch_california_housing(as_frame=True).frame
-    tr_wrap = SklearnTransformerWrapper(
+    tr_wrap = SklearnWrapper(
         transformer=PolynomialFeatures(), variables=varlist
     )
     Xw = tr_wrap.fit_transform(X)
@@ -721,7 +721,7 @@ def test_get_feature_names_out_polynomialfeatures(varlist):
 
 @pytest.mark.parametrize("varlist", [["Name", "City"], None])
 def test_get_feature_names_out_ohe(varlist, df_vartypes):
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=_OneHotEncoder(sparse=False, dtype=np.int64),
         variables=varlist,
     )
@@ -750,7 +750,7 @@ def test_function_transformer_works_with_categoricals():
 
     X_expected = pd.DataFrame({"col1": [1.0, 2.0, 3.0], "col2": ["a", "b", "c"]})
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         FunctionTransformer(lambda x: x.astype(np.float64)), variables=["col1"]
     )
 
@@ -764,10 +764,18 @@ def test_function_transformer_works_with_numericals():
 
     X_expected = pd.DataFrame({"col1": [2, 3, 4], "col2": ["a", "b", "c"]})
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         FunctionTransformer(lambda x: x + 1), variables=["col1"]
     )
 
     X_tf = transformer.fit_transform(X)
 
     pd.testing.assert_frame_equal(X_expected, X_tf)
+
+
+def test_sklearn_transformer_wrapper_is_deprecated():
+    """SklearnTransformerWrapper should emit a FutureWarning and still work."""
+    with pytest.warns(FutureWarning, match="SklearnTransformerWrapper was deprecated"):
+        transformer = SklearnTransformerWrapper(transformer=StandardScaler())
+    assert isinstance(transformer, SklearnWrapper)
+    assert isinstance(transformer.transformer, StandardScaler)

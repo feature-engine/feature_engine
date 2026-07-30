@@ -1,6 +1,5 @@
-SklearnTransformerWrapper
-=========================
+SklearnWrapper
+===============
 
-.. autoclass:: feature_engine.wrappers.SklearnTransformerWrapper
+.. autoclass:: feature_engine.wrappers.SklearnWrapper
     :members:
-

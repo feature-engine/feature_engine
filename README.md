@@ -174,7 +174,7 @@ Please share your story by answering 1 quick question
  * MatchVariables
  
 ### Wrappers:
- * SklearnTransformerWrapper
+ * SklearnWrapper
 
 ## Installation
 
