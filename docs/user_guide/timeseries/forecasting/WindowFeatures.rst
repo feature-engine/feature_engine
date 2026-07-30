@@ -404,12 +404,12 @@ Imputing rows with nan
 
 If instead of removing the row with nan in the window features, we want to impute those
 values, we can do so with any of feature-engine's imputers. Here, we will replace nan with
-the arbitrary value -99, using the `ArbitraryNumberImputer` within a pipeline:
+the arbitrary value -99, using the `ArbitraryImputer` within a pipeline:
 
 
 .. code:: python
 
-    from feature_engine.imputation import ArbitraryNumberImputer
+    from feature_engine.imputation import ArbitraryImputer
     from feature_engine.pipeline import Pipeline
 
     win_f = WindowFeatures(
@@ -420,7 +420,7 @@ the arbitrary value -99, using the `ArbitraryNumberImputer` within a pipeline:
 
     pipe = Pipeline([
         ("windows", win_f),
-        ("imputer", ArbitraryNumberImputer(arbitrary_number=-99))
+        ("imputer", ArbitraryImputer(arbitrary_number=-99))
     ])
 
     X_tr = pipe.fit_transform(X, y)
