@@ -1,3 +1,4 @@
+import warnings
 from types import GeneratorType
 from typing import List, Union
 
@@ -58,22 +59,22 @@ Variables = Union[None, int, str, List[Union[str, int]]]
     fit_transform=_fit_transform_docstring,
     get_support=_get_support_docstring,
 )
-class SelectByTargetMeanPerformance(BaseSelector):
+class SelectByTargetEncoding(BaseSelector):
     """
-    SelectByTargetMeanPerformance() uses the mean value of the target per category or
+    SelectByTargetEncoding() uses the mean value of the target per category or
     per interval (if the variable is numerical), as proxy for target estimation. With
     this proxy, the selector determines the performance of each feature based on a
     metric of choice, and then selects the features based on this performance value.
 
-    SelectByTargetMeanPerformance() can evaluate numerical and categorical variables,
+    SelectByTargetEncoding() can evaluate numerical and categorical variables,
     without much prior manipulation. In other words, you don't need to encode the
     categorical variables or transform the numerical variables to assess their
     importance if you use this transformer.
 
-    SelectByTargetMeanPerformance() requires that the dataset is complete, without
+    SelectByTargetEncoding() requires that the dataset is complete, without
     missing data.
 
-    SelectByTargetMeanPerformance() determines the performance of each variable with
+    SelectByTargetEncoding() determines the performance of each variable with
     cross-validation. More specifically:
 
     For each categorical variable:
@@ -181,13 +182,13 @@ class SelectByTargetMeanPerformance(BaseSelector):
     --------
 
     >>> from sklearn.ensemble import RandomForestClassifier
-    >>> from feature_engine.selection import SelectByTargetMeanPerformance
+    >>> from feature_engine.selection import SelectByTargetEncoding
     >>> X = pd.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
     >>>                     x2 = [1,1,1,0,0,0],
     >>>                     x3 = [1,2,1,1,0,1],
     >>>                     x4 = [1,1,1,1,1,1]))
     >>> y = pd.Series([1,0,0,1,1,0])
-    >>> tmp = SelectByTargetMeanPerformance(bins = 3, cv=2,scoring='accuracy')
+    >>> tmp = SelectByTargetEncoding(bins = 3, cv=2,scoring='accuracy')
     >>> tmp.fit_transform(X, y)
         x2  x3  x4
     0   1   1   1
@@ -202,7 +203,7 @@ class SelectByTargetMeanPerformance(BaseSelector):
     >>> X = pd.DataFrame(dict(x1 = ["a","b","a","a","b","b"],
     >>>             x2 = ["a","a","a","b","b","b"]))
     >>> y = pd.Series([1,0,0,1,1,0])
-    >>> tmp = SelectByTargetMeanPerformance(bins = 3, cv=2,scoring='accuracy')
+    >>> tmp = SelectByTargetEncoding(bins = 3, cv=2,scoring='accuracy')
     >>> tmp.fit_transform(X, y)
       x2
     0  a
@@ -356,3 +357,37 @@ class SelectByTargetMeanPerformance(BaseSelector):
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         return tags
+
+
+# TODO: remove in version 2.1.0
+class SelectByTargetMeanPerformance(SelectByTargetEncoding):
+    def __init__(
+        self,
+        variables: Variables = None,
+        bins: int = 5,
+        strategy: str = "equal_width",
+        scoring: str = "roc_auc",
+        cv=3,
+        groups=None,
+        threshold: Union[int, float, None] = None,
+        regression: bool = False,
+        confirm_variables: bool = False,
+    ):
+        warnings.warn(
+            "SelectByTargetMeanPerformance was deprecated in favour of "
+            "SelectByTargetEncoding in version 2.0.0 and will be removed in version "
+            "2.1.0. To silence this warning, use SelectByTargetEncoding instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            variables=variables,
+            bins=bins,
+            strategy=strategy,
+            scoring=scoring,
+            cv=cv,
+            groups=groups,
+            threshold=threshold,
+            regression=regression,
+            confirm_variables=confirm_variables,
+        )

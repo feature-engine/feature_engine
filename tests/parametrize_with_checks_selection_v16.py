@@ -20,7 +20,7 @@ from feature_engine.selection import (
     SelectByInformationValue,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
-    SelectByTargetMeanPerformance,
+    SelectByTargetEncoding,
     SmartCorrelatedSelection,
 )
 
@@ -33,7 +33,7 @@ dcf = DropCorrelatedFeatures()
 dpsi = DropHighPSIFeatures(bins=5)
 sms = SmartCorrelatedSelection()
 sbs = SelectByShuffling(estimator=_logreg, scoring="accuracy")
-sbtm = SelectByTargetMeanPerformance(bins=3, regression=True, scoring="r2")
+sbtm = SelectByTargetEncoding(bins=3, regression=True, scoring="r2")
 sbsfp = SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy")
 rfa = RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy")
 rfe = RecursiveFeatureElimination(estimator=_logreg, scoring="accuracy", threshold=-100)
@@ -49,7 +49,7 @@ EXPECTED_FAILED_CHECKS = {
     "DropHighPSIFeatures": dpsi._more_tags()["_xfail_checks"],
     "SmartCorrelatedSelection": sms._more_tags()["_xfail_checks"],
     "SelectByShuffling": sbs._more_tags()["_xfail_checks"],
-    "SelectByTargetMeanPerformance": sbtm._more_tags()["_xfail_checks"],
+    "SelectByTargetEncoding": sbtm._more_tags()["_xfail_checks"],
     "SelectBySingleFeaturePerformance": sbsfp._more_tags()["_xfail_checks"],
     "RecursiveFeatureAddition": rfa._more_tags()["_xfail_checks"],
     "RecursiveFeatureElimination": rfe._more_tags()["_xfail_checks"],

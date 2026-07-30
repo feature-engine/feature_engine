@@ -59,7 +59,7 @@ Alternative feature selection methods
     Transformer                                Categorical variables   Allows NA	    Description
 ============================================ ======================= ============= ====================================================================================
 :class:`SelectByShuffling()`	                ×	                      ×	            Selects features if shuffling their values causes a drop in model performance
-:class:`SelectByTargetMeanPerformance()`        √                         ×             Using the target mean as performance proxy, selects high performing features
+:class:`SelectByTargetEncoding()`            √                       ×             Using the target mean as performance proxy, selects high performing features
 :class:`ProbeFeatureSelection()`                ×                         ×             Selects features whose importance is greater than those of random variables
 ============================================ ======================= ============= ====================================================================================
 
@@ -79,7 +79,7 @@ Alternative feature selection methods
    DropHighPSIFeatures
    SelectByInformationValue
    SelectByShuffling
-   SelectByTargetMeanPerformance
+   SelectByTargetEncoding
    ProbeFeatureSelection
    MRMR
 

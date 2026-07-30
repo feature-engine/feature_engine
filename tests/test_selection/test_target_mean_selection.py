@@ -3,7 +3,10 @@ import pytest
 
 from sklearn.model_selection import StratifiedKFold, GroupKFold
 
-from feature_engine.selection import SelectByTargetMeanPerformance
+from feature_engine.selection import (
+    SelectByTargetEncoding,
+    SelectByTargetMeanPerformance,
+)
 
 
 def df_classification():
@@ -53,7 +56,7 @@ def test_classification():
 
     X, y = df_classification()
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=None,
         scoring="accuracy",
         threshold=None,
@@ -79,7 +82,7 @@ def test_classification():
     assert sel.feature_performance_ == performance_dict
     pd.testing.assert_frame_equal(sel.transform(X), Xtransformed)
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=["cat_var_A", "cat_var_B", "num_var_A", "num_var_B"],
         scoring="roc_auc",
         threshold=0.9,
@@ -110,7 +113,7 @@ def test_regression():
 
     X, y = df_regression()
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=None,
         bins=2,
         scoring="r2",
@@ -137,7 +140,7 @@ def test_regression():
 
     X, y = df_regression()
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=["cat_var_A", "cat_var_B", "num_var_A", "num_var_B"],
         bins=2,
         scoring="neg_root_mean_squared_error",
@@ -166,7 +169,7 @@ def test_regression():
 def test_cv_generator():
     X, y = df_classification()
     cv = StratifiedKFold(n_splits=2)
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=None,
         scoring="accuracy",
         threshold=None,
@@ -180,23 +183,23 @@ def test_cv_generator():
 
 def test_error_wrong_params():
     with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(scoring="mean_squared")
+        SelectByTargetEncoding(scoring="mean_squared")
     with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(scoring=1)
+        SelectByTargetEncoding(scoring=1)
     with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(threshold="hola")
+        SelectByTargetEncoding(threshold="hola")
     with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(bins="hola")
+        SelectByTargetEncoding(bins="hola")
     with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(strategy="hola")
+        SelectByTargetEncoding(strategy="hola")
     with pytest.raises(ValueError):
-        SelectByTargetMeanPerformance(regression=True, scoring="hola")
+        SelectByTargetEncoding(regression=True, scoring="hola")
 
 
 def test_raises_error_if_evaluating_single_variable_and_threshold_is_None(df_test):
     X, y = df_test
 
-    sel = SelectByTargetMeanPerformance(variables=["var_1"], threshold=None)
+    sel = SelectByTargetEncoding(variables=["var_1"], threshold=None)
 
     with pytest.raises(ValueError):
         sel.fit(X, y)
@@ -206,7 +209,7 @@ def test_test_selector_with_one_variable():
 
     X, y = df_regression()
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=["cat_var_A"],
         bins=2,
         scoring="neg_root_mean_squared_error",
@@ -227,7 +230,7 @@ def test_test_selector_with_one_variable():
 
     X, y = df_regression()
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=["cat_var_B"],
         bins=2,
         scoring="neg_root_mean_squared_error",
@@ -256,7 +259,7 @@ def test_target_mean_selection_with_groups(df_test_with_groups):
     scoring = "neg_mean_absolute_error"
     regression = True
 
-    sel_expected = SelectByTargetMeanPerformance(
+    sel_expected = SelectByTargetEncoding(
         scoring=scoring,
         cv=cv_indices,
         regression=regression,
@@ -264,7 +267,7 @@ def test_target_mean_selection_with_groups(df_test_with_groups):
 
     X_tr_expected = sel_expected.fit_transform(X, y)
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         scoring=scoring,
         cv=cv,
         groups=groups,
@@ -274,3 +277,32 @@ def test_target_mean_selection_with_groups(df_test_with_groups):
     X_tr = sel.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(X_tr, X_tr_expected)
+
+
+def test_select_by_target_mean_performance_is_deprecated():
+    """SelectByTargetMeanPerformance should emit a FutureWarning and still work."""
+    X, y = df_classification()
+
+    with pytest.warns(
+        FutureWarning, match="SelectByTargetMeanPerformance was deprecated"
+    ):
+        sel = SelectByTargetMeanPerformance(
+            variables=None,
+            scoring="accuracy",
+            threshold=None,
+            bins=2,
+            strategy="equal_width",
+            cv=2,
+        )
+    assert isinstance(sel, SelectByTargetEncoding)
+
+    sel_new = SelectByTargetEncoding(
+        variables=None,
+        scoring="accuracy",
+        threshold=None,
+        bins=2,
+        strategy="equal_width",
+        cv=2,
+    )
+
+    pd.testing.assert_frame_equal(sel.fit_transform(X, y), sel_new.fit_transform(X, y))
