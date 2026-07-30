@@ -98,7 +98,7 @@ Please share your story by answering 1 quick question
 ### Encoding Methods
 * OneHotEncoder
 * OrdinalEncoder
-* CountFrequencyEncoder
+* CountEncoder
 * MeanEncoder
 * WoEEncoder
 * RareLabelEncoder

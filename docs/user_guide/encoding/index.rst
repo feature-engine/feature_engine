@@ -215,7 +215,7 @@ categories, we can assign them a frequency or count of '0' explicitly, which rep
 the frequency of the category on the training set, to prevent failure during inference 
 time (i.e., while making predictions) or while encoding live data.
 
-Feature-engine's :class:`CountFrequencyEncoder` implements count and frequency encoding.
+Feature-engine's :class:`CountEncoder` implements count and frequency encoding.
 
 Mean Encoding
 ~~~~~~~~~~~~~
@@ -318,7 +318,7 @@ Summary of feature-engine's encoders characteristics
 =================================== ============ ================= ============== ===============================================================
 :class:`OneHotEncoder()`	           √	            √               √         Adds dummy variables to represent each category
 :class:`OrdinalEncoder()`	           √	            √    	        √         Replaces categories with an integer
-:class:`CountFrequencyEncoder()`	   √	            √               √         Replaces categories with their count or frequency
+:class:`CountEncoder()`             √            √                 √              Replaces categories with their count or frequency
 :class:`MeanEncoder()`                 √	            √               x         Replaces categories with the targe mean value
 :class:`WoEEncoder()`	               x	            √	            x         Replaces categories with the weight of the evidence
 :class:`DecisionTreeEncoder()`	       √	            √     	        √         Replaces categories with the predictions of a decision tree
@@ -357,7 +357,7 @@ Multi-class classification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Finally, some feature-engine's encoders can handle multi-class targets off-the-shelf for
-example the :class:`OneHotEncoder()`, the :class:`CountFrequencyEncoder()` and the
+example the :class:`OneHotEncoder()`, the :class:`CountEncoder()` and the
 :class:`DecisionTreeEncoder()`.
 
 Note that while the :class:`MeanEncoder()` and the :class:`OrdinalEncoder()` will operate
@@ -396,7 +396,7 @@ Encoders
 
    OneHotEncoder
    OrdinalEncoder
-   CountFrequencyEncoder
+   CountEncoder
    MeanEncoder
    WoEEncoder
    StringSimilarityEncoder

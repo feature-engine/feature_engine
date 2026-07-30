@@ -5,14 +5,14 @@ import pytest
 from numpy import nan
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.encoding import CountFrequencyEncoder
+from feature_engine.encoding import CountEncoder, CountFrequencyEncoder
 
 
 # init parameters
 @pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])
 def test_error_if_encoding_method_not_permitted_value(enc_method):
     with pytest.raises(ValueError):
-        CountFrequencyEncoder(encoding_method=enc_method)
+        CountEncoder(encoding_method=enc_method)
 
 
 @pytest.mark.parametrize(
@@ -20,14 +20,14 @@ def test_error_if_encoding_method_not_permitted_value(enc_method):
 )
 def test_error_if_unseen_gets_not_permitted_value(errors):
     with pytest.raises(ValueError):
-        CountFrequencyEncoder(unseen=errors)
+        CountEncoder(unseen=errors)
 
 
 @pytest.mark.parametrize(
     "params", [("count", "raise", True), ("frequency", "ignore", False)]
 )
 def test_init_param_assignment(params):
-    enc = CountFrequencyEncoder(
+    enc = CountEncoder(
         encoding_method=params[0],
         missing_values=params[1],
         ignore_format=params[2],
@@ -42,7 +42,7 @@ def test_init_param_assignment(params):
 # fit and transform
 def test_encode_1_variable_with_counts(df_enc):
     # test case 1: 1 variable, counts
-    encoder = CountFrequencyEncoder(encoding_method="count", variables=["var_A"])
+    encoder = CountEncoder(encoding_method="count", variables=["var_A"])
     X = encoder.fit_transform(df_enc)
 
     # expected result
@@ -83,7 +83,7 @@ def test_encode_1_variable_with_counts(df_enc):
 
 def test_automatically_select_variables_encode_with_frequency(df_enc):
     # test case 2: automatically select variables, frequency
-    encoder = CountFrequencyEncoder(encoding_method="frequency", variables=None)
+    encoder = CountEncoder(encoding_method="frequency", variables=None)
     X = encoder.fit_transform(df_enc)
 
     # expected output
@@ -151,7 +151,7 @@ def test_encoding_when_nan_in_fit_df(df_enc):
     df = df_enc.copy()
     df.loc[len(df)] = [nan, nan, nan]
 
-    encoder = CountFrequencyEncoder(
+    encoder = CountEncoder(
         encoding_method="frequency",
         missing_values="ignore",
     )
@@ -170,7 +170,7 @@ def test_encoding_when_nan_in_fit_df(df_enc):
 
 @pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])
 def test_error_if_encoding_method_not_recognized_in_fit(enc_method, df_enc):
-    enc = CountFrequencyEncoder()
+    enc = CountEncoder()
     enc.encoding_method = enc_method
     with pytest.raises(ValueError) as record:
         enc.fit(df_enc)
@@ -188,7 +188,7 @@ def test_warning_when_df_contains_unseen_categories(df_enc, df_enc_rare):
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
     # check for warning when unseen equals 'ignore'
-    encoder = CountFrequencyEncoder(unseen="ignore")
+    encoder = CountEncoder(unseen="ignore")
     encoder.fit(df_enc)
     with pytest.warns(UserWarning) as record:
         encoder.transform(df_enc_rare)
@@ -205,7 +205,7 @@ def test_error_when_df_contains_unseen_categories(df_enc, df_enc_rare):
 
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
-    encoder = CountFrequencyEncoder(unseen="raise")
+    encoder = CountEncoder(unseen="raise")
     encoder.fit(df_enc)
 
     # check for exception when unseen equals 'raise'
@@ -218,7 +218,7 @@ def test_error_when_df_contains_unseen_categories(df_enc, df_enc_rare):
     # check for no error and no warning when unseen equals 'encode'
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        encoder = CountFrequencyEncoder(unseen="encode")
+        encoder = CountEncoder(unseen="encode")
         encoder.fit(df_enc)
         encoder.transform(df_enc_rare)
 
@@ -231,7 +231,7 @@ def test_no_error_triggered_when_df_contains_unseen_categories_and_unseen_is_enc
 
     # check for no error and no warning when unseen equals 'encode'
     warnings.simplefilter("error")
-    encoder = CountFrequencyEncoder(unseen="encode")
+    encoder = CountEncoder(unseen="encode")
     encoder.fit(df_enc)
     with warnings.catch_warnings():
         encoder.transform(df_enc_rare)
@@ -240,7 +240,7 @@ def test_no_error_triggered_when_df_contains_unseen_categories_and_unseen_is_enc
 @pytest.mark.parametrize("errors", ["raise", "ignore", "encode"])
 def test_fit_raises_error_if_df_contains_na(errors, df_enc_na):
     # test case 4: when dataset contains na, fit method
-    encoder = CountFrequencyEncoder(unseen=errors)
+    encoder = CountEncoder(unseen=errors)
     with pytest.raises(ValueError) as record:
         encoder.fit(df_enc_na)
     msg = (
@@ -254,7 +254,7 @@ def test_fit_raises_error_if_df_contains_na(errors, df_enc_na):
 @pytest.mark.parametrize("errors", ["raise", "ignore", "encode"])
 def test_transform_raises_error_if_df_contains_na(errors, df_enc, df_enc_na):
     # test case 4: when dataset contains na, transform method
-    encoder = CountFrequencyEncoder(unseen=errors)
+    encoder = CountEncoder(unseen=errors)
     encoder.fit(df_enc)
     with pytest.raises(ValueError) as record:
         encoder.transform(df_enc_na)
@@ -274,7 +274,7 @@ def test_zero_encoding_for_new_categories():
     df_transf = pd.DataFrame(
         {"col1": ["a", "d", "b", "a", "c"], "col2": ["1", "2", "3", "1", "4"]}
     )
-    encoder = CountFrequencyEncoder(unseen="encode").fit(df_fit)
+    encoder = CountEncoder(unseen="encode").fit(df_fit)
 
     result = encoder.transform(df_transf)
 
@@ -295,7 +295,7 @@ def test_zero_encoding_for_unseen_categories_if_unseen_is_encode():
     )
 
     # count encoding
-    encoder = CountFrequencyEncoder(unseen="encode").fit(df_fit)
+    encoder = CountEncoder(unseen="encode").fit(df_fit)
     result = encoder.transform(df_transform)
 
     # check that no NaNs are added
@@ -306,7 +306,7 @@ def test_zero_encoding_for_unseen_categories_if_unseen_is_encode():
     pd.testing.assert_frame_equal(result, expected_result, check_dtype=False)
 
     # with frequency
-    encoder = CountFrequencyEncoder(encoding_method="frequency", unseen="encode").fit(
+    encoder = CountEncoder(encoding_method="frequency", unseen="encode").fit(
         df_fit
     )
     result = encoder.transform(df_transform)
@@ -328,7 +328,7 @@ def test_nan_encoding_for_new_categories_if_unseen_is_ignore():
     df_transf = pd.DataFrame(
         {"col1": ["a", "d", "b", "a", "c"], "col2": ["1", "2", "3", "1", "4"]}
     )
-    encoder = CountFrequencyEncoder(unseen="ignore").fit(df_fit)
+    encoder = CountEncoder(unseen="ignore").fit(df_fit)
     result = encoder.transform(df_transf)
 
     # check that no NaNs are added
@@ -342,7 +342,7 @@ def test_nan_encoding_for_new_categories_if_unseen_is_ignore():
 
 
 def test_ignore_variable_format_with_frequency(df_vartypes):
-    encoder = CountFrequencyEncoder(
+    encoder = CountEncoder(
         encoding_method="frequency", variables=None, ignore_format=True
     )
     X = encoder.fit_transform(df_vartypes)
@@ -369,7 +369,7 @@ def test_ignore_variable_format_with_frequency(df_vartypes):
 
 
 def test_column_names_are_numbers(df_numeric_columns):
-    encoder = CountFrequencyEncoder(
+    encoder = CountEncoder(
         encoding_method="frequency", variables=[0, 1, 2, 3], ignore_format=True
     )
     X = encoder.fit_transform(df_numeric_columns)
@@ -396,7 +396,7 @@ def test_column_names_are_numbers(df_numeric_columns):
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
-    encoder = CountFrequencyEncoder(encoding_method="count", variables=["var_A"])
+    encoder = CountEncoder(encoding_method="count", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
 
     # expected result
@@ -427,14 +427,14 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     pd.testing.assert_frame_equal(X, transf_df, check_dtype=False)
     assert X["var_A"].dtypes == int
 
-    encoder = CountFrequencyEncoder(encoding_method="frequency", variables=["var_A"])
+    encoder = CountEncoder(encoding_method="frequency", variables=["var_A"])
     X = encoder.fit_transform(df_enc_category_dtypes)
     assert X["var_A"].dtypes == float
 
 
 def test_inverse_transform_when_no_unseen():
     df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
-    enc = CountFrequencyEncoder()
+    enc = CountEncoder()
     enc.fit(df)
     dft = enc.transform(df)
     pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)
@@ -444,7 +444,7 @@ def test_inverse_transform_when_ignore_unseen():
     df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
     df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
-    enc = CountFrequencyEncoder(unseen="ignore")
+    enc = CountEncoder(unseen="ignore")
     enc.fit(df1)
     dft = enc.transform(df2)
     pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
@@ -454,7 +454,7 @@ def test_inverse_transform_when_encode_unseen():
     df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
     df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
-    enc = CountFrequencyEncoder(unseen="encode")
+    enc = CountEncoder(unseen="encode")
     enc.fit(df1)
     dft = enc.transform(df2)
     pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
@@ -462,7 +462,7 @@ def test_inverse_transform_when_encode_unseen():
 
 def test_inverse_transform_raises_non_fitted_error():
     df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
-    enc = CountFrequencyEncoder()
+    enc = CountEncoder()
 
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError):
@@ -476,3 +476,18 @@ def test_inverse_transform_raises_non_fitted_error():
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError):
         enc.inverse_transform(df1)
+
+
+def test_count_frequency_encoder_is_deprecated():
+    """CountFrequencyEncoder should emit a FutureWarning and still work."""
+    X = pd.DataFrame({"var_A": ["A"] * 6 + ["B"] * 2 + ["C"] * 2})
+
+    with pytest.warns(FutureWarning, match="CountFrequencyEncoder was deprecated"):
+        enc = CountFrequencyEncoder(encoding_method="count")
+    assert isinstance(enc, CountEncoder)
+
+    enc_new = CountEncoder(encoding_method="count")
+
+    pd.testing.assert_frame_equal(
+        enc.fit_transform(X), enc_new.fit_transform(X)
+    )

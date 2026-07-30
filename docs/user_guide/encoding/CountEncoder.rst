@@ -2,8 +2,14 @@
 
 .. currentmodule:: feature_engine.encoding
 
-CountFrequencyEncoder
-=====================
+CountEncoder
+============
+
+.. note::
+
+    **Renamed in version 2.0:** ``CountFrequencyEncoder`` was renamed to
+    ``CountEncoder``. The old name is still available for backwards compatibility
+    but will be removed in version 2.1.0.
 
 Count encoding and frequency encoding are 2 categorical encoding techniques that were
 commonly used during data preprocessing in Kaggle's data science competitions, even when
@@ -42,20 +48,20 @@ categories with similar counts would show similar patterns or behaviours.
 Count and frequency encoding with feature-engine
 ------------------------------------------------
 
-The :class:`CountFrequencyEncoder()` replaces categories of categorical features by
+The :class:`CountEncoder()` replaces categories of categorical features by
 either the count or the percentage of observations each category shows in the training set.
 
-With :class:`CountFrequencyEncoder()` we can automatically encode all categorical
+With :class:`CountEncoder()` we can automatically encode all categorical
 features in the dataset, or only a subset of them, by passing the variable names in a
 list to the `variables` parameter when we set up the encoder.
 
-By default, :class:`CountFrequencyEncoder()` will encode only categorical data. If we
+By default, :class:`CountEncoder()` will encode only categorical data. If we
 want to encode numerical values, we need to explicitly say so by setting the parameter
 `ignore_format` to True.
 
 .. attention::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`CountFrequencyEncoder()` used to
+    **New in version 2.0:** When `variables` is `None`, :class:`CountEncoder()` used to
     raise an error if the dataframe contained no categorical variables. You can now
     set the new parameter `return_empty` to `True` to make the transformer return an
     empty list of variables and skip the encoding instead, leaving the dataframe
@@ -72,7 +78,7 @@ encoding techniques like ordinal encoding or target encoding, we do so by observ
 categories in the training set. Hence, we won't have mappings for categories that appear
 only in the test set. These are the so-called "unseen categories."
 
-When encountering unseen categories, :class:`CountFrequencyEncoder()` will ignore them
+When encountering unseen categories, :class:`CountEncoder()` will ignore them
 by default, which means that unseen categories will be replaced with missing values.
 We can instruct the encoder to raise an error when a new category is encountered, or
 alternatively, to encode unseen categories with zero.
@@ -87,7 +93,7 @@ From one categorical variable, we obtain one numerical feature.
 Python example
 --------------
 
-Let's examine the functionality of :class:`CountFrequencyEncoder()` by using the Titanic
+Let's examine the functionality of :class:`CountEncoder()` by using the Titanic
 dataset. We'll start by loading the libraries and functions, loading the dataset, and then
 splitting it into a training and a testing set.
 
@@ -95,7 +101,7 @@ splitting it into a training and a testing set.
 
     from sklearn.model_selection import train_test_split
     from feature_engine.datasets import load_titanic
-    from feature_engine.encoding import CountFrequencyEncoder
+    from feature_engine.encoding import CountEncoder
 
     X, y = load_titanic(
         return_X_y_frame=True,
@@ -133,7 +139,7 @@ dataset.
 
 .. code:: python
 
-    encoder = CountFrequencyEncoder(
+    encoder = CountEncoder(
     encoding_method='count',
     variables=['cabin', 'sex', 'embarked'],
     )
@@ -195,7 +201,7 @@ hence, we need to set the encoder to ignore the variable's type:
 
 .. code:: python
 
-    encoder = CountFrequencyEncoder(
+    encoder = CountEncoder(
     encoding_method='frequency',
     variables=['cabin', 'pclass', 'embarked'],
     ignore_format=True,

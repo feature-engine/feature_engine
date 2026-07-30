@@ -83,7 +83,7 @@ together by replacing them with values very close to the overall target mean cal
 over the training data.
 
 Another encoding method that tackles cardinality out of the box is count encoding. See for
-example :class:`CountFrequencyEncoder`.
+example :class:`CountEncoder`.
 
 To account for highly cardinal variables in alternative encoding methods, you can group
 rare categories together by using the :class:`RareLabelEncoder`.

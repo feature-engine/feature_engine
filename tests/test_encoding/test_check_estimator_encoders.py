@@ -9,6 +9,7 @@ from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.fixes import parse_version
 
 from feature_engine.encoding import (
+    CountEncoder,
     CountFrequencyEncoder,
     DecisionTreeEncoder,
     MeanEncoder,
@@ -27,6 +28,7 @@ from tests.estimator_checks.estimator_checks import (
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
 _estimators = [
+    CountEncoder(ignore_format=True),
     CountFrequencyEncoder(ignore_format=True),
     # breaks with sklearn 1.4.1 - check and fix?
     # DecisionTreeEncoder(regression=False, ignore_format=True),
@@ -63,6 +65,7 @@ else:
 
 
 _estimators = [
+    CountEncoder(),
     CountFrequencyEncoder(),
     DecisionTreeEncoder(regression=False),
     MeanEncoder(),
