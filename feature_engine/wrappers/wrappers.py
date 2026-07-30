@@ -237,7 +237,7 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
 
         if transformer.__class__.__name__ == "OneHotEncoder":
             msg = (
-                "The SklearnWrapper can only wrap the OneHotEncoder if the "
+                "SklearnWrapper can only wrap OneHotEncoder if the "
                 "sparse is set to False."
             )
             if getattr(transformer, "sparse", False) or getattr(
