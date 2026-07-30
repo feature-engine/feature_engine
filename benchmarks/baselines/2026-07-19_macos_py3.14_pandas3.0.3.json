@@ -12,7 +12,7 @@
     "repeats": 5
   },
   "results": {
-    "MeanMedianImputer": {
+    "MeanImputer": {
       "fit": {
         "min": 0.009017041011247784,
         "median": 0.009051375003764406
@@ -32,7 +32,7 @@
         "median": 0.0012746670108754188
       }
     },
-    "ArbitraryNumberImputer": {
+    "ArbitraryImputer": {
       "fit": {
         "min": 0.0003259159857407212,
         "median": 0.0003415000101085752
@@ -52,7 +52,7 @@
         "median": 0.008879832981619984
       }
     },
-    "AddMissingIndicator": {
+    "MissingIndicator": {
       "fit": {
         "min": 0.004801625007530674,
         "median": 0.004833666986087337
@@ -82,7 +82,7 @@
         "median": 0.03060700002242811
       }
     },
-    "CountFrequencyEncoder": {
+    "CountEncoder": {
       "fit": {
         "min": 0.03666441698442213,
         "median": 0.03797195898368955
@@ -182,7 +182,7 @@
         "median": 0.00909999999566935
       }
     },
-    "Winsorizer(gaussian)": {
+    "Winsoriser(gaussian)": {
       "fit": {
         "min": 0.0032734579872339964,
         "median": 0.0034566250105854124
@@ -192,7 +192,7 @@
         "median": 0.003476999991107732
       }
     },
-    "Winsorizer(quantiles)": {
+    "Winsoriser(quantiles)": {
       "fit": {
         "min": 0.010074124991660938,
         "median": 0.01041312501183711
@@ -232,7 +232,7 @@
         "median": 0.0041737080027814955
       }
     },
-    "MeanNormalizationScaler": {
+    "MeanNormalisationScaler": {
       "fit": {
         "min": 0.00238716701278463,
         "median": 0.002573042002040893

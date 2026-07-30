@@ -53,7 +53,7 @@ from feature_engine.discretisation import (
     GeometricWidthDiscretiser,
 )
 from feature_engine.encoding import (
-    CountFrequencyEncoder,
+    CountEncoder,
     MeanEncoder,
     OneHotEncoder,
     OrdinalEncoder,
@@ -62,17 +62,17 @@ from feature_engine.encoding import (
     WoEEncoder,
 )
 from feature_engine.imputation import (
-    AddMissingIndicator,
-    ArbitraryNumberImputer,
+    ArbitraryImputer,
     CategoricalImputer,
     DropMissingData,
     EndTailImputer,
-    MeanMedianImputer,
+    MeanImputer,
+    MissingIndicator,
     RandomSampleImputer,
 )
-from feature_engine.outliers import OutlierTrimmer, Winsorizer
+from feature_engine.outliers import OutlierTrimmer, Winsoriser
 from feature_engine.preprocessing import MatchCategories, MatchVariables
-from feature_engine.scaling import MeanNormalizationScaler
+from feature_engine.scaling import MeanNormalisationScaler
 from feature_engine.selection import (
     DropConstantFeatures,
     DropCorrelatedFeatures,
@@ -200,16 +200,16 @@ def make_data(n_rows: int, seed: int = 42) -> dict:
 
 CASES = [
     # imputation
-    ("MeanMedianImputer", lambda: MeanMedianImputer(), "num_na", False),
+    ("MeanImputer", lambda: MeanImputer(), "num_na", False),
     ("EndTailImputer", lambda: EndTailImputer(), "num_na", False),
-    ("ArbitraryNumberImputer", lambda: ArbitraryNumberImputer(), "num_na", False),
+    ("ArbitraryImputer", lambda: ArbitraryImputer(), "num_na", False),
     (
         "CategoricalImputer(frequent)",
         lambda: CategoricalImputer(imputation_method="frequent"),
         "cat_na",
         False,
     ),
-    ("AddMissingIndicator", lambda: AddMissingIndicator(), "mixed_na", False),
+    ("MissingIndicator", lambda: MissingIndicator(), "mixed_na", False),
     ("DropMissingData", lambda: DropMissingData(), "mixed_na", False),
     (
         "RandomSampleImputer(general)",
@@ -218,7 +218,7 @@ CASES = [
         False,
     ),
     # encoding
-    ("CountFrequencyEncoder", lambda: CountFrequencyEncoder(), "cat", False),
+    ("CountEncoder", lambda: CountEncoder(), "cat", False),
     (
         "OrdinalEncoder(ordered)",
         lambda: OrdinalEncoder(encoding_method="ordered"),
@@ -245,10 +245,10 @@ CASES = [
     ("EqualWidthDiscretiser", lambda: EqualWidthDiscretiser(), "num", False),
     ("GeometricWidthDiscretiser", lambda: GeometricWidthDiscretiser(), "num", False),
     # outliers
-    ("Winsorizer(gaussian)", lambda: Winsorizer(), "num", False),
+    ("Winsoriser(gaussian)", lambda: Winsoriser(), "num", False),
     (
-        "Winsorizer(quantiles)",
-        lambda: Winsorizer(capping_method="quantiles", fold=0.05),
+        "Winsoriser(quantiles)",
+        lambda: Winsoriser(capping_method="quantiles", fold=0.05),
         "num",
         False,
     ),
@@ -267,7 +267,7 @@ CASES = [
         False,
     ),
     # scaling
-    ("MeanNormalizationScaler", lambda: MeanNormalizationScaler(), "num", False),
+    ("MeanNormalisationScaler", lambda: MeanNormalisationScaler(), "num", False),
     # creation
     ("CyclicalFeatures", lambda: CyclicalFeatures(), "num", False),
     (
