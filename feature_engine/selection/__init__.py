@@ -13,7 +13,7 @@ from .recursive_feature_elimination import RecursiveFeatureElimination
 from .shuffle_features import SelectByShuffling
 from .single_feature_performance import SelectBySingleFeaturePerformance
 from .smart_correlation_selection import SmartCorrelatedSelection
-from .target_mean_selection import SelectByTargetMeanPerformance
+from .target_mean_selection import SelectByTargetEncoding, SelectByTargetMeanPerformance
 from .mrmr import MRMR
 
 __all__ = [
@@ -27,6 +27,7 @@ __all__ = [
     "SelectBySingleFeaturePerformance",
     "RecursiveFeatureAddition",
     "RecursiveFeatureElimination",
+    "SelectByTargetEncoding",
     "SelectByTargetMeanPerformance",
     "SelectByInformationValue",
     "ProbeFeatureSelection",

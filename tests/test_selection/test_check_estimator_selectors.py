@@ -19,6 +19,7 @@ from feature_engine.selection import (
     SelectByInformationValue,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
+    SelectByTargetEncoding,
     SelectByTargetMeanPerformance,
     SmartCorrelatedSelection,
 )
@@ -40,6 +41,7 @@ _estimators = [
     DropHighPSIFeatures(bins=5),
     SmartCorrelatedSelection(),
     SelectByShuffling(estimator=_logreg, scoring="accuracy"),
+    SelectByTargetEncoding(bins=3, regression=False),
     SelectByTargetMeanPerformance(bins=3, regression=False),
     SelectBySingleFeaturePerformance(estimator=_logreg, scoring="accuracy"),
     RecursiveFeatureAddition(estimator=_logreg, scoring="accuracy"),
@@ -63,6 +65,7 @@ _univariate_estimators = [
     DropFeatures(features_to_drop=["var_1"]),
     DropConstantFeatures(missing_values="ignore"),
     DropHighPSIFeatures(bins=5),
+    SelectByTargetEncoding(bins=3, regression=False, threshold=0),
     SelectByTargetMeanPerformance(bins=3, regression=False, threshold=0),
     SelectBySingleFeaturePerformance(
         estimator=_logreg,
@@ -94,6 +97,7 @@ else:
     @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
         if estimator.__class__.__name__ not in [
+            "SelectByTargetEncoding",
             "SelectByTargetMeanPerformance",
             "SelectByInformationValue",
         ]:

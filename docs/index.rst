@@ -290,7 +290,7 @@ existing in other libraries like scikit-learn and MLXtend, with additional metho
 - :doc:`api_doc/selection/SelectByInformationValue`: selects features based on their information value
 - :doc:`api_doc/selection/SelectByShuffling`: selects features by evaluating model performance after feature shuffling
 - :doc:`api_doc/selection/SelectBySingleFeaturePerformance`: selects features based on single feature model performance
-- :doc:`api_doc/selection/SelectByTargetMeanPerformance`: selects features based on target mean encoding
+- :doc:`api_doc/selection/SelectByTargetEncoding`: selects features based on target mean encoding
 - :doc:`api_doc/selection/RecursiveFeatureElimination`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/RecursiveFeatureAddition`: selects features recursively, by evaluating model performance
 - :doc:`api_doc/selection/ProbeFeatureSelection`: selects features with greater importance than those of random variables

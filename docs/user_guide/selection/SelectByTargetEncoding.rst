@@ -2,19 +2,25 @@
 
 .. currentmodule:: feature_engine.selection
 
-SelectByTargetMeanPerformance
-=============================
+SelectByTargetEncoding
+======================
 
-:class:`SelectByTargetMeanPerformance()` selects features based on a performance metric,
+:class:`SelectByTargetEncoding()` selects features based on a performance metric,
 like ROC-AUC or accuracy for classification, or mean squared error and R-squared
 for regression.
+
+.. note::
+
+    **Renamed in version 2.0:** ``SelectByTargetMeanPerformance`` was renamed to
+    ``SelectByTargetEncoding``. The old name is still available for backwards
+    compatibility but will be removed in version 2.1.0.
 
 Performance metrics are obtained by comparing a prediction with the real value of the
 target. The closer the values of the prediction to the real target, the better the value
 of the performance metric. Typically, these predictions are obtained from machine learning
 models.
 
-:class:`SelectByTargetMeanPerformance()` uses a very simple method to obtain "predictions".
+:class:`SelectByTargetEncoding()` uses a very simple method to obtain "predictions".
 It returns the mean target value per category or per interval if the variable is continuous.
 With this "prediction", it determines the value of a performance metric of choice for each
 feature, by comparing the values of the "predictions" with that of the target.
@@ -39,7 +45,7 @@ The method has also some limitations. First, the selection of the number of inte
 as well as the threshold is arbitrary. And also, rare categories and very skewed
 variables will raise errors when NAN are accidentally introduced during the evaluation.
 
-:class:`SelectByTargetMeanPerformance()` works with cross-validation. It uses the k-1
+:class:`SelectByTargetEncoding()` works with cross-validation. It uses the k-1
 folds to define the numerical intervals and learn the mean target value per category or
 interval. Then, it uses the remaining fold to evaluate the performance of the
 feature: that is, in the last fold it sorts numerical variables into the bins, replaces
@@ -50,7 +56,7 @@ each feature.
 Important
 ---------
 
-:class:`SelectByTargetMeanPerformance()` automatically identifies numerical and
+:class:`SelectByTargetEncoding()` automatically identifies numerical and
 categorical variables. It will select as categorical variables, those cast as object
 or categorical, and as numerical variables those of type numeric. Therefore, make sure
 that your variables are of the correct data type.
@@ -113,7 +119,7 @@ Let's import the required libraries and classes:
 
     from feature_engine.datasets import load_titanic
     from feature_engine.encoding import RareLabelEncoder
-    from feature_engine.selection import SelectByTargetMeanPerformance
+    from feature_engine.selection import SelectByTargetEncoding
 
 Next, we load the Titanic dataset and prepare it for the demo:
 
@@ -167,14 +173,14 @@ We see the sizes of the datasets below:
 
     ((1178, 8), (131, 8))
 
-Now, we set up :class:`SelectByTargetMeanPerformance()`. We will examine the roc-auc
+Now, we set up :class:`SelectByTargetEncoding()`. We will examine the roc-auc
 using 3 fold cross-validation. We will separate numerical variables into equal-frequency
 intervals. And we will retain those variables where the roc-auc is bigger than the mean
 ROC-AUC of all features (default functionality).
 
 .. code:: python
 
-    sel = SelectByTargetMeanPerformance(
+    sel = SelectByTargetEncoding(
         variables=None,
         scoring="roc_auc",
         threshold=None,

@@ -47,7 +47,7 @@ from feature_engine.selection import (
     SelectByInformationValue,
     SelectByShuffling,
     SelectBySingleFeaturePerformance,
-    SelectByTargetMeanPerformance,
+    SelectByTargetEncoding,
     SmartCorrelatedSelection,
 )
 from feature_engine.timeseries.forecasting import (
@@ -172,7 +172,7 @@ def test_sklearn_compatible_transformer(estimator, check):
             scoring="accuracy",
             threshold=-100,
         ),
-        SelectByTargetMeanPerformance(scoring="roc_auc", bins=3, regression=False),
+        SelectByTargetEncoding(scoring="roc_auc", bins=3, regression=False),
         SelectByInformationValue(),
         MRMR(),
         ProbeFeatureSelection(estimator=LogisticRegression()),

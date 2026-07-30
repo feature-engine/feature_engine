@@ -144,7 +144,7 @@ Please share your story by answering 1 quick question
  * SmartCorrelationSelection
  * ShuffleFeaturesSelector
  * SelectBySingleFeaturePerformance
- * SelectByTargetMeanPerformance
+ * SelectByTargetEncoding
  * RecursiveFeatureElimination
  * RecursiveFeatureAddition
  * DropHighPSIFeatures
