@@ -79,6 +79,9 @@ exclude = '''(?x)(
 )'''
 
 [tool.pytest.ini_options]
+# The benchmarks folder is excluded from the default test paths: it requires
+# pytest-codspeed and is run by the CodSpeed workflow, not by the test suite.
+testpaths = ["tests"]
 filterwarnings = [
     "ignore::sklearn.exceptions.SkipTestWarning",
     "ignore::UserWarning",
