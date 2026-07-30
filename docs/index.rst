@@ -198,7 +198,7 @@ There are various categorical encoding techniques, including one hot encoding, o
 Feature-engine supports the following methods:
 
 - :doc:`api_doc/encoding/OneHotEncoder`: performs one hot encoding, optional: of popular categories
-- :doc:`api_doc/encoding/CountFrequencyEncoder`: replaces categories with the observation count or percentage
+- :doc:`api_doc/encoding/CountEncoder`: replaces categories with the observation count or percentage
 - :doc:`api_doc/encoding/OrdinalEncoder`: replaces categories with integers, either arbitrarily or informed by target
 - :doc:`api_doc/encoding/MeanEncoder`: replaces categories with the target mean
 - :doc:`api_doc/encoding/WoEEncoder`: replaces categories with the weight of evidence

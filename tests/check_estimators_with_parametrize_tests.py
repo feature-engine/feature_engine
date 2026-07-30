@@ -15,7 +15,7 @@ from feature_engine.creation import (
     RelativeFeatures,
 )
 from feature_engine.encoding import (
-    CountFrequencyEncoder,
+    CountEncoder,
     DecisionTreeEncoder,
     MeanEncoder,
     OneHotEncoder,
@@ -103,7 +103,7 @@ def test_sklearn_compatible_imputer(estimator, check):
 # encoding
 @parametrize_with_checks(
     [
-        CountFrequencyEncoder(ignore_format=True),
+        CountEncoder(ignore_format=True),
         DecisionTreeEncoder(regression=False, ignore_format=True),
         MeanEncoder(ignore_format=True),
         OneHotEncoder(ignore_format=True),

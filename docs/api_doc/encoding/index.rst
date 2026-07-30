@@ -13,7 +13,7 @@ estimated or arbitrary numbers.
 ================================= ============ ================= ============== ===============================================================
 :class:`OneHotEncoder()`	           √	            √               √         Adds dummy variables to represent each category
 :class:`OrdinalEncoder()`	           √	            √    	        √         Replaces categories with an integer
-:class:`CountFrequencyEncoder()`	       √	            √               √         Replaces categories with their count or frequency
+:class:`CountEncoder()`           √            √                 √              Replaces categories with their count or frequency
 :class:`MeanEncoder()`                 √	            √               x         Replaces categories with the target mean value
 :class:`WoEEncoder()`	               x	            √	            x         Replaces categories with the weight of the evidence
 :class:`DecisionTreeEncoder()`	       √	            √     	        √         Replaces categories with the predictions of a decision tree
@@ -30,7 +30,7 @@ input.
    :maxdepth: 1
 
    OneHotEncoder
-   CountFrequencyEncoder
+   CountEncoder
    OrdinalEncoder
    MeanEncoder
    WoEEncoder

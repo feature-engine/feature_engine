@@ -7,7 +7,7 @@ Works from sklearn > 1.6.
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from feature_engine.encoding import (
-    CountFrequencyEncoder,
+    CountEncoder,
     MeanEncoder,
     OneHotEncoder,
     OrdinalEncoder,
@@ -17,7 +17,7 @@ from feature_engine.encoding import (
 )
 from feature_engine.tags import _return_tags
 
-ce = CountFrequencyEncoder(ignore_format=True)
+ce = CountEncoder(ignore_format=True)
 me = MeanEncoder(ignore_format=True)
 ohe = OneHotEncoder(ignore_format=True)
 oe = OrdinalEncoder(ignore_format=True)
@@ -34,7 +34,7 @@ FAILED_CHECKS = _return_tags()["_xfail_checks"]
 FAILED_CHECKS.update({"check_estimators_nan_inf": "transformer allows NA"})
 
 EXPECTED_FAILED_CHECKS = {
-    "CountFrequencyEncoder": FAILED_CHECKS,
+    "CountEncoder": FAILED_CHECKS,
     "MeanEncoder": FAILED_CHECKS,
     "OneHotEncoder": FAILED_CHECKS,
     "OrdinalEncoder": FAILED_CHECKS,

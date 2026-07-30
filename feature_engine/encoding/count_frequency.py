@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -54,16 +55,16 @@ _unseen_docstring = (
     transform=_transform_encoders_docstring,
     inverse_transform=_inverse_transform_docstring,
 )
-class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
+class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     """
-    The CountFrequencyEncoder() replaces categories by either the count or the
+    The CountEncoder() replaces categories by either the count or the
     percentage of observations per category.
 
     For example in the variable colour, if 10 observations are blue, blue will
     be replaced by 10. Alternatively, if 10% of the observations are blue, blue
     will be replaced by 0.1.
 
-    The CountFrequencyEncoder() will encode only categorical variables by default
+    The CountEncoder() will encode only categorical variables by default
     (type 'object' or 'categorical'). You can pass a list of variables to encode.
     Alternatively, the encoder will find and encode all categorical variables
     (type 'object' or 'categorical').
@@ -137,9 +138,9 @@ class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     --------
 
     >>> import pandas as pd
-    >>> from feature_engine.encoding import CountFrequencyEncoder
+    >>> from feature_engine.encoding import CountEncoder
     >>> X = pd.DataFrame(dict(x1 = [1,2,3,4], x2 = ["c", "a", "b", "c"]))
-    >>> cf = CountFrequencyEncoder(encoding_method='count')
+    >>> cf = CountEncoder(encoding_method='count')
     >>> cf.fit(X)
     >>> cf.transform(X)
        x1  x2
@@ -148,7 +149,7 @@ class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     2   3   1
     3   4   2
 
-    >>> cf = CountFrequencyEncoder(encoding_method='frequency')
+    >>> cf = CountEncoder(encoding_method='frequency')
     >>> cf.fit(X)
     >>> cf.transform(X)
        x1    x2
@@ -222,3 +223,31 @@ class CountFrequencyEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
+
+
+# TODO: remove in version 2.1.0
+class CountFrequencyEncoder(CountEncoder):
+    def __init__(
+        self,
+        encoding_method: str = "count",
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+        missing_values: str = "raise",
+        ignore_format: bool = False,
+        unseen: str = "ignore",
+    ) -> None:
+        warnings.warn(
+            "CountFrequencyEncoder was deprecated in favour of CountEncoder in "
+            "version 2.0.0 and will be removed in version 2.1.0. To silence this "
+            "warning, use CountEncoder instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            encoding_method=encoding_method,
+            variables=variables,
+            return_empty=return_empty,
+            missing_values=missing_values,
+            ignore_format=ignore_format,
+            unseen=unseen,
+        )
