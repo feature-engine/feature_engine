@@ -16,7 +16,7 @@ implementation only on a selected subset of features.
 Other wrappers
 ~~~~~~~~~~~~~~
 
-The :class:`SklearnTransformerWrapper()` offers a similar function to the
+The :class:`SklearnWrapper()` offers a similar function to the
 `ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
 class available in scikit-learn. They differ in the implementation to select the
 variables.

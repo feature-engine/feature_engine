@@ -2,20 +2,20 @@
 
 .. currentmodule:: feature_engine.wrappers
 
-SklearnTransformerWrapper
-=========================
+SklearnWrapper
+==============
 
-The :class:`SklearnTransformerWrapper()` applies scikit-learn transformers to a selected
+The :class:`SklearnWrapper()` applies scikit-learn transformers to a selected
 group of variables. It works with transformers like the SimpleImputer, OrdinalEncoder,
 OneHotEncoder, KBinsDiscretizer, all scalers and also transformers for feature selection.
 Other transformers have not been tested, but we think it should work with most of them.
 
-The :class:`SklearnTransformerWrapper()` offers similar functionality to the
+The :class:`SklearnWrapper()` offers similar functionality to the
 `ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
 class available in scikit-learn. They differ in the implementation to select the
 variables and the output.
 
-The :class:`SklearnTransformerWrapper()` returns a pandas dataframe with the variables
+The :class:`SklearnWrapper()` returns a pandas dataframe with the variables
 in the order of the original data. The
 `ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
 returns a Numpy array, and the order of the variables may not coincide with that of the
@@ -23,7 +23,7 @@ original dataset.
 
 .. attention::
 
-    **New in version 2.0:** When `variables` is `None`, :class:`SklearnTransformerWrapper()`
+    **New in version 2.0:** When `variables` is `None`, :class:`SklearnWrapper()`
     used to raise an error if the dataframe contained no variables of the relevant
     type. You can now set the new parameter `return_empty` to `True` to make the
     transformer return an empty list of variables and skip the transformation
@@ -31,6 +31,12 @@ original dataset.
     across different datasets or projects, some of which may not contain variables
     of the relevant type, without building a tailored pipeline for each one.
     `return_empty` will default to `True` from version 2.1 onwards.
+
+.. note::
+
+    **Renamed in version 2.0:** ``SklearnTransformerWrapper`` was renamed to
+    ``SklearnWrapper``. The old name is still available for backwards compatibility
+    but will be removed in version 2.1.0.
 
 In the next code snippet we show how to wrap the SimpleImputer from scikit-learn to
 impute only the selected variables. We start with the imports:
@@ -42,7 +48,7 @@ impute only the selected variables. We start with the imports:
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import fetch_openml
     from sklearn.impute import SimpleImputer
-    from feature_engine.wrappers import SklearnTransformerWrapper
+    from feature_engine.wrappers import SklearnWrapper
 
 Next, we load the house prices dataset and split it into a train set and a test set:
 
@@ -66,7 +72,7 @@ Now, we set up the wrapper with the SimpleImputer, and fit it to the train set:
 .. code:: python
 
     # set up the wrapper with the SimpleImputer
-    imputer = SklearnTransformerWrapper(transformer = SimpleImputer(strategy='mean'),
+    imputer = SklearnWrapper(transformer = SimpleImputer(strategy='mean'),
                                         variables = ['LotFrontage', 'MasVnrArea'])
 
     # fit the wrapper + SimpleImputer
@@ -91,7 +97,7 @@ to standardise only the selected variables. We start with the imports:
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import fetch_openml
     from sklearn.preprocessing import StandardScaler
-    from feature_engine.wrappers import SklearnTransformerWrapper
+    from feature_engine.wrappers import SklearnWrapper
 
 Next, we load the house prices dataset and split it into a train set and a test set:
 
@@ -115,7 +121,7 @@ Now, we set up the wrapper with the StandardScaler, and fit it to the train set:
 .. code:: python
 
     # set up the wrapper with the StandardScaler
-    scaler = SklearnTransformerWrapper(transformer = StandardScaler(),
+    scaler = SklearnWrapper(transformer = StandardScaler(),
                                         variables = ['LotFrontage', 'MasVnrArea'])
 
     # fit the wrapper + StandardScaler
@@ -140,7 +146,7 @@ to select only a subset of the variables. We start with the imports:
     from sklearn.model_selection import train_test_split
     from sklearn.datasets import fetch_openml
     from sklearn.feature_selection import f_regression, SelectKBest
-    from feature_engine.wrappers import SklearnTransformerWrapper
+    from feature_engine.wrappers import SklearnWrapper
 
 Next, we load the house prices dataset and split it into a train set and a test set:
 
@@ -170,7 +176,7 @@ Now, we set up the wrapper with the SelectKBest, and fit it to the train set:
 
 .. code:: python
 
-    selector = SklearnTransformerWrapper(
+    selector = SklearnWrapper(
         transformer = SelectKBest(f_regression, k=5),
         variables = cols)
 
@@ -188,7 +194,7 @@ Even though feature-engine has its own implementation of OneHotEncoder, you may 
 to use scikit-learn's transformer in order to access different options,
 such as drop first category.
 In the following example, we show you how to apply scikit-learn's OneHotEncoder to a
-subset of categories using the :class:`SklearnTransformerWrapper()`. We start with the
+subset of categories using the :class:`SklearnWrapper()`. We start with the
 imports and a function to load and clean the Titanic dataset:
 
 .. code:: python
@@ -197,7 +203,7 @@ imports and a function to load and clean the Titanic dataset:
     import numpy as np
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import OneHotEncoder
-    from feature_engine.wrappers import SklearnTransformerWrapper
+    from feature_engine.wrappers import SklearnWrapper
 
     # Load dataset
     def load_titanic():
@@ -227,7 +233,7 @@ to transform the train and test sets:
 
 .. code:: python
 
-    ohe = SklearnTransformerWrapper(
+    ohe = SklearnWrapper(
             OneHotEncoder(sparse=False, drop='first'),
             variables = ['pclass','sex'])
 
@@ -254,7 +260,7 @@ The resulting dataframe is:
     147  NaN      0      0     42.4     n        S       0.0       0.0       1.0
 
 
-Let's say you want to use :class:`SklearnTransformerWrapper()` in a more complex
+Let's say you want to use :class:`SklearnWrapper()` in a more complex
 context. As you may note there are `?` signs to denote unknown values. Due to the
 complexity of the transformations needed we'll use a Pipeline to impute missing values,
 encode categorical features and create interactions for specific variables using
@@ -270,7 +276,7 @@ scikit-learn's PolynomialFeatures. We start with the imports:
     from feature_engine.datasets import load_titanic
     from feature_engine.imputation import CategoricalImputer, MeanImputer
     from feature_engine.encoding import OrdinalEncoder
-    from feature_engine.wrappers import SklearnTransformerWrapper
+    from feature_engine.wrappers import SklearnWrapper
 
 Next, we load the Titanic dataset and split it into a train set and a test set:
 
@@ -285,7 +291,7 @@ Next, we load the Titanic dataset and split it into a train set and a test set:
     X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2, random_state=42)
 
 Now, we assemble the pipeline. The last step wraps scikit-learn's PolynomialFeatures with
-:class:`SklearnTransformerWrapper()`, so that it only creates interactions between
+:class:`SklearnWrapper()`, so that it only creates interactions between
 `pclass` and `sex`:
 
 .. code:: python
@@ -294,7 +300,7 @@ Now, we assemble the pipeline. The last step wraps scikit-learn's PolynomialFeat
         ('ci', CategoricalImputer(imputation_method='frequent')),
         ('mmi', MeanImputer(imputation_method='mean')),
         ('od', OrdinalEncoder(encoding_method='arbitrary')),
-        ('pl', SklearnTransformerWrapper(
+        ('pl', SklearnWrapper(
             PolynomialFeatures(interaction_only = True, include_bias=False),
             variables=['pclass','sex']))
     ])
@@ -332,7 +338,7 @@ More details
 ^^^^^^^^^^^^
 
 In the following Jupyter notebooks you can find more details about how to navigate the
-parameters of the :class:`SklearnTransformerWrapper()` and also access the parameters
+parameters of the :class:`SklearnWrapper()` and also access the parameters
 of the scikit-learn transformer wrapped, as well as the output of the transformations.
 
 - `Wrap sklearn categorical encoder <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/wrappers/Sklearn-wrapper-plus-Categorical-Encoding.ipynb>`_

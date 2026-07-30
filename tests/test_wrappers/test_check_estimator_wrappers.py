@@ -6,7 +6,7 @@ from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.fixes import parse_version
 
-from feature_engine.wrappers import SklearnTransformerWrapper
+from feature_engine.wrappers import SklearnWrapper
 from tests.estimator_checks.estimator_checks import (
     check_raises_error_when_input_not_a_df,
 )
@@ -22,21 +22,21 @@ sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 if sklearn_version < parse_version("1.6"):
 
     def test_sklearn_transformer_wrapper():
-        check_estimator(SklearnTransformerWrapper(transformer=SimpleImputer()))
+        check_estimator(SklearnWrapper(transformer=SimpleImputer()))
 
 else:
 
     def test_sklearn_transformer_wrapper():
         check_estimator(
-            estimator=SklearnTransformerWrapper(transformer=SimpleImputer()),
-            expected_failed_checks=SklearnTransformerWrapper(
+            estimator=SklearnWrapper(transformer=SimpleImputer()),
+            expected_failed_checks=SklearnWrapper(
                 transformer=SimpleImputer()
             )._more_tags()["_xfail_checks"],
         )
 
 
 @pytest.mark.parametrize(
-    "estimator", [SklearnTransformerWrapper(transformer=OrdinalEncoder())]
+    "estimator", [SklearnWrapper(transformer=OrdinalEncoder())]
 )
 def test_check_estimator_from_feature_engine(estimator):
     check_raises_non_fitted_error(estimator)
@@ -46,23 +46,23 @@ def test_check_estimator_from_feature_engine(estimator):
 
 def test_check_variables_assignment():
     check_numerical_variables_assignment(
-        SklearnTransformerWrapper(transformer=StandardScaler())
+        SklearnWrapper(transformer=StandardScaler())
     )
     check_all_types_variables_assignment(
-        SklearnTransformerWrapper(transformer=OrdinalEncoder())
+        SklearnWrapper(transformer=OrdinalEncoder())
     )
 
 
 def test_raises_error_when_no_transformer_passed():
     # this transformer needs an estimator as an input param.
     with pytest.raises(TypeError):
-        SklearnTransformerWrapper()
+        SklearnWrapper()
 
 
 def test_return_empty():
     X = pd.DataFrame({"var_cat": ["A", "B", "A"]})
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=StandardScaler(), variables=None, return_empty=False
     )
     with pytest.raises(
@@ -70,7 +70,7 @@ def test_return_empty():
     ):
         transformer.fit(X)
 
-    transformer = SklearnTransformerWrapper(
+    transformer = SklearnWrapper(
         transformer=StandardScaler(), variables=None, return_empty=True
     )
     with pytest.warns(

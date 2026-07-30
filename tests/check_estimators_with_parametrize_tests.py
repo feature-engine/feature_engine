@@ -63,7 +63,7 @@ from feature_engine.transformation import (
     ReciprocalTransformer,
     YeoJohnsonTransformer,
 )
-from feature_engine.wrappers import SklearnTransformerWrapper
+from feature_engine.wrappers import SklearnWrapper
 
 
 # creation
@@ -183,7 +183,7 @@ def test_sklearn_compatible_selectors(estimator, check):
 
 
 # wrappers
-@parametrize_with_checks([SklearnTransformerWrapper(SimpleImputer())])
+@parametrize_with_checks([SklearnWrapper(SimpleImputer())])
 def test_sklearn_compatible_wrapper(estimator, check):
     check(estimator)
 

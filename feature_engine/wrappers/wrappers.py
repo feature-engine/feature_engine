@@ -1,3 +1,4 @@
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
@@ -73,7 +74,7 @@ _INVERSE_TRANSFORM = [
 ]
 
 
-class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
+class SklearnWrapper(TransformerMixin, BaseEstimator):
     """
     Wrapper to apply scikit-learn transformers to a selected group of variables. It
     supports the following transformers:
@@ -159,10 +160,10 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
     --------
 
     >>> import pandas as pd
-    >>> from feature_engine.wrappers import SklearnTransformerWrapper
+    >>> from feature_engine.wrappers import SklearnWrapper
     >>> from sklearn.preprocessing import StandardScaler
     >>> X = pd.DataFrame(dict(x1 = ["a","b","c"], x2 = [1,2,3], x3 = [4,5,6]))
-    >>> skw = SklearnTransformerWrapper(StandardScaler())
+    >>> skw = SklearnWrapper(StandardScaler())
     >>> skw.fit(X)
     >>> skw.transform(X)
       x1        x2        x3
@@ -171,10 +172,10 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
     2  c  1.224745  1.224745
 
     >>> import pandas as pd
-    >>> from feature_engine.wrappers import SklearnTransformerWrapper
+    >>> from feature_engine.wrappers import SklearnWrapper
     >>> from sklearn.preprocessing import OneHotEncoder
     >>> X = pd.DataFrame(dict(x1 = ["a","b","c"], x2 = [1,2,3], x3 = [4,5,6]))
-    >>> skw = SklearnTransformerWrapper(
+    >>> skw = SklearnWrapper(
     >>>     OneHotEncoder(sparse_output = False), variables = "x1")
     >>> skw.fit(X)
     >>> skw.transform(X)
@@ -184,10 +185,10 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
     2   3   6   0.0   0.0   1.0
 
     >>> import pandas as pd
-    >>> from feature_engine.wrappers import SklearnTransformerWrapper
+    >>> from feature_engine.wrappers import SklearnWrapper
     >>> from sklearn.preprocessing import PolynomialFeatures
     >>> X = pd.DataFrame(dict(x1 = ["a","b","c"], x2 = [1,2,3], x3 = [4,5,6]))
-    >>> skw = SklearnTransformerWrapper(PolynomialFeatures(include_bias = False))
+    >>> skw = SklearnWrapper(PolynomialFeatures(include_bias = False))
     >>> skw.fit(X)
     >>> skw.transform(X)
       x1   x2   x3  x2^2  x2 x3  x3^2
@@ -236,7 +237,7 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
         if transformer.__class__.__name__ == "OneHotEncoder":
             msg = (
-                "The SklearnTransformerWrapper can only wrap the OneHotEncoder if the "
+                "SklearnWrapper can only wrap OneHotEncoder if the "
                 "sparse is set to False."
             )
             if getattr(transformer, "sparse", False) or getattr(
@@ -477,3 +478,25 @@ class SklearnTransformerWrapper(TransformerMixin, BaseEstimator):
 
     def __sklearn_tags__(self):
         return super().__sklearn_tags__()
+
+
+# TODO: remove in version 2.1.0
+class SklearnTransformerWrapper(SklearnWrapper):
+    def __init__(
+        self,
+        transformer,
+        variables: Union[None, int, str, List[Union[str, int]]] = None,
+        return_empty: bool = False,
+    ) -> None:
+        warnings.warn(
+            "SklearnTransformerWrapper was deprecated in favour of SklearnWrapper in "
+            "version 2.0.0 and will be removed in version 2.1.0. To silence this "
+            "warning, use SklearnWrapper instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            transformer=transformer,
+            variables=variables,
+            return_empty=return_empty,
+        )
