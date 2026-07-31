@@ -16,6 +16,9 @@ from feature_engine.transformation import (
     YeoJohnsonTransformer,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.non_fitted_error_checks import (
+    check_raises_non_fitted_error_when_fit_fails,
+)
 
 _estimators = [
     BoxCoxTransformer(),
@@ -95,3 +98,30 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    name = estimator.__class__.__name__
+
+    if name == "BoxCoxTransformer":
+        # non-positive values: boxcox itself raises after variables_ selection.
+        X = pd.DataFrame({"num1": [-1.0, 2.0, 3.0, 4.0, 5.0]})
+    elif name == "LogTransformer":
+        # default C=0: zero/negative values raise after variables_ selection.
+        X = pd.DataFrame({"num1": [-1.0, 2.0, 3.0, 4.0, 5.0]})
+    elif name == "ArcsinTransformer":
+        # values outside 0-1: raises after variables_ selection.
+        X = pd.DataFrame({"num1": [1.1, 2.0, 3.0, 4.0, 5.0]})
+    elif name == "ReciprocalTransformer":
+        # zero values: raises after variables_ selection.
+        X = pd.DataFrame({"num1": [0.0, 2.0, 3.0, 4.0, 5.0]})
+    else:
+        # LogCpTransformer (C="auto" never fails on the values themselves),
+        # ArcSinhTransformer, PowerTransformer, YeoJohnsonTransformer: none of
+        # these validate values beyond being numerical, so there is no
+        # reachable failure point once variables_ would be selected. Fail at
+        # variable selection instead.
+        X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+
+    check_raises_non_fitted_error_when_fit_fails(estimator, X)

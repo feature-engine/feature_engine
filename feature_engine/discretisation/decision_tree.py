@@ -225,7 +225,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.random_state = random_state
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):  # type: ignore
+    def fit(self, X: pd.DataFrame, y: pd.Series):
         """
         Fit one decision tree per variable to discretise with cross-validation and
         grid-search for hyperparameters.
@@ -252,7 +252,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             check_classification_targets(y)
 
         # check input dataframe
-        X = super().fit(X)
+        X, variables_ = self._fit_setup(X)
 
         if self.param_grid:
             param_grid = self.param_grid
@@ -262,7 +262,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         binner_dict_ = {}
         scores_dict_ = {}
 
-        for var in self.variables_:
+        for var in variables_:
 
             if self.regression:
                 model = DecisionTreeRegressor(random_state=self.random_state)
@@ -280,7 +280,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
 
         if self.bin_output != "prediction":
-            for var in self.variables_:
+            for var in variables_:
                 clf = binner_dict_[var].best_estimator_
                 threshold = clf.tree_.threshold
                 feature = clf.tree_.feature
@@ -291,6 +291,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         self.binner_dict_ = binner_dict_
         self.scores_dict_ = scores_dict_
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
+
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:

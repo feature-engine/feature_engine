@@ -13,6 +13,9 @@ from feature_engine.creation import (
     RelativeFeatures,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.non_fitted_error_checks import (
+    check_raises_non_fitted_error_when_fit_fails,
+)
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
@@ -97,3 +100,38 @@ def test_geo_distance_transformer_in_pipeline():
     Xtp = pipe.fit_transform(X.copy(), y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        CyclicalFeatures(),
+        MathFeatures(variables=["feature_1", "feature_2"], func=["sum", "mean"]),
+        RelativeFeatures(
+            variables=["feature_1"], reference=["feature_2"], func=["div"]
+        ),
+        DecisionTreeFeatures(regression=False),
+        GeoDistanceFeatures(lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"),
+    ],
+)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    y = pd.Series([0, 1, 0, 1, 0])
+
+    if isinstance(estimator, GeoDistanceFeatures):
+        # non-numerical coordinate columns: fails after variables_ would have
+        # been set, at the "check coordinate columns are numerical" step.
+        X = pd.DataFrame(
+            {
+                "lat1": ["a", "b"],
+                "lon1": ["c", "d"],
+                "lat2": ["e", "f"],
+                "lon2": ["g", "h"],
+            }
+        )
+        y = pd.Series([0, 1])
+    else:
+        # the named/expected variables aren't in the df (or aren't numerical):
+        # fails at variable selection.
+        X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+
+    check_raises_non_fitted_error_when_fit_fails(estimator, X, y)

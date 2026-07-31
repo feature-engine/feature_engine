@@ -198,26 +198,29 @@ class RandomSampleImputer(BaseImputer):
 
         # find variables to impute
         if self.variables is None:
-            self.variables_ = find_all_variables(X, self.return_empty)
+            variables_ = find_all_variables(X, self.return_empty)
         else:
-            self.variables_ = check_all_variables(X, self.variables)
+            variables_ = check_all_variables(X, self.variables)
 
         # take a copy of the selected variables
-        self.X_ = X[self.variables_].copy()
+        X_ = X[variables_].copy()
 
         # check the variables assigned to the random state
         if self.seed == "observation":
-            self.random_state = _check_variables_input_value(self.random_state)
-            if isinstance(self.random_state, (int, str)):
-                self.random_state = [self.random_state]
-            if self.random_state and any(
-                var for var in self.random_state if var not in X.columns
+            random_state = _check_variables_input_value(self.random_state)
+            if isinstance(random_state, (int, str)):
+                random_state = [random_state]
+            if random_state and any(
+                var for var in random_state if var not in X.columns
             ):
                 raise ValueError(
                     "There are variables assigned as random state which are not part "
                     "of the training dataframe."
                 )
+            self.random_state = random_state
 
+        self.variables_ = variables_
+        self.X_ = X_
         self._get_feature_names_in(X)
 
         return self

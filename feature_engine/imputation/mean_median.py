@@ -138,17 +138,19 @@ class MeanImputer(BaseImputer):
 
         # find or check for numerical variables
         if self.variables is None:
-            self.variables_ = find_numerical_variables(X, self.return_empty)
+            variables_ = find_numerical_variables(X, self.return_empty)
         else:
-            self.variables_ = check_numerical_variables(X, self.variables)
+            variables_ = check_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
         if self.imputation_method == "mean":
-            self.imputer_dict_ = X[self.variables_].mean().to_dict()
+            imputer_dict_ = X[variables_].mean().to_dict()
 
         elif self.imputation_method == "median":
-            self.imputer_dict_ = X[self.variables_].median().to_dict()
+            imputer_dict_ = X[variables_].median().to_dict()
 
+        self.variables_ = variables_
+        self.imputer_dict_ = imputer_dict_
         self._get_feature_names_in(X)
 
         return self
