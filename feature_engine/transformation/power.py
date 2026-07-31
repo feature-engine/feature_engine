@@ -132,7 +132,10 @@ class PowerTransformer(BaseNumericalTransformer):
         """
 
         # check input dataframe
-        super().fit(X)
+        X, variables_ = self._fit_setup(X)
+
+        self.variables_ = variables_
+        self._get_feature_names_in(X)
 
         return self
 

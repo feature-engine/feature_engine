@@ -15,6 +15,9 @@ from feature_engine.imputation import (
     RandomSampleImputer,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.non_fitted_error_checks import (
+    check_raises_non_fitted_error_when_fit_fails,
+)
 
 _estimators = [
     MeanImputer(),
@@ -74,3 +77,27 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    if estimator.__class__.__name__ in ["MeanImputer", "EndTailImputer"]:
+        # no numerical variables in the df: fails at variable selection.
+        X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+    elif estimator.__class__.__name__ == "ArbitraryImputer":
+        X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+    elif estimator.__class__.__name__ == "CategoricalImputer":
+        # equally frequent categories: fails after variables_ would have been
+        # selected, inside the "frequent" imputation logic itself.
+        estimator = estimator.__class__(imputation_method="frequent")
+        X = pd.DataFrame({"cat1": ["a", "a", "b", "b"]})
+    elif estimator.__class__.__name__ == "RandomSampleImputer":
+        # invalid random_state: fails after variables_/X_ would have been set.
+        estimator = RandomSampleImputer(seed="observation", random_state="not_a_col")
+        X = pd.DataFrame({"num1": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    else:
+        # AddMissingIndicator, DropMissingData: no reachable failure point
+        # once variables are selected, so fail at input validation instead.
+        X = pd.DataFrame()
+
+    check_raises_non_fitted_error_when_fit_fails(estimator, X)

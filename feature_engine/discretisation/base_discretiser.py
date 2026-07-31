@@ -10,7 +10,8 @@ class BaseDiscretiser(BaseNumericalTransformer):
     """
     Shared set-up checks and methods across numerical discretisers.
 
-    Important: inherits fit() functionality and tags from BaseNumericalTransformer.
+    Important: inherits _fit_setup(), _get_feature_names_in() and tags from
+    BaseNumericalTransformer. Subclasses implement fit() themselves.
     """
 
     def __init__(

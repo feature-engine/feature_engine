@@ -89,3 +89,40 @@ def _implements_inverse_transform(estimator):
         # implemented", which is all this check needs to establish.
         return True
     return True
+
+
+def check_raises_non_fitted_error_when_fit_fails(estimator, X, y=None):
+    """
+    Check that if fit() raises partway through (after some trailing-underscore
+    attributes may already have been computed, but before fit has completed),
+    the transformer does not end up looking fitted: transform() must still
+    raise NotFittedError.
+
+    This guards against attributes like `variables_` or `imputer_dict_` being
+    assigned to `self` as soon as they are computed, rather than only once the
+    rest of fit()'s logic has completed successfully. sklearn's own
+    check_estimator suite does not cover this: check_fit_check_is_fitted only
+    tests "never fitted" and "successfully fitted with well-behaved data",
+    never "fit raises on bad input" - that scenario is inherently specific to
+    what makes a given transformer's own fit logic fail.
+
+    Parameters
+    ----------
+    estimator: feature-engine transformer instance.
+
+    X: pandas DataFrame
+        Input designed to make estimator.fit() raise partway through.
+
+    y: pandas Series, default=None
+        Target, if the estimator's fit() requires one.
+    """
+    transformer = clone(estimator)
+
+    with pytest.raises((ValueError, TypeError, KeyError)):
+        if y is not None:
+            transformer.fit(X, y)
+        else:
+            transformer.fit(X)
+
+    with pytest.raises(NotFittedError):
+        transformer.transform(X)

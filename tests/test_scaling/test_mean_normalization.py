@@ -6,6 +6,9 @@ from sklearn.exceptions import NotFittedError
 
 from feature_engine.scaling import MeanNormalisationScaler, MeanNormalizationScaler
 from tests.estimator_checks.fit_functionality_checks import check_return_empty
+from tests.estimator_checks.non_fitted_error_checks import (
+    check_raises_non_fitted_error_when_fit_fails,
+)
 
 DEPRECATION_WARNING = (
     "MeanNormalizationScaler was deprecated in favour of "
@@ -155,6 +158,21 @@ def test_constant_columns_error(transformer_class):
     transformer = make_transformer(transformer_class)
     with pytest.raises(ValueError, match=re.escape("Division by zero is not allowed")):
         transformer.fit(df)
+
+
+def test_raises_non_fitted_error_when_error_during_fit(transformer_class):
+    # constant column: fails after mean_/range_ would have been computed, at
+    # the "check for constant columns" step - real regression guard for the
+    # deferred trailing-underscore attribute assignment.
+    df = pd.DataFrame(
+        {
+            "var1": [1.0, 2.0, 3.0],
+            "var2": [4.0, 5.0, 3.0],
+            "var3": [7.0, 7.0, 7.0],
+        }
+    )
+    transformer = make_transformer(transformer_class)
+    check_raises_non_fitted_error_when_fit_fails(transformer, df)
 
 
 def test_check_return_empty(transformer_class):

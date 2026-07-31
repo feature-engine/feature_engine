@@ -14,6 +14,9 @@ from feature_engine.discretisation import (
     GeometricWidthDiscretiser,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.non_fitted_error_checks import (
+    check_raises_non_fitted_error_when_fit_fails,
+)
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
@@ -63,3 +66,13 @@ def test_transformers_within_pipeline(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_raises_non_fitted_error_when_error_during_fit(estimator):
+    # no numerical variables in the df: fails at variable selection, before any
+    # of binner_dict_/scores_dict_/variables_ would be computed.
+    X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
+    y = pd.Series([0, 1, 0, 1, 0])
+
+    check_raises_non_fitted_error_when_fit_fails(estimator, X, y)
