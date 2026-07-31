@@ -7,8 +7,8 @@ import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
 
 from feature_engine.variable_handling._variable_type_checks import (
-    _nw_is_categorical_and_is_datetime,
-    _nw_is_date_or_datetime,
+    _is_categorical_and_is_datetime,
+    _is_date_or_datetime,
 )
 
 Variables = Union[int, str, List[Union[str, int]]]
@@ -187,13 +187,13 @@ def check_datetime_variables(
     candidates = [
         column
         for column in sub_X.columns
-        if not _nw_is_date_or_datetime(sub_X.schema[column])
+        if not _is_date_or_datetime(sub_X.schema[column])
     ]
     non_datetime_vars = [
         column
         for column in candidates
         if sub_X.schema[column].is_numeric()
-        or not _nw_is_categorical_and_is_datetime(sub_X.get_column(column))
+        or not _is_categorical_and_is_datetime(sub_X.get_column(column))
     ]
 
     if len(non_datetime_vars) > 0:

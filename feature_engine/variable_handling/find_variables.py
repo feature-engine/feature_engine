@@ -8,9 +8,9 @@ import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
 
 from feature_engine.variable_handling._variable_type_checks import (
-    _nw_is_categorical_and_is_datetime,
-    _nw_is_categorical_and_is_not_datetime,
-    _nw_is_date_or_datetime,
+    _is_categorical_and_is_datetime,
+    _is_categorical_and_is_not_datetime,
+    _is_date_or_datetime,
 )
 
 # columns of these narwhals dtypes are candidates for being "categorical" - they
@@ -150,7 +150,7 @@ def find_categorical_variables(
     variables = [
         column
         for column in candidates
-        if _nw_is_categorical_and_is_not_datetime(nw_X.get_column(column))
+        if _is_categorical_and_is_not_datetime(nw_X.get_column(column))
     ]
 
     if len(variables) == 0:
@@ -230,8 +230,8 @@ def find_datetime_variables(
     variables = [
         column
         for column in non_numeric
-        if _nw_is_date_or_datetime(nw_X.schema[column])
-        or _nw_is_categorical_and_is_datetime(nw_X.get_column(column))
+        if _is_date_or_datetime(nw_X.schema[column])
+        or _is_categorical_and_is_datetime(nw_X.get_column(column))
     ]
 
     if len(variables) == 0:
@@ -300,13 +300,13 @@ def find_all_variables(
     nw_X = nw.from_native(X, eager_only=True)
     if exclude_datetime is True:
         variables = [
-            var for var in nw_X.columns if not _nw_is_date_or_datetime(nw_X.schema[var])
+            var for var in nw_X.columns if not _is_date_or_datetime(nw_X.schema[var])
         ]
         variables = [
             var
             for var in variables
             if nw_X.schema[var].is_numeric()
-            or not _nw_is_categorical_and_is_datetime(nw_X.get_column(var))
+            or not _is_categorical_and_is_datetime(nw_X.get_column(var))
         ]
     else:
         variables = list(nw_X.columns)
@@ -387,7 +387,7 @@ def find_categorical_and_numerical_variables(
         s = nw_X.get_column(variables)
         is_cat = isinstance(
             s.dtype, (nw.Categorical, nw.Enum)
-        ) or _nw_is_categorical_and_is_not_datetime(s)
+        ) or _is_categorical_and_is_not_datetime(s)
         is_num = s.dtype.is_numeric()
 
         if is_cat:
@@ -418,7 +418,7 @@ def find_categorical_and_numerical_variables(
         variables_cat = [
             column
             for column in candidates
-            if _nw_is_categorical_and_is_not_datetime(nw_X.get_column(column))
+            if _is_categorical_and_is_not_datetime(nw_X.get_column(column))
         ]
         variables_num = list(nw_X.select(nw.selectors.numeric()).columns)
 
@@ -461,7 +461,7 @@ def find_categorical_and_numerical_variables(
             variables_cat = [
                 column
                 for column in candidates
-                if _nw_is_categorical_and_is_not_datetime(sub_X.get_column(column))
+                if _is_categorical_and_is_not_datetime(sub_X.get_column(column))
             ]
             variables_num = list(sub_X.select(nw.selectors.numeric()).columns)
 

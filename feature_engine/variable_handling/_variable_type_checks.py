@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 import narwhals as nw
-from dateutil.parser import parse as _dateutil_parse
+from dateutil.parser import parser as _dateutil_parser_cls
 
 # ---------------------------------------------------------------------------
 # narwhals implementation, used for every backend (pandas, polars, etc.)
@@ -13,42 +13,43 @@ from dateutil.parser import parse as _dateutil_parse
 # ---------------------------------------------------------------------------
 
 
-def _nw_is_date_or_datetime(dtype) -> bool:
+def _is_date_or_datetime(dtype) -> bool:
     # nw.selectors.datetime() only matches Datetime, not Date, so this needs
     # its own explicit check.
     return isinstance(dtype, (nw.Date, nw.Datetime))
 
 
-_DATE_PARSE_DEFAULT_1 = datetime(1, 1, 1, 1, 1, 1)
-_DATE_PARSE_DEFAULT_2 = datetime(2, 2, 2, 2, 2, 2)
-_DATETIME_FIELDS = ("year", "month", "day", "hour", "minute", "second")
+# reused across calls, mirroring how pandas keeps its own single DEFAULTPARSER
+# instance internally instead of re-instantiating one every time.
+_dateutil_parser = _dateutil_parser_cls()
 
 
-def _looks_like_date_string(value: str) -> bool:
-    # dateutil.parser.parse() fills in any date/time component that isn't
-    # present in the string from a `default` datetime, so a bare number like
-    # "20" "parses" successfully as day=20 - it would wrongly be treated as a
-    # date. Parsing twice, with two defaults that differ in every field,
-    # reveals which fields were actually present in the string: those are the
-    # fields that agree between the two parses. Requiring at least 2 fields to
-    # be corroborated this way rejects bare numbers while still accepting real
-    # dates (including non-ISO formats like "01-Jan-2010") and bare times
-    # (like "21:45:23").
+def _looks_like_date_string(value) -> bool:
+    # parser().parse() (the public function) fills in any date/time component
+    # that isn't present in the string from a `default` datetime, so a bare
+    # number like "20" "parses" successfully as day=20 - it would wrongly be
+    # treated as a date. parser()._parse() (private) returns the intermediate
+    # result before that backfilling happens: its fields are None for
+    # anything not actually found in the string. Requiring at least 2 fields
+    # to be present rejects bare numbers while still accepting real dates
+    # (including non-ISO formats like "01-Jan-2010") and bare times (like
+    # "21:45:23").
     try:
-        first = _dateutil_parse(value, default=_DATE_PARSE_DEFAULT_1)
-        second = _dateutil_parse(value, default=_DATE_PARSE_DEFAULT_2)
-    except (ValueError, OverflowError, TypeError):
+        result, _ = _dateutil_parser._parse(value)
+    except TypeError:
         return False
 
-    corroborated = sum(
-        1 for attr in _DATETIME_FIELDS if getattr(first, attr) == getattr(second, attr)
-    )
-    return corroborated >= 2
+    if result is None:
+        return False
+
+    fields = ("year", "month", "day", "hour", "minute", "second")
+    found_fields = sum(1 for field in fields if getattr(result, field) is not None)
+    return found_fields >= 2
 
 
-def _nw_is_convertible_to_num(s: "nw.Series") -> bool:
+def _is_convertible_to_num(s: "nw.Series") -> bool:
     values = s.drop_nulls().to_list()
-    if not values:
+    if len(values) == 0:
         return False
     try:
         for value in values:
@@ -58,23 +59,23 @@ def _nw_is_convertible_to_num(s: "nw.Series") -> bool:
     return True
 
 
-def _nw_is_convertible_to_dt(s: "nw.Series") -> bool:
+def _is_convertible_to_dt(s: "nw.Series") -> bool:
     values = s.drop_nulls().to_list()
-    if not values:
+    if len(values) == 0:
         return False
     for value in values:
         if isinstance(value, (date, datetime)):
             continue
-        if not _looks_like_date_string(str(value)):
+        if _looks_like_date_string(value) is False:
             return False
     return True
 
 
-def _nw_categories_are_numeric(s: "nw.Series") -> bool:
+def _is_categories_num(s: "nw.Series") -> bool:
     return s.cat.get_categories().dtype.is_numeric()
 
 
-def _nw_is_categorical_and_is_not_datetime(s: "nw.Series") -> bool:
+def _is_categorical_and_is_not_datetime(s: "nw.Series") -> bool:
     if isinstance(s.dtype, nw.Enum):
         # an explicit, user-defined category set is an unambiguous categorical
         # signal, unlike a generic string column, so skip the datetime check
@@ -84,24 +85,32 @@ def _nw_is_categorical_and_is_not_datetime(s: "nw.Series") -> bool:
         # check for datetime only if the categories are not numeric, because
         # a numeric-backed categorical (pandas-only - polars categories are
         # always string-backed) can never hold dates
-        return _nw_categories_are_numeric(s) or not _nw_is_convertible_to_dt(s)
+        categories_are_numeric = _is_categories_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return categories_are_numeric is True or is_convertible_to_dt is False
 
     if isinstance(s.dtype, (nw.String, nw.Object)):
         # check for datetime only if the column cannot be cast as numeric,
         # because if it could, it would be a numeric column, not a date
-        return _nw_is_convertible_to_num(s) or not _nw_is_convertible_to_dt(s)
+        is_convertible_to_num = _is_convertible_to_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return is_convertible_to_num is True or is_convertible_to_dt is False
 
     return False
 
 
-def _nw_is_categorical_and_is_datetime(s: "nw.Series") -> bool:
+def _is_categorical_and_is_datetime(s: "nw.Series") -> bool:
     if isinstance(s.dtype, nw.Enum):
         return False
 
     if isinstance(s.dtype, nw.Categorical):
-        return not _nw_categories_are_numeric(s) and _nw_is_convertible_to_dt(s)
+        categories_are_numeric = _is_categories_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return categories_are_numeric is False and is_convertible_to_dt is True
 
     if isinstance(s.dtype, (nw.String, nw.Object)):
-        return not _nw_is_convertible_to_num(s) and _nw_is_convertible_to_dt(s)
+        is_convertible_to_num = _is_convertible_to_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return is_convertible_to_num is False and is_convertible_to_dt is True
 
     return False
