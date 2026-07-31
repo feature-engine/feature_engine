@@ -4,7 +4,17 @@ on:
   push:
     branches:
       - main
+  # Only fire on the events the job's `if:` below actually needs: `labeled`
+  # (adding the `runcodespeed` label) and `synchronize` (further pushes,
+  # which re-benchmark for as long as the label stays attached). Doc-only
+  # changes are skipped entirely, since they can't affect performance.
   pull_request:
+    types: [labeled, synchronize]
+    paths-ignore:
+      - '**.md'
+      - '**.rst'
+      - 'docs/**'
+      - 'paper/**'
   # `workflow_dispatch` allows CodSpeed to trigger backtest
   # performance analysis in order to generate initial data.
   workflow_dispatch:
@@ -23,6 +33,11 @@ jobs:
   benchmarks:
     name: Run benchmarks
     runs-on: ubuntu-latest
+    # Always run for push (main) and workflow_dispatch. For pull_request
+    # events, only run while the PR carries the `runcodespeed` label.
+    if: >
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'runcodespeed')
     steps:
       - uses: actions/checkout@v4
 
