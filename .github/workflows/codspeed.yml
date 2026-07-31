@@ -9,6 +9,12 @@ on:
   # performance analysis in order to generate initial data.
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel a stale in-progress run when a PR gets pushed to again, but let
+  # every push to main finish, since each one records a CodSpeed baseline.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
   id-token: write # for OpenID Connect authentication with CodSpeed
