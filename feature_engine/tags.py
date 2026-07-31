@@ -1,9 +1,3 @@
-import sklearn
-from sklearn.utils.fixes import parse_version
-
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
-
-
 def _return_tags():
     tags = {
         "preserves_dtype": [],
@@ -32,14 +26,13 @@ def _return_tags():
         },
     }
 
-    if sklearn_version > parse_version("1.6"):
-        msg1 = "against Feature-engines design."
-        msg2 = "Our transformers do not preserve dtype."
-        all_fail = {
-            "check_do_not_raise_errors_in_init_or_set_params": msg1,
-            "check_transformer_preserve_dtypes": msg2,
-            # TODO: investigate this test further.
-            "check_n_features_in_after_fitting": "not sure why it fails, we do check.",
-        }
-        tags["_xfail_checks"].update(all_fail)  # type: ignore
+    msg1 = "against Feature-engines design."
+    msg2 = "Our transformers do not preserve dtype."
+    all_fail = {
+        "check_do_not_raise_errors_in_init_or_set_params": msg1,
+        "check_transformer_preserve_dtypes": msg2,
+        # TODO: investigate this test further.
+        "check_n_features_in_after_fitting": "not sure why it fails, we do check.",
+    }
+    tags["_xfail_checks"].update(all_fail)  # type: ignore
     return tags

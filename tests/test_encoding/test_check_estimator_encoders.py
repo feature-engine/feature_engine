@@ -1,12 +1,10 @@
 import pandas as pd
 import pytest
-import sklearn
 from numpy import nan
 from sklearn import clone
 from sklearn.exceptions import NotFittedError
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.fixes import parse_version
 
 from feature_engine.encoding import (
     CountEncoder,
@@ -25,8 +23,6 @@ from tests.estimator_checks.estimator_checks import (
     test_df,
 )
 from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
-
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
 _estimators = [
     CountEncoder(ignore_format=True),
@@ -47,23 +43,17 @@ _estimators = [
 ]
 
 
-if sklearn_version < parse_version("1.6"):
+expected_fails = _return_tags()["_xfail_checks"]
+expected_fails.update({"check_estimators_nan_inf": "transformer allows NA"})
 
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(estimator)
 
-else:
-    expected_fails = _return_tags()["_xfail_checks"]
-    expected_fails.update({"check_estimators_nan_inf": "transformer allows NA"})
-
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        if estimator.__class__.__name__ != "WoEEncoder":
-            return check_estimator(
-                estimator=wrap_for_check_estimator(estimator),
-                expected_failed_checks=expected_fails,
-            )
+@pytest.mark.parametrize("estimator", _estimators)
+def test_check_estimator_from_sklearn(estimator):
+    if estimator.__class__.__name__ != "WoEEncoder":
+        return check_estimator(
+            estimator=wrap_for_check_estimator(estimator),
+            expected_failed_checks=expected_fails,
+        )
 
 
 _estimators = [
