@@ -1,16 +1,7 @@
 from datetime import date, datetime
 
 import narwhals as nw
-from dateutil.parser import parser as _dateutil_parser_cls
-
-# ---------------------------------------------------------------------------
-# narwhals implementation, used for every backend (pandas, polars, etc.)
-#
-# Flexible date-string recognition (e.g. "01-Jan-2010", "10/11/12", not just
-# ISO-8601) is implemented directly on top of `dateutil` - the same library
-# pandas.to_datetime delegates to internally for this - so it works
-# identically regardless of the underlying dataframe library.
-# ---------------------------------------------------------------------------
+from dateutil.parser import parser
 
 
 def _is_date_or_datetime(dtype) -> bool:
@@ -19,23 +10,11 @@ def _is_date_or_datetime(dtype) -> bool:
     return isinstance(dtype, (nw.Date, nw.Datetime))
 
 
-# reused across calls, mirroring how pandas keeps its own single DEFAULTPARSER
-# instance internally instead of re-instantiating one every time.
-_dateutil_parser = _dateutil_parser_cls()
-
-
 def _looks_like_date_string(value) -> bool:
-    # parser().parse() (the public function) fills in any date/time component
-    # that isn't present in the string from a `default` datetime, so a bare
-    # number like "20" "parses" successfully as day=20 - it would wrongly be
-    # treated as a date. parser()._parse() (private) returns the intermediate
-    # result before that backfilling happens: its fields are None for
-    # anything not actually found in the string. Requiring at least 2 fields
-    # to be present rejects bare numbers while still accepting real dates
-    # (including non-ISO formats like "01-Jan-2010") and bare times (like
-    # "21:45:23").
+    # taken from pandas
+    # https://github.com/pandas-dev/pandas/blob/cbae8aea4a31a4052736ab0d23f284ff1e78aa06/pandas/_libs/tslibs/parsing.pyx#L666
     try:
-        result, _ = _dateutil_parser._parse(value)
+        result, _ = parser()._parse(value)
     except TypeError:
         return False
 

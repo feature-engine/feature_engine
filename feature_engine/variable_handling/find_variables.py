@@ -4,36 +4,29 @@ import warnings
 from typing import List, Tuple, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
-    _is_date_or_datetime,
-)
-
-# columns of these narwhals dtypes are candidates for being "categorical" - they
-# still need to be run through the datetime-disambiguation helpers, because a
-# String/Categorical column may actually hold dates. `Object` covers pandas
-# columns holding a genuine mix of Python objects (e.g. strings and numbers),
-# which narwhals cannot classify as String or any other single dtype.
-_CATEGORICAL_CANDIDATE_SELECTOR = (
-    nw.selectors.categorical()
-    | nw.selectors.enum()
-    | nw.selectors.string()
-    | nw.selectors.by_dtype(nw.Object)
 )
 
 
-def _categorical_candidates_in_order(nw_df) -> List[Union[str, int]]:
-    # nw.selectors' `|` combination returns matches grouped by which
-    # sub-selector matched (e.g. all categorical() hits, then all string()
-    # hits) rather than preserving the dataframe's original column order, for
-    # the pandas backend specifically. Re-sort against the dataframe's own
-    # column order so results are deterministic and backend-independent.
-    matched = set(nw_df.select(_CATEGORICAL_CANDIDATE_SELECTOR).columns)
-    return [column for column in nw_df.columns if column in matched]
+def _find_nw_categoricals(nw_df) -> List[Union[str, int]]:
+    _NW_SELECTOR = (
+            nw.selectors.categorical()
+            | nw.selectors.enum()
+            | nw.selectors.string()
+            | nw.selectors.by_dtype(nw.Object)
+    )
+    matched = set(nw_df.select(_NW_SELECTOR).columns)
+    vars = [column for column in nw_df.columns if column in matched]
+    variables = [
+        column
+        for column in vars
+        if _is_categorical_and_is_not_datetime(nw_df.get_column(column))
+    ]
+    return variables
 
 
 def find_numerical_variables(
@@ -79,11 +72,8 @@ def find_numerical_variables(
     >>> var_
     ['var_num']
     """
-    if nwd.is_pandas_dataframe(X):
-        variables = list(X.select_dtypes(include="number").columns)
-    else:
-        nw_X = nw.from_native(X, eager_only=True)
-        variables = list(nw_X.select(nw.selectors.numeric()).columns)
+    nw_X = nw.from_native(X, eager_only=True)
+    variables = list(nw_X.select(nw.selectors.numeric()).columns)
 
     if len(variables) == 0:
         if return_empty is False:
@@ -146,12 +136,7 @@ def find_categorical_variables(
     ['var_cat']
     """
     nw_X = nw.from_native(X, eager_only=True)
-    candidates = _categorical_candidates_in_order(nw_X)
-    variables = [
-        column
-        for column in candidates
-        if _is_categorical_and_is_not_datetime(nw_X.get_column(column))
-    ]
+    variables = _find_nw_categoricals(nw_X)
 
     if len(variables) == 0:
         if return_empty is False:
@@ -224,13 +209,16 @@ def find_datetime_variables(
     ['var_date']
     """
     nw_X = nw.from_native(X, eager_only=True)
-    non_numeric = [
-        column for column in nw_X.columns if not nw_X.schema[column].is_numeric()
-    ]
+    numeric_cols = set(nw_X.select(nw.selectors.numeric()).columns)
+    non_numeric = [column for column in nw_X.columns if column not in numeric_cols]
+
+    datetime_cols = set(
+        nw_X.select(nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
+    )
     variables = [
         column
         for column in non_numeric
-        if _is_date_or_datetime(nw_X.schema[column])
+        if column in datetime_cols
         or _is_categorical_and_is_datetime(nw_X.get_column(column))
     ]
 
@@ -299,13 +287,15 @@ def find_all_variables(
     """
     nw_X = nw.from_native(X, eager_only=True)
     if exclude_datetime is True:
-        variables = [
-            var for var in nw_X.columns if not _is_date_or_datetime(nw_X.schema[var])
-        ]
+        datetime_cols = set(
+            nw_X.select(nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
+        )
+        numeric_cols = set(nw_X.select(nw.selectors.numeric()).columns)
+        variables = [var for var in nw_X.columns if var not in datetime_cols]
         variables = [
             var
             for var in variables
-            if nw_X.schema[var].is_numeric()
+            if var in numeric_cols
             or not _is_categorical_and_is_datetime(nw_X.get_column(var))
         ]
     else:
@@ -414,12 +404,7 @@ def find_categorical_and_numerical_variables(
 
     # If user leaves default None parameter.
     elif variables is None:
-        candidates = _categorical_candidates_in_order(nw_X)
-        variables_cat = [
-            column
-            for column in candidates
-            if _is_categorical_and_is_not_datetime(nw_X.get_column(column))
-        ]
+        variables_cat = _find_nw_categoricals(nw_X)
         variables_num = list(nw_X.select(nw.selectors.numeric()).columns)
 
         if len(variables_num) == 0 and len(variables_cat) == 0:
@@ -457,12 +442,7 @@ def find_categorical_and_numerical_variables(
 
         else:
             sub_X = nw_X.select(variables)
-            candidates = _categorical_candidates_in_order(sub_X)
-            variables_cat = [
-                column
-                for column in candidates
-                if _is_categorical_and_is_not_datetime(sub_X.get_column(column))
-            ]
+            variables_cat = _find_nw_categoricals(sub_X)
             variables_num = list(sub_X.select(nw.selectors.numeric()).columns)
 
     return variables_cat, variables_num

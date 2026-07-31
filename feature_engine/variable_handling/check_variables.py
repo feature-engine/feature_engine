@@ -8,7 +8,6 @@ from narwhals.typing import IntoDataFrame
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
-    _is_date_or_datetime,
 )
 
 Variables = Union[int, str, List[Union[str, int]]]
@@ -57,9 +56,8 @@ def check_numerical_variables(
         not_numerical = len(X[variables].select_dtypes(exclude="number").columns) > 0
     else:
         sub_X = nw.from_native(X, eager_only=True).select(variables)
-        not_numerical = any(
-            not sub_X.schema[column].is_numeric() for column in sub_X.columns
-        )
+        numeric_cols = set(sub_X.select(nw.selectors.numeric()).columns)
+        not_numerical = any(column not in numeric_cols for column in sub_X.columns)
 
     if not_numerical:
         raise TypeError(
@@ -122,9 +120,13 @@ def check_categorical_variables(
         )
     else:
         sub_X = nw.from_native(X, eager_only=True).select(variables)
+        categorical_cols = set(
+            sub_X.select(
+                nw.selectors.categorical() | nw.selectors.enum() | nw.selectors.string()
+            ).columns
+        )
         not_categorical = any(
-            not isinstance(sub_X.schema[column], (nw.Categorical, nw.Enum, nw.String))
-            for column in sub_X.columns
+            column not in categorical_cols for column in sub_X.columns
         )
 
     if not_categorical:
@@ -184,15 +186,15 @@ def check_datetime_variables(
         variables = [variables]
 
     sub_X = nw.from_native(X, eager_only=True).select(variables)
-    candidates = [
-        column
-        for column in sub_X.columns
-        if not _is_date_or_datetime(sub_X.schema[column])
-    ]
+    datetime_cols = set(
+        sub_X.select(nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
+    )
+    numeric_cols = set(sub_X.select(nw.selectors.numeric()).columns)
+    candidates = [column for column in sub_X.columns if column not in datetime_cols]
     non_datetime_vars = [
         column
         for column in candidates
-        if sub_X.schema[column].is_numeric()
+        if column in numeric_cols
         or not _is_categorical_and_is_datetime(sub_X.get_column(column))
     ]
 
