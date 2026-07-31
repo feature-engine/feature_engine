@@ -1,9 +1,7 @@
 import pandas as pd
 import pytest
-import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.fixes import parse_version
 
 from feature_engine.creation import (
     CyclicalFeatures,
@@ -13,8 +11,6 @@ from feature_engine.creation import (
     RelativeFeatures,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
-
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
 # Estimators for sklearn's check_estimator
 # Note: GeoDistanceFeatures is not included here because it requires 4 specific
@@ -29,20 +25,13 @@ _estimators = [
     DecisionTreeFeatures(regression=False),
 ]
 
-if sklearn_version > parse_version("1.6"):
 
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(
-            estimator=estimator,
-            expected_failed_checks=estimator._more_tags()["_xfail_checks"],
-        )
-
-else:
-
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(estimator)
+@pytest.mark.parametrize("estimator", _estimators)
+def test_check_estimator_from_sklearn(estimator):
+    return check_estimator(
+        estimator=estimator,
+        expected_failed_checks=estimator._more_tags()["_xfail_checks"],
+    )
 
 
 _estimators = [
