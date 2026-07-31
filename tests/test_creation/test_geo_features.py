@@ -356,7 +356,5 @@ def test_more_tags_and_sklearn_tags():
         == "transformer has mandatory parameters"
     )
 
-    # basic check for sklearn tags if available (new sklearn versions)
-    if hasattr(transformer, "__sklearn_tags__"):
-        tags = transformer.__sklearn_tags__()
-        assert tags is not None
+    tags = transformer.__sklearn_tags__()
+    assert tags is not None
