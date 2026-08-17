@@ -43,7 +43,7 @@ This discretisation technique is great when the distribution of the variable is 
     to work properly, it might help to increase the precision value, that is,
     the number of decimal values allowed to define each bin. If the variable has a
     narrow range or you are sorting into several bins, allow greater precision
-    (i.e., if precision = 3, then 0.001; if precision = 7, then 0.0001).
+    (i.e., if precision = 3, then 0.001; if precision = 7, then 0.0000001).
 
 :class:`GeometricWidthDiscretiser()` works only with numerical variables. A list of
 variables to discretise can be indicated, or the discretiser will automatically select
