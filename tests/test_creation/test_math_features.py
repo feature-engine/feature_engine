@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -286,6 +288,73 @@ def test_no_error_when_null_values_in_variable(df_vartypes):
     )
     # transform params
     pd.testing.assert_frame_equal(X, ref)
+
+
+def test_standard_aggregations_match_pandas_with_missing_values():
+    X = pd.DataFrame(
+        {
+            "a": [1.0, np.nan, np.nan, 4.0],
+            "b": [3.0, 4.0, np.nan, 6.0],
+            "c": [5.0, 8.0, np.nan, np.nan],
+        }
+    )
+    functions = ["sum", "mean", "std", "var", "min", "max", "prod", "median"]
+    names = [f"result_{function}" for function in functions]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        expected = X.agg(functions, axis=1)
+    expected.columns = names
+
+    transformer = MathFeatures(
+        variables=list(X.columns),
+        func=functions,
+        new_variables_names=names,
+        missing_values="ignore",
+    )
+    result = transformer.fit_transform(X)
+
+    pd.testing.assert_frame_equal(result[names], expected)
+
+
+def test_nullable_dtypes_use_backwards_compatible_aggregation():
+    X = pd.DataFrame(
+        {
+            "a": pd.Series([1, pd.NA, 3], dtype="Int64"),
+            "b": pd.Series([2, 4, pd.NA], dtype="Int64"),
+        }
+    )
+    functions = ["sum", "mean"]
+    names = ["row_sum", "row_mean"]
+    expected = X.agg(functions, axis=1)
+    expected.columns = names
+
+    transformer = MathFeatures(
+        variables=list(X.columns),
+        func=functions,
+        new_variables_names=names,
+        missing_values="ignore",
+    )
+    result = transformer.fit_transform(X)
+
+    pd.testing.assert_frame_equal(result[names], expected)
+
+
+def test_custom_function_uses_pandas_aggregation_fallback(df_vartypes):
+    def peak_to_peak(row):
+        return row.max() - row.min()
+
+    expected = df_vartypes[["Age", "Marks"]].agg(peak_to_peak, axis=1)
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=peak_to_peak,
+        new_variables_names=["age_marks_range"],
+    )
+
+    result = transformer.fit_transform(df_vartypes)
+
+    pd.testing.assert_series_equal(
+        result["age_marks_range"], expected, check_names=False
+    )
 
 
 def test_drop_original_variables(df_vartypes):

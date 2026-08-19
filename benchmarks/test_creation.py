@@ -18,8 +18,8 @@ NUM_VARS = numerical_vars()
     "func", [["sum", "mean"], ["sum", "mean", "std", "min", "max"]]
 )
 def test_math_features_transform(benchmark, df_tiny, func):
-    # MathFeatures aggregates row-wise, which is orders of magnitude slower per
-    # row than the vectorised transformers, hence the smallest dataframe.
+    # Keep the original dataset size so results remain comparable with the
+    # pre-NumPy baseline recorded for issue #576.
     creator = MathFeatures(variables=NUM_VARS, func=func)
     creator.fit(df_tiny)
     benchmark(creator.transform, df_tiny)
