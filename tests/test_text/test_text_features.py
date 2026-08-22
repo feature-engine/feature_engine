@@ -778,3 +778,21 @@ def test_get_feature_names_out_with_drop():
     feature_names = transformer.get_feature_names_out()
     expected_features = ["other", "text_char_count"]
     assert feature_names == expected_features
+
+
+def test_lexical_diversity_is_unique_words_over_total_words():
+    X = pd.DataFrame(
+        {
+            "text": [
+                "the cat sat on the mat",  # 6 words, 5 unique
+                "good good good good",  # 4 words, 1 unique
+                "all words here are distinct",  # 5 words, 5 unique
+            ]
+        }
+    )
+    transformer = TextFeatures(variables=["text"], features=["lexical_diversity"])
+    X_tr = transformer.fit_transform(X)
+
+    assert X_tr["text_lexical_diversity"].tolist() == [5 / 6, 1 / 4, 1.0]
+    # a ratio of unique words to total words never exceeds 1
+    assert (X_tr["text_lexical_diversity"] <= 1.0).all()

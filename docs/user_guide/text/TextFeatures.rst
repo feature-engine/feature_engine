@@ -246,7 +246,7 @@ The output dataframe contains all 20 text features extracted from the `review` c
 
        review_unique_word_count  review_lexical_diversity
     0                         7                       1.0
-    1                         4                      1.25
+    1                         4                       0.8
     2                         9                       1.0
     3                         4                       1.0
 
