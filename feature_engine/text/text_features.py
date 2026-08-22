@@ -41,8 +41,8 @@ TEXT_FEATURES = {
     "starts_with_uppercase": lambda x: x.str.match(r"^[A-Z]").astype(int),
     "ends_with_punctuation": lambda x: x.str.match(r".*[.!?]$").astype(int),
     "unique_word_count": lambda x: (x.str.lower().str.split().apply(set).str.len()),
-    "lexical_diversity": lambda x: x.str.strip().str.split().str.len()
-    / x.str.lower().str.split().apply(set).str.len(),
+    "lexical_diversity": lambda x: x.str.lower().str.split().apply(set).str.len()
+    / x.str.strip().str.split().str.len(),
 }
 
 
