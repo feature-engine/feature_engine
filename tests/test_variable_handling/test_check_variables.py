@@ -37,17 +37,14 @@ def test_check_numerical_variables_raises_errors_when_not_numerical(make_df):
         "Some of the variables are not numerical. Please cast them as "
         "numerical before using this transformer."
     )
-    with pytest.raises(TypeError) as record:
-        assert check_numerical_variables(df, "Name")
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_numerical_variables(df, "Name")
 
-    with pytest.raises(TypeError) as record:
-        assert check_numerical_variables(df, ["Name"])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_numerical_variables(df, ["Name"])
 
-    with pytest.raises(TypeError) as record:
-        assert check_numerical_variables(df, ["Name", "Marks"])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_numerical_variables(df, ["Name", "Marks"])
 
 
 def test_check_numerical_variables_raises_errors_int_names(df_int):
@@ -55,17 +52,14 @@ def test_check_numerical_variables_raises_errors_int_names(df_int):
         "Some of the variables are not numerical. Please cast them as "
         "numerical before using this transformer."
     )
-    with pytest.raises(TypeError) as record:
-        assert check_numerical_variables(df_int, 1)
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_numerical_variables(df_int, 1)
 
-    with pytest.raises(TypeError) as record:
-        assert check_numerical_variables(df_int, [1])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_numerical_variables(df_int, [1])
 
-    with pytest.raises(TypeError) as record:
-        assert check_numerical_variables(df_int, [2, 3])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_numerical_variables(df_int, [2, 3])
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -98,17 +92,14 @@ def test_check_categorical_variables_raises_errors_when_not_categorical(make_df)
         "Some of the variables are not categorical. Please cast them as "
         "object or categorical before using this transformer."
     )
-    with pytest.raises(TypeError) as record:
-        assert check_categorical_variables(df, "Age")
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_categorical_variables(df, "Age")
 
-    with pytest.raises(TypeError) as record:
-        assert check_categorical_variables(df, ["Age"])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_categorical_variables(df, ["Age"])
 
-    with pytest.raises(TypeError) as record:
-        assert check_categorical_variables(df, ["Name", "Marks"])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_categorical_variables(df, ["Name", "Marks"])
 
 
 def test_check_categorical_variables_raises_errors_int_names(df_int):
@@ -116,17 +107,14 @@ def test_check_categorical_variables_raises_errors_int_names(df_int):
         "Some of the variables are not categorical. Please cast them as "
         "object or categorical before using this transformer."
     )
-    with pytest.raises(TypeError) as record:
-        assert check_categorical_variables(df_int, 3)
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_categorical_variables(df_int, 3)
 
-    with pytest.raises(TypeError) as record:
-        assert check_categorical_variables(df_int, [3])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_categorical_variables(df_int, [3])
 
-    with pytest.raises(TypeError) as record:
-        assert check_categorical_variables(df_int, [2, 3])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_categorical_variables(df_int, [2, 3])
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -178,17 +166,14 @@ def test_check_datetime_variables_raises_errors_when_not_datetime(make_df):
     df = make_df(DATETIME_DATA)
     msg = "Some of the variables are not or cannot be parsed as datetime."
 
-    with pytest.raises(TypeError) as record:
-        assert check_datetime_variables(df, variables="Age")
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_datetime_variables(df, variables="Age")
 
-    with pytest.raises(TypeError) as record:
-        assert check_datetime_variables(df, variables=["Age", "Name"])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_datetime_variables(df, variables=["Age", "Name"])
 
-    with pytest.raises(TypeError):
-        assert check_datetime_variables(df, variables=["date_range", "Age"])
-    assert str(record.value) == msg
+    with pytest.raises(TypeError, match=msg):
+        check_datetime_variables(df, variables=["date_range", "Age"])
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -217,10 +202,7 @@ def test_check_all_variables_raises_errors_when_not_in_dataframe(make_df, input_
     df = make_df(BASIC_DATA)
     msg_ls = "'Some of the variables are not in the dataframe.'"
     msg_single = "'The variable Absent is not in the dataframe.'"
+    msg = msg_ls if isinstance(input_vars, list) else msg_single
 
-    with pytest.raises(KeyError) as record:
-        assert check_all_variables(df, input_vars)
-    if isinstance(input_vars, list):
-        assert str(record.value) == msg_ls
-    else:
-        assert str(record.value) == msg_single
+    with pytest.raises(KeyError, match=msg):
+        check_all_variables(df, input_vars)

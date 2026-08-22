@@ -52,14 +52,15 @@ def check_numerical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X):
+    if nwd.is_pandas_dataframe(X) is True:
         not_numerical = len(X[variables].select_dtypes(exclude="number").columns) > 0
     else:
         sub_X = nw.from_native(X, eager_only=True).select(variables)
-        numeric_cols = set(sub_X.select(nw.selectors.numeric()).columns)
-        not_numerical = any(column not in numeric_cols for column in sub_X.columns)
+        not_numerical = len(sub_X.select(nw.selectors.numeric()).columns) != len(
+            sub_X.columns
+        )
 
-    if not_numerical:
+    if not_numerical is True:
         raise TypeError(
             "Some of the variables are not numerical. Please cast them as "
             "numerical before using this transformer."
@@ -114,22 +115,19 @@ def check_categorical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X):
+    if nwd.is_pandas_dataframe(X) is True:
         not_categorical = (
             len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0
         )
     else:
         sub_X = nw.from_native(X, eager_only=True).select(variables)
-        categorical_cols = set(
+        not_categorical = len(
             sub_X.select(
                 nw.selectors.categorical() | nw.selectors.enum() | nw.selectors.string()
             ).columns
-        )
-        not_categorical = any(
-            column not in categorical_cols for column in sub_X.columns
-        )
+        ) != len(sub_X.columns)
 
-    if not_categorical:
+    if not_categorical is True:
         raise TypeError(
             "Some of the variables are not categorical. Please cast them as "
             "object or categorical before using this transformer."
@@ -186,19 +184,15 @@ def check_datetime_variables(
         variables = [variables]
 
     sub_X = nw.from_native(X, eager_only=True).select(variables)
-    datetime_cols = set(
-        sub_X.select(nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
-    )
+    candidates = sub_X.select(~nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
     numeric_cols = set(sub_X.select(nw.selectors.numeric()).columns)
-    candidates = [column for column in sub_X.columns if column not in datetime_cols]
-    non_datetime_vars = [
-        column
-        for column in candidates
-        if column in numeric_cols
+    non_datetime = any(
+        column in numeric_cols
         or not _is_categorical_and_is_datetime(sub_X.get_column(column))
-    ]
+        for column in candidates
+    )
 
-    if len(non_datetime_vars) > 0:
+    if non_datetime is True:
         raise TypeError(
             "Some of the variables are not or cannot be parsed as datetime."
         )
@@ -242,7 +236,10 @@ def check_all_variables(
     >>> vars_all
     ['var_num', 'var_cat', 'var_date']
     """
-    columns = nw.from_native(X, eager_only=True).columns
+    if nwd.is_pandas_dataframe(X) is True:
+        columns = set(X.columns)
+    else:
+        columns = set(nw.from_native(X, eager_only=True).columns)
 
     if isinstance(variables, (str, int)):
         if variables not in columns:
@@ -250,7 +247,7 @@ def check_all_variables(
         variables_ = [variables]
 
     else:
-        if not set(variables).issubset(set(columns)):
+        if set(variables).issubset(columns) is False:
             raise KeyError("Some of the variables are not in the dataframe.")
 
         variables_ = variables
