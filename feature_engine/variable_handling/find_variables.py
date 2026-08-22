@@ -12,20 +12,27 @@ from feature_engine.variable_handling._variable_type_checks import (
 )
 
 
-def _find_nw_categoricals(nw_df) -> List[Union[str, int]]:
+def _find_nw_categoricals(
+    nw_df, exclude_datetime: bool = True
+) -> List[Union[str, int]]:
     _NW_SELECTOR = (
-            nw.selectors.categorical()
-            | nw.selectors.enum()
-            | nw.selectors.string()
-            | nw.selectors.by_dtype(nw.Object)
+        nw.selectors.categorical()
+        | nw.selectors.enum()
+        | nw.selectors.string()
+        | nw.selectors.by_dtype(nw.Object)
     )
+    # `|`-combined selectors don't preserve the dataframe's column order (each
+    # sub-selector's matches are concatenated in selector-declaration order,
+    # not column position), so re-filter over nw_df.columns to restore it.
     matched = set(nw_df.select(_NW_SELECTOR).columns)
-    vars = [column for column in nw_df.columns if column in matched]
-    variables = [
-        column
-        for column in vars
-        if _is_categorical_and_is_not_datetime(nw_df.get_column(column))
-    ]
+    variables = [column for column in nw_df.columns if column in matched]
+
+    if exclude_datetime is True:
+        variables = [
+            column
+            for column in variables
+            if _is_categorical_and_is_not_datetime(nw_df.get_column(column))
+        ]
     return variables
 
 
@@ -73,7 +80,7 @@ def find_numerical_variables(
     ['var_num']
     """
     nw_X = nw.from_native(X, eager_only=True)
-    variables = list(nw_X.select(nw.selectors.numeric()).columns)
+    variables = nw_X.select(nw.selectors.numeric()).columns
 
     if len(variables) == 0:
         if return_empty is False:
@@ -93,6 +100,7 @@ def find_numerical_variables(
 def find_categorical_variables(
     X: IntoDataFrame,
     return_empty: bool = False,
+    exclude_datetime: bool = True,
 ) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the categorical variables in a dataframe.
@@ -117,6 +125,9 @@ def find_categorical_variables(
            warning, explicitly set `return_empty=False` instead of relying on the
            default.
 
+    exclude_datetime: bool, default=True
+        Whether to exclude variables that can be parsed as datetime.
+
     Returns
     -------
     variables: List
@@ -136,7 +147,7 @@ def find_categorical_variables(
     ['var_cat']
     """
     nw_X = nw.from_native(X, eager_only=True)
-    variables = _find_nw_categoricals(nw_X)
+    variables = _find_nw_categoricals(nw_X, exclude_datetime=exclude_datetime)
 
     if len(variables) == 0:
         if return_empty is False:
@@ -209,8 +220,7 @@ def find_datetime_variables(
     ['var_date']
     """
     nw_X = nw.from_native(X, eager_only=True)
-    numeric_cols = set(nw_X.select(nw.selectors.numeric()).columns)
-    non_numeric = [column for column in nw_X.columns if column not in numeric_cols]
+    non_numeric = nw_X.select(~nw.selectors.numeric()).columns
 
     datetime_cols = set(
         nw_X.select(nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
@@ -287,11 +297,8 @@ def find_all_variables(
     """
     nw_X = nw.from_native(X, eager_only=True)
     if exclude_datetime is True:
-        datetime_cols = set(
-            nw_X.select(nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
-        )
+        variables = nw_X.select(~nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
         numeric_cols = set(nw_X.select(nw.selectors.numeric()).columns)
-        variables = [var for var in nw_X.columns if var not in datetime_cols]
         variables = [
             var
             for var in variables
@@ -299,7 +306,7 @@ def find_all_variables(
             or not _is_categorical_and_is_datetime(nw_X.get_column(var))
         ]
     else:
-        variables = list(nw_X.columns)
+        variables = nw_X.columns
 
     if len(variables) == 0:
         if return_empty is False:
@@ -319,6 +326,7 @@ def find_categorical_and_numerical_variables(
     X: IntoDataFrame,
     variables: Union[None, int, str, List[Union[str, int]]] = None,
     return_empty: bool = False,
+    exclude_datetime: bool = True,
 ) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
     """
     Find numerical and categorical variables in a dataframe or from a list.
@@ -349,6 +357,9 @@ def find_categorical_and_numerical_variables(
            warning, explicitly set `return_empty=False` instead of relying on the
            default.
 
+    exclude_datetime: bool, default=True
+        Whether to exclude variables that can be parsed as datetime.
+
     Returns
     -------
     variables: tuple
@@ -375,9 +386,11 @@ def find_categorical_and_numerical_variables(
     # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
         s = nw_X.get_column(variables)
-        is_cat = isinstance(
-            s.dtype, (nw.Categorical, nw.Enum)
-        ) or _is_categorical_and_is_not_datetime(s)
+        is_cat = bool(
+            _find_nw_categoricals(
+                nw_X.select([variables]), exclude_datetime=exclude_datetime
+            )
+        )
         is_num = s.dtype.is_numeric()
 
         if is_cat:
@@ -404,8 +417,8 @@ def find_categorical_and_numerical_variables(
 
     # If user leaves default None parameter.
     elif variables is None:
-        variables_cat = _find_nw_categoricals(nw_X)
-        variables_num = list(nw_X.select(nw.selectors.numeric()).columns)
+        variables_cat = _find_nw_categoricals(nw_X, exclude_datetime=exclude_datetime)
+        variables_num = nw_X.select(nw.selectors.numeric()).columns
 
         if len(variables_num) == 0 and len(variables_cat) == 0:
             if return_empty is False:
@@ -442,7 +455,9 @@ def find_categorical_and_numerical_variables(
 
         else:
             sub_X = nw_X.select(variables)
-            variables_cat = _find_nw_categoricals(sub_X)
-            variables_num = list(sub_X.select(nw.selectors.numeric()).columns)
+            variables_cat = _find_nw_categoricals(
+                sub_X, exclude_datetime=exclude_datetime
+            )
+            variables_num = sub_X.select(nw.selectors.numeric()).columns
 
     return variables_cat, variables_num

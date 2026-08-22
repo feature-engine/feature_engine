@@ -334,3 +334,36 @@ def test_numcat_vars_as_category(make_df):
         ["Age", "Marks"],
     )
     assert find_categorical_and_numerical_variables(df, "City") == (["City"], [])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_numcat_agrees_with_find_categorical_on_date_like_category(make_df):
+    # Regression test: the single-variable branch of
+    # find_categorical_and_numerical_variables used to short-circuit past the
+    # datetime check for Categorical-dtype columns, so it disagreed with
+    # find_categorical_variables on a category column holding date-like
+    # strings. All three calls below must now exclude it consistently.
+    df = make_df({"date_cat": DATETIME_DATA["date_obj0"], "num": BASIC_DATA["Age"]})
+    df = cast_categorical(df, ["date_cat"])
+
+    assert find_categorical_variables(df, return_empty=True) == []
+    assert find_categorical_and_numerical_variables(df, None) == ([], ["num"])
+    assert find_categorical_and_numerical_variables(
+        df, "date_cat", return_empty=True
+    ) == ([], [])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_numcat_exclude_datetime_false_keeps_date_like_category(make_df):
+    # exclude_datetime=False must be honoured consistently across all three
+    # entry points, including the single-variable branch.
+    df = make_df({"date_cat": DATETIME_DATA["date_obj0"], "num": BASIC_DATA["Age"]})
+    df = cast_categorical(df, ["date_cat"])
+
+    assert find_categorical_variables(df, exclude_datetime=False) == ["date_cat"]
+    assert find_categorical_and_numerical_variables(
+        df, None, exclude_datetime=False
+    ) == (["date_cat"], ["num"])
+    assert find_categorical_and_numerical_variables(
+        df, "date_cat", exclude_datetime=False
+    ) == (["date_cat"], [])
