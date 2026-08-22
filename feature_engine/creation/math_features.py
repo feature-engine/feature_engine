@@ -1,3 +1,4 @@
+import warnings
 from typing import Any, List, Optional, Union
 
 import numpy as np
@@ -40,6 +41,33 @@ _FUNC_TO_STRING_ALIAS = {
     np.prod: "prod",
 }
 
+# The kwargs preserve pandas' string-reduction defaults. In particular, pandas
+# uses one degree of freedom for ``std`` and ``var`` while NumPy uses zero.
+# NumPy callables have their direct pandas >= 3 semantics instead (ddof=0).
+_NUMPY_REDUCERS = {
+    "sum": (np.nansum, {}),
+    "mean": (np.nanmean, {}),
+    "std": (np.nanstd, {"ddof": 1}),
+    "var": (np.nanvar, {"ddof": 1}),
+    "min": (np.nanmin, {}),
+    "max": (np.nanmax, {}),
+    "prod": (np.nanprod, {}),
+    "median": (np.nanmedian, {}),
+    np.sum: (np.nansum, {}),
+    np.mean: (np.nanmean, {}),
+    np.std: (np.nanstd, {"ddof": 0}),
+    np.var: (np.nanvar, {"ddof": 0}),
+    np.min: (np.nanmin, {}),
+    np.max: (np.nanmax, {}),
+    np.prod: (np.nanprod, {}),
+    np.median: (np.median, {}),
+}
+
+
+def _get_numpy_reducer(func):
+    """Return the NumPy reducer for a supported aggregation."""
+    return _NUMPY_REDUCERS.get(func)
+
 
 @Substitution(
     missing_values=_missing_values_docstring,
@@ -54,8 +82,8 @@ _FUNC_TO_STRING_ALIAS = {
 class MathFeatures(BaseCreation):
     """
     MathFeatures() applies functions across multiple features returning one or more
-    additional features as a result. It uses `pandas.agg()` to create the features,
-    setting `axis=1`.
+    additional features as a result. Common reductions use vectorized NumPy
+    operations. Other functions fall back to `pandas.agg()` with `axis=1`.
 
     For supported aggregation functions, see `pandas documentation
     <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html>`_.
@@ -234,10 +262,32 @@ class MathFeatures(BaseCreation):
             else:
                 func = _FUNC_TO_STRING_ALIAS.get(func, func)
 
-        if len(new_variable_names) == 1:
-            X[new_variable_names[0]] = X[self.variables].agg(func, axis=1)
+        variables = X[self.variables]
+        functions = func if isinstance(func, list) else [func]
+        reducers = [_get_numpy_reducer(fun) for fun in functions]
+        values = variables.to_numpy()
+
+        # Nullable extension dtypes produce object arrays. Keep those, custom
+        # callables, and less common pandas aggregations on the exact legacy path.
+        if reducers and values.dtype.kind in "biuf" and all(reducers):
+            results = []
+            for reducer, kwargs in reducers:
+                # pandas' named reductions do not warn for empty/all-missing rows.
+                # NumPy returns the same values but emits RuntimeWarning for some
+                # reducers, so silence only those warnings on this equivalent path.
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", RuntimeWarning)
+                    result = reducer(values, axis=1, **kwargs)
+                results.append(pd.Series(result, index=X.index))
+
+            result = results[0] if len(results) == 1 else pd.concat(results, axis=1)
         else:
-            X[new_variable_names] = X[self.variables].agg(func, axis=1)
+            result = variables.agg(func, axis=1)
+
+        if len(new_variable_names) == 1:
+            X[new_variable_names[0]] = result
+        else:
+            X[new_variable_names] = result
 
         if self.drop_original:
             X.drop(columns=self.variables, inplace=True)

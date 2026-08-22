@@ -6,9 +6,10 @@ MathFeatures
 ============
 
 :class:`MathFeatures()` applies basic functions to groups of features, returning one or
-more additional variables as a result. It uses `pandas.agg()` to create the features,
-so in essence, you can pass any function that is accepted by this method. One exception
-is that :class:`MathFeatures()` does not accept dictionaries for the parameter `func`.
+more additional variables as a result. It uses vectorized NumPy operations for common
+reductions and falls back to `pandas.agg()` for other functions. Thus, you can pass any
+function that is accepted by ``pandas.agg``. One exception is that
+:class:`MathFeatures()` does not accept dictionaries for the parameter `func`.
 
 The functions can be passed as strings, numpy methods, i.e., np.mean, or any function
 that you create, as long as it returns a scalar from a vector.
