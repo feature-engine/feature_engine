@@ -17,10 +17,7 @@ def cast_categorical(df, columns):
     return df.with_columns([pl.col(c).cast(pl.Categorical) for c in columns])
 
 
-# Data shared between the pandas and polars variants of a test. Kept as plain
-# dicts/lists (not fixtures) so a test can build both `make_df(BASIC_DATA)` and
-# `make_df(BASIC_DATA)` for a different backend without needing to convert
-# between frame types.
+# Data shared between the pandas and polars variants of a test.
 BASIC_DATA = {
     "Name": ["tom", "nick", "krish", "jack"],
     "City": ["London", "Manchester", "Liverpool", "Bristol"],
@@ -28,11 +25,6 @@ BASIC_DATA = {
     "Marks": [0.9, 0.8, 0.7, 0.6],
 }
 
-# Datetime formats that both pandas and polars auto-detect: native
-# Datetime/Date columns and ISO-8601 strings. Formats that only pandas'
-# flexible, dateutil-backed guessing can parse (e.g. "01-Jan-2010",
-# "10/11/12", bare time strings) are exercised separately, in pandas-only
-# tests, against the `df_datetime` fixture below.
 DATETIME_DATA = {
     **BASIC_DATA,
     "date_range": [datetime(2020, 2, 24, 0, i) for i in range(4)],

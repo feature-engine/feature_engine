@@ -25,7 +25,7 @@ def test_numerical_variables_finds_variables(make_df):
 
 
 def test_numerical_variables_finds_variables_with_int_column_names(df_int):
-    # polars requires string column names, so int-named columns are pandas-only
+    # polars requires string column names. int-named columns are pandas-only
     assert find_numerical_variables(df_int) == [3, 4]
 
 
@@ -336,11 +336,8 @@ def test_numcat_vars_as_category(make_df):
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_numcat_agrees_with_find_categorical_on_date_like_category(make_df):
-    # Regression test: the single-variable branch of
-    # find_categorical_and_numerical_variables used to short-circuit past the
-    # datetime check for Categorical-dtype columns, so it disagreed with
-    # find_categorical_variables on a category column holding date-like
-    # strings. All three calls below must now exclude it consistently.
+    # Regression test: the single-variable path used to disagree with
+    # find_categorical_variables on a date-like category column.
     df = make_df({"date_cat": DATETIME_DATA["date_obj0"], "num": BASIC_DATA["Age"]})
     df = cast_categorical(df, ["date_cat"])
 

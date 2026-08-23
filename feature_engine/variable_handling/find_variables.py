@@ -34,7 +34,7 @@ def _find_nw_categoricals(
             | nw.selectors.string()
             | nw.selectors.by_dtype(nw.Object)
         )
-        # `|`-combined selectors don't preserve the dataframe's column order,
+        # `|`-combined selectors don't preserve column order,
         # so re-filter over nw_X.columns to restore it.
         matched = set(nw_X.select(_NW_SELECTOR).columns)
         candidates = [column for column in nw_X.columns if column in matched]

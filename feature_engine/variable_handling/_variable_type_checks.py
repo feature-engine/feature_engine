@@ -1,3 +1,4 @@
+import warnings
 from datetime import date, datetime
 
 import narwhals as nw
@@ -31,7 +32,7 @@ def _is_convertible_to_num(s: "nw.Series") -> bool:
     if len(values) == 0:
         return False
     try:
-        for value in values:
+        for value in values[:100]:
             float(value)
     except (ValueError, TypeError):
         return False
@@ -39,10 +40,27 @@ def _is_convertible_to_num(s: "nw.Series") -> bool:
 
 
 def _is_convertible_to_dt(s: "nw.Series") -> bool:
-    values = s.drop_nulls().to_list()
-    if len(values) == 0:
+    values = s.drop_nulls()
+    values_list = values.to_list()
+    if len(values_list) == 0:
         return False
-    for value in values:
+
+    first_value = values_list[0]
+    if not isinstance(first_value, (date, datetime)):
+        if _looks_like_date_string(first_value) is False:
+            return False
+
+    # Try the backend's own vectorized parser first (faster).
+    # Fall back to the per-value check (below) when it fails.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        try:
+            values.str.to_datetime()
+            return True
+        except Exception:
+            pass
+
+    for value in values_list[:100]:
         if isinstance(value, (date, datetime)):
             continue
         if _looks_like_date_string(value) is False:

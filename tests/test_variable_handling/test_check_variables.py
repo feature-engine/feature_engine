@@ -129,7 +129,7 @@ def test_check_datetime_variables_returns_datetime_variables(make_df):
     assert check_datetime_variables(df, vars_dt) == vars_dt
     assert check_datetime_variables(df, tz_time) == [tz_time]
 
-    # only the string column can be cast to categorical - native Datetime
+    # only the string column can be cast to categorical. Native Datetime
     # columns can't be cast to Categorical in polars
     df = cast_categorical(df, ["date_obj0"])
     assert check_datetime_variables(df, "date_obj0") == ["date_obj0"]
