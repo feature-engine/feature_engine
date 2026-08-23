@@ -102,9 +102,7 @@ def test_datetime_variables_finds_variables(make_df):
 
 def test_datetime_variables_finds_pandas_only_string_formats(df_datetime):
     # "01-Jan-2010"-style, "10/11/12"-style and bare-time strings are
-    # recognised through flexible, dateutil-backed guessing - see the note in
-    # find_datetime_variables' docstring. This fixture is pandas-only, but the
-    # guessing itself is backend-agnostic (also works for polars).
+    # recognised through flexible, dateutil-backed guessing.
     vars_dt = [
         "date_range",
         "date_obj0",

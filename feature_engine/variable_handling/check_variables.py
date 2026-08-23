@@ -117,7 +117,12 @@ def check_categorical_variables(
 
     if nwd.is_pandas_dataframe(X) is True:
         not_categorical = (
-            len(X[variables].select_dtypes(exclude=["O", "category"]).columns) > 0
+            len(
+                X[variables]
+                .select_dtypes(exclude=["O", "category", "string"])
+                .columns
+            )
+            > 0
         )
     else:
         sub_X = nw.from_native(X, eager_only=True).select(variables)
@@ -183,14 +188,25 @@ def check_datetime_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    sub_X = nw.from_native(X, eager_only=True).select(variables)
-    candidates = sub_X.select(~nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
-    numeric_cols = set(sub_X.select(nw.selectors.numeric()).columns)
-    non_datetime = any(
-        column in numeric_cols
-        or not _is_categorical_and_is_datetime(sub_X.get_column(column))
-        for column in candidates
-    )
+    if nwd.is_pandas_dataframe(X) is True:
+        sub_X = X[variables]
+        candidates = sub_X.select_dtypes(exclude=["datetime", "datetimetz"]).columns
+        numeric_cols = set(sub_X.select_dtypes(include="number").columns)
+        nw_X = nw.from_native(sub_X, eager_only=True)
+        non_datetime = any(
+            column in numeric_cols
+            or not _is_categorical_and_is_datetime(nw_X.get_column(column))
+            for column in candidates
+        )
+    else:
+        sub_X = nw.from_native(X, eager_only=True).select(variables)
+        candidates = sub_X.select(~nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
+        numeric_cols = set(sub_X.select(nw.selectors.numeric()).columns)
+        non_datetime = any(
+            column in numeric_cols
+            or not _is_categorical_and_is_datetime(sub_X.get_column(column))
+            for column in candidates
+        )
 
     if non_datetime is True:
         raise TypeError(

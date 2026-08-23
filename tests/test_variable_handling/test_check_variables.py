@@ -71,8 +71,7 @@ def test_check_categorical_variables_returns_categorical_variables(make_df):
 
 
 def test_check_categorical_variables_numeric_categories_pandas_only():
-    # pandas allows category dtype with numeric categories (pd.Categorical can
-    # wrap numbers); polars categoricals are always string-backed, so casting a
+    # polars categoricals are always string-backed, so casting a
     # numeric column to Categorical isn't a realistic polars scenario.
     df = pd.DataFrame(BASIC_DATA)
     df = cast_categorical(df, ["Age", "Marks"])
@@ -138,9 +137,7 @@ def test_check_datetime_variables_returns_datetime_variables(make_df):
 
 def test_check_datetime_variables_returns_pandas_only_string_formats(df_datetime):
     # "01-Jan-2010"-style and "10/11/12"-style strings are recognised via
-    # flexible, dateutil-backed guessing - see the note in
-    # check_datetime_variables' docstring. This fixture is pandas-only, but the
-    # guessing itself is backend-agnostic (also works for polars).
+    # flexible, dateutil-backed guessing.
     vars_convertible_to_dt = ["date_range", "date_obj1", "date_obj2", "time_obj"]
     var_convertible_to_dt = "date_obj1"
 
