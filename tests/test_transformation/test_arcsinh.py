@@ -1,128 +1,142 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 
 from feature_engine.transformation import ArcSinhTransformer
 
-
-@pytest.fixture
-def df_numerical():
-    """Fixture providing sample numerical data with positive and negative values."""
-    return pd.DataFrame({
-        "a": [-100, -10, 0, 10, 100],
-        "b": [1, 2, 3, 4, 5],
-    })
-
-
-@pytest.fixture
-def df_multi_column():
-    """Fixture providing DataFrame with multiple columns."""
-    return pd.DataFrame({
-        "a": [1, 2, 3],
-        "b": [4, 5, 6],
-        "c": [7, 8, 9],
-    })
+DATA_NUMERICAL = {
+    "a": [-100.0, -10.0, 0.0, 10.0, 100.0],
+    "b": [1.0, 2.0, 3.0, 4.0, 5.0],
+}
+DATA_MULTI_COLUMN = {
+    "a": [1.0, 2.0, 3.0],
+    "b": [4.0, 5.0, 6.0],
+    "c": [7.0, 8.0, 9.0],
+}
 
 
-def test_default_parameters(df_numerical):
+def _col(X, name):
+    return nw.from_native(X, eager_only=True).get_column(name).to_numpy()
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_default_parameters(make_df):
     """Test transformer with default parameters applies arcsinh to all columns."""
+    X = make_df(DATA_NUMERICAL)
     transformer = ArcSinhTransformer()
-    X_tr = transformer.fit_transform(df_numerical.copy())
+    X_tr = transformer.fit_transform(X)
 
-    expected_a = np.arcsinh(df_numerical["a"])
-    expected_b = np.arcsinh(df_numerical["b"])
-    np.testing.assert_array_almost_equal(X_tr["a"], expected_a)
-    np.testing.assert_array_almost_equal(X_tr["b"], expected_b)
+    expected_a = np.arcsinh(np.array(DATA_NUMERICAL["a"]))
+    expected_b = np.arcsinh(np.array(DATA_NUMERICAL["b"]))
+    np.testing.assert_array_almost_equal(_col(X_tr, "a"), expected_a)
+    np.testing.assert_array_almost_equal(_col(X_tr, "b"), expected_b)
 
 
-def test_specific_variables(df_multi_column):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_specific_variables(make_df):
     """Test transformer with specific variables selected."""
+    X = make_df(DATA_MULTI_COLUMN)
     transformer = ArcSinhTransformer(variables=["a", "b"])
-    X_tr = transformer.fit_transform(df_multi_column.copy())
+    X_tr = transformer.fit_transform(X)
 
     np.testing.assert_array_almost_equal(
-        X_tr["a"], np.arcsinh(df_multi_column["a"])
+        _col(X_tr, "a"), np.arcsinh(np.array(DATA_MULTI_COLUMN["a"]))
     )
     np.testing.assert_array_almost_equal(
-        X_tr["b"], np.arcsinh(df_multi_column["b"])
+        _col(X_tr, "b"), np.arcsinh(np.array(DATA_MULTI_COLUMN["b"]))
     )
-    np.testing.assert_array_equal(X_tr["c"], df_multi_column["c"])
+    np.testing.assert_array_equal(_col(X_tr, "c"), np.array(DATA_MULTI_COLUMN["c"]))
 
 
-def test_with_loc_and_scale():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_with_loc_and_scale(make_df):
     """Test transformer with loc and scale parameters."""
-    X = pd.DataFrame({"a": [10, 20, 30, 40, 50]})
+    data = {"a": [10.0, 20.0, 30.0, 40.0, 50.0]}
+    X = make_df(data)
     loc = 30.0
     scale = 10.0
     transformer = ArcSinhTransformer(loc=loc, scale=scale)
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
 
-    expected = np.arcsinh((X["a"] - loc) / scale)
-    np.testing.assert_array_almost_equal(X_tr["a"], expected)
-    np.testing.assert_almost_equal(X_tr["a"].iloc[2], 0.0, decimal=10)
+    expected = np.arcsinh((np.array(data["a"]) - loc) / scale)
+    np.testing.assert_array_almost_equal(_col(X_tr, "a"), expected)
+    np.testing.assert_almost_equal(_col(X_tr, "a")[2], 0.0, decimal=10)
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("loc", [0.0, 10.0, -10.0, 100.5])
-def test_various_loc_values(loc):
+def test_various_loc_values(make_df, loc):
     """Test that various loc values work correctly."""
-    X = pd.DataFrame({"a": [1, 2, 3, 4, 5]})
+    data = {"a": [1.0, 2.0, 3.0, 4.0, 5.0]}
+    X = make_df(data)
     transformer = ArcSinhTransformer(loc=loc)
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
 
-    expected = np.arcsinh((X["a"] - loc) / 1.0)
-    np.testing.assert_array_almost_equal(X_tr["a"], expected)
+    expected = np.arcsinh((np.array(data["a"]) - loc) / 1.0)
+    np.testing.assert_array_almost_equal(_col(X_tr, "a"), expected)
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("scale", [0.5, 1.0, 2.0, 10.0, 100.0])
-def test_various_scale_values(scale):
+def test_various_scale_values(make_df, scale):
     """Test that various scale values work correctly."""
-    X = pd.DataFrame({"a": [1, 2, 3, 4, 5]})
+    data = {"a": [1.0, 2.0, 3.0, 4.0, 5.0]}
+    X = make_df(data)
     transformer = ArcSinhTransformer(scale=scale)
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
 
-    expected = np.arcsinh((X["a"] - 0.0) / scale)
-    np.testing.assert_array_almost_equal(X_tr["a"], expected)
+    expected = np.arcsinh((np.array(data["a"]) - 0.0) / scale)
+    np.testing.assert_array_almost_equal(_col(X_tr, "a"), expected)
 
 
-def test_inverse_transform(df_numerical):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_transform(make_df):
     """Test inverse_transform returns original values."""
-    X_original = df_numerical.copy()
+    X = make_df(DATA_NUMERICAL)
     transformer = ArcSinhTransformer()
-    X_tr = transformer.fit_transform(df_numerical.copy())
+    X_tr = transformer.fit_transform(X)
     X_inv = transformer.inverse_transform(X_tr)
 
-    np.testing.assert_array_almost_equal(X_inv["a"], X_original["a"], decimal=10)
-    np.testing.assert_array_almost_equal(X_inv["b"], X_original["b"], decimal=10)
+    np.testing.assert_array_almost_equal(
+        _col(X_inv, "a"), np.array(DATA_NUMERICAL["a"]), decimal=10
+    )
+    np.testing.assert_array_almost_equal(
+        _col(X_inv, "b"), np.array(DATA_NUMERICAL["b"]), decimal=10
+    )
 
 
-def test_inverse_transform_with_loc_scale():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_transform_with_loc_scale(make_df):
     """Test inverse_transform with loc and scale parameters."""
-    X = pd.DataFrame({"a": [10, 20, 30, 40, 50]})
-    X_original = X.copy()
+    data = {"a": [10.0, 20.0, 30.0, 40.0, 50.0]}
+    X = make_df(data)
     transformer = ArcSinhTransformer(loc=25.0, scale=5.0)
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
     X_inv = transformer.inverse_transform(X_tr)
 
-    np.testing.assert_array_almost_equal(X_inv["a"], X_original["a"], decimal=10)
+    np.testing.assert_array_almost_equal(
+        _col(X_inv, "a"), np.array(data["a"]), decimal=10
+    )
 
 
-def test_negative_values():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_negative_values(make_df):
     """Test that transformer handles negative values correctly."""
-    X = pd.DataFrame({"a": [-1000, -500, 0, 500, 1000]})
+    data = {"a": [-1000.0, -500.0, 0.0, 500.0, 1000.0]}
+    X = make_df(data)
     transformer = ArcSinhTransformer()
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
 
     # Expected values: arcsinh([ -1000, -500, 0, 500, 1000 ])
     expected = [-7.600902, -6.907755, 0.0, 6.907755, 7.600902]
-    np.testing.assert_array_almost_equal(X_tr["a"], expected, decimal=5)
+    result = _col(X_tr, "a")
+    np.testing.assert_array_almost_equal(result, expected, decimal=5)
 
     # Verify symmetry property: arcsinh(-x) = -arcsinh(x)
-    np.testing.assert_almost_equal(
-        X_tr["a"].iloc[0], -X_tr["a"].iloc[4], decimal=10
-    )
-    np.testing.assert_almost_equal(
-        X_tr["a"].iloc[1], -X_tr["a"].iloc[3], decimal=10
-    )
+    np.testing.assert_almost_equal(result[0], -result[4], decimal=10)
+    np.testing.assert_almost_equal(result[1], -result[3], decimal=10)
 
 
 @pytest.mark.parametrize("invalid_scale", [0, -1, -0.5, -100, "string", False])
@@ -139,9 +153,10 @@ def test_invalid_loc_raises_error(invalid_loc):
         ArcSinhTransformer(loc=invalid_loc)
 
 
-def test_fit_stores_attributes():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_stores_attributes(make_df):
     """Test that fit stores expected attributes with correct values."""
-    X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    X = make_df({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
     transformer = ArcSinhTransformer()
     transformer.fit(X)
 
@@ -153,9 +168,10 @@ def test_fit_stores_attributes():
     assert transformer.feature_names_in_ == ["a", "b"]
 
 
-def test_get_feature_names_out():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out(make_df):
     """Test get_feature_names_out returns correct feature names."""
-    X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    X = make_df({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]})
     transformer = ArcSinhTransformer()
     transformer.fit(X)
 
@@ -163,9 +179,10 @@ def test_get_feature_names_out():
     assert feature_names == ["a", "b"]
 
 
-def test_get_feature_names_out_with_subset():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out_with_subset(make_df):
     """Test get_feature_names_out with subset of variables."""
-    X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], "c": [7, 8, 9]})
+    X = make_df({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0], "c": [7.0, 8.0, 9.0]})
     transformer = ArcSinhTransformer(variables=["a"])
     transformer.fit(X)
 
@@ -173,29 +190,36 @@ def test_get_feature_names_out_with_subset():
     assert feature_names == ["a", "b", "c"]
 
 
-def test_behavior_like_log_for_large_values():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_behavior_like_log_for_large_values(make_df):
     """Test that arcsinh behaves like log for large positive values."""
-    X = pd.DataFrame({"a": [1000, 10000, 100000]})
+    data = {"a": [1000.0, 10000.0, 100000.0]}
+    X = make_df(data)
     transformer = ArcSinhTransformer()
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
 
-    log_approx = np.log(2 * X["a"])
-    np.testing.assert_array_almost_equal(X_tr["a"], log_approx, decimal=1)
+    log_approx = np.log(2 * np.array(data["a"]))
+    np.testing.assert_array_almost_equal(_col(X_tr, "a"), log_approx, decimal=1)
 
 
-def test_behavior_like_identity_for_small_values():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_behavior_like_identity_for_small_values(make_df):
     """Test that arcsinh behaves like identity for small values."""
-    X = pd.DataFrame({"a": [0.001, 0.01, 0.1]})
+    data = {"a": [0.001, 0.01, 0.1]}
+    X = make_df(data)
     transformer = ArcSinhTransformer()
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
 
-    np.testing.assert_array_almost_equal(X_tr["a"], X["a"], decimal=2)
+    np.testing.assert_array_almost_equal(
+        _col(X_tr, "a"), np.array(data["a"]), decimal=2
+    )
 
 
-def test_zero_input_returns_zero():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_zero_input_returns_zero(make_df):
     """Test that arcsinh(0) = 0."""
-    X = pd.DataFrame({"a": [0.0]})
+    X = make_df({"a": [0.0]})
     transformer = ArcSinhTransformer()
-    X_tr = transformer.fit_transform(X.copy())
+    X_tr = transformer.fit_transform(X)
 
-    assert X_tr["a"].iloc[0] == 0.0
+    assert _col(X_tr, "a")[0] == 0.0
