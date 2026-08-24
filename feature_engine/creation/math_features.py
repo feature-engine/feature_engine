@@ -24,7 +24,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
 
 
-def _pandas_version() -> bool:
+def _pandas_version() -> int:
     return int(nwd.get_pandas().__version__.split(".")[0])
 
 
