@@ -51,7 +51,7 @@ class TransformXyMixin:
             nw_X = nw.from_native(X, eager_only=True).with_row_index(row_index_col)
             X = self.transform(nw_X.to_native())
             nw_X = nw.from_native(X, eager_only=True)
-            row_positions = nw_X.get_column(row_index_col).to_list()
+            row_positions = nw_X.get_column(row_index_col)
             X = nw_X.drop(row_index_col).to_native()
             if nwd.is_into_series(y):
                 y = nw.from_native(y, series_only=True)[row_positions].to_native()
