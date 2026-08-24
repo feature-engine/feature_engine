@@ -392,7 +392,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
-        is_pandas = nwd.is_pandas_dataframe(X) is True
+        is_pandas = nwd.is_pandas_dataframe(X)
 
         # reorder variables to match train set
         if is_pandas is True:
