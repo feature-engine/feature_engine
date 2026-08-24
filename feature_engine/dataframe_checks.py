@@ -91,10 +91,9 @@ def check_y(
 
     if nwd.is_into_series(y):
         nw_y = nw.from_native(y, series_only=True)
-        has_na = nw_y.is_null().any()
-        if nw_y.dtype.is_numeric():
-            has_na = has_na or nw_y.is_nan().any()
-        if has_na:
+        if nw_y.is_null().any() or (
+            nw_y.dtype.is_numeric() and nw_y.is_nan().any()
+        ):
             raise ValueError("y contains NaN values.")
         if nw_y.dtype.is_numeric():
             if not np.isfinite(nw_y.to_numpy()).all():
@@ -105,9 +104,10 @@ def check_y(
 
     if nwd.is_into_dataframe(y):
         nw_y = nw.from_native(y, eager_only=True)
-        has_null = nw_y.select(nw.all().is_null().any()).to_numpy().any()
-        has_nan = nw_y.select(nws.numeric().is_nan().any()).to_numpy().any()
-        if has_null or has_nan:
+        if (
+            nw_y.select(nw.all().is_null().any()).to_numpy().any()
+            or nw_y.select(nws.numeric().is_nan().any()).to_numpy().any()
+        ):
             raise ValueError("y contains NaN values.")
         if not np.isfinite(nw_y.to_numpy()).all():
             raise ValueError("y contains infinity values.")
@@ -228,12 +228,11 @@ def _check_contains_na(
         "`missing_values='ignore'` when initialising this transformer."
     )
     nw_X = nw.from_native(X, eager_only=True)
-    has_null = nw_X.select(nw.col(variables).is_null().any()).to_numpy().any()
     numeric_vars = [v for v in variables if nw_X.schema[v].is_numeric()]
-    has_nan = False
-    if numeric_vars:
-        has_nan = nw_X.select(nw.col(numeric_vars).is_nan().any()).to_numpy().any()
-    if has_null or has_nan:
+    if nw_X.select(nw.col(variables).is_null().any()).to_numpy().any() or (
+        numeric_vars
+        and nw_X.select(nw.col(numeric_vars).is_nan().any()).to_numpy().any()
+    ):
         if error_msg == "simple":
             raise ValueError(error_msg_simple)
         else:
