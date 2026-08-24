@@ -182,18 +182,13 @@ class CyclicalFeatures(
         """
         if self.max_values is None:
             X, variables_ = self._fit_setup(X)
-            if nwd.is_pandas_dataframe(X) is True:
-                max_arr = X[variables_].to_numpy().max(axis=0)
-            else:
-                max_arr = (
-                    nw.from_native(X, eager_only=True)
-                    .select(variables_)
-                    .to_numpy()
-                    .max(axis=0)
-                )
-            # .tolist() converts numpy scalars to plain Python int/float,
-            # matching the dtype .to_dict() used to return.
-            max_values_ = dict(zip(variables_, max_arr.tolist()))
+            max_arr = (
+                nw.from_native(X, eager_only=True)
+                .select(variables_)
+                .to_numpy()
+                .max(axis=0)
+            )
+            max_values_ = dict(zip(variables_, max_arr))
         else:
             X, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values
@@ -220,23 +215,15 @@ class CyclicalFeatures(
         """
         X = self._check_transform_input_and_state(X)
 
-        if nwd.is_pandas_dataframe(X) is True:
-            for variable in self.variables_:
-                max_value = self.max_values_[variable]
-                X[f"{variable}_sin"] = np.sin(X[variable] * (2.0 * np.pi / max_value))
-                X[f"{variable}_cos"] = np.cos(X[variable] * (2.0 * np.pi / max_value))
-            if self.drop_original is True:
-                X = X.drop(columns=self.variables_)
-        else:
-            new_cols = []
-            for variable in self.variables_:
-                scaled = nw.col(variable) * (2.0 * np.pi / self.max_values_[variable])
-                new_cols.append(scaled.sin().alias(f"{variable}_sin"))
-                new_cols.append(scaled.cos().alias(f"{variable}_cos"))
-            nw_X = nw.from_native(X, eager_only=True).with_columns(*new_cols)
-            if self.drop_original is True:
-                nw_X = nw_X.drop(self.variables_)
-            X = nw_X.to_native()
+        new_cols = []
+        for variable in self.variables_:
+            scaled = nw.col(variable) * (2.0 * np.pi / self.max_values_[variable])
+            new_cols.append(scaled.sin().alias(f"{variable}_sin"))
+            new_cols.append(scaled.cos().alias(f"{variable}_cos"))
+        nw_X = nw.from_native(X, eager_only=True).with_columns(*new_cols)
+        if self.drop_original is True:
+            nw_X = nw_X.drop(self.variables_)
+        X = nw_X.to_native()
 
         return X
 
