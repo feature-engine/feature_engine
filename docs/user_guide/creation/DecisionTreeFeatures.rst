@@ -485,6 +485,53 @@ are not there:
     2670                                        1.843904
     15709                                       1.843904
 
+With polars
+-----------
+
+:class:`DecisionTreeFeatures()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.creation import DecisionTreeFeatures
+
+    X = pl.DataFrame({
+        "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
+        "Height": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
+    })
+    y = [4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7]
+
+    dtf = DecisionTreeFeatures(features_to_combine=2, drop_original=True)
+    dtf.fit(X, y)
+
+    print(dtf.transform(X))
+
+The resulting values match those found with pandas:
+
+.. code:: text
+
+    shape: (10, 3)
+    ┌───────────┬──────────────┬─────────────────────────┐
+    │ tree(Age) ┆ tree(Height) ┆ tree(['Age', 'Height']) │
+    │ ---       ┆ ---          ┆ ---                     │
+    │ f64       ┆ f64          ┆ f64                     │
+    ╞═══════════╪══════════════╪═════════════════════════╡
+    │ 4.533333  ┆ 5.366667     ┆ 4.1                     │
+    │ 6.0       ┆ 5.366667     ┆ 6.475                   │
+    │ 4.533333  ┆ 4.133333     ┆ 4.0                     │
+    │ 4.533333  ┆ 5.366667     ┆ 6.475                   │
+    │ 6.0       ┆ 4.4          ┆ 4.4                     │
+    │ 4.533333  ┆ 4.4          ┆ 4.4                     │
+    │ 6.0       ┆ 6.95         ┆ 6.475                   │
+    │ 4.533333  ┆ 4.133333     ┆ 4.4                     │
+    │ 4.533333  ┆ 4.133333     ┆ 4.0                     │
+    │ 6.0       ┆ 6.95         ┆ 6.475                   │
+    └───────────┴──────────────┴─────────────────────────┘
+
+`get_feature_names_out()`, classification, and every other parameter shown
+above with pandas work identically with polars.
+
+
 Creating features for classification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

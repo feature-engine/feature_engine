@@ -1,5 +1,7 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
@@ -591,3 +593,99 @@ def test_check_return_empty():
     # RelativeFeatures and CyclicalFeatures into it), so return_empty is
     # tested directly here instead.
     check_return_empty(DecisionTreeFeatures(regression=False))
+
+
+# ============================ polars support ============================
+
+NUMERIC_DATA = {
+    "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
+    "Height": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
+}
+REGRESSION_Y = [4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7]
+BINARY_Y = [0, 1, 0, 1, 1, 0, 1, 0, 0, 1]
+MULTICLASS_Y = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0]
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_regression_both_backends_match(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = DecisionTreeFeatures(features_to_combine=2, random_state=0)
+    transformer.fit(df, REGRESSION_Y)
+    Xt = transformer.transform(df)
+
+    result = nw.from_native(Xt, eager_only=True).to_dict(as_series=False)
+    assert result["tree(['Age', 'Height'])"] == pytest.approx(
+        [4.1, 6.475, 4.0, 6.475, 4.4, 4.4, 6.475, 4.4, 4.0, 6.475]
+    )
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_binary_classification_both_backends_match(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = DecisionTreeFeatures(regression=False, random_state=0)
+    transformer.fit(df, BINARY_Y)
+    Xt = transformer.transform(df)
+
+    pd_df = pd.DataFrame(NUMERIC_DATA)
+    pd_transformer = DecisionTreeFeatures(regression=False, random_state=0)
+    pd_transformer.fit(pd_df, BINARY_Y)
+    expected = pd_transformer.transform(pd_df)["tree(['Age', 'Height'])"].tolist()
+
+    result = nw.from_native(Xt, eager_only=True).get_column(
+        "tree(['Age', 'Height'])"
+    )
+    assert result.to_list() == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_multiclass_classification_both_backends_match(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = DecisionTreeFeatures(regression=False, random_state=0)
+    transformer.fit(df, MULTICLASS_Y)
+    Xt = transformer.transform(df)
+
+    pd_df = pd.DataFrame(NUMERIC_DATA)
+    pd_transformer = DecisionTreeFeatures(regression=False, random_state=0)
+    pd_transformer.fit(pd_df, MULTICLASS_Y)
+    expected = pd_transformer.transform(pd_df)["tree(['Age', 'Height'])"].tolist()
+
+    result = nw.from_native(Xt, eager_only=True).get_column(
+        "tree(['Age', 'Height'])"
+    )
+    assert result.to_list() == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_drop_original_both_backends(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = DecisionTreeFeatures(features_to_combine=1, drop_original=True)
+    transformer.fit(df, REGRESSION_Y)
+    Xt = transformer.transform(df)
+    assert list(nw.from_native(Xt, eager_only=True).columns) == [
+        "tree(Age)",
+        "tree(Height)",
+    ]
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out_both_backends(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = DecisionTreeFeatures(features_to_combine=1)
+    transformer.fit(df, REGRESSION_Y)
+    Xt = transformer.transform(df)
+    feat_out = list(nw.from_native(Xt, eager_only=True).columns)
+    assert transformer.get_feature_names_out(input_features=None) == feat_out
+
+
+def test_single_int_named_feature_combo_both_backends():
+    # regression test: a single-variable combo with an integer column name
+    # used to crash (isinstance(features, str) missed the int case), since
+    # X[features] for a bare int returns a 1D Series, not the 2D input
+    # sklearn requires - fixed to check isinstance(features, (str, int)).
+    df = pd.DataFrame({0: [1.0, 2, 3, 4, 5, 6, 7, 8], 1: [2.0, 3, 4, 5, 6, 7, 8, 9]})
+    y = [1.0, 2, 3, 4, 5, 6, 7, 8]
+    transformer = DecisionTreeFeatures(features_to_combine=1, random_state=0)
+    transformer.fit(df, y)
+    Xt = transformer.transform(df)
+    assert "tree(0)" in Xt.columns
+    assert "tree(1)" in Xt.columns

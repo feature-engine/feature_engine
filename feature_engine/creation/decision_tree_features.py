@@ -1,8 +1,10 @@
 import itertools
 from typing import Any, Dict, Iterable, List, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -210,6 +212,36 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
     7             4.24
     8             4.24
     9             6.00
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.creation import DecisionTreeFeatures
+    >>> X = pl.DataFrame({
+    ...     "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
+    ...     "Height": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
+    ... })
+    >>> y = [4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7]
+    >>> dtf = DecisionTreeFeatures(features_to_combine=1)
+    >>> dtf.fit(X, y)
+    >>> dtf.transform(X)
+    shape: (10, 4)
+    ┌─────┬────────┬───────────┬──────────────┐
+    │ Age ┆ Height ┆ tree(Age) ┆ tree(Height) │
+    │ --- ┆ ---    ┆ ---       ┆ ---          │
+    │ i64 ┆ i64    ┆ f64       ┆ f64          │
+    ╞═════╪════════╪═══════════╪══════════════╡
+    │ 20  ┆ 164    ┆ 4.533333  ┆ 5.366667     │
+    │ 44  ┆ 150    ┆ 6.0       ┆ 5.366667     │
+    │ 19  ┆ 178    ┆ 4.533333  ┆ 4.133333     │
+    │ 33  ┆ 158    ┆ 4.533333  ┆ 5.366667     │
+    │ 51  ┆ 188    ┆ 6.0       ┆ 4.4          │
+    │ 40  ┆ 190    ┆ 4.533333  ┆ 4.4          │
+    │ 41  ┆ 168    ┆ 6.0       ┆ 6.95         │
+    │ 37  ┆ 174    ┆ 4.533333  ┆ 4.133333     │
+    │ 30  ┆ 176    ┆ 4.533333  ┆ 4.133333     │
+    │ 54  ┆ 171    ┆ 6.0       ┆ 6.95         │
+    └─────┴────────┴───────────┴──────────────┘
     """
 
     def __init__(
@@ -254,18 +286,18 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.missing_values = missing_values
         self.drop_original = drop_original
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Fits decision trees based on the input variable combinations with
         cross-validation and grid-search for hyperparameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just
             the variables to transform.
 
-        y: pandas Series or np.array = [n_samples,]
+        y: Series or np.array = [n_samples,]
             The target variable that is used to train the decision tree.
         """
         # confirm model type and target variables are compatible.
@@ -302,39 +334,48 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             how_to_combine=self.features_to_combine, variables=variables_
         )
 
+        is_pandas = nwd.is_pandas_dataframe(X) is True
+        nw_X = nw.from_native(X, eager_only=True)
+
         estimators_ = []
         for features in input_features:
             estimator = self._make_decision_tree(param_grid=param_grid)
 
             # single feature models
-            if isinstance(features, str):
-                estimator.fit(X[features].to_frame(), y)
+            if isinstance(features, (str, int)):
+                X_sub = nw_X.get_column(features).to_frame().to_native()
             # multi feature models
+            elif is_pandas is True:
+                X_sub = X[features]
             else:
-                estimator.fit(X[features], y)
+                X_sub = nw_X.select(features).to_native()
 
+            estimator.fit(X_sub, y)
             estimators_.append(estimator)
 
         self.variables_ = variables_
         self.input_features_ = input_features
         self.estimators_ = estimators_
-        self.feature_names_in_ = X.columns.tolist()
+        if is_pandas is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw_X.columns
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Create and add new variables.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe.
+        X_new: dataframe.
             Either the original dataframe plus the new features or
             a dataframe of only the new features.
         """
@@ -351,50 +392,59 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
+        is_pandas = nwd.is_pandas_dataframe(X) is True
+
         # reorder variables to match train set
-        X = X[self.feature_names_in_]
-
-        # create new features and add them to the original dataframe
-        # if regression or multiclass, we return the output of predict()
-        if self.regression is True:
-            for features, estimator in zip(self.input_features_, self.estimators_):
-                if isinstance(features, str):
-                    preds = estimator.predict(X[features].to_frame())
-                    if self.precision is not None:
-                        preds = np.round(preds, self.precision)
-                    X.loc[:, f"tree({features})"] = preds
-                else:
-                    preds = estimator.predict(X[features])
-                    if self.precision is not None:
-                        preds = np.round(preds, self.precision)
-                    X.loc[:, f"tree({features})"] = preds
-
-        # if binary classification, we return the probability
-        elif self._is_binary == "binary":
-            for features, estimator in zip(self.input_features_, self.estimators_):
-                if isinstance(features, str):
-                    preds = estimator.predict_proba(X[features].to_frame())
-                    if self.precision is not None:
-                        preds = np.round(preds, self.precision)
-                    X.loc[:, f"tree({features})"] = preds[:, 1]
-                else:
-                    preds = estimator.predict_proba(X[features])
-                    if self.precision is not None:
-                        preds = np.round(preds, self.precision)
-                    X.loc[:, f"tree({features})"] = preds[:, 1]
-
-        # if multiclass, we return the output of predict()
+        if is_pandas is True:
+            X = X[self.feature_names_in_]
         else:
-            for features, estimator in zip(self.input_features_, self.estimators_):
-                if isinstance(features, str):
-                    preds = estimator.predict(X[features].to_frame())
-                    X.loc[:, f"tree({features})"] = preds
-                else:
-                    preds = estimator.predict(X[features])
-                    X.loc[:, f"tree({features})"] = preds
+            X = (
+                nw.from_native(X, eager_only=True)
+                .select(self.feature_names_in_)
+                .to_native()
+            )
+        nw_X = nw.from_native(X, eager_only=True)
 
-        if self.drop_original:
-            X.drop(columns=self.variables_, inplace=True)
+        def get_x_sub(features):
+            if isinstance(features, (str, int)):
+                return nw_X.get_column(features).to_frame().to_native()
+            if is_pandas is True:
+                return X[features]
+            return nw_X.select(features).to_native()
+
+        new_series = []
+        # if regression or multiclass, we return the output of predict();
+        # if binary classification, we return the probability
+        for features, estimator in zip(self.input_features_, self.estimators_):
+            X_sub = get_x_sub(features)
+            col_name = f"tree({features})"
+
+            if self.regression is True:
+                preds = estimator.predict(X_sub)
+                if self.precision is not None:
+                    preds = np.round(preds, self.precision)
+            elif self._is_binary == "binary":
+                preds = estimator.predict_proba(X_sub)[:, 1]
+                if self.precision is not None:
+                    preds = np.round(preds, self.precision)
+            else:
+                preds = estimator.predict(X_sub)
+
+            if is_pandas is True:
+                X[col_name] = preds
+            else:
+                new_series.append(
+                    nw.new_series(col_name, preds, backend=nw_X.implementation)
+                )
+
+        if is_pandas is True:
+            if self.drop_original is True:
+                X = X.drop(columns=self.variables_)
+        else:
+            nw_X = nw.from_native(X, eager_only=True).with_columns(*new_series)
+            if self.drop_original is True:
+                nw_X = nw_X.drop(self.variables_)
+            X = nw_X.to_native()
 
         return X
 
