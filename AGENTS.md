@@ -10,6 +10,22 @@ Feature-engine transformers take dataframes (pandas, polars, or any other
 narwhals-supported backend) as input, not numpy arrays. Don't add
 handling for array input.
 
+## Never import pandas in library code
+
+pandas is an optional dependency (see `pyproject.toml` — it lives under
+`[project.optional-dependencies]`, not core `dependencies`), so `import
+pandas` must never appear anywhere in `feature_engine/`, not at module level
+and not locally/lazily inside a function either — importing the module
+itself would break a polars-only install regardless of which class is used.
+
+Backend checks go through `narwhals.dependencies` (`nwd.is_pandas_dataframe`,
+`nwd.is_pandas_series`, `nwd.is_pandas_index`, `nwd.is_into_series`, etc.).
+Once a branch is confirmed pandas, call its methods/attributes directly on
+the object already in hand (`.loc`, `.columns`, `.index`, `.select_dtypes`,
+...) — no import needed for that, since Python only needs a module imported
+to reference the module itself (`pd.something`), not to call methods on an
+object that's already an instance of that module's class.
+
 ## Booleans and control flow
 
 - Compare booleans explicitly: `if x is True:` / `if x is False:`, never
