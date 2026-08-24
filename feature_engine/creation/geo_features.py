@@ -3,8 +3,10 @@
 
 from typing import List, Literal, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -142,10 +144,39 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     >>> gdt.fit(X)
     >>> X = gdt.transform(X)
     >>> X
-       origin_lat  origin_lon  dest_lat   dest_lon  geo_distance
-    0     40.7128    -74.0060   34.0522  -118.2437   3935.746254
-    1     34.0522   -118.2437   41.8781   -87.6298   2808.517344
-    2     41.8781    -87.6298   40.7128   -74.0060   1144.286561
+       origin_lat  origin_lon  dest_lat  dest_lon  geo_distance
+    0     40.7128    -74.0060   34.0522 -118.2437   3935.746255
+    1     34.0522   -118.2437   41.8781  -87.6298   2803.971507
+    2     41.8781    -87.6298   40.7128  -74.0060   1144.291274
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.creation import GeoDistanceFeatures
+    >>> X = pl.DataFrame({
+    ...     "origin_lat": [40.7128, 34.0522, 41.8781],
+    ...     "origin_lon": [-74.0060, -118.2437, -87.6298],
+    ...     "dest_lat": [34.0522, 41.8781, 40.7128],
+    ...     "dest_lon": [-118.2437, -87.6298, -74.0060],
+    ... })
+    >>> gdt = GeoDistanceFeatures(
+    ...     lat1="origin_lat", lon1="origin_lon",
+    ...     lat2="dest_lat", lon2="dest_lon",
+    ...     method="haversine", output_unit="km"
+    ... )
+    >>> gdt.fit(X)
+    >>> X = gdt.transform(X)
+    >>> X
+    shape: (3, 5)
+    ┌────────────┬────────────┬──────────┬───────────┬──────────────┐
+    │ origin_lat ┆ origin_lon ┆ dest_lat ┆ dest_lon  ┆ geo_distance │
+    │ ---        ┆ ---        ┆ ---      ┆ ---       ┆ ---          │
+    │ f64        ┆ f64        ┆ f64      ┆ f64       ┆ f64          │
+    ╞════════════╪════════════╪══════════╪═══════════╪══════════════╡
+    │ 40.7128    ┆ -74.006    ┆ 34.0522  ┆ -118.2437 ┆ 3935.746255  │
+    │ 34.0522    ┆ -118.2437  ┆ 41.8781  ┆ -87.6298  ┆ 2803.971507  │
+    │ 41.8781    ┆ -87.6298   ┆ 40.7128  ┆ -74.006   ┆ 1144.291274  │
+    └────────────┴────────────┴──────────┴───────────┴──────────────┘
     """
 
     def __init__(
@@ -213,16 +244,16 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         self.drop_original = drop_original
         self.validate_ranges = validate_ranges
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y: pandas Series, or np.array. Defaults to None.
+        y: Series, or np.array. Defaults to None.
             It is not needed in this transformer. You can pass y or None.
 
         Returns
@@ -233,6 +264,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         # check input dataframe
         X = check_X(X)
+        is_pandas = nwd.is_pandas_dataframe(X) is True
 
         # Coordinate variables
         variables: List[Union[str, int]] = [
@@ -243,7 +275,11 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         ]
 
         # Check all coordinate columns exist
-        missing = set(variables) - set(X.columns)
+        if is_pandas is True:
+            columns = set(X.columns)
+        else:
+            columns = set(nw.from_native(X, eager_only=True).columns)
+        missing = set(variables) - columns
         if missing:
             raise ValueError(
                 f"Coordinate columns {missing} are not present in the dataframe."
@@ -256,42 +292,61 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         _check_contains_na(X, variables)
 
         # Validate coordinate ranges if enabled
-        if self.validate_ranges:
-            for lat_col in [self.lat1, self.lat2]:
-                if (X[lat_col].abs() > 90).any():
-                    raise ValueError(
-                        f"Latitude values in '{lat_col}' must be between -90 and 90."
-                    )
-
-            for lon_col in [self.lon1, self.lon2]:
-                if (X[lon_col].abs() > 180).any():
-                    raise ValueError(
-                        f"Longitude values in '{lon_col}' must be between -180 and 180."
-                    )
+        if self.validate_ranges is True:
+            self._validate_coordinate_ranges(X, is_pandas)
 
         # save coordinate variables
         self.variables_ = variables
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
+        if is_pandas is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _validate_coordinate_ranges(self, X: IntoDataFrame, is_pandas: bool) -> None:
+        """Raise if any latitude/longitude value falls outside its valid range."""
+        if is_pandas is True:
+            for lat_col in [self.lat1, self.lat2]:
+                if (X[lat_col].abs() > 90).any():
+                    raise ValueError(
+                        f"Latitude values in '{lat_col}' must be between -90 and 90."
+                    )
+            for lon_col in [self.lon1, self.lon2]:
+                if (X[lon_col].abs() > 180).any():
+                    raise ValueError(
+                        f"Longitude values in '{lon_col}' must be between -180 and 180."
+                    )
+        else:
+            nw_X = nw.from_native(X, eager_only=True)
+            for lat_col in [self.lat1, self.lat2]:
+                if nw_X.select((nw.col(lat_col).abs() > 90).any()).to_numpy().any():
+                    raise ValueError(
+                        f"Latitude values in '{lat_col}' must be between -90 and 90."
+                    )
+            for lon_col in [self.lon1, self.lon2]:
+                if nw_X.select((nw.col(lon_col).abs() > 180).any()).to_numpy().any():
+                    raise ValueError(
+                        f"Longitude values in '{lon_col}' must be between -180 and 180."
+                    )
+
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Calculate distances and add them as a new column.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the new distance column added.
         """
 
@@ -307,36 +362,43 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         # Check for missing values
         _check_contains_na(X, self.variables_)
 
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
+        is_pandas = nwd.is_pandas_dataframe(X) is True
+
+        # reorder variables to match train set, and extract coordinate arrays
+        if is_pandas is True:
+            X = X[self.feature_names_in_]
+            lat1 = X[self.lat1].to_numpy()
+            lon1 = X[self.lon1].to_numpy()
+            lat2 = X[self.lat2].to_numpy()
+            lon2 = X[self.lon2].to_numpy()
+        else:
+            nw_X = nw.from_native(X, eager_only=True).select(self.feature_names_in_)
+            lat1 = nw_X.get_column(self.lat1).to_numpy()
+            lon1 = nw_X.get_column(self.lon1).to_numpy()
+            lat2 = nw_X.get_column(self.lat2).to_numpy()
+            lon2 = nw_X.get_column(self.lon2).to_numpy()
 
         # Calculate distance based on method
         if self.method == "haversine":
-            distances = self._haversine_distance(
-                X[self.lat1].values,
-                X[self.lon1].values,
-                X[self.lat2].values,
-                X[self.lon2].values,
-            )
+            distances = self._haversine_distance(lat1, lon1, lat2, lon2)
         elif self.method == "euclidean":
-            distances = self._euclidean_distance(
-                X[self.lat1].values,
-                X[self.lon1].values,
-                X[self.lat2].values,
-                X[self.lon2].values,
-            )
+            distances = self._euclidean_distance(lat1, lon1, lat2, lon2)
         else:  # manhattan
-            distances = self._manhattan_distance(
-                X[self.lat1].values,
-                X[self.lon1].values,
-                X[self.lat2].values,
-                X[self.lon2].values,
+            distances = self._manhattan_distance(lat1, lon1, lat2, lon2)
+
+        if is_pandas is True:
+            X[self.output_col] = distances
+            if self.drop_original is True:
+                X = X.drop(columns=self.variables_)
+        else:
+            nw_X = nw_X.with_columns(
+                nw.new_series(
+                    self.output_col, distances, backend=nw_X.implementation
+                )
             )
-
-        X[self.output_col] = distances
-
-        if self.drop_original:
-            X = X.drop(columns=self.variables_)
+            if self.drop_original is True:
+                nw_X = nw_X.drop(self.variables_)
+            X = nw_X.to_native()
 
         return X
 

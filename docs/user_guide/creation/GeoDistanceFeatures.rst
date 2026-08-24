@@ -193,6 +193,55 @@ After transformation, only the non-coordinate columns and the new distance colum
 
     ['trip_id', 'geo_distance']
 
+With polars
+-----------
+
+:class:`GeoDistanceFeatures()` works in the same way with a polars dataframe.
+Let's create an equivalent toy dataset:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.creation import GeoDistanceFeatures
+
+    X = pl.DataFrame({
+        'origin_lat': [40.7128, 34.0522, 41.8781, 29.7604],
+        'origin_lon': [-74.0060, -118.2437, -87.6298, -95.3698],
+        'dest_lat': [34.0522, 41.8781, 40.7128, 33.4484],
+        'dest_lon': [-118.2437, -87.6298, -74.0060, -112.0740],
+        'trip_id': [1, 2, 3, 4]
+    })
+
+    gdt = GeoDistanceFeatures(
+        lat1='origin_lat', lon1='origin_lon',
+        lat2='dest_lat', lon2='dest_lon',
+        method='haversine', output_unit='km', output_col='distance_km'
+    )
+
+    gdt.fit(X)
+    X_transformed = gdt.transform(X)
+
+    print(X_transformed.select(['trip_id', 'distance_km']))
+
+We see the resulting distances:
+
+.. code:: text
+
+    shape: (4, 2)
+    ┌─────────┬─────────────┐
+    │ trip_id ┆ distance_km │
+    │ ---     ┆ ---         │
+    │ i64     ┆ f64         │
+    ╞═════════╪═════════════╡
+    │ 1       ┆ 3935.746255 │
+    │ 2       ┆ 2803.971507 │
+    │ 3       ┆ 1144.291274 │
+    │ 4       ┆ 1632.166882 │
+    └─────────┴─────────────┘
+
+`drop_original=True` and the different distance methods and output units
+work identically to the pandas examples above.
+
 Calculating distance within a Pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
