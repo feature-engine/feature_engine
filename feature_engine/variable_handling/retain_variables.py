@@ -35,7 +35,7 @@ def retain_variables_if_in_df(X: IntoDataFrame, variables):
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> vars_in_df = retain_variables_if_in_df(X, ['var_num', 'var_cat', 'var_other'])
     >>> vars_in_df

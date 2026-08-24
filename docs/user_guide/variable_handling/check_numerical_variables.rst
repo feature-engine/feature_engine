@@ -25,7 +25,7 @@ Now, we create the dataset:
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
         "Age": [20, 21, 19, 18],
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
     })
 
     print(df.head())

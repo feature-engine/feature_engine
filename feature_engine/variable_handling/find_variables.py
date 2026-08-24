@@ -85,7 +85,7 @@ def find_numerical_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_ = find_numerical_variables(X)
     >>> var_
@@ -155,7 +155,7 @@ def find_categorical_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_ = find_categorical_variables(X)
     >>> var_
@@ -227,7 +227,7 @@ def find_datetime_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_date = find_datetime_variables(X)
     >>> var_date
@@ -308,7 +308,7 @@ def find_all_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> vars_all = find_all_variables(X)
     >>> vars_all
@@ -410,7 +410,7 @@ def find_categorical_and_numerical_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_cat, var_num = find_categorical_and_numerical_variables(X)
     >>> var_cat, var_num
