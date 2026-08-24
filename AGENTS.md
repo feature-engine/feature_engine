@@ -10,6 +10,22 @@ Feature-engine transformers take dataframes (pandas, polars, or any other
 narwhals-supported backend) as input, not numpy arrays. Don't add
 handling for array input.
 
+## Never import pandas in library code
+
+pandas is an optional dependency (see `pyproject.toml` — it lives under
+`[project.optional-dependencies]`, not core `dependencies`), so `import
+pandas` must never appear anywhere in `feature_engine/`, not at module level
+and not locally/lazily inside a function either — importing the module
+itself would break a polars-only install regardless of which class is used.
+
+Backend checks go through `narwhals.dependencies` (`nwd.is_pandas_dataframe`,
+`nwd.is_pandas_series`, `nwd.is_pandas_index`, `nwd.is_into_series`, etc.).
+Once a branch is confirmed pandas, call its methods/attributes directly on
+the object already in hand (`.loc`, `.columns`, `.index`, `.select_dtypes`,
+...) — no import needed for that, since Python only needs a module imported
+to reference the module itself (`pd.something`), not to call methods on an
+object that's already an instance of that module's class.
+
 ## Booleans and control flow
 
 - Compare booleans explicitly: `if x is True:` / `if x is False:`, never
@@ -34,6 +50,19 @@ ask — don't guess and defensively code around it.
 - Narwhals' `.columns` is already `list[str]` — don't wrap it in `list()`.
 - pandas' `.columns` is an `Index`, not a list — `list()` is required there
   (an `Index == list` comparison is elementwise, not a clean bool).
+
+## Keep tests passing when you change a function or class
+
+Whenever you change a function or class, run its corresponding tests. If
+they fail, resolve it — don't leave it — by figuring out whether the test
+needs updating (e.g. it exercised behavior that's no longer supported) or
+the implementation has a real bug, and fixing whichever one is wrong.
+
+## Keep docs in sync with transformer changes
+
+When new functionality is introduced in a transformer, update its
+corresponding `docs/user_guide/<module>/<ClassName>.rst` with a short
+worked example showing the new functionality.
 
 ## Verify before applying
 
