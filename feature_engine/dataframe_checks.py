@@ -228,7 +228,10 @@ def _check_contains_na(
         "`missing_values='ignore'` when initialising this transformer."
     )
     nw_X = nw.from_native(X, eager_only=True)
-    numeric_vars = [v for v in variables if nw_X.schema[v].is_numeric()]
+    if nwd.is_pandas_dataframe(X):
+        numeric_vars = list(X[variables].select_dtypes(include="number").columns)
+    else:
+        numeric_vars = nw_X.select(variables).select(nw.selectors.numeric()).columns
     if nw_X.select(nw.col(variables).is_null().any()).to_numpy().any() or (
         numeric_vars
         and nw_X.select(nw.col(numeric_vars).is_nan().any()).to_numpy().any()
