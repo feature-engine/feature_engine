@@ -134,47 +134,20 @@ class GetFeatureNamesOutMixin:
         check_is_fitted(self)
 
         if input_features is not None:
-            # If input to fit is an array, then the variable names in
-            # feature_names_in_ are "x0", "x1","x2" ..."xn".
-            if self.feature_names_in_ == [f"x{i}" for i in range(self.n_features_in_)]:
-
-                # If the input was an array, we let the user enter the variable names.
-                if len(input_features) == self.n_features_in_:
-                    if isinstance(input_features, list):
-                        feature_names = input_features
-                    else:
-                        feature_names = list(input_features)
-
-                    # For transformers that add features to the data.
-                    feature_names = self._add_new_feature_names(feature_names)
-
-                    # For transformers that remove features from data, i..e, selectors.
-                    feature_names = self._remove_feature_names(
-                        feature_names, indices=True
-                    )
-
-                    return feature_names
-
-                else:
-                    raise ValueError(
-                        "The number of input_features does not match the number of "
-                        "features seen in the dataframe used in fit."
-                    )
+            msg = "input_features is not equal to feature_names_in_"
+            if isinstance(input_features, list):
+                if input_features != self.feature_names_in_:
+                    raise ValueError(msg)
+            elif isinstance(input_features, ndarray) or (
+                nwd.is_pandas_index(input_features) is True
+            ):
+                if list(input_features) != self.feature_names_in_:
+                    raise ValueError(msg)
             else:
-                msg = "input_features is not equal to feature_names_in_"
-                if isinstance(input_features, list):
-                    if input_features != self.feature_names_in_:
-                        raise ValueError(msg)
-                elif isinstance(input_features, ndarray) or (
-                    nwd.is_pandas_index(input_features) is True
-                ):
-                    if list(input_features) != self.feature_names_in_:
-                        raise ValueError(msg)
-                else:
-                    raise ValueError(
-                        "input_features must be a list or an array. "
-                        "Got {input_features} instead."
-                    )
+                raise ValueError(
+                    "input_features must be a list or an array. "
+                    "Got {input_features} instead."
+                )
 
         feature_names = self.feature_names_in_
 
@@ -182,7 +155,7 @@ class GetFeatureNamesOutMixin:
         feature_names = self._add_new_feature_names(feature_names)
 
         # For transformers that remove features from data, i..e, selectors.
-        feature_names = self._remove_feature_names(feature_names, indices=False)
+        feature_names = self._remove_feature_names(feature_names)
 
         return feature_names
 
@@ -199,14 +172,10 @@ class GetFeatureNamesOutMixin:
 
         return feature_names
 
-    def _remove_feature_names(self, feature_names, indices=False) -> List:
+    def _remove_feature_names(self, feature_names) -> List:
         # For transformers that remove features from data, i..e, selectors.
         if hasattr(self, "features_to_drop_"):
-            if indices is True:
-                mask = self.get_support(indices=True)
-                feature_names = [feature_names[i] for i in mask]
-            else:
-                feature_names = [
-                    f for f in feature_names if f not in self.features_to_drop_
-                ]
+            feature_names = [
+                f for f in feature_names if f not in self.features_to_drop_
+            ]
         return feature_names

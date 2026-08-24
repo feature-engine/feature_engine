@@ -19,8 +19,6 @@ VARTYPES_DATA = {
     "dob": ["2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27"],
 }
 variables_str = list(VARTYPES_DATA.keys())
-variables_arr = ["x0", "x1", "x2", "x3", "x4"]
-variables_user = ["Dog", "Cat", "Bird", "Frog", "Duck"]
 
 
 class MockTransformer(BaseEstimator, GetFeatureNamesOutMixin):
@@ -81,39 +79,6 @@ def test_with_df(make_df, input_features):
         transformer.get_feature_names_out(input_features=input_features)
         == variables_str
     )
-
-
-@pytest.mark.parametrize(
-    "input_features",
-    [
-        None,
-        variables_arr,
-        np.array(variables_arr),
-        variables_str,
-        np.array(variables_str),
-        variables_user,
-    ],
-)
-def test_with_array_style_names(input_features):
-    # `check_X` no longer accepts raw numpy arrays (feature-engine transformers
-    # are dataframe-only), so the legacy "fit on an array -> x0, x1, ..." naming
-    # can no longer be reached through fit(). It's still a real branch in
-    # get_feature_names_out() though (a transformer could be fit through some
-    # other route and still carry x0/x1/... names), so we exercise it directly
-    # by setting the post-fit attributes rather than going through fit().
-    transformer = MockTransformer()
-    transformer.feature_names_in_ = variables_arr
-    transformer.n_features_in_ = len(variables_arr)
-
-    if input_features is None:
-        assert (
-            transformer.get_feature_names_out(input_features=input_features)
-            == variables_arr
-        )
-    else:
-        assert transformer.get_feature_names_out(input_features=input_features) == list(
-            input_features
-        )
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -192,13 +157,6 @@ def test_raise_error_when_input_feature_non_permitted():
 
     with pytest.raises(ValueError, match="list or an array"):
         transformer.get_feature_names_out(input_features=True)
-
-    # array-style names (see test_with_array_style_names for why this bypasses fit())
-    transformer = MockTransformer()
-    transformer.feature_names_in_ = variables_arr
-    transformer.n_features_in_ = len(variables_arr)
-    with pytest.raises(ValueError, match="number of input_features does not match"):
-        transformer.get_feature_names_out(input_features=["Name", "Age"])
 
 
 # ================ Tests for transformers that add features to the data =======
@@ -361,26 +319,6 @@ def test_remove_features_in_df(make_df, input_features):
     transformer = MockSelector()
     transformer.fit(df)
     features_out = variables_str[2:]
-    assert (
-        transformer.get_feature_names_out(input_features=input_features) == features_out
-    )
-
-
-@pytest.mark.parametrize(
-    "input_features",
-    [None, variables_arr, np.array(variables_arr), variables_str, variables_user],
-)
-def test_remove_features_with_array_style_names(input_features):
-    # see test_with_array_style_names for why this bypasses fit()
-    transformer = MockSelector()
-    transformer.feature_names_in_ = variables_arr
-    transformer.n_features_in_ = len(variables_arr)
-    transformer.features_to_drop_ = variables_arr[0:2]
-
-    if input_features is None:
-        features_out = ["x2", "x3", "x4"]
-    else:
-        features_out = list(input_features)[2:]
     assert (
         transformer.get_feature_names_out(input_features=input_features) == features_out
     )
