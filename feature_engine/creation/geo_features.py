@@ -264,7 +264,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         # check input dataframe
         X = check_X(X)
-        is_pandas = nwd.is_pandas_dataframe(X) is True
+        is_pandas = nwd.is_pandas_dataframe(X)
 
         # Coordinate variables
         variables: List[Union[str, int]] = [
