@@ -334,7 +334,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             how_to_combine=self.features_to_combine, variables=variables_
         )
 
-        is_pandas = nwd.is_pandas_dataframe(X) is True
+        is_pandas = nwd.is_pandas_dataframe(X)
         nw_X = nw.from_native(X, eager_only=True)
 
         estimators_ = []
