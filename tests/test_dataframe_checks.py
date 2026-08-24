@@ -136,6 +136,18 @@ def test_check_y_series_raises_nan_error(make_series):
     "make_series",
     [pd.Series, pl.Series],
 )
+def test_check_y_series_raises_nan_error_for_explicit_nan(make_series):
+    # in polars, an explicit float("nan") is not a null value, so it is only
+    # caught if is_nan() is checked in addition to is_null()
+    s = make_series([0.0, float("nan"), 2.0])
+    with pytest.raises(ValueError, match="y contains NaN values."):
+        check_y(s)
+
+
+@pytest.mark.parametrize(
+    "make_series",
+    [pd.Series, pl.Series],
+)
 def test_check_y_series_raises_inf_error(make_series):
     s = make_series([0.0, float("inf"), 2.0])
     with pytest.raises(ValueError, match="y contains infinity values."):
@@ -186,6 +198,18 @@ def test_check_y_dataframe_returns_values_unchanged(make_df, assert_equal_fn):
 )
 def test_check_y_dataframe_raises_nan_error(make_df):
     d = make_df({"t1": [0.0, None, 2.0], "t2": [5.0, 6.0, 7.0]})
+    with pytest.raises(ValueError, match="y contains NaN values."):
+        check_y(d)
+
+
+@pytest.mark.parametrize(
+    "make_df",
+    [pd.DataFrame, pl.DataFrame],
+)
+def test_check_y_dataframe_raises_nan_error_for_explicit_nan(make_df):
+    # in polars, an explicit float("nan") is not a null value, so it is only
+    # caught if is_nan() is checked in addition to is_null()
+    d = make_df({"t1": [0.0, float("nan"), 2.0], "t2": [5.0, 6.0, 7.0]})
     with pytest.raises(ValueError, match="y contains NaN values."):
         check_y(d)
 
@@ -370,6 +394,33 @@ def test_contains_na_passes_when_no_nan(make_df):
 def test_contains_na_ignores_columns_not_in_variables(make_df):
     df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
     assert _check_contains_na(df, ["City"]) is None
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_raises_for_explicit_nan_in_numeric_column(make_df):
+    # in polars, an explicit float("nan") is not a null value, so it is only
+    # caught if is_nan() is checked in addition to is_null()
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    df = make_df({"Age": [20.0, float("nan"), 19.0], "City": ["a", "b", "c"]})
+    with pytest.raises(ValueError, match=msg):
+        _check_contains_na(df, ["Age", "City"])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_raises_for_mix_of_null_and_nan_across_dtypes(make_df):
+    # a numeric column with a NaN and a string column with a null should both
+    # still be caught, and the numeric-only is_nan() scoping must not error out
+    # on the string column
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    df = make_df({"Age": [20.0, float("nan"), 19.0], "City": ["a", None, "c"]})
+    with pytest.raises(ValueError, match=msg):
+        _check_contains_na(df, ["Age", "City"])
 
 
 # --------------------------
