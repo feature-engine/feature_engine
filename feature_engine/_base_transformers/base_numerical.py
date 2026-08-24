@@ -3,7 +3,9 @@ classes. Provides the base functionality within the fit() and transform() method
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -28,7 +30,7 @@ class BaseNumericalTransformer(
     variable transformers, discretisers, math combination.
     """
 
-    def _fit_setup(self, X: pd.DataFrame):
+    def _fit_setup(self, X: IntoDataFrame):
         """
         Checks that input is a dataframe, finds numerical variables, or alternatively
         checks that variables entered by the user are of type numerical, and checks
@@ -38,12 +40,12 @@ class BaseNumericalTransformer(
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X : dataframe
 
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame or a numpy array
+            If the input is not a recognised dataframe
             If any of the user provided variables are not numerical
         ValueError
             If there are no numerical variables in the df or the df is empty
@@ -51,7 +53,7 @@ class BaseNumericalTransformer(
 
         Returns
         -------
-        X : Pandas DataFrame
+        X : dataframe
             The same dataframe entered as parameter
 
         variables_ : List
@@ -77,31 +79,34 @@ class BaseNumericalTransformer(
         """Get the names and number of features in the train set (the dataframe
         used during fit)."""
 
-        self.feature_names_in_ = X.columns.tolist()
+        if nwd.is_pandas_dataframe(X) is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
         in the fit() method. Checks absence of NA and Inf.
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X : dataframe
 
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
+            If the input is not a recognised dataframe
         ValueError
             - If the variable(s) contain null values
             - If the df has different number of features than the df used in fit()
 
         Returns
         -------
-        X : Pandas DataFrame.
+        X : dataframe.
             The same dataframe entered by the user.
         """
 
@@ -119,7 +124,12 @@ class BaseNumericalTransformer(
         _check_contains_inf(X, self.variables_)
 
         # reorder variables to match train set
-        X = X[self.feature_names_in_]
+        if nwd.is_pandas_dataframe(X) is True:
+            X = X[self.feature_names_in_]
+        else:
+            X = nw.from_native(X, eager_only=True).select(
+                self.feature_names_in_
+            ).to_native()
 
         return X
 
