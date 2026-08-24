@@ -141,10 +141,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         of its computation, which avoids the overhead of copying the entire
         dataframe to separate worker processes. `None` means 1, i.e. sequential
         training (this transformer's original behaviour); `-1` means using all
-        available processors. There is a real speedup only when there are many
-        feature combinations and/or a large `param_grid` to search — with just
-        a handful of combinations, thread-dispatch overhead outweighs the gain,
-        which is why the default stays sequential.
+        available processors.
 
     {missing_values}
 
