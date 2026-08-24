@@ -24,11 +24,8 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
 
 
-def _pandas_lt_3() -> bool:
-    # pandas is optional, so its version can only be checked once we already
-    # know X is pandas-backed (nwd.get_pandas() returns the already-imported
-    # module without importing it ourselves).
-    return int(nwd.get_pandas().__version__.split(".")[0]) < 3
+def _pandas_version() -> bool:
+    return int(nwd.get_pandas().__version__.split(".")[0])
 
 
 # In pandas < 3, agg() maps these callables to the pandas methods and warns that
@@ -287,8 +284,8 @@ class MathFeatures(BaseCreation):
         new_variable_names = self._get_new_features_name()
 
         func = self.func
-        is_pandas = nwd.is_pandas_dataframe(X) is True
-        if is_pandas is True and _pandas_lt_3():
+        is_pandas = nwd.is_pandas_dataframe(X)
+        if is_pandas is True and _pandas_version() < 3:
             if isinstance(func, list):
                 func = [_FUNC_TO_STRING_ALIAS.get(fun, fun) for fun in func]
             else:
@@ -297,9 +294,6 @@ class MathFeatures(BaseCreation):
         functions = func if isinstance(func, list) else [func]
         reducers = [_get_numpy_reducer(fun) for fun in functions]
 
-        # polars requires string column names, so int-named columns (e.g.
-        # variables=[2, 3]) are pandas-only; narwhals' select() doesn't
-        # accept them the way pandas' own indexing does.
         nw_X = nw.from_native(X, eager_only=True)
         if is_pandas is True:
             values = X[self.variables].to_numpy()
