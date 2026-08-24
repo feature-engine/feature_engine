@@ -1,9 +1,16 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.pipeline import Pipeline
 
 from feature_engine.creation import RelativeFeatures
+
+NUMERIC_DATA = {
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
 
 
 def test_mandatory_init_parameters():
@@ -459,3 +466,90 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
 
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=_input_features)
+
+
+# ======================== polars: numpy-based transform ========================
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_all_functions_both_backends(make_df):
+    df = make_df({"x1": [1, 2, 3], "x2": [4, 5, 6], "x3": [3, 4, 5]})
+    transformer = RelativeFeatures(
+        variables=["x1", "x2"],
+        reference=["x3"],
+        func=["add", "sub", "mul", "div", "truediv", "floordiv", "mod", "pow"],
+    )
+    Xt = transformer.fit_transform(df)
+    result = nw.from_native(Xt, eager_only=True).to_dict(as_series=False)
+
+    assert result["x1_add_x3"] == pytest.approx([4, 6, 8])
+    assert result["x1_sub_x3"] == pytest.approx([-2, -2, -2])
+    assert result["x1_mul_x3"] == pytest.approx([3, 8, 15])
+    assert result["x1_div_x3"] == pytest.approx([1 / 3, 2 / 4, 3 / 5])
+    assert result["x1_truediv_x3"] == pytest.approx([1 / 3, 2 / 4, 3 / 5])
+    assert result["x1_floordiv_x3"] == pytest.approx([0, 0, 0])
+    assert result["x1_mod_x3"] == pytest.approx([1, 2, 3])
+    assert result["x1_pow_x3"] == pytest.approx([1, 16, 243])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_mixed_int_float_variables_preserve_own_dtype(make_df):
+    # a regression check: extracting variables as one batched 2D array
+    # upcasts everything to a common dtype, losing e.g. an int column's
+    # own int result for subtraction. Each variable must keep its own
+    # dtype promotion, independent of the other variables in the list.
+    df = make_df(NUMERIC_DATA)
+    transformer = RelativeFeatures(
+        variables=["Age", "Marks"], reference=["Age"], func=["sub"]
+    )
+    Xt = transformer.fit_transform(df)
+    nw_Xt = nw.from_native(Xt, eager_only=True)
+    assert nw_Xt.get_column("Age_sub_Age").dtype.is_integer()
+    assert not nw_Xt.get_column("Marks_sub_Age").dtype.is_integer()
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("func", ["div", "truediv", "floordiv", "mod"])
+def test_zero_denominator_raises_without_fill_value(make_df, func):
+    df = make_df({"a": [10, 20], "ref": [0, 5]})
+    transformer = RelativeFeatures(variables=["a"], reference=["ref"], func=[func])
+    with pytest.raises(ValueError, match="contain zeroes"):
+        transformer.fit_transform(df)
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_zero_denominator_uses_fill_value(make_df):
+    df = make_df({"a": [10, 20], "ref": [0, 5]})
+    transformer = RelativeFeatures(
+        variables=["a"], reference=["ref"], func=["div"], fill_value=-1
+    )
+    Xt = transformer.fit_transform(df)
+    result = nw.from_native(Xt, eager_only=True).get_column("a_div_ref").to_list()
+    assert result == pytest.approx([-1.0, 4.0])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_floordiv_zero_with_float_fill_value_widens_dtype(make_df):
+    # floordiv on integer input stays integer-typed; a float fill_value
+    # must widen the result column rather than truncating or erroring,
+    # matching pandas' own automatic dtype promotion here.
+    df = make_df({"v": [7, 8], "ref": [0, 2]})
+    transformer = RelativeFeatures(
+        variables=["v"], reference=["ref"], func=["floordiv"], fill_value=-1.5
+    )
+    Xt = transformer.fit_transform(df)
+    result = nw.from_native(Xt, eager_only=True).get_column("v_floordiv_ref").to_list()
+    assert result == pytest.approx([-1.5, 4.0])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_drop_original_both_backends(make_df):
+    df = make_df({"x1": [1, 2, 3], "x2": [4, 5, 6], "x3": [3, 4, 5]})
+    transformer = RelativeFeatures(
+        variables=["x1", "x2"], reference=["x3"], func=["div"], drop_original=True
+    )
+    Xt = transformer.fit_transform(df)
+    assert list(nw.from_native(Xt, eager_only=True).columns) == [
+        "x1_div_x3",
+        "x2_div_x3",
+    ]
