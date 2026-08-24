@@ -1,5 +1,9 @@
+import warnings
+
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
@@ -8,44 +12,87 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from feature_engine.creation import DecisionTreeFeatures
 from tests.estimator_checks.fit_functionality_checks import check_return_empty
 
+DATA = {
+    "Name": [
+        "tom",
+        "nick",
+        "krish",
+        "megan",
+        "peter",
+        "jordan",
+        "fred",
+        "sam",
+        "alexa",
+        "brittany",
+    ],
+    "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
+    "Height": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
+    "Marks": [1.0, 0.8, 0.6, 0.1, 0.3, 0.4, 0.8, 0.6, 0.5, 0.2],
+}
+REGRESSION_Y = [4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7]
+BINARY_Y = [1, 1, 1, 0, 0, 1, 0, 1, 0, 0]
+MULTICLASS_Y = [1, 1, 2, 2, 0, 1, 0, 1, 0, 0]
 
-@pytest.fixture(scope="module")
-def df_creation():
-    data = {
-        "Name": [
-            "tom",
-            "nick",
-            "krish",
-            "megan",
-            "peter",
-            "jordan",
-            "fred",
-            "sam",
-            "alexa",
-            "brittany",
-        ],
-        "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
-        "Height": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
-        "Marks": [1.0, 0.8, 0.6, 0.1, 0.3, 0.4, 0.8, 0.6, 0.5, 0.2],
-    }
-
-    df = pd.DataFrame(data)
-    return df
-
-
-@pytest.fixture(scope="module")
-def regression_target():
-    return pd.Series([4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7])
-
-
-@pytest.fixture(scope="module")
-def classification_target():
-    return pd.Series([1, 1, 1, 0, 0, 1, 0, 1, 0, 0])
+COMBOS = [
+    "Age",
+    "Height",
+    "Marks",
+    ["Age", "Height"],
+    ["Age", "Marks"],
+    ["Height", "Marks"],
+    ["Age", "Height", "Marks"],
+]
 
 
-@pytest.fixture(scope="module")
-def multiclass_target():
-    return pd.Series([1, 1, 2, 2, 0, 1, 0, 1, 0, 0])
+def _select(X, combo):
+    cols = combo if isinstance(combo, list) else [combo]
+    return nw.from_native(X, eager_only=True).select(cols).to_native()
+
+
+def _expected_tree_predictions(
+    X,
+    y,
+    scoring,
+    random_state,
+    regression=True,
+    binary=False,
+    precision=None,
+    param_grid=None,
+):
+    # Fits a fresh GridSearchCV per combo on the same backend as X, so this
+    # works as the reference for both pandas and polars input alike.
+    if param_grid is None:
+        param_grid = {"max_depth": [1, 2, 3, 4]}
+    if regression is True:
+        est = DecisionTreeRegressor(random_state=random_state)
+    else:
+        est = DecisionTreeClassifier(random_state=random_state)
+    tree = GridSearchCV(est, cv=3, scoring=scoring, param_grid=param_grid)
+
+    expected = {}
+    for combo in COMBOS:
+        X_sub = _select(X, combo)
+        tree.fit(X_sub, y)
+        if regression is True:
+            preds = tree.predict(X_sub)
+        elif binary is True:
+            preds = tree.predict_proba(X_sub)[:, 1]
+        else:
+            preds = tree.predict(X_sub)
+        if precision is not None:
+            preds = np.round(preds, precision)
+        expected[f"tree({combo})"] = list(preds)
+    return expected
+
+
+def assert_df_equal(X, expected: dict) -> None:
+    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
+    assert list(result.keys()) == list(expected.keys())
+    for col, values in expected.items():
+        if all(isinstance(v, (int, float, np.integer, np.floating)) for v in values):
+            assert result[col] == pytest.approx(values, abs=1e-6)
+        else:
+            assert result[col] == values
 
 
 @pytest.mark.parametrize("precision", ["string", 0.1, -1, np.nan])
@@ -204,390 +251,226 @@ def test_create_variable_combinations_when_tuple(input_features, expected):
     assert combos == expected
 
 
-def test_feature_creation_regression(df_creation, regression_target):
-    X = df_creation.copy()
-    y = regression_target.copy()
-
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_feature_creation_regression(make_df):
+    X = make_df(DATA)
     scoring = "neg_mean_squared_error"
     rs = 0
     tr = DecisionTreeFeatures(scoring=scoring, random_state=rs)
-    Xt = tr.fit_transform(X, y)
+    Xt = tr.fit_transform(X, REGRESSION_Y)
 
-    # get expected
-    est = DecisionTreeRegressor(random_state=rs)
-    tree = GridSearchCV(
-        est,
-        cv=3,
-        scoring=scoring,
-        param_grid={"max_depth": [1, 2, 3, 4]},
-    )
-
-    combos = [
-        "Age",
-        "Height",
-        "Marks",
-        ["Age", "Height"],
-        ["Age", "Marks"],
-        ["Height", "Marks"],
-        ["Age", "Height", "Marks"],
-    ]
-    var_names = [f"tree({item})" for item in combos]
-
-    X_exp = df_creation.copy()
-    for i in range(len(combos)):
-        varn = var_names[i]
-        combon = combos[i]
-        if isinstance(combon, str):
-            tree.fit(X[combon].to_frame(), y)
-            X_exp[varn] = tree.predict(X[combon].to_frame())
-        else:
-            tree.fit(X[combon], y)
-            X_exp[varn] = tree.predict(X[combon])
-
-    pd.testing.assert_frame_equal(Xt, X_exp)
+    expected = dict(DATA)
+    expected.update(_expected_tree_predictions(X, REGRESSION_Y, scoring, rs))
+    assert_df_equal(Xt, expected)
 
 
-def test_feature_creation_regression_and_precision(df_creation, regression_target):
-    X = df_creation.copy()
-    y = regression_target.copy()
-
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_feature_creation_regression_and_precision(make_df):
+    X = make_df(DATA)
     scoring = "neg_mean_squared_error"
     rs = 0
     tr = DecisionTreeFeatures(scoring=scoring, random_state=rs, precision=1)
-    Xt = tr.fit_transform(X, y)
+    Xt = tr.fit_transform(X, REGRESSION_Y)
 
-    # get expected
-    est = DecisionTreeRegressor(random_state=rs)
-    tree = GridSearchCV(
-        est,
-        cv=3,
-        scoring=scoring,
-        param_grid={"max_depth": [1, 2, 3, 4]},
+    expected = dict(DATA)
+    expected.update(
+        _expected_tree_predictions(X, REGRESSION_Y, scoring, rs, precision=1)
     )
-
-    combos = [
-        "Age",
-        "Height",
-        "Marks",
-        ["Age", "Height"],
-        ["Age", "Marks"],
-        ["Height", "Marks"],
-        ["Age", "Height", "Marks"],
-    ]
-    var_names = [f"tree({item})" for item in combos]
-
-    X_exp = df_creation.copy()
-    for i in range(len(combos)):
-        varn = var_names[i]
-        combon = combos[i]
-        if isinstance(combon, str):
-            tree.fit(X[combon].to_frame(), y)
-            preds = tree.predict(X[combon].to_frame())
-            X_exp[varn] = np.round(preds, 1)
-        else:
-            tree.fit(X[combon], y)
-            preds = tree.predict(X[combon])
-            X_exp[varn] = np.round(preds, 1)
-
-    pd.testing.assert_frame_equal(Xt, X_exp)
+    assert_df_equal(Xt, expected)
 
 
-def test_feature_creation_regression_drop_original(df_creation, regression_target):
-    X = df_creation.copy()
-    y = regression_target.copy()
-
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_feature_creation_regression_drop_original(make_df):
+    X = make_df(DATA)
     scoring = "neg_mean_squared_error"
     rs = 0
     tr = DecisionTreeFeatures(scoring=scoring, random_state=rs, drop_original=True)
-    Xt = tr.fit_transform(X, y)
+    Xt = tr.fit_transform(X, REGRESSION_Y)
 
-    # get expected
-    est = DecisionTreeRegressor(random_state=rs)
-    tree = GridSearchCV(
-        est,
-        cv=3,
-        scoring=scoring,
-        param_grid={"max_depth": [1, 2, 3, 4]},
-    )
-
-    combos = [
-        "Age",
-        "Height",
-        "Marks",
-        ["Age", "Height"],
-        ["Age", "Marks"],
-        ["Height", "Marks"],
-        ["Age", "Height", "Marks"],
-    ]
-    var_names = [f"tree({item})" for item in combos]
-
-    X_exp = df_creation.copy()
-    for i in range(len(combos)):
-        varn = var_names[i]
-        combon = combos[i]
-        if isinstance(combon, str):
-            tree.fit(X[combon].to_frame(), y)
-            X_exp[varn] = tree.predict(X[combon].to_frame())
-        else:
-            tree.fit(X[combon], y)
-            X_exp[varn] = tree.predict(X[combon])
-    X_exp.drop(["Age", "Height", "Marks"], axis=1, inplace=True)
-
-    pd.testing.assert_frame_equal(Xt, X_exp)
+    expected = {"Name": DATA["Name"]}
+    expected.update(_expected_tree_predictions(X, REGRESSION_Y, scoring, rs))
+    assert_df_equal(Xt, expected)
 
 
-def test_feature_creation_binary_classif(df_creation, classification_target):
-    X = df_creation.copy()
-    y = classification_target.copy()
-
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_feature_creation_binary_classif(make_df):
+    X = make_df(DATA)
     scoring = "roc_auc"
     rs = 0
     tr = DecisionTreeFeatures(scoring=scoring, random_state=rs, regression=False)
-    Xt = tr.fit_transform(X, y)
+    Xt = tr.fit_transform(X, BINARY_Y)
 
-    # get expected
-    est = DecisionTreeClassifier(random_state=rs)
-    tree = GridSearchCV(
-        est,
-        cv=3,
-        scoring=scoring,
-        param_grid={"max_depth": [1, 2, 3, 4]},
+    expected = dict(DATA)
+    expected.update(
+        _expected_tree_predictions(
+            X, BINARY_Y, scoring, rs, regression=False, binary=True
+        )
     )
-
-    combos = [
-        "Age",
-        "Height",
-        "Marks",
-        ["Age", "Height"],
-        ["Age", "Marks"],
-        ["Height", "Marks"],
-        ["Age", "Height", "Marks"],
-    ]
-    var_names = [f"tree({item})" for item in combos]
-
-    X_exp = df_creation.copy()
-    for i in range(len(combos)):
-        varn = var_names[i]
-        combon = combos[i]
-        if isinstance(combon, str):
-            tree.fit(X[combon].to_frame(), y)
-            preds = tree.predict_proba(X[combon].to_frame())
-            X_exp[varn] = preds[:, 1]
-        else:
-            tree.fit(X[combon], y)
-            preds = tree.predict_proba(X[combon])
-            X_exp[varn] = preds[:, 1]
-
-    pd.testing.assert_frame_equal(Xt, X_exp)
+    assert_df_equal(Xt, expected)
 
 
-def test_feature_creation_binary_classif_w_precision(
-    df_creation, classification_target
-):
-    X = df_creation.copy()
-    y = classification_target.copy()
-
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_feature_creation_binary_classif_w_precision(make_df):
+    X = make_df(DATA)
     scoring = "roc_auc"
     rs = 0
     tr = DecisionTreeFeatures(
         scoring=scoring, random_state=rs, regression=False, precision=2
     )
-    Xt = tr.fit_transform(X, y)
+    Xt = tr.fit_transform(X, BINARY_Y)
 
-    # get expected
-    est = DecisionTreeClassifier(random_state=rs)
-    tree = GridSearchCV(
-        est,
-        cv=3,
-        scoring=scoring,
-        param_grid={"max_depth": [1, 2, 3, 4]},
+    expected = dict(DATA)
+    expected.update(
+        _expected_tree_predictions(
+            X, BINARY_Y, scoring, rs, regression=False, binary=True, precision=2
+        )
     )
-
-    combos = [
-        "Age",
-        "Height",
-        "Marks",
-        ["Age", "Height"],
-        ["Age", "Marks"],
-        ["Height", "Marks"],
-        ["Age", "Height", "Marks"],
-    ]
-    var_names = [f"tree({item})" for item in combos]
-
-    X_exp = df_creation.copy()
-    for i in range(len(combos)):
-        varn = var_names[i]
-        combon = combos[i]
-        if isinstance(combon, str):
-            tree.fit(X[combon].to_frame(), y)
-            preds = tree.predict_proba(X[combon].to_frame())
-            X_exp[varn] = np.round(preds[:, 1], 2)
-        else:
-            tree.fit(X[combon], y)
-            preds = tree.predict_proba(X[combon])
-            X_exp[varn] = np.round(preds[:, 1], 2)
-
-    pd.testing.assert_frame_equal(Xt, X_exp)
+    assert_df_equal(Xt, expected)
 
 
-def test_feature_creation_binary_multiclass(df_creation, multiclass_target):
-    X = df_creation.copy()
-    y = multiclass_target.copy()
-
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_feature_creation_binary_multiclass(make_df):
+    X = make_df(DATA)
     scoring = "roc_auc"
     rs = 0
     tr = DecisionTreeFeatures(scoring=scoring, random_state=rs, regression=False)
-    Xt = tr.fit_transform(X, y)
+    Xt = tr.fit_transform(X, MULTICLASS_Y)
 
-    # get expected
-    est = DecisionTreeClassifier(random_state=rs)
-    tree = GridSearchCV(
-        est,
-        cv=3,
-        scoring=scoring,
-        param_grid={"max_depth": [1, 2, 3, 4]},
+    expected = dict(DATA)
+    expected.update(
+        _expected_tree_predictions(
+            X, MULTICLASS_Y, scoring, rs, regression=False, binary=False
+        )
     )
-
-    combos = [
-        "Age",
-        "Height",
-        "Marks",
-        ["Age", "Height"],
-        ["Age", "Marks"],
-        ["Height", "Marks"],
-        ["Age", "Height", "Marks"],
-    ]
-    var_names = [f"tree({item})" for item in combos]
-
-    X_exp = df_creation.copy()
-    for i in range(len(combos)):
-        varn = var_names[i]
-        combon = combos[i]
-        if isinstance(combon, str):
-            tree.fit(X[combon].to_frame(), y)
-            preds = tree.predict(X[combon].to_frame())
-            X_exp[varn] = preds
-        else:
-            tree.fit(X[combon], y)
-            preds = tree.predict(X[combon])
-            X_exp[varn] = preds
-
-    pd.testing.assert_frame_equal(Xt, X_exp)
+    assert_df_equal(Xt, expected)
 
 
-def test_get_feature_names_out(df_creation, regression_target):
-    X = df_creation.copy()
-    y = regression_target.copy()
-
-    tr = DecisionTreeFeatures(
-        variables=["Age", "Marks"],
-    )
-
-    Xt = tr.fit_transform(X, y)
-    feat_out = Xt.columns.to_list()
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out(make_df):
+    X = make_df(DATA)
+    tr = DecisionTreeFeatures(variables=["Age", "Marks"])
+    Xt = tr.fit_transform(X, REGRESSION_Y)
+    feat_out = list(nw.from_native(Xt, eager_only=True).columns)
     assert tr.get_feature_names_out() == feat_out
-    assert tr.get_feature_names_out(X.columns.to_list()) == feat_out
+    assert tr.get_feature_names_out(list(DATA.keys())) == feat_out
 
 
-def test_get_feature_names_out_from_pipeline(df_creation, regression_target):
-    X = df_creation.copy()
-    y = regression_target.copy()
-
-    # set up transformer
-    tr = DecisionTreeFeatures(
-        variables=["Age", "Marks"],
-    )
-
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out_from_pipeline(make_df):
+    X = make_df(DATA)
+    tr = DecisionTreeFeatures(variables=["Age", "Marks"])
     pipe = Pipeline([("transformer", tr)])
-
-    Xt = pipe.fit_transform(X, y)
-    feat_out = Xt.columns.to_list()
+    Xt = pipe.fit_transform(X, REGRESSION_Y)
+    feat_out = list(nw.from_native(Xt, eager_only=True).columns)
     assert pipe.get_feature_names_out(input_features=None) == feat_out
-    assert pipe.get_feature_names_out(input_features=X.columns.to_list()) == feat_out
+    assert pipe.get_feature_names_out(input_features=list(DATA.keys())) == feat_out
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("_input_features", ["hola", ["Age", "Marks"]])
-def test_get_feature_names_out_raises_error_when_wrong_param(
-    _input_features, df_creation, regression_target
-):
-    X = df_creation.copy()
-    y = regression_target.copy()
-
-    tr = DecisionTreeFeatures(
-        variables=["Age", "Marks"],
-    )
-    tr.fit(X, y)
-
+def test_get_feature_names_out_raises_error_when_wrong_param(make_df, _input_features):
+    X = make_df(DATA)
+    tr = DecisionTreeFeatures(variables=["Age", "Marks"])
+    tr.fit(X, REGRESSION_Y)
     with pytest.raises(ValueError):
         tr.get_feature_names_out(input_features=_input_features)
 
 
-def test_error_when_regression_true_and_target_binary(
-    df_creation, classification_target
-):
-    X = df_creation.copy()
-    y = classification_target.copy()
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_error_when_regression_true_and_target_binary(make_df):
+    X = make_df(DATA)
     tr = DecisionTreeFeatures(regression=True)
 
     msg = (
         "Trying to fit a regression to a binary target is not "
-        + "allowed by this transformer. Check the target values "
-        + "or set regression to False."
+        "allowed by this transformer. Check the target values "
+        "or set regression to False."
     )
     with pytest.raises(ValueError, match=msg):
-        tr.fit(X, y)
+        tr.fit(X, BINARY_Y)
 
 
-def test_user_enter_param_grid(df_creation, classification_target):
-    X = df_creation.copy()
-    y = classification_target.copy()
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_user_enter_param_grid(make_df):
+    X = make_df(DATA)
     scoring = "roc_auc"
     rs = 0
     grid = {"max_depth": [1, 2, 3, 4]}
     tr = DecisionTreeFeatures(
         scoring=scoring, random_state=rs, regression=False, param_grid=grid
     )
-    Xt = tr.fit_transform(X, y)
+    Xt = tr.fit_transform(X, BINARY_Y)
 
-    # get expected
-    est = DecisionTreeClassifier(random_state=rs)
-    tree = GridSearchCV(
-        est,
-        cv=3,
-        scoring=scoring,
-        param_grid={"max_depth": [1, 2, 3, 4]},
+    expected = dict(DATA)
+    expected.update(
+        _expected_tree_predictions(
+            X, BINARY_Y, scoring, rs, regression=False, binary=True, param_grid=grid
+        )
     )
-
-    combos = [
-        "Age",
-        "Height",
-        "Marks",
-        ["Age", "Height"],
-        ["Age", "Marks"],
-        ["Height", "Marks"],
-        ["Age", "Height", "Marks"],
-    ]
-    var_names = [f"tree({item})" for item in combos]
-
-    X_exp = df_creation.copy()
-    for i in range(len(combos)):
-        varn = var_names[i]
-        combon = combos[i]
-        if isinstance(combon, str):
-            tree.fit(X[combon].to_frame(), y)
-            preds = tree.predict_proba(X[combon].to_frame())
-            X_exp[varn] = preds[:, 1]
-        else:
-            tree.fit(X[combon], y)
-            preds = tree.predict_proba(X[combon])
-            X_exp[varn] = preds[:, 1]
-
-    pd.testing.assert_frame_equal(Xt, X_exp)
+    assert_df_equal(Xt, expected)
 
 
 def test_check_return_empty():
     # DecisionTreeFeatures is not part of the check_feature_engine_estimator
     # pipeline (test_check_estimator_creation.py only feeds MathFeatures,
     # RelativeFeatures and CyclicalFeatures into it), so return_empty is
-    # tested directly here instead.
+    # tested directly here instead. check_return_empty is a shared,
+    # pandas-only estimator-check helper used across the library.
     check_return_empty(DecisionTreeFeatures(regression=False))
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_n_jobs_parallel_matches_sequential(make_df):
+    # core correctness check for n_jobs: parallelizing tree training across
+    # feature combinations must produce identical trees, and therefore
+    # identical predictions, to sequential training (n_jobs=None).
+    X = make_df(DATA)
+    tr_seq = DecisionTreeFeatures(n_jobs=None, random_state=0)
+    tr_seq.fit(X, REGRESSION_Y)
+    tr_par = DecisionTreeFeatures(n_jobs=2, random_state=0)
+    tr_par.fit(X, REGRESSION_Y)
+
+    Xt_seq = tr_seq.transform(X)
+    Xt_par = tr_par.transform(X)
+
+    expected = nw.from_native(Xt_seq, eager_only=True).to_dict(as_series=False)
+    assert_df_equal(Xt_par, expected)
+
+
+def test_transform_does_not_fragment_pandas_output():
+    # regression test: transform() used to assign one new tree column at a
+    # time (X[col_name] = preds), which triggers pandas' "DataFrame is
+    # highly fragmented" PerformanceWarning once there are enough feature
+    # combinations - fixed by building all new columns in one DataFrame
+    # and joining once. Needs enough variables to cross pandas' internal
+    # fragmentation threshold (a handful of combos won't trigger it).
+    rng = np.random.RandomState(0)
+    n_vars = 9
+    X = pd.DataFrame(
+        rng.rand(200, n_vars), columns=[f"v{i}" for i in range(n_vars)]
+    )
+    y = rng.rand(200)
+
+    tr = DecisionTreeFeatures(
+        features_to_combine=3, param_grid={"max_depth": [1, 2]}, random_state=0
+    )
+    tr.fit(X, y)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", pd.errors.PerformanceWarning)
+        tr.transform(X)
+
+
+def test_single_int_named_feature_combo():
+    # regression test: a single-variable combo with an integer column name
+    # used to crash (isinstance(features, str) missed the int case), since
+    # X[features] for a bare int returns a 1D Series, not the 2D input
+    # sklearn requires - fixed to check isinstance(features, (str, int)).
+    # Integer column names are pandas-only - polars requires string columns.
+    df = pd.DataFrame({0: [1.0, 2, 3, 4, 5, 6, 7, 8], 1: [2.0, 3, 4, 5, 6, 7, 8, 9]})
+    y = [1.0, 2, 3, 4, 5, 6, 7, 8]
+    transformer = DecisionTreeFeatures(features_to_combine=1, random_state=0)
+    transformer.fit(df, y)
+    Xt = transformer.transform(df)
+    assert "tree(0)" in Xt.columns
+    assert "tree(1)" in Xt.columns
