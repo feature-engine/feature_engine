@@ -1,8 +1,10 @@
 import warnings
 from typing import Any, List, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -21,7 +23,13 @@ from feature_engine._docstrings.methods import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.creation.base_creation import BaseCreation
 
-_PANDAS_LT_3 = int(pd.__version__.split(".")[0]) < 3
+
+def _pandas_lt_3() -> bool:
+    # pandas is optional, so its version can only be checked once we already
+    # know X is pandas-backed (nwd.get_pandas() returns the already-imported
+    # module without importing it ourselves).
+    return int(nwd.get_pandas().__version__.split(".")[0]) < 3
+
 
 # In pandas < 3, agg() maps these callables to the pandas methods and warns that
 # this will change; the string alias keeps that behaviour (e.g., np.std ->
@@ -83,7 +91,11 @@ class MathFeatures(BaseCreation):
     """
     MathFeatures() applies functions across multiple features returning one or more
     additional features as a result. Common reductions use vectorized NumPy
-    operations. Other functions fall back to `pandas.agg()` with `axis=1`.
+    operations. Other functions fall back to `pandas.agg()` with `axis=1` for
+    pandas input, or to polars' native `map_rows()` for polars input — in that
+    case, the callable receives each row as a plain tuple, not a `Series`, so
+    it must not rely on `Series` methods (e.g. use `max(row)` instead of
+    `row.max()`) to work on both backends.
 
     For supported aggregation functions, see `pandas documentation
     <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.agg.html>`_.
@@ -174,11 +186,30 @@ class MathFeatures(BaseCreation):
 
     >>> mf = MathFeatures(variables = ["x1","x2"], func = "mean")
     >>> mf.fit(X)
-    >>> mf.transform(X))
+    >>> mf.transform(X)
        x1  x2  mean_x1_x2
     0   1   4         2.5
     1   2   5         3.5
     2   3   6         4.5
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.creation import MathFeatures
+    >>> X = pl.DataFrame({"x1": [1, 2, 3], "x2": [4, 5, 6]})
+    >>> mf = MathFeatures(variables=["x1", "x2"], func="sum")
+    >>> mf.fit(X)
+    >>> mf.transform(X)
+    shape: (3, 3)
+    ┌─────┬─────┬───────────┐
+    │ x1  ┆ x2  ┆ sum_x1_x2 │
+    │ --- ┆ --- ┆ ---       │
+    │ i64 ┆ i64 ┆ i64       │
+    ╞═════╪═════╪═══════════╡
+    │ 1   ┆ 4   ┆ 5         │
+    │ 2   ┆ 5   ┆ 7         │
+    │ 3   ┆ 6   ┆ 9         │
+    └─────┴─────┴───────────┘
     """
 
     def __init__(
@@ -237,18 +268,18 @@ class MathFeatures(BaseCreation):
         self.func = func
         self.new_variables_names = new_variables_names
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Create and add new variables.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe, shape = [n_samples, n_features + n_operations]
+        X_new: dataframe, shape = [n_samples, n_features + n_operations]
             The input dataframe plus the new variables.
         """
         X = self._check_transform_input_and_state(X)
@@ -256,41 +287,75 @@ class MathFeatures(BaseCreation):
         new_variable_names = self._get_new_features_name()
 
         func = self.func
-        if _PANDAS_LT_3:
+        is_pandas = nwd.is_pandas_dataframe(X) is True
+        if is_pandas is True and _pandas_lt_3():
             if isinstance(func, list):
                 func = [_FUNC_TO_STRING_ALIAS.get(fun, fun) for fun in func]
             else:
                 func = _FUNC_TO_STRING_ALIAS.get(func, func)
 
-        variables = X[self.variables]
         functions = func if isinstance(func, list) else [func]
         reducers = [_get_numpy_reducer(fun) for fun in functions]
-        values = variables.to_numpy()
+
+        # polars requires string column names, so int-named columns (e.g.
+        # variables=[2, 3]) are pandas-only; narwhals' select() doesn't
+        # accept them the way pandas' own indexing does.
+        nw_X = nw.from_native(X, eager_only=True)
+        if is_pandas is True:
+            values = X[self.variables].to_numpy()
+        else:
+            values = nw_X.select(self.variables).to_numpy()
 
         # Nullable extension dtypes produce object arrays. Keep those, custom
-        # callables, and less common pandas aggregations on the exact legacy path.
+        # callables, and less common aggregations on the fallback path below.
         if reducers and values.dtype.kind in "biuf" and all(reducers):
-            results = []
-            for reducer, kwargs in reducers:
+            new_series = []
+            for (reducer, kwargs), name in zip(reducers, new_variable_names):
                 # pandas' named reductions do not warn for empty/all-missing rows.
                 # NumPy returns the same values but emits RuntimeWarning for some
                 # reducers, so silence only those warnings on this equivalent path.
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", RuntimeWarning)
                     result = reducer(values, axis=1, **kwargs)
-                results.append(pd.Series(result, index=X.index))
-
-            result = results[0] if len(results) == 1 else pd.concat(results, axis=1)
+                new_series.append(
+                    nw.new_series(name, result, backend=nw_X.implementation)
+                )
+            nw_X = nw_X.with_columns(*new_series)
+            if self.drop_original is True:
+                nw_X = nw_X.drop(self.variables)
+            X = nw_X.to_native()
+        elif is_pandas is True:
+            result = X[self.variables].agg(func, axis=1)
+            if len(new_variable_names) == 1:
+                X[new_variable_names[0]] = result
+            else:
+                X[new_variable_names] = result
+            if self.drop_original is True:
+                X = X.drop(columns=self.variables)
         else:
-            result = variables.agg(func, axis=1)
-
-        if len(new_variable_names) == 1:
-            X[new_variable_names[0]] = result
-        else:
-            X[new_variable_names] = result
-
-        if self.drop_original:
-            X.drop(columns=self.variables, inplace=True)
+            # polars has no equivalent to pandas' agg(func, axis=1): apply each
+            # function natively via map_rows, one call per function. map_rows
+            # passes each row as a plain tuple, not a Series, so callables that
+            # rely on Series methods (e.g. `row.max()`) need `max(row)` instead.
+            sub_native = nw_X.select(self.variables).to_native()
+            new_series = []
+            for fun, name in zip(functions, new_variable_names):
+                if not callable(fun):
+                    raise NotImplementedError(
+                        f"'{fun}' has no NumPy-vectorized implementation, and "
+                        "non-callable aggregation names are not supported for "
+                        "polars input. Pass a Python callable instead."
+                    )
+                result_df = sub_native.map_rows(fun)
+                new_series.append(
+                    nw.new_series(
+                        name, result_df.to_series(0), backend=nw_X.implementation
+                    )
+                )
+            nw_X = nw_X.with_columns(*new_series)
+            if self.drop_original is True:
+                nw_X = nw_X.drop(self.variables)
+            X = nw_X.to_native()
 
         return X
 

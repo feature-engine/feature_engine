@@ -1,13 +1,20 @@
 import warnings
 
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.pipeline import Pipeline
 
 from feature_engine.creation import MathFeatures
 
 dob_datrange = pd.date_range("2020-02-24", periods=4, freq="min")
+
+NUMERIC_DATA = {
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
 
 
 # test param variables_to_combine
@@ -427,3 +434,94 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
 
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=_input_features)
+
+
+# ================ polars: fast numpy-reducer path and fallback ================
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_numpy_reducer_path_both_backends(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = MathFeatures(
+        variables=["Age", "Marks"], func=["sum", "prod", "min", "max", "std"]
+    )
+    Xt = transformer.fit_transform(df)
+
+    result = nw.from_native(Xt, eager_only=True).to_dict(as_series=False)
+    assert result["sum_Age_Marks"] == pytest.approx([20.9, 21.8, 19.7, 18.6])
+    assert result["prod_Age_Marks"] == pytest.approx([18.0, 16.8, 13.3, 10.8])
+    assert result["min_Age_Marks"] == pytest.approx([0.9, 0.8, 0.7, 0.6])
+    assert result["max_Age_Marks"] == pytest.approx([20.0, 21.0, 19.0, 18.0])
+    assert result["std_Age_Marks"] == pytest.approx(
+        [13.505740, 14.283557, 12.940054, 12.303658], abs=1e-5
+    )
+
+
+def test_polars_custom_callable_uses_map_rows_fallback():
+    # map_rows passes each row as a plain tuple, not a Series, so the
+    # callable must use built-in max()/min() rather than Series methods.
+    def peak_to_peak(row):
+        return max(row) - min(row)
+
+    df = pl.DataFrame(NUMERIC_DATA)
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=peak_to_peak,
+        new_variables_names=["age_marks_range"],
+    )
+    Xt = transformer.fit_transform(df)
+
+    expected = [a - m for a, m in zip(NUMERIC_DATA["Age"], NUMERIC_DATA["Marks"])]
+    assert Xt["age_marks_range"].to_list() == pytest.approx(expected)
+
+
+def test_polars_multiple_custom_callables():
+    def total(row):
+        return sum(row)
+
+    def spread(row):
+        return max(row) - min(row)
+
+    df = pl.DataFrame(NUMERIC_DATA)
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=[total, spread],
+        new_variables_names=["total", "spread"],
+    )
+    Xt = transformer.fit_transform(df)
+
+    expected_total = [a + m for a, m in zip(NUMERIC_DATA["Age"], NUMERIC_DATA["Marks"])]
+    expected_spread = [
+        a - m for a, m in zip(NUMERIC_DATA["Age"], NUMERIC_DATA["Marks"])
+    ]
+    assert Xt["total"].to_list() == pytest.approx(expected_total)
+    assert Xt["spread"].to_list() == pytest.approx(expected_spread)
+
+
+def test_polars_noncallable_uncommon_aggregation_raises_not_implemented():
+    df = pl.DataFrame(NUMERIC_DATA)
+    transformer = MathFeatures(variables=["Age", "Marks"], func="sem")
+    with pytest.raises(NotImplementedError, match="has no NumPy-vectorized"):
+        transformer.fit_transform(df)
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_drop_original_both_backends(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = MathFeatures(
+        variables=["Age", "Marks"], func=["sum", "mean"], drop_original=True
+    )
+    Xt = transformer.fit_transform(df)
+    assert list(nw.from_native(Xt, eager_only=True).columns) == [
+        "sum_Age_Marks",
+        "mean_Age_Marks",
+    ]
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out_both_backends(make_df):
+    df = make_df(NUMERIC_DATA)
+    transformer = MathFeatures(variables=["Age", "Marks"], func=["sum", "mean"])
+    Xt = transformer.fit_transform(df)
+    feat_out = list(nw.from_native(Xt, eager_only=True).columns)
+    assert transformer.get_feature_names_out(input_features=None) == feat_out
