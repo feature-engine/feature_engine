@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
@@ -182,13 +181,21 @@ class CyclicalFeatures(
         """
         if self.max_values is None:
             X, variables_ = self._fit_setup(X)
-            max_arr = (
-                nw.from_native(X, eager_only=True)
-                .select(variables_)
-                .to_numpy()
-                .max(axis=0)
-            )
-            max_values_ = dict(zip(variables_, max_arr))
+            if len(variables_) == 0:
+                # return_empty=True can leave variables_ empty; narwhals'
+                # select([]) collapses row count too, so .to_numpy().max()
+                # would fail on a genuinely empty selection.
+                max_values_ = {}
+            else:
+                max_arr = (
+                    nw.from_native(X, eager_only=True)
+                    .select(variables_)
+                    .to_numpy()
+                    .max(axis=0)
+                )
+                # .tolist() converts numpy scalars to plain Python int/float,
+                # matching the dtype .to_dict() used to return.
+                max_values_ = dict(zip(variables_, max_arr.tolist()))
         else:
             X, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values

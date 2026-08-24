@@ -241,7 +241,7 @@ And the transformed dataframe contains the same cyclical features:
 
     print(X)
 
-.. code:: python
+.. code:: text
 
     shape: (7, 6)
     ┌─────┬────────┬─────────────┬───────────┬─────────────┬─────────────┐

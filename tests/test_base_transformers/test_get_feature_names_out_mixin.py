@@ -105,7 +105,10 @@ def test_with_pipe_and_skl_transformer_input_df(input_features):
     df = pd.DataFrame(VARTYPES_DATA)
     pipe = Pipeline(
         [
-            ("imputer", SimpleImputer(strategy="constant").set_output(transform="pandas")),
+            (
+                "imputer",
+                SimpleImputer(strategy="constant").set_output(transform="pandas"),
+            ),
             ("transformer", MockTransformer()),
         ]
     )
@@ -241,11 +244,16 @@ def test_new_feature_names_within_pipeline(make_df, features_in, input_features)
 @pytest.mark.parametrize(
     "input_features", [None, variables_str, np.array(variables_str)]
 )
-def test_new_feature_names_pipe_with_skl_transformer_and_df(features_in, input_features):
+def test_new_feature_names_pipe_with_skl_transformer_and_df(
+    features_in, input_features
+):
     df = pd.DataFrame(VARTYPES_DATA)
     pipe = Pipeline(
         [
-            ("imputer", SimpleImputer(strategy="constant").set_output(transform="pandas")),
+            (
+                "imputer",
+                SimpleImputer(strategy="constant").set_output(transform="pandas"),
+            ),
             ("transformer", MockCreator(variables=features_in, drop_original=False)),
         ]
     )
@@ -255,7 +263,10 @@ def test_new_feature_names_pipe_with_skl_transformer_and_df(features_in, input_f
 
     pipe = Pipeline(
         [
-            ("imputer", SimpleImputer(strategy="constant").set_output(transform="pandas")),
+            (
+                "imputer",
+                SimpleImputer(strategy="constant").set_output(transform="pandas"),
+            ),
             ("transformer", MockCreator(variables=features_in, drop_original=True)),
         ]
     )
@@ -353,7 +364,10 @@ def test_remove_feature_names_pipe_with_skl_transformer_and_df(input_features):
     pipe = Pipeline(
         [
             ("transformer", MockSelector()),
-            ("imputer", SimpleImputer(strategy="constant").set_output(transform="pandas")),
+            (
+                "imputer",
+                SimpleImputer(strategy="constant").set_output(transform="pandas"),
+            ),
         ]
     )
     pipe.fit(df)
@@ -367,7 +381,10 @@ def test_remove_feature_names_pipe_with_skl_transformer_and_df(input_features):
 
     pipe = Pipeline(
         [
-            ("imputer", SimpleImputer(strategy="constant").set_output(transform="pandas")),
+            (
+                "imputer",
+                SimpleImputer(strategy="constant").set_output(transform="pandas"),
+            ),
             ("transformer", MockSelector()),
         ]
     )
@@ -384,7 +401,6 @@ def test_remove_feature_names_pipe_with_skl_transformer_and_df(input_features):
 def test_remove_feature_names_pipe_and_skl_transformer_that_adds_features(
     input_features,
 ):
-    features_in = ["Age", "Marks"]
     df = pd.DataFrame({"Age": VARTYPES_DATA["Age"], "Marks": VARTYPES_DATA["Marks"]})
 
     pipe = Pipeline(
