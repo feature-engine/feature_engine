@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 from pandas.api.types import is_numeric_dtype as is_numeric
-from pandas.api.types import is_object_dtype, is_string_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -39,39 +38,11 @@ from feature_engine.datetime._datetime_constants import (
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
+from feature_engine.variable_handling._variable_type_checks import (
+    _is_categorical_and_is_datetime,
+)
 from feature_engine.variable_handling.check_variables import check_datetime_variables
 from feature_engine.variable_handling.find_variables import find_datetime_variables
-
-
-def _index_is_categorical_and_is_datetime(index: pd.Index) -> bool:
-    # This file is fully pandas-based (it casts with `pd.to_datetime` during
-    # `transform()`), and this check only ever runs against a pandas `Index`
-    # (narwhals has no `Index` concept), so it stays pandas-only rather than
-    # routing through the narwhals-based `_variable_type_checks` helpers.
-    is_object = is_object_dtype(index) or is_string_dtype(index)
-
-    if isinstance(index.dtype, pd.CategoricalDtype):
-        categories_are_numeric = is_numeric(index.categories)
-        if categories_are_numeric:
-            return False
-        try:
-            return is_datetime(pd.to_datetime(index, utc=True))
-        except Exception:
-            return False
-
-    elif is_object:
-        try:
-            is_convertible_to_num = is_numeric(pd.to_numeric(index))
-        except (ValueError, TypeError):
-            is_convertible_to_num = False
-        if is_convertible_to_num:
-            return False
-        try:
-            return is_datetime(pd.to_datetime(index, utc=True))
-        except Exception:
-            return False
-
-    return False
 
 
 @Substitution(
@@ -294,8 +265,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             if not (
                 is_datetime(X.index)
                 or (
-                    not is_numeric(X.index)
-                    and _index_is_categorical_and_is_datetime(X.index)
+                    not is_numeric(X.index) and _is_categorical_and_is_datetime(X.index)
                 )
             ):
                 raise TypeError("The dataframe index is not datetime.")

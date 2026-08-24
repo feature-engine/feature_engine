@@ -137,13 +137,3 @@ Below we see the variable names in the list:
 
     ['date1', 'date2', 'date3']
 
-.. note::
-
-    For pandas dataframes, string columns are parsed with pandas' flexible,
-    dateutil-backed date guessing, so formats like "24-Feb-2020" or "02/24/20" are
-    recognised as datetime, in addition to ISO-8601 strings. Polars (and other
-    non-pandas dataframes, through narwhals) has no equivalent flexible guesser, so
-    only ISO-8601 strings and native `Date`/`Datetime` columns are recognised
-    automatically. If your polars dataframe has date strings in another format,
-    pass `variables` explicitly to the transformer instead of relying on
-    auto-detection.

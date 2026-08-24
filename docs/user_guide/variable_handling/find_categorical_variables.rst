@@ -139,10 +139,3 @@ We see the variable names in the list below:
 
     ['cat_var1', 'cat_var2']
 
-.. note::
-
-    Unlike for pandas, `date3` above is a plain ISO-8601 string column, which polars
-    (via narwhals) *can* auto-detect as a datetime candidate, so it is still correctly
-    excluded here. Only pandas' flexible, dateutil-backed date-string guessing (formats
-    like "24-Feb-2020" or "02/24/20") has no polars equivalent - see the note in
-    :class:`find_datetime_variables()`.

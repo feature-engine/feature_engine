@@ -138,8 +138,3 @@ resulting list:
 
     ['date2', 'date3']
 
-.. note::
-
-    `date3` here is an ISO-8601 string, which polars (via narwhals) can parse.
-    Pandas' flexible, dateutil-backed date-string guessing recognises additional
-    formats that polars does not - see the note in :class:`find_datetime_variables()`.

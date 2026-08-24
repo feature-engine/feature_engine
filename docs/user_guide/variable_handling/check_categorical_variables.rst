@@ -135,8 +135,3 @@ Both variables are of type string and hence, will be in the resulting list:
 
     ['cat_var1', 'date3']
 
-.. note::
-
-    Polars has no separate "object" dtype the way pandas does - its `String` dtype
-    is the only way to represent free-form text, so it is accepted here as
-    categorical, alongside `Categorical` and `Enum` columns.
