@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 import narwhals as nw
 import narwhals.dependencies as nwd
 import numpy as np
+from joblib import Parallel, delayed
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import GridSearchCV
@@ -133,6 +134,18 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
+    n_jobs: int, default=None
+        The number of jobs to run in parallel when training the decision trees
+        across feature combinations. Trees are fit using threads rather than
+        processes, since fitting a decision tree releases the GIL for the bulk
+        of its computation, which avoids the overhead of copying the entire
+        dataframe to separate worker processes. `None` means 1, i.e. sequential
+        training (this transformer's original behaviour); `-1` means using all
+        available processors. There is a real speedup only when there are many
+        feature combinations and/or a large `param_grid` to search — with just
+        a handful of combinations, thread-dispatch overhead outweighs the gain,
+        which is why the default stays sequential.
+
     {missing_values}
 
     {drop_original}
@@ -255,6 +268,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
         regression: bool = True,
         random_state: int = 0,
+        n_jobs: Optional[int] = None,
         missing_values: str = "raise",
         drop_original: bool = False,
     ) -> None:
@@ -283,6 +297,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.param_grid = param_grid
         self.regression = regression
         self.random_state = random_state
+        self.n_jobs = n_jobs
         self.missing_values = missing_values
         self.drop_original = drop_original
 
@@ -337,10 +352,8 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         is_pandas = nwd.is_pandas_dataframe(X)
         nw_X = nw.from_native(X, eager_only=True)
 
-        estimators_ = []
+        X_subs = []
         for features in input_features:
-            estimator = self._make_decision_tree(param_grid=param_grid)
-
             # single feature models
             if isinstance(features, (str, int)):
                 X_sub = nw_X.get_column(features).to_frame().to_native()
@@ -349,9 +362,11 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                 X_sub = X[features]
             else:
                 X_sub = nw_X.select(features).to_native()
+            X_subs.append(X_sub)
 
-            estimator.fit(X_sub, y)
-            estimators_.append(estimator)
+        estimators_ = Parallel(n_jobs=self.n_jobs, prefer="threads")(
+            delayed(self._fit_one_tree)(X_sub, y, param_grid) for X_sub in X_subs
+        )
 
         self.variables_ = variables_
         self.input_features_ = input_features
@@ -463,6 +478,12 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         )
 
         return tree_model
+
+    def _fit_one_tree(self, X_sub: IntoDataFrame, y: IntoSeries, param_grid: Dict):
+        """Instantiate and fit one decision tree on one feature combination."""
+        estimator = self._make_decision_tree(param_grid=param_grid)
+        estimator.fit(X_sub, y)
+        return estimator
 
     def _create_variable_combinations(
         self,

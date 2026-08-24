@@ -545,6 +545,46 @@ identical. We just need to set the parameter `regression` to False.
     classification, on the other hand, the features will contain the prediction of the class.
 
 
+Training trees in parallel
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each tree is trained on its own feature combination independently of the others, so
+when there are many combinations (a large number of variables and/or a high
+`features_to_combine`) or a large `param_grid` to search, training can be
+parallelized across combinations with the `n_jobs` parameter:
+
+.. code:: python
+
+    import pandas as pd
+    from feature_engine.creation import DecisionTreeFeatures
+
+    X = pd.DataFrame({
+        "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
+        "Height": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
+        "Marks": [1.0, 0.8, 0.6, 0.1, 0.3, 0.4, 0.8, 0.6, 0.5, 0.2],
+    })
+    y = [4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7]
+
+    dtf = DecisionTreeFeatures(features_to_combine=3, n_jobs=2, random_state=0)
+    dtf.fit(X, y)
+
+    print(dtf.transform(X).columns.tolist())
+
+.. code:: text
+
+    ['Age', 'Height', 'Marks', 'tree(Age)', 'tree(Height)', 'tree(Marks)',
+     "tree(['Age', 'Height'])", "tree(['Age', 'Marks'])",
+     "tree(['Height', 'Marks'])", "tree(['Age', 'Height', 'Marks'])"]
+
+`n_jobs` defaults to `None`, which trains the trees sequentially, matching this
+transformer's original behaviour. Setting it trains multiple trees at the same
+time using threads, which only pays off once there are enough feature
+combinations or a large enough `param_grid` to outweigh the overhead of
+dispatching work to threads — with just a handful of combinations, sequential
+training is faster. The resulting trees and predictions are identical
+regardless of `n_jobs`; only training speed changes.
+
+
 Additional resources
 --------------------
 
