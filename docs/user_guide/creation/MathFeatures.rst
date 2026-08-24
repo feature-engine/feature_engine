@@ -143,11 +143,11 @@ We obtain the following dataframe:
     2  krish   Liverpool   19    0.7 2020-02-24 00:02:00           19.7
     3   jack     Bristol   18    0.6 2020-02-24 00:03:00           18.6
 
-       prod_Age_Marks  amin_Age_Marks  amax_Age_Marks  std_Age_Marks
-    0            18.0             0.9            20.0      13.505740
-    1            16.8             0.8            21.0      14.283557
-    2            13.3             0.7            19.0      12.940054
-    3            10.8             0.6            18.0      12.303658
+       prod_Age_Marks  min_Age_Marks  max_Age_Marks  std_Age_Marks
+    0            18.0            0.9           20.0           9.55
+    1            16.8            0.8           21.0          10.10
+    2            13.3            0.7           19.0           9.15
+    3            10.8            0.6           18.0           8.70
 
 We have the option to set the parameter `drop_original` to True to drop the variables
 after performing the calculations.
@@ -169,9 +169,58 @@ Which will return the names of all the variables in the transformed data:
      'dob',
      'sum_Age_Marks',
      'prod_Age_Marks',
-     'amin_Age_Marks',
-     'amax_Age_Marks',
+     'min_Age_Marks',
+     'max_Age_Marks',
      'std_Age_Marks']
+
+
+With polars
+-----------
+
+:class:`MathFeatures()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.creation import MathFeatures
+
+    df = pl.DataFrame({
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+    })
+
+    transformer = MathFeatures(
+        variables=["Age", "Marks"],
+        func=["sum", "prod", "min", "max", "std"],
+    )
+
+    print(transformer.fit_transform(df))
+
+The resulting values match those found with pandas:
+
+.. code:: text
+
+    shape: (4, 7)
+    ┌─────┬───────┬───────────────┬────────────────┬───────────────┬───────────────┬───────────────┐
+    │ Age ┆ Marks ┆ sum_Age_Marks ┆ prod_Age_Marks ┆ min_Age_Marks ┆ max_Age_Marks ┆ std_Age_Marks │
+    │ --- ┆ ---   ┆ ---           ┆ ---            ┆ ---           ┆ ---           ┆ ---           │
+    │ i64 ┆ f64   ┆ f64           ┆ f64            ┆ f64           ┆ f64           ┆ f64           │
+    ╞═════╪═══════╪═══════════════╪════════════════╪═══════════════╪═══════════════╪═══════════════╡
+    │ 20  ┆ 0.9   ┆ 20.9          ┆ 18.0           ┆ 0.9           ┆ 20.0          ┆ 13.50574      │
+    │ 21  ┆ 0.8   ┆ 21.8          ┆ 16.8           ┆ 0.8           ┆ 21.0          ┆ 14.283557     │
+    │ 19  ┆ 0.7   ┆ 19.7          ┆ 13.3           ┆ 0.7           ┆ 19.0          ┆ 12.940054     │
+    │ 18  ┆ 0.6   ┆ 18.6          ┆ 10.8           ┆ 0.6           ┆ 18.0          ┆ 12.303658     │
+    └─────┴───────┴───────────────┴────────────────┴───────────────┴───────────────┴───────────────┘
+
+`new_variables_names`, `drop_original`, and `get_feature_names_out()` work
+identically to the pandas examples above.
+
+If you pass a custom Python callable as `func` (instead of a string or one
+of the common aggregations above, which are always NumPy-vectorized), note
+that the callable receives a **plain tuple** of values for polars input,
+not a pandas `Series` — so `lambda row: max(row) - min(row)` works on both
+backends, but `lambda row: row.max() - row.min()` (which relies on `Series`
+methods) only works with pandas.
 
 
 New variables names
