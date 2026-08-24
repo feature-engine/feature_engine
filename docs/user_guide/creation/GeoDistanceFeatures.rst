@@ -77,11 +77,11 @@ In the following output we see the trip ID followed by the distance travelled in
 
 .. code:: python
 
-       trip_id   distance_km
-    0        1   3935.746254
-    1        2   2808.517344
-    2        3   1144.286561
-    3        4   1634.724892
+       trip_id  distance_km
+    0        1  3935.746255
+    1        2  2803.971507
+    2        3  1144.291274
+    3        4  1632.166882
 
 Using different distance methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,10 +108,10 @@ for Earth's curvature:
 .. code:: python
 
        trip_id  distance_euclidean
-    0        1         4940.252715
-    1        2         3493.298968
-    2        3         1519.295694
-    3        4         1720.178310
+    0        1         4965.730734
+    1        2         3507.416606
+    2        3         1517.763567
+    3        4         1898.819227
 
 Alternatively, we can use the Manhattan distance, which is useful for grid-based city layouts:
 
@@ -133,10 +133,10 @@ The Manhattan distance sums the absolute differences in latitude and longitude:
 .. code:: python
 
        trip_id  distance_manhattan
-    0        1          5628.24000
-    1        2          4684.15800
-    2        3          1637.36700
-    3        4          2279.96460
+    0        1           5649.7113
+    1        2           4266.8178
+    2        3           1641.5901
+    3        4           2263.5342
 
 Using different output units
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,10 +162,10 @@ The distances are now expressed in miles instead of kilometres:
 .. code:: python
 
        trip_id  distance_miles
-    0        1     2445.258392
-    1        2     1745.046817
-    2        3      711.000629
-    3        4     1015.643614
+    0        1     2445.586607
+    1        2     1742.326542
+    2        3      711.037560
+    3        4     1014.192788
 
 Dropping original coordinate columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -281,7 +281,7 @@ The pipeline successfully trains and returns predictions:
 
 .. code:: python
 
-    Predictions: [100. 150.  80. 200.]
+    Predictions: [116.67298659 120.75252844  88.47598336 204.09850161]
 
 Additional resources
 --------------------
