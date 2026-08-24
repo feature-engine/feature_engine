@@ -1,3 +1,5 @@
+import warnings
+
 import narwhals as nw
 import numpy as np
 import pandas as pd
@@ -433,6 +435,30 @@ def test_n_jobs_parallel_matches_sequential(make_df):
 
     expected = nw.from_native(Xt_seq, eager_only=True).to_dict(as_series=False)
     assert_df_equal(Xt_par, expected)
+
+
+def test_transform_does_not_fragment_pandas_output():
+    # regression test: transform() used to assign one new tree column at a
+    # time (X[col_name] = preds), which triggers pandas' "DataFrame is
+    # highly fragmented" PerformanceWarning once there are enough feature
+    # combinations - fixed by building all new columns in one DataFrame
+    # and joining once. Needs enough variables to cross pandas' internal
+    # fragmentation threshold (a handful of combos won't trigger it).
+    rng = np.random.RandomState(0)
+    n_vars = 9
+    X = pd.DataFrame(
+        rng.rand(200, n_vars), columns=[f"v{i}" for i in range(n_vars)]
+    )
+    y = rng.rand(200)
+
+    tr = DecisionTreeFeatures(
+        features_to_combine=3, param_grid={"max_depth": [1, 2]}, random_state=0
+    )
+    tr.fit(X, y)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", pd.errors.PerformanceWarning)
+        tr.transform(X)
 
 
 def test_single_int_named_feature_combo():

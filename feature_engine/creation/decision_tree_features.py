@@ -428,6 +428,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             return nw_X.select(features).to_native()
 
         new_series = []
+        new_columns = {}
         # if regression or multiclass, we return the output of predict();
         # if binary classification, we return the probability
         for features, estimator in zip(self.input_features_, self.estimators_):
@@ -446,13 +447,17 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
                 preds = estimator.predict(X_sub)
 
             if is_pandas is True:
-                X[col_name] = preds
+                new_columns[col_name] = preds
             else:
                 new_series.append(
                     nw.new_series(col_name, preds, backend=nw_X.implementation)
                 )
 
         if is_pandas is True:
+            # assign() still inserts columns one at a time internally, so it
+            # doesn't avoid fragmentation with many feature combinations;
+            # building one DataFrame and joining it does (single insertion).
+            X = X.join(type(X)(new_columns, index=X.index))
             if self.drop_original is True:
                 X = X.drop(columns=self.variables_)
         else:
