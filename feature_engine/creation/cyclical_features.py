@@ -1,7 +1,9 @@
 from typing import Dict, List, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import (
@@ -122,6 +124,30 @@ class CyclicalFeatures(
     5  2  1.224647e-16 -1.000000e+00
     6  1  1.000000e+00  6.123234e-17
     7  2  1.224647e-16 -1.000000e+00
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.creation import CyclicalFeatures
+    >>> X = pl.DataFrame({"x": [1, 4, 3, 3, 4, 2, 1, 2]})
+    >>> cf = CyclicalFeatures()
+    >>> cf.fit(X)
+    >>> cf.transform(X)
+    shape: (8, 3)
+    ┌─────┬─────────────┬─────────────┐
+    │ x   ┆ x_sin       ┆ x_cos       │
+    │ --- ┆ ---         ┆ ---         │
+    │ i64 ┆ f64         ┆ f64         │
+    ╞═════╪═════════════╪═════════════╡
+    │ 1   ┆ 1.0         ┆ 6.1232e-17  │
+    │ 4   ┆ -2.4493e-16 ┆ 1.0         │
+    │ 3   ┆ -1.0        ┆ -1.8370e-16 │
+    │ 3   ┆ -1.0        ┆ -1.8370e-16 │
+    │ 4   ┆ -2.4493e-16 ┆ 1.0         │
+    │ 2   ┆ 1.2246e-16  ┆ -1.0        │
+    │ 1   ┆ 1.0         ┆ 6.1232e-17  │
+    │ 2   ┆ 1.2246e-16  ┆ -1.0        │
+    └─────┴─────────────┴─────────────┘
     """
 
     def __init__(
@@ -141,22 +167,33 @@ class CyclicalFeatures(
         self.max_values = max_values
         self.drop_original = drop_original
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learns the maximum value of each variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
         if self.max_values is None:
             X, variables_ = self._fit_setup(X)
-            max_values_ = X[variables_].max().to_dict()
+            if nwd.is_pandas_dataframe(X) is True:
+                max_arr = X[variables_].to_numpy().max(axis=0)
+            else:
+                max_arr = (
+                    nw.from_native(X, eager_only=True)
+                    .select(variables_)
+                    .to_numpy()
+                    .max(axis=0)
+                )
+            # .tolist() converts numpy scalars to plain Python int/float,
+            # matching the dtype .to_dict() used to return.
+            max_values_ = dict(zip(variables_, max_arr.tolist()))
         else:
             X, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values
@@ -167,29 +204,39 @@ class CyclicalFeatures(
 
         return self
 
-    def transform(self, X: pd.DataFrame):
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Creates new features using the cyclical transformations.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe.
+        X_new: dataframe.
             The original dataframe plus the additional features.
         """
         X = self._check_transform_input_and_state(X)
 
-        for variable in self.variables_:
-            max_value = self.max_values_[variable]
-            X[f"{variable}_sin"] = np.sin(X[variable] * (2.0 * np.pi / max_value))
-            X[f"{variable}_cos"] = np.cos(X[variable] * (2.0 * np.pi / max_value))
-
-        if self.drop_original:
-            X.drop(columns=self.variables_, inplace=True)
+        if nwd.is_pandas_dataframe(X) is True:
+            for variable in self.variables_:
+                max_value = self.max_values_[variable]
+                X[f"{variable}_sin"] = np.sin(X[variable] * (2.0 * np.pi / max_value))
+                X[f"{variable}_cos"] = np.cos(X[variable] * (2.0 * np.pi / max_value))
+            if self.drop_original is True:
+                X = X.drop(columns=self.variables_)
+        else:
+            new_cols = []
+            for variable in self.variables_:
+                scaled = nw.col(variable) * (2.0 * np.pi / self.max_values_[variable])
+                new_cols.append(scaled.sin().alias(f"{variable}_sin"))
+                new_cols.append(scaled.cos().alias(f"{variable}_cos"))
+            nw_X = nw.from_native(X, eager_only=True).with_columns(*new_cols)
+            if self.drop_original is True:
+                nw_X = nw_X.drop(self.variables_)
+            X = nw_X.to_native()
 
         return X
 

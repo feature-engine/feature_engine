@@ -208,6 +208,60 @@ This returns the name of all the variables in the final output:
     ['day_sin', 'day_cos', 'months_sin', 'months_cos']
 
 
+With polars
+-----------
+
+:class:`CyclicalFeatures()` works in the same way with a polars dataframe.
+Let's create an equivalent toy dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.creation import CyclicalFeatures
+
+    df = pl.DataFrame({
+        "day": [6, 7, 5, 3, 1, 2, 4],
+        "months": [3, 7, 9, 12, 4, 6, 12],
+    })
+
+    cyclical = CyclicalFeatures(variables=None, drop_original=False)
+    X = cyclical.fit_transform(df)
+
+    cyclical.max_values_
+
+The maximum values match those found with pandas:
+
+.. code:: python
+
+    {'day': 7, 'months': 12}
+
+And the transformed dataframe contains the same cyclical features:
+
+.. code:: python
+
+    print(X)
+
+.. code:: python
+
+    shape: (7, 6)
+    ┌─────┬────────┬─────────────┬───────────┬─────────────┬─────────────┐
+    │ day ┆ months ┆ day_sin     ┆ day_cos   ┆ months_sin  ┆ months_cos  │
+    │ --- ┆ ---    ┆ ---         ┆ ---       ┆ ---         ┆ ---         │
+    │ i64 ┆ i64    ┆ f64         ┆ f64       ┆ f64         ┆ f64         │
+    ╞═════╪════════╪═════════════╪═══════════╪═════════════╪═════════════╡
+    │ 6   ┆ 3      ┆ -0.781831   ┆ 0.62349   ┆ 1.0         ┆ 6.1232e-17  │
+    │ 7   ┆ 7      ┆ -2.4493e-16 ┆ 1.0       ┆ -0.5        ┆ -0.866025   │
+    │ 5   ┆ 9      ┆ -0.974928   ┆ -0.222521 ┆ -1.0        ┆ -1.8370e-16 │
+    │ 3   ┆ 12     ┆ 0.433884    ┆ -0.900969 ┆ -2.4493e-16 ┆ 1.0         │
+    │ 1   ┆ 4      ┆ 0.781831    ┆ 0.62349   ┆ 0.866025    ┆ -0.5        │
+    │ 2   ┆ 6      ┆ 0.974928    ┆ -0.222521 ┆ 1.2246e-16  ┆ -1.0        │
+    │ 4   ┆ 12     ┆ -0.433884   ┆ -0.900969 ┆ -2.4493e-16 ┆ 1.0         │
+    └─────┴────────┴─────────────┴───────────┴─────────────┴─────────────┘
+
+`drop_original=True` and `get_feature_names_out()` work identically to the
+pandas example above.
+
+
 Understanding cyclical encoding
 -------------------------------
 
