@@ -51,6 +51,19 @@ ask — don't guess and defensively code around it.
 - pandas' `.columns` is an `Index`, not a list — `list()` is required there
   (an `Index == list` comparison is elementwise, not a clean bool).
 
+## Keep tests passing when you change a function or class
+
+Whenever you change a function or class, run its corresponding tests. If
+they fail, resolve it — don't leave it — by figuring out whether the test
+needs updating (e.g. it exercised behavior that's no longer supported) or
+the implementation has a real bug, and fixing whichever one is wrong.
+
+## Keep docs in sync with transformer changes
+
+When new functionality is introduced in a transformer, update its
+corresponding `docs/user_guide/<module>/<ClassName>.rst` with a short
+worked example showing the new functionality.
+
 ## Verify before applying
 
 Benchmark before claiming a speedup, and diff old-vs-new output across
