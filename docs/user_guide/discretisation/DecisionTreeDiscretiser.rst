@@ -443,6 +443,91 @@ were sorted:
     799         0          9
     380         0          9
 
+With polars
+-----------
+
+:class:`DecisionTreeDiscretiser()` also accepts polars dataframes as input, and returns a polars
+dataframe from `transform()`:
+
+.. code:: python
+
+    import polars as pl
+
+    X_train_pl = pl.DataFrame(X_train[["LotArea", "GrLivArea"]])
+
+    disc = DecisionTreeDiscretiser(
+        bin_output="prediction",
+        cv=3,
+        scoring="neg_mean_squared_error",
+        regression=True,
+    )
+    disc.fit(X_train_pl, y_train)
+
+    train_t = disc.transform(X_train_pl)
+    print(train_t.head())
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌───────────────┬───────────────┐
+    │ LotArea       ┆ GrLivArea     │
+    │ ---           ┆ ---           │
+    │ f64           ┆ f64           │
+    ╞═══════════════╪═══════════════╡
+    │ 144174.283688 ┆ 152471.713568 │
+    │ 144174.283688 ┆ 191760.966667 │
+    │ 176117.741848 ┆ 97156.25      │
+    │ 144174.283688 ┆ 202178.409091 │
+    │ 144174.283688 ┆ 202178.409091 │
+    └───────────────┴───────────────┘
+
+The predictions match those obtained with the pandas dataframe above.
+
+Training trees in parallel
+---------------------------
+
+:class:`DecisionTreeDiscretiser()` fits one decision tree per variable, independently of the
+others. When there are many variables to discretise, or a large `param_grid` to search, training
+can be parallelized across variables with the `n_jobs` parameter:
+
+.. code:: python
+
+    import pandas as pd
+    from feature_engine.discretisation import DecisionTreeDiscretiser
+
+    X = pd.DataFrame({
+        "Age": [20, 44, 19, 33, 51, 40, 41, 37, 30, 54],
+        "Height": [164, 150, 178, 158, 188, 190, 168, 174, 176, 171],
+        "Marks": [1.0, 0.8, 0.6, 0.1, 0.3, 0.4, 0.8, 0.6, 0.5, 0.2],
+    })
+    y = [4.1, 5.8, 3.9, 6.2, 4.3, 4.5, 7.2, 4.4, 4.1, 6.7]
+
+    dtd = DecisionTreeDiscretiser(n_jobs=2, random_state=0)
+    dtd.fit(X, y)
+
+    print(dtd.transform(X))
+
+.. code:: text
+
+            Age    Height     Marks
+    0  4.533333  5.366667  4.100000
+    1  6.000000  5.366667  6.500000
+    2  4.533333  4.133333  4.133333
+    3  4.533333  5.366667  6.200000
+    4  6.000000  4.400000  4.400000
+    5  4.533333  4.400000  4.400000
+    6  6.000000  6.950000  6.500000
+    7  4.533333  4.133333  4.133333
+    8  4.533333  4.133333  4.133333
+    9  6.000000  6.950000  6.700000
+
+`n_jobs` defaults to `None`, which trains the trees sequentially, matching this transformer's
+original behaviour. Setting it trains multiple trees at the same time using threads, which only
+pays off once there are enough variables or a large enough `param_grid` to outweigh the overhead
+of dispatching work to threads — with just a handful of variables, sequential training is faster.
+The resulting trees and predictions are identical regardless of `n_jobs`; only training speed
+changes.
+
 Additional considerations
 -------------------------
 
