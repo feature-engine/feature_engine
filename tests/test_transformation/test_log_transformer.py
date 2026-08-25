@@ -1,175 +1,195 @@
+import re
+
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import LogTransformer
 
+DATA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
+DATA_NA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20.0, 21.0, 19.0, np.nan],
+    "Marks": [0.9, 0.8, 0.7, np.nan],
+}
+DATA_C = {
+    "vara": [0, 1, 2, 3],
+    "varb": [5, 5, 6, 7],
+    "varc": [-2, -1, 0, 4],
+    "vard": [-3, -2, -1, -5],
+    "vare": ["a", "b", "c", "d"],
+}
+DATA_C_VARS = ["vara", "varb", "varc", "vard"]
+DATA_C_AUTO = {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
 
-def test_transforming_int_vars():
-    df = pd.DataFrame(
-        {
-            "var1": [1, 2, 3],
-            "var2": [4, 5, 3],
-        }
-    )
-    dft = np.log(df)
+
+def _to_dict(X):
+    return nw.from_native(X, eager_only=True).to_dict(as_series=False)
+
+
+def _expected_log(c, base):
+    fn = np.log if base == "e" else np.log10
+    out = {}
+    for var in DATA_C_VARS:
+        c_var = c[var] if isinstance(c, dict) else c
+        out[var] = [fn(x + c_var) for x in DATA_C[var]]
+    return out
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transforming_int_vars(make_df):
+    X = make_df({"var1": [1, 2, 3], "var2": [4, 5, 3]})
     transformer = LogTransformer(base="e", variables=None)
-    X = transformer.fit_transform(df)
-    pd.testing.assert_frame_equal(X, dft)
+    Xt = transformer.fit_transform(X)
+    result = _to_dict(Xt)
+    assert result["var1"] == pytest.approx(list(np.log([1, 2, 3])))
+    assert result["var2"] == pytest.approx(list(np.log([4, 5, 3])))
 
 
-def test_log_base_e_plus_automatically_find_variables(df_vartypes):
-    # test case 1: log base e, automatically select variables
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_log_base_e_plus_automatically_find_variables(make_df):
+    X = make_df(DATA)
     transformer = LogTransformer(base="e", variables=None)
-    X = transformer.fit_transform(df_vartypes)
-
-    # expected output
-    transf_df = df_vartypes.copy()
-    transf_df["Age"] = [2.99573, 3.04452, 2.94444, 2.89037]
-    transf_df["Marks"] = [-0.105361, -0.223144, -0.356675, -0.510826]
+    Xt = transformer.fit_transform(X)
 
     # test init params
     assert transformer.base == "e"
     assert transformer.variables is None
     # test fit attr
     assert transformer.variables_ == ["Age", "Marks"]
-    assert transformer.n_features_in_ == 5
+    assert transformer.n_features_in_ == 4
+
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    result = _to_dict(Xt)
+    assert result["Age"] == pytest.approx(
+        [2.99573, 3.04452, 2.94444, 2.89037], abs=1e-5
+    )
+    assert result["Marks"] == pytest.approx(
+        [-0.105361, -0.223144, -0.356675, -0.510826], abs=1e-5
+    )
 
     # test inverse_transform
-    Xit = transformer.inverse_transform(X)
-
-    # convert numbers to original format.
-    Xit["Age"] = Xit["Age"].round().astype("int64")
-    Xit["Marks"] = Xit["Marks"].round(1)
-
-    # test
-    pd.testing.assert_frame_equal(Xit, df_vartypes)
+    Xit = transformer.inverse_transform(Xt)
+    result_it = _to_dict(Xit)
+    assert [round(v) for v in result_it["Age"]] == DATA["Age"]
+    assert [round(v, 1) for v in result_it["Marks"]] == DATA["Marks"]
 
 
-def test_log_base_10_plus_user_passes_var_list(df_vartypes):
-    # test case 2: log base 10, user passes variables
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_log_base_10_plus_user_passes_var_list(make_df):
+    X = make_df(DATA)
     transformer = LogTransformer(base="10", variables="Age")
-    X = transformer.fit_transform(df_vartypes)
-
-    # expected output
-    transf_df = df_vartypes.copy()
-    transf_df["Age"] = [1.30103, 1.32222, 1.27875, 1.25527]
+    Xt = transformer.fit_transform(X)
 
     # test init params
     assert transformer.base == "10"
     assert transformer.variables == "Age"
     # test fit attr
     assert transformer.variables_ == ["Age"]
-    assert transformer.n_features_in_ == 5
+    assert transformer.n_features_in_ == 4
+
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    result = _to_dict(Xt)
+    assert result["Age"] == pytest.approx(
+        [1.30103, 1.32222, 1.27875, 1.25527], abs=1e-5
+    )
 
     # test inverse_transform
-    Xit = transformer.inverse_transform(X)
-
-    # convert numbers to original format.
-    Xit["Age"] = Xit["Age"].round().astype("int64")
-
-    # test
-    pd.testing.assert_frame_equal(Xit, df_vartypes)
+    Xit = transformer.inverse_transform(Xt)
+    result_it = _to_dict(Xit)
+    assert [round(v) for v in result_it["Age"]] == DATA["Age"]
 
 
 def test_error_if_base_value_not_allowed():
-    with pytest.raises(ValueError) as record:
+    msg = "base can take only '10' or 'e' as values. Got other instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         LogTransformer(base="other")
-    assert str(record.value) == (
-        "base can take only '10' or 'e' as values. Got other instead."
-    )
 
 
-def test_fit_raises_error_if_na_in_df(df_na):
-    # test case 3: when dataset contains na, fit method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_raises_error_if_na_in_df(make_df):
+    X = make_df(DATA_NA)
     with pytest.raises(ValueError):
         transformer = LogTransformer()
-        transformer.fit(df_na)
+        transformer.fit(X)
 
 
-def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
-    # test case 4: when dataset contains na, transform method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transform_raises_error_if_na_in_df(make_df):
+    X = make_df(DATA)
+    X_na = make_df(DATA_NA)
+    transformer = LogTransformer()
+    transformer.fit(X)
+    with pytest.raises(ValueError):
+        transformer.transform(X_na)
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_error_if_df_contains_negative_values(make_df):
+    data_neg = dict(DATA)
+    data_neg["Age"] = [20, -1, 19, 18]
+    X = make_df(DATA)
+    X_neg = make_df(data_neg)
+
+    # when variable contains negative value, fit
     with pytest.raises(ValueError):
         transformer = LogTransformer()
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+        transformer.fit(X_neg)
 
-
-def test_error_if_df_contains_negative_values(df_vartypes):
-    # test error when data contains negative values
-    df_neg = df_vartypes.copy()
-    df_neg.loc[1, "Age"] = -1
-
-    # test case 5: when variable contains negative value, fit
+    # when variable contains negative value, transform
     with pytest.raises(ValueError):
         transformer = LogTransformer()
-        transformer.fit(df_neg)
-
-    # test case 6: when variable contains negative value, transform
-    with pytest.raises(ValueError):
-        transformer = LogTransformer()
-        transformer.fit(df_vartypes)
-        transformer.transform(df_neg)
+        transformer.fit(X)
+        transformer.transform(X_neg)
 
 
-def test_non_fitted_error(df_vartypes):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_non_fitted_error(make_df):
+    X = make_df(DATA)
     with pytest.raises(NotFittedError):
         transformer = LogTransformer()
-        transformer.transform(df_vartypes)
+        transformer.transform(X)
 
 
-def test_inverse_e_plus_user_passes_var_list(df_vartypes):
-    # test case 7: inverse log, user passes variables
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_e_plus_user_passes_var_list(make_df):
+    X = make_df(DATA)
     transformer = LogTransformer(variables="Age")
-    Xt = transformer.fit_transform(df_vartypes)
-    X = transformer.inverse_transform(Xt)
-
-    # convert floats to int
-    X["Age"] = X["Age"].round().astype("int64")
+    Xt = transformer.fit_transform(X)
+    Xit = transformer.inverse_transform(Xt)
 
     # test init params
     assert transformer.base == "e"
     assert transformer.variables == "Age"
     # test fit attr
     assert transformer.variables_ == ["Age"]
-    assert transformer.n_features_in_ == 5
+    assert transformer.n_features_in_ == 4
     # test transform output
-    pd.testing.assert_frame_equal(X, df_vartypes)
+    result_it = _to_dict(Xit)
+    assert [round(v) for v in result_it["Age"]] == DATA["Age"]
 
 
-def test_default_C_preserves_original_fail_fast_behavior():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_default_C_preserves_original_fail_fast_behavior(make_df):
     """LogTransformer()'s default C=0 must raise at fit() time, with the
     original exact message, matching pre-merge behavior. See #957."""
-    df = pd.DataFrame({"x": [1, 2, 0, 4]})
+    X = make_df({"x": [1, 2, 0, 4]})
     tr = LogTransformer()
 
     assert tr.C == 0
 
-    with pytest.raises(ValueError) as record:
-        tr.fit(df)
-
-    assert str(record.value) == (
-        "Some variables contain zero or negative values, can't apply log"
-    )
-
-
-@pytest.fixture(scope="module")
-def df_c():
-    df = pd.DataFrame(
-        {
-            "vara": [0, 1, 2, 3],
-            "varb": [5, 5, 6, 7],
-            "varc": [-2, -1, 0, 4],
-            "vard": [-3, -2, -1, -5],
-            "vare": ["a", "b", "c", "d"],
-        }
-    )
-    return df
+    msg = "Some variables contain zero or negative values, can't apply log"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        tr.fit(X)
 
 
 @pytest.mark.parametrize("c", [1, 0.1, {"var1": 1, "var2": 2}, "auto"])
@@ -181,86 +201,86 @@ def test_c_parameter(c):
 @pytest.mark.parametrize("c", ["string", [1, 2]])
 def test_c_raises_error(c):
     msg = f"C can take only 'auto', integers, floats or dictionaries. Got {c} instead."
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=re.escape(msg)):
         LogTransformer(C=c)
-    assert str(record.value) == msg
 
 
-def test_C_when_auto(df_c):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_C_when_auto(make_df):
+    X = make_df(DATA_C)
     tr = LogTransformer(C="auto")
-    tr.fit(df_c)
-    c = {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
-    assert tr.C_ == c
+    tr.fit(X)
+    assert tr.C_ == DATA_C_AUTO
 
 
-def test_C_when_dict(df_c):
-    c = {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
-    tr = LogTransformer(C=c)
-    tr.fit(df_c)
-    assert tr.C_ == c
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_C_when_dict(make_df):
+    X = make_df(DATA_C)
+    tr = LogTransformer(C=DATA_C_AUTO)
+    tr.fit(X)
+    assert tr.C_ == DATA_C_AUTO
 
 
-def test_C_when_int(df_c):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_C_when_int(make_df):
+    X = make_df(DATA_C)
     tr = LogTransformer(C=10)
-    tr.fit(df_c)
+    tr.fit(X)
     assert tr.C_ == 10
 
 
-def test_raises_error_when_transformed_data_has_negative_values_with_C(df_c):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_raises_error_when_transformed_data_has_negative_values_with_C(make_df):
+    X = make_df(DATA_C)
     tr = LogTransformer(C="auto")
-    tr.fit(df_c)
-    dft = df_c.copy()
-    dft["vara"] = dft["vara"] - 2
+    tr.fit(X)
+
+    data_shifted = dict(DATA_C)
+    data_shifted["vara"] = [v - 2 for v in DATA_C["vara"]]
+    Xt = make_df(data_shifted)
+
     msg = (
         "Some variables contain zero or negative values after adding constant C, "
         "can't apply log."
     )
-    with pytest.raises(ValueError) as record:
-        tr.transform(dft)
-    assert str(record.value) == msg
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        tr.transform(Xt)
 
 
-def test_log_base_e_with_C(df_c):
-    dft = LogTransformer(C="auto").fit_transform(df_c)
-    exp = np.log(
-        df_c[["vara", "varb", "varc", "vard"]]
-        + {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
-    )
-    exp["vare"] = df_c["vare"]
-    pd.testing.assert_frame_equal(dft, exp)
+@pytest.mark.parametrize("base", ["e", "10"])
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_log_with_C(make_df, base):
+    X = make_df(DATA_C)
 
-    dft = LogTransformer(C=10).fit_transform(df_c)
-    exp = np.log(df_c[["vara", "varb", "varc", "vard"]] + 10)
-    exp["vare"] = df_c["vare"]
-    pd.testing.assert_frame_equal(dft, exp)
+    dft = LogTransformer(C="auto", base=base).fit_transform(X)
+    result = _to_dict(dft)
+    expected = _expected_log(DATA_C_AUTO, base)
+    for var in DATA_C_VARS:
+        assert result[var] == pytest.approx(expected[var], abs=1e-6)
+    assert result["vare"] == DATA_C["vare"]
 
-
-def test_log_base_10_with_C(df_c):
-    dft = LogTransformer(C="auto", base="10").fit_transform(df_c)
-    exp = np.log10(
-        df_c[["vara", "varb", "varc", "vard"]]
-        + {"vara": 1, "varb": 0, "varc": 3, "vard": 6}
-    )
-    exp["vare"] = df_c["vare"]
-    pd.testing.assert_frame_equal(dft, exp)
-
-    dft = LogTransformer(C=10, base="10").fit_transform(df_c)
-    exp = np.log10(df_c[["vara", "varb", "varc", "vard"]] + 10)
-    exp["vare"] = df_c["vare"]
-    pd.testing.assert_frame_equal(dft, exp)
+    dft = LogTransformer(C=10, base=base).fit_transform(X)
+    result = _to_dict(dft)
+    expected = _expected_log(10, base)
+    for var in DATA_C_VARS:
+        assert result[var] == pytest.approx(expected[var], abs=1e-6)
+    assert result["vare"] == DATA_C["vare"]
 
 
-def test_inverse_transform_with_C(df_c):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_transform_with_C(make_df):
+    X = make_df(DATA_C)
+
     tr = LogTransformer(C="auto", base="10")
-    dft = tr.fit_transform(df_c)
+    dft = tr.fit_transform(X)
     orig = tr.inverse_transform(dft)
-    pd.testing.assert_frame_equal(
-        orig, df_c, check_dtype=False, check_exact=False, rtol=0.1
-    )
+    result = _to_dict(orig)
+    for var in DATA_C_VARS:
+        assert result[var] == pytest.approx(DATA_C[var], abs=0.1)
 
     tr = LogTransformer(C=10, base="e")
-    dft = tr.fit_transform(df_c)
+    dft = tr.fit_transform(X)
     orig = tr.inverse_transform(dft)
-    pd.testing.assert_frame_equal(
-        orig, df_c, check_dtype=False, check_exact=False, rtol=0.1
-    )
+    result = _to_dict(orig)
+    for var in DATA_C_VARS:
+        assert result[var] == pytest.approx(DATA_C[var], abs=0.1)

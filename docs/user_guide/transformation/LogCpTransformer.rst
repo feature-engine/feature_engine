@@ -93,7 +93,7 @@ before applying the logarithm transformation:
 
 .. code:: python
 
-    {'MedInc': 0, 'HouseAge': 0}
+    {'MedInc': 0.0, 'HouseAge': 0.0}
 
 .. note::
 
@@ -296,6 +296,47 @@ And the constant values will be those from the dictionary:
     {'bmi': 2, 's3': 3, 's4': 4}
 
 You can now apply `transform()` to transform all these variables.
+
+
+With polars
+-----------
+
+:class:`LogCpTransformer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import LogCpTransformer
+
+    df = pl.DataFrame({"var_1": [-2.0, -1.0, 0.0, 1.0, 2.0]})
+
+    tf = LogCpTransformer(variables=None)
+    tf.fit(df)
+
+    print(tf.C_)
+
+.. code:: text
+
+    {'var_1': 3.0}
+
+.. code:: python
+
+    print(tf.transform(df))
+
+.. code:: text
+
+    shape: (5, 1)
+    ┌──────────┐
+    │ var_1    │
+    │ ---      │
+    │ f64      │
+    ╞══════════╡
+    │ 0.0      │
+    │ 0.693147 │
+    │ 1.098612 │
+    │ 1.386294 │
+    │ 1.609438 │
+    └──────────┘
 
 
 Additional resources
