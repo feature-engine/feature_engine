@@ -293,7 +293,7 @@ In the following output, we see the maximum of the variables after removing the 
 .. code:: python
 
     fare    65.0
-    age     53.0
+    age     74.0
     dtype: float64
 
 Finally, we can check the boxplot of the transformed variables to corroborate the effect on their distribution.
@@ -521,7 +521,7 @@ We see the adjusted data size compared to the original size here:
 
 .. code:: python
 
-   ((916, 8), (736, 76))
+   ((916, 8), (828, 142))
 
 Feature-engine's pipeline can also adjust the target:
 
@@ -535,7 +535,7 @@ We see the adjusted data size compared to the original size here:
 
 .. code:: python
 
-    ((916,), (736,))
+    ((916,), (828,))
 
 To wrap up, let's add a machine learning algorithm to the pipeline. We'll use logistic regression to predict survival:
 
@@ -565,7 +565,7 @@ We see the following output:
 
 .. code:: python
 
-    array([1, 1, 1, 0, 1, 0, 1, 1, 0, 1], dtype=int64)
+    array([1, 1, 0, 1, 0, 1, 0, 0, 1, 0])
 
 We can obtain the probability of survival:
 
@@ -580,16 +580,16 @@ We see the following output:
 
 .. code:: python
 
-    array([[0.13027536, 0.86972464],
-           [0.14982143, 0.85017857],
-           [0.2783799 , 0.7216201 ],
-           [0.86907159, 0.13092841],
-           [0.31794531, 0.68205469],
-           [0.86905145, 0.13094855],
-           [0.1396715 , 0.8603285 ],
-           [0.48403632, 0.51596368],
-           [0.6299007 , 0.3700993 ],
-           [0.49712853, 0.50287147]])
+    array([[0.23320943, 0.76679057],
+           [0.22089305, 0.77910695],
+           [0.85469885, 0.14530115],
+           [0.28510312, 0.71489688],
+           [0.85468117, 0.14531883],
+           [0.0494853 , 0.9505147 ],
+           [0.58079146, 0.41920854],
+           [0.536129  , 0.463871  ],
+           [0.36885157, 0.63114843],
+           [0.81102131, 0.18897869]])
 
 We can obtain the accuracy of the predictions over the test set:
 
@@ -601,7 +601,7 @@ That returns the following accuracy:
 
 .. code:: python
 
-    0.7823343848580442
+    0.804093567251462
 
 We can obtain the names of the features after the transformation:
 
@@ -635,7 +635,7 @@ We see the resulting sizes here:
 
 .. code:: python
 
-    ((393, 8), (317, 76))
+    ((393, 8), (342, 142))
 
 
 Setting up the stringency (param `fold`)
@@ -655,6 +655,49 @@ The default values for fold are as follows:
 
 You can manually adjust the fold value to make the outlier detection process more or less
 conservative, thus customising the extent of outlier trimming.
+
+With polars
+-----------
+
+:class:`OutlierTrimmer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.outliers import OutlierTrimmer
+
+    df = pl.DataFrame({
+        "Age": [20, 21, 19, 18, 95],
+        "Marks": [0.9, 0.8, 0.7, 0.6, 0.1],
+    })
+
+    transformer = OutlierTrimmer(
+        capping_method="quantiles",
+        tail="both",
+        fold=0.2,
+    )
+
+    print(transformer.fit_transform(df))
+
+Only the rows where both `Age` and `Marks` fall within the 20th-80th
+percentile range survive; the other three rows breach the bound on at
+least one of the two variables:
+
+.. code:: text
+
+    shape: (2, 2)
+    ┌─────┬───────┐
+    │ Age ┆ Marks │
+    │ --- ┆ ---   │
+    │ i64 ┆ f64   │
+    ╞═════╪═══════╡
+    │ 21  ┆ 0.8   │
+    │ 19  ┆ 0.7   │
+    └─────┴───────┘
+
+`transform_x_y()` and `get_feature_names_out()` work identically to the
+pandas examples above.
+
 
 Additional resources
 --------------------

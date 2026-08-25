@@ -58,16 +58,23 @@ class TransformXyMixin:
             nw_X = nw_X.with_row_index(row_index_col)
             # the tag column leaves X one column wider than the training set,
             # which transform()'s column-count check (when the transformer has
-            # one) would reject. Widen the reference by one for the duration of
-            # this internal call only.
+            # one) would reject, and transformers that reorder X to
+            # feature_names_in_ (e.g. BaseOutlier) would drop. Widen both
+            # references for the duration of this internal call only.
             has_count_check = hasattr(self, "n_features_in_")
+            has_feature_names = hasattr(self, "feature_names_in_")
             if has_count_check:
                 self.n_features_in_ += 1
+            if has_feature_names:
+                feature_names_in = self.feature_names_in_
+                self.feature_names_in_ = list(feature_names_in) + [row_index_col]
             try:
                 X = self.transform(nw_X.to_native())
             finally:
                 if has_count_check:
                     self.n_features_in_ -= 1
+                if has_feature_names:
+                    self.feature_names_in_ = feature_names_in
             nw_X = nw.from_native(X, eager_only=True)
             row_positions = nw_X.get_column(row_index_col).to_list()
             X = nw_X.drop(row_index_col).to_native()
