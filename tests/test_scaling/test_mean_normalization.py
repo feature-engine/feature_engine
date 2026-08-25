@@ -1,6 +1,9 @@
 import re
 
+import narwhals as nw
+import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
@@ -15,6 +18,28 @@ DEPRECATION_WARNING = (
     "MeanNormalisationScaler in version 2.0.0 and will be removed in version 2.1.0. "
     "To silence this warning, use MeanNormalisationScaler instead."
 )
+
+DATA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
+
+
+def _none_to_nan(values):
+    # Missing values print as None for polars, NaN for pandas float columns
+    # - both mean "missing" here, so normalize both sides before comparing.
+    return [np.nan if v is None else v for v in values]
+
+
+def assert_df_equal(X, expected: dict, abs_tol: float = 1e-4) -> None:
+    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
+    assert list(result.keys()) == list(expected.keys())
+    for col, values in expected.items():
+        assert _none_to_nan(result[col]) == pytest.approx(
+            _none_to_nan(values), abs=abs_tol, nan_ok=True
+        )
 
 
 @pytest.fixture(
@@ -37,117 +62,107 @@ def test_mean_normalization_scaler_raises_future_warning():
         MeanNormalizationScaler()
 
 
-def test_transforming_int_vars(transformer_class):
-    # input test case
-    df = pd.DataFrame(
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transforming_int_vars(make_df, transformer_class):
+    df = make_df(
         {
             "var1": [1.0, 2.0, 3.0],
             "var2": [4.0, 5.0, 3.0],
             "var3": [40.0, 20.0, 30.0],
         }
     )
-    # expected output
-    expected_df = pd.DataFrame(
-        {
-            "var1": [-0.5, 0.0, 0.5],
-            "var2": [0, 0.5, -0.5],
-            "var3": [0.5, -0.5, 0.0],
-        }
+    expected = {
+        "var1": [-0.5, 0.0, 0.5],
+        "var2": [0, 0.5, -0.5],
+        "var3": [0.5, -0.5, 0.0],
+    }
+
+    transformer = make_transformer(transformer_class, variables=None)
+    X = transformer.fit_transform(df)
+    assert_df_equal(X, expected)
+
+    Xit = transformer.inverse_transform(X)
+    assert_df_equal(
+        Xit,
+        {"var1": [1.0, 2.0, 3.0], "var2": [4.0, 5.0, 3.0], "var3": [40.0, 20.0, 30.0]},
     )
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_mean_normalization_plus_automatically_find_variables(
+    make_df, transformer_class
+):
+    df = make_df(DATA)
 
     transformer = make_transformer(transformer_class, variables=None)
     X = transformer.fit_transform(df)
 
-    pd.testing.assert_frame_equal(X, expected_df)
-
-    # test inverse_transform
-    Xit = transformer.inverse_transform(X)
-
-    pd.testing.assert_frame_equal(Xit, df)
-
-
-def test_mean_normalization_plus_automatically_find_variables(
-    df_vartypes, transformer_class
-):
-    # test case 1: automatically select variables
-    transformer = make_transformer(transformer_class, variables=None)
-    X = transformer.fit_transform(df_vartypes)
-
-    # expected output
-    transf_df = df_vartypes.copy()
-    transf_df["Age"] = [0.16666, 0.5, -0.16666, -0.5]
-    transf_df["Marks"] = [0.49999, 0.16666, -0.16666, -0.5]
-
-    # test init params
     assert transformer.variables is None
-    # test fit attr
     assert transformer.variables_ == ["Age", "Marks"]
-    assert transformer.n_features_in_ == 5
-    # test transform output
-    pd.testing.assert_frame_equal(X, transf_df, rtol=10e-3)
+    assert transformer.n_features_in_ == 4
 
-    # test inverse_transform
+    expected = dict(DATA)
+    expected["Age"] = [0.16667, 0.5, -0.16667, -0.5]
+    expected["Marks"] = [0.5, 0.16667, -0.16667, -0.5]
+    assert_df_equal(X, expected)
+
     Xit = transformer.inverse_transform(X)
-
-    # convert numbers to original format.
-    Xit["Age"] = Xit["Age"].round().astype("int64")
-    Xit["Marks"] = Xit["Marks"].round(1)
-
-    # test
-    pd.testing.assert_frame_equal(Xit, df_vartypes, rtol=10e-3)
+    assert_df_equal(Xit, DATA)
 
 
-def test_mean_normalization_plus_user_passes_var_list(df_vartypes, transformer_class):
-    # test case 2: user passes variables
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_mean_normalization_plus_user_passes_var_list(make_df, transformer_class):
+    df = make_df(DATA)
+
     transformer = make_transformer(transformer_class, variables="Age")
-    X = transformer.fit_transform(df_vartypes)
+    X = transformer.fit_transform(df)
 
-    # expected output
-    transf_df = df_vartypes.copy()
-    transf_df["Age"] = [0.16666, 0.5, -0.16666, -0.5]
-
-    # test init params
     assert transformer.variables == "Age"
-    # test fit attr
     assert transformer.variables_ == ["Age"]
-    assert transformer.n_features_in_ == 5
-    # test transform output
-    pd.testing.assert_frame_equal(X, transf_df, rtol=10e-3)
+    assert transformer.n_features_in_ == 4
 
-    # test inverse_transform
+    expected = dict(DATA)
+    expected["Age"] = [0.16667, 0.5, -0.16667, -0.5]
+    assert_df_equal(X, expected)
+
     Xit = transformer.inverse_transform(X)
-
-    # convert numbers to original format.
-    Xit["Age"] = Xit["Age"].round().astype("int64")
-
-    # test
-    pd.testing.assert_frame_equal(Xit, df_vartypes, rtol=10e-3)
+    assert_df_equal(Xit, DATA)
 
 
-def test_fit_raises_error_if_na_in_df(df_na, transformer_class):
-    # test case 3: when dataset contains na, fit method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_raises_error_if_na_in_df(make_df, transformer_class):
+    data_na = dict(DATA)
+    data_na["Age"] = [20, None, 19, 18]
+    df_na = make_df(data_na)
+
     transformer = make_transformer(transformer_class)
     with pytest.raises(ValueError):
         transformer.fit(df_na)
 
 
-def test_transform_raises_error_if_na_in_df(df_vartypes, df_na, transformer_class):
-    # test case 4: when dataset contains na, transform method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transform_raises_error_if_na_in_df(make_df, transformer_class):
+    data_na = dict(DATA)
+    data_na["Age"] = [20, None, 19, 18]
+    df_na = make_df(data_na)
+
     transformer = make_transformer(transformer_class)
-    transformer.fit(df_vartypes)
+    transformer.fit(make_df(DATA))
     with pytest.raises(ValueError):
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+        transformer.transform(df_na)
 
 
-def test_non_fitted_error(df_vartypes, transformer_class):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_non_fitted_error(make_df, transformer_class):
+    df = make_df(DATA)
     transformer = make_transformer(transformer_class)
     with pytest.raises(NotFittedError):
-        transformer.transform(df_vartypes)
+        transformer.transform(df)
 
 
-def test_constant_columns_error(transformer_class):
-    # input test case
-    df = pd.DataFrame(
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_constant_columns_error(make_df, transformer_class):
+    df = make_df(
         {
             "var1": [1.0, 2.0, 3.0],
             "var2": [4.0, 5.0, 3.0],
@@ -163,7 +178,9 @@ def test_constant_columns_error(transformer_class):
 def test_raises_non_fitted_error_when_error_during_fit(transformer_class):
     # constant column: fails after mean_/range_ would have been computed, at
     # the "check for constant columns" step - real regression guard for the
-    # deferred trailing-underscore attribute assignment.
+    # deferred trailing-underscore attribute assignment. Pandas-only: this
+    # check's own helper (check_raises_non_fitted_error_when_fit_fails)
+    # builds a pandas frame internally.
     df = pd.DataFrame(
         {
             "var1": [1.0, 2.0, 3.0],
@@ -176,6 +193,7 @@ def test_raises_non_fitted_error_when_error_during_fit(transformer_class):
 
 
 def test_check_return_empty(transformer_class):
+    # check_return_empty itself is pandas-only (builds pd.DataFrame internally).
     transformer = make_transformer(transformer_class)
     if transformer_class is MeanNormalizationScaler:
         with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
