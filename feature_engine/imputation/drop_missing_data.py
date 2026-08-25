@@ -3,7 +3,9 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._check_init_parameters.check_variables import (
@@ -114,6 +116,26 @@ class DropMissingData(BaseImputer, TransformXyMixin):
     >>> dmd.transform(X)
         x1 x2
     2  1.0  b
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.imputation import DropMissingData
+    >>> X = pl.DataFrame(dict(
+    ...        x1 = [None, 1, 1, 0, None],
+    ...        x2 = ["a", None, "b", None, "a"],
+    ...        ))
+    >>> dmd = DropMissingData()
+    >>> dmd.fit(X)
+    >>> dmd.transform(X)
+    shape: (1, 2)
+    ┌─────┬─────┐
+    │ x1  ┆ x2  │
+    │ --- ┆ --- │
+    │ i64 ┆ str │
+    ╞═════╪═════╡
+    │ 1   ┆ b   │
+    └─────┴─────┘
     """
 
     def __init__(
@@ -144,17 +166,17 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Find the variables for which missing data should be evaluated to decide if a
         row should be dropped.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training data set.
 
-        y: pandas Series or dataframe, default=None
+        y: Series or dataframe, default=None
             y is not needed in this imputation. You can pass None or y.
         """
 
@@ -163,50 +185,51 @@ class DropMissingData(BaseImputer, TransformXyMixin):
 
         # find variables for which indicator should be added
         if self.variables is None:
-            variables_ = find_all_variables(X, self.return_empty)
+            variables_ = find_all_variables(X, return_empty=self.return_empty)
         else:
             variables_ = check_all_variables(X, self.variables)
 
         # If user passes a threshold, then missing_only is ignored:
         if self.threshold is None and self.missing_only is True:
-            variables_ = [var for var in variables_ if X[var].isnull().sum() > 0]
+            # Benchmarked: a per-column isnull().sum() loop beats a narwhals-
+            # generic call on pandas input, matching MissingIndicator's split.
+            is_pandas = nwd.is_pandas_dataframe(X)
+            if is_pandas is True:
+                variables_ = [
+                    var for var in variables_ if X[var].isnull().sum() > 0
+                ]
+            else:
+                nw_X = nw.from_native(X, eager_only=True)
+                null_counts = nw_X.select(variables_).null_count().row(0)
+                variables_ = [
+                    var for var, count in zip(variables_, null_counts) if count > 0
+                ]
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Remove rows with missing data.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The complete case dataframe for the selected variables, of shape
             [n_samples - n_samples_with_na, n_features]
         """
 
         X = self._transform(X)
+        return self._select_rows(X, keep=True)
 
-        if self.threshold:
-            X.dropna(
-                thresh=len(self.variables_) * self.threshold,
-                subset=self.variables_,
-                axis=0,
-                inplace=True,
-            )
-        else:
-            X.dropna(axis=0, how="any", subset=self.variables_, inplace=True)
-
-        return X
-
-    def return_na_data(self, X: pd.DataFrame) -> pd.DataFrame:
+    def return_na_data(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Returns the subset of the dataframe with the rows with missing values. That is,
         the subset of the dataframe that would be removed with the `transform()` method.
@@ -215,20 +238,60 @@ class DropMissingData(BaseImputer, TransformXyMixin):
 
         Parameters
         ----------
-        X_na: pandas dataframe of shape = [n_samples_with_na, features]
+        X_na: dataframe of shape = [n_samples_with_na, features]
             The subset of the dataframe with the rows with missing data.
         """
 
         X = self._transform(X)
+        return self._select_rows(X, keep=False)
 
-        if self.threshold:
-            idx = pd.isnull(X[self.variables_]).mean(axis=1) >= self.threshold
-            idx = idx[idx]
+    def _select_rows(self, X: IntoDataFrame, keep: bool) -> IntoDataFrame:
+        """
+        Shared row-selection logic for transform() (keep=True, rows without
+        missing data) and return_na_data() (keep=False, rows with missing
+        data). Deriving both from the same "keep" condition, negated for the
+        drop side, guarantees the two outputs are always an exact partition
+        of X - they can never overlap or leave a row out.
+        """
+        if len(self.variables_) == 0:
+            # dropna(subset=[]) keeps every row: there are no variables to
+            # evaluate missingness on, so nothing can ever be "missing".
+            if keep is True:
+                return X
+            is_pandas = nwd.is_pandas_dataframe(X)
+            if is_pandas is True:
+                return X.iloc[:0]
+            return nw.from_native(X, eager_only=True).head(0).to_native()
+
+        is_pandas = nwd.is_pandas_dataframe(X)
+        # Benchmarked: a numpy-backed mask beats both pandas' own axis=1
+        # isnull()/notna().sum() (a known-slow reduction) and the narwhals
+        # path below, so pandas keeps this dedicated fast path.
+        if is_pandas is True:
+            if self.threshold is not None:
+                non_null_count = X[self.variables_].notna().to_numpy().sum(axis=1)
+                mask = non_null_count >= len(self.variables_) * self.threshold
+            else:
+                mask = ~X[self.variables_].isnull().to_numpy().any(axis=1)
+            if keep is False:
+                mask = ~mask
+            return X[mask]
         else:
-            idx = pd.isnull(X[self.variables_]).any(axis=1)
-            idx = idx[idx]
-
-        return X.loc[idx.index, :]
+            nw_X = nw.from_native(X, eager_only=True)
+            if self.threshold is not None:
+                non_null_count = nw.sum_horizontal(
+                    (~nw.col(var).is_null()).cast(nw.Int64)
+                    for var in self.variables_
+                )
+                expr = non_null_count >= len(self.variables_) * self.threshold
+            else:
+                expr = ~nw.any_horizontal(
+                    (nw.col(var).is_null() for var in self.variables_),
+                    ignore_nulls=True,
+                )
+            if keep is False:
+                expr = ~expr
+            return nw_X.filter(expr).to_native()
 
     def _more_tags(self):
         tags_dict = _return_tags()

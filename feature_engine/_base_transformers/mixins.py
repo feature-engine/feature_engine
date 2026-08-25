@@ -49,7 +49,21 @@ class TransformXyMixin:
         else:
             row_index_col = "__feature_engine_row_index__"
             nw_X = nw.from_native(X, eager_only=True).with_row_index(row_index_col)
-            X = self.transform(nw_X.to_native())
+            # transform() validates X's column count/names against
+            # feature_names_in_/n_features_in_ (BaseImputer._transform), which
+            # would reject row_index_col - widen both just for this call so
+            # the marker survives transform(), then restore the fitted state.
+            original_features_in: List[
+                Union[str, int]
+            ] = self.feature_names_in_  # type: ignore[has-type]
+            original_n_features_in: int = self.n_features_in_  # type: ignore[has-type]
+            self.feature_names_in_ = original_features_in + [row_index_col]
+            self.n_features_in_ = original_n_features_in + 1
+            try:
+                X = self.transform(nw_X.to_native())
+            finally:
+                self.feature_names_in_ = original_features_in
+                self.n_features_in_ = original_n_features_in
             nw_X = nw.from_native(X, eager_only=True)
             row_positions = nw_X.get_column(row_index_col)
             X = nw_X.drop(row_index_col).to_native()

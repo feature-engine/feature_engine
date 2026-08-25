@@ -550,6 +550,60 @@ In the following output we see the predictions made by the pipeline:
 
     array([2., 2.])
 
+With polars
+^^^^^^^^^^^
+
+:class:`DropMissingData()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.imputation import DropMissingData
+
+    X = pl.DataFrame(
+        {
+            "x1": [2, 1, 1, 0, None],
+            "x2": ["a", None, "b", None, "a"],
+            "x3": [2, 3, 4, 5, 5],
+        }
+    )
+
+    dmd = DropMissingData()
+    dmd.fit_transform(X)
+
+We get the same complete-case rows as with pandas:
+
+.. code:: text
+
+    shape: (2, 3)
+    ┌─────┬─────┬─────┐
+    │ x1  ┆ x2  ┆ x3  │
+    │ --- ┆ --- ┆ --- │
+    │ i64 ┆ str ┆ i64 │
+    ╞═════╪═════╪═════╡
+    │ 2   ┆ a   ┆ 2   │
+    │ 1   ┆ b   ┆ 4   │
+    └─────┴─────┴─────┘
+
+``return_na_data()`` and ``threshold`` behave identically on polars too:
+
+.. code:: python
+
+    dmd.return_na_data(X)
+
+.. code:: text
+
+    shape: (3, 3)
+    ┌──────┬──────┬─────┐
+    │ x1   ┆ x2   ┆ x3  │
+    │ ---  ┆ ---  ┆ --- │
+    │ i64  ┆ str  ┆ i64 │
+    ╞══════╪══════╪═════╡
+    │ 1    ┆ null ┆ 3   │
+    │ 0    ┆ null ┆ 5   │
+    │ null ┆ a    ┆ 5   │
+    └──────┴──────┴─────┘
+
 Dropna or fillna?
 ^^^^^^^^^^^^^^^^^
 
