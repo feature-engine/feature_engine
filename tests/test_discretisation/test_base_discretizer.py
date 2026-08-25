@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.datasets import fetch_california_housing
 
@@ -38,42 +39,42 @@ def test_correct_param_assignment_at_init(params):
 
 class MockClassFit(BaseDiscretiser):
     def fit(self, X):
-        california_dataset = fetch_california_housing()
-        data = pd.DataFrame(
-            california_dataset.data, columns=california_dataset.feature_names
-        )
+        # bins are hard-coded rather than learnt, so this mock works unchanged
+        # on both pandas and polars input.
         self.variables_ = ["HouseAge"]
         self.binner_dict_ = {"HouseAge": [0, 20, 40, 60, np.inf]}
-        self.n_features_in_ = data.shape[1]
-        self.feature_names_in_ = california_dataset.feature_names
+        self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = list(X.columns)
         return self
 
 
-def test_transform():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transform(make_df):
     california_dataset = fetch_california_housing()
-    data = pd.DataFrame(
+    data_pd = pd.DataFrame(
         california_dataset.data, columns=california_dataset.feature_names
     )
 
-    data_t1 = data.copy()
-    data_t2 = data.copy()
-
-    # HouseAge is the median house age in the block group.
-    data_t1["HouseAge"] = pd.cut(
-        data["HouseAge"], bins=[0, 20, 40, 60, np.inf], include_lowest=True
-    )
-    data_t1["HouseAge"] = data_t1["HouseAge"].astype(str)
-    data_t2["HouseAge"] = pd.cut(
-        data["HouseAge"],
+    # ground truth via pandas.cut: bins are fixed by MockClassFit, so both
+    # backends must reproduce this exact output.
+    expected_codes = pd.cut(
+        data_pd["HouseAge"],
         bins=[0, 20, 40, 60, np.inf],
         labels=False,
         include_lowest=True,
+    ).to_numpy()
+    expected_labels = (
+        pd.cut(data_pd["HouseAge"], bins=[0, 20, 40, 60, np.inf], include_lowest=True)
+        .astype(str)
+        .to_numpy()
     )
+
+    data = make_df(data_pd)
 
     transformer = MockClassFit(return_boundaries=False)
     X = transformer.fit_transform(data)
-    pd.testing.assert_frame_equal(X, data_t2)
+    assert np.array_equal(X["HouseAge"].to_numpy(), expected_codes)
 
     transformer = MockClassFit(return_object=False, return_boundaries=True)
     X = transformer.fit_transform(data)
-    pd.testing.assert_frame_equal(X, data_t1)
+    assert np.array_equal(X["HouseAge"].to_numpy(), expected_labels)
