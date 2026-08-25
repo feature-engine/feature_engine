@@ -1,68 +1,83 @@
+import narwhals as nw
+import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import ArcsinTransformer
 
+DATA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
+DATA_NA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20.0, 21.0, 19.0, np.nan],
+    "Marks": [0.9, 0.8, 0.7, np.nan],
+}
 
-def test_transform_and_inverse_transform(df_vartypes):
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transform_and_inverse_transform(make_df):
+    X = make_df(DATA)
     transformer = ArcsinTransformer(variables=["Marks"])
-    X = transformer.fit_transform(df_vartypes)
+    Xt = transformer.fit_transform(X)
 
-    # expected output
-    transf_df = df_vartypes.copy()
-    transf_df["Marks"] = [1.24905, 1.10715, 0.99116, 0.88607]
+    result = nw.from_native(Xt, eager_only=True).to_dict(as_series=False)
+    assert result["Marks"] == pytest.approx(
+        [1.24905, 1.10715, 0.99116, 0.88607], abs=1e-5
+    )
 
-    # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
-
-    # test inverse_transform
-    Xit = transformer.inverse_transform(X)
-
-    # convert numbers to original format.
-    Xit["Marks"] = Xit["Marks"].round(1)
-
-    # test
-    pd.testing.assert_frame_equal(Xit, df_vartypes)
+    Xit = transformer.inverse_transform(Xt)
+    result_it = nw.from_native(Xit, eager_only=True).to_dict(as_series=False)
+    assert [round(v, 1) for v in result_it["Marks"]] == DATA["Marks"]
 
 
-def test_fit_raises_error_if_na_in_df(df_na):
-    # test case 2: when dataset contains na, fit method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_raises_error_if_na_in_df(make_df):
+    X = make_df(DATA_NA)
     transformer = ArcsinTransformer(variables=["Marks"])
     with pytest.raises(ValueError):
-        transformer.fit(df_na)
+        transformer.fit(X)
 
 
-def test_transform_raises_error_if_na_in_df(df_vartypes, df_na):
-    # test case 3: when dataset contains na, transform method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transform_raises_error_if_na_in_df(make_df):
+    X = make_df(DATA)
+    X_na = make_df(DATA_NA)
     transformer = ArcsinTransformer(variables=["Marks"])
-    transformer.fit(df_vartypes)
+    transformer.fit(X)
     with pytest.raises(ValueError):
-        transformer.transform(df_na[df_vartypes.columns])
+        transformer.transform(X_na)
 
 
-def test_error_if_df_contains_outside_range_values(df_vartypes):
-    # test error when data contains value outside range [0, +1]
-    df_out_range = df_vartypes.copy()
-    df_out_range.loc[1, "Marks"] = 2
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_error_if_df_contains_outside_range_values(make_df):
+    data_out_range = dict(DATA)
+    data_out_range["Marks"] = [0.9, 2, 0.7, 0.6]
+    X = make_df(DATA)
+    X_out_range = make_df(data_out_range)
 
     transformer = ArcsinTransformer(variables=["Marks"])
-    # test case 4: when variable contains value outside range, fit
     with pytest.raises(ValueError):
-        transformer.fit(df_out_range)
+        transformer.fit(X_out_range)
 
-    # test case 5: when variable contains value outside range, transform
-    transformer.fit(df_vartypes)
+    transformer.fit(X)
     with pytest.raises(ValueError):
-        transformer.transform(df_out_range)
+        transformer.transform(X_out_range)
 
-    # when selecting variables automatically and some are outside range
     transformer = ArcsinTransformer()
     with pytest.raises(ValueError):
-        transformer.fit(df_vartypes)
+        transformer.fit(X_out_range)
 
 
-def test_non_fitted_error(df_vartypes):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_non_fitted_error(make_df):
+    X = make_df(DATA)
     transformer = ArcsinTransformer(variables="Marks")
     with pytest.raises(NotFittedError):
-        transformer.transform(df_vartypes)
+        transformer.transform(X)

@@ -3,8 +3,9 @@
 
 from typing import List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -105,6 +106,30 @@ class ArcsinTransformer(BaseNumericalTransformer):
     2  0.144664
     3  0.783236
     4  0.650777
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.transformation import ArcsinTransformer
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame({"x": list(np.random.beta(1, 1, size=6))})
+    >>> ast = ArcsinTransformer()
+    >>> ast.fit(X)
+    >>> ast.transform(X)
+    shape: (6, 1)
+    ┌──────────┐
+    │ x        │
+    │ ---      │
+    │ f64      │
+    ╞══════════╡
+    │ 0.785437 │
+    │ 0.253389 │
+    │ 0.144664 │
+    │ 0.783236 │
+    │ 0.650777 │
+    │ 0.883313 │
+    └──────────┘
     """
 
     def __init__(
@@ -118,17 +143,17 @@ class ArcsinTransformer(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn parameters.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
 
@@ -136,7 +161,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
         X, variables_ = self._fit_setup(X)
 
         # check if the variables are in the correct range
-        if ((X[variables_] < 0) | (X[variables_] > 1)).any().any():
+        values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+        if np.any((values < 0) | (values > 1)):
             raise ValueError(
                 "Some variables contain values outside the possible range 0-1. "
                 "Can't apply the arcsin transformation. "
@@ -147,52 +173,68 @@ class ArcsinTransformer(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Apply the arcsin transformation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the transformed variables.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy()
+
         # check if the variables are in the correct range
-        if ((X[self.variables_] < 0) | (X[self.variables_] > 1)).any().any():
+        if np.any((values < 0) | (values > 1)):
             raise ValueError(
                 "Some variables contain values outside the possible range 0-1. "
                 "Can't apply the arcsin transformation."
             )
 
         # transform
-        X.loc[:, self.variables_] = np.arcsin(np.sqrt(X.loc[:, self.variables_]))
+        result = np.arcsin(np.sqrt(values))
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_tr: pandas dataframe
+        X_tr: dataframe
             The dataframe with the transformed variables.
         """
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy()
+
         # inverse_transform
-        X.loc[:, self.variables_] = (np.sin(X.loc[:, self.variables_])) ** 2
+        result = np.sin(values) ** 2
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
