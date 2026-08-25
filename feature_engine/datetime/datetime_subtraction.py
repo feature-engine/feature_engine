@@ -1,8 +1,11 @@
-from typing import List, Optional, Union
+from datetime import timezone
+from typing import Dict, List, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
-from pandas.api.types import is_datetime64_any_dtype as is_datetime
+from dateutil.parser import parse as _dateutil_parse
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -47,6 +50,27 @@ _example = """
     0  2022-09-18  2022-08-18             31.0
     1  2022-10-27  2022-08-27             61.0
     2  2022-12-24  2022-06-24            183.0
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.datetime import DatetimeSubtraction
+    >>> X = pl.DataFrame({
+    >>>     "date1": ["2022-09-18", "2022-10-27", "2022-12-24"],
+    >>>     "date2": ["2022-08-18", "2022-08-27", "2022-06-24"]})
+    >>> dtf = DatetimeSubtraction(variables=["date1"], reference=["date2"])
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+    shape: (3, 3)
+    ┌────────────┬────────────┬─────────────────┐
+    │ date1      ┆ date2      ┆ date1_sub_date2 │
+    │ ---        ┆ ---        ┆ ---             │
+    │ str        ┆ str        ┆ f64             │
+    ╞════════════╪════════════╪═════════════════╡
+    │ 2022-09-18 ┆ 2022-08-18 ┆ 31.0            │
+    │ 2022-10-27 ┆ 2022-08-27 ┆ 61.0            │
+    │ 2022-12-24 ┆ 2022-06-24 ┆ 183.0           │
+    └────────────┴────────────┴─────────────────┘
         """.rstrip()
 
 
@@ -219,17 +243,17 @@ class DatetimeSubtraction(BaseCreation):
         self.utc = utc
         self.format = format
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, or np.array. Default=None.
+        y: Series, or np.array. Default=None.
             It is not needed in this transformer. You can pass y or None.
         """
         # Common checks and attributes
@@ -263,29 +287,32 @@ class DatetimeSubtraction(BaseCreation):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            vars = list(set(self.variables_ + self.reference_))
-            _check_contains_na(X, vars)
+            vars_ = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars_)
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
+        if nwd.is_pandas_dataframe(X) is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Add new features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The input dataframe plus the new variables.
         """
 
@@ -299,43 +326,64 @@ class DatetimeSubtraction(BaseCreation):
         _check_X_matches_training_df(X, self.n_features_in_)
 
         if self.missing_values == "raise":
-            vars = list(set(self.variables_ + self.reference_))
-            _check_contains_na(X, vars)
+            vars_ = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars_)
+
+        is_pandas = nwd.is_pandas_dataframe(X)
 
         # reorder variables to match train set
-        X = X[self.feature_names_in_]
+        if is_pandas is True:
+            X = X[self.feature_names_in_]
+        else:
+            X = nw.from_native(X, eager_only=True).select(
+                self.feature_names_in_
+            ).to_native()
 
-        X_dt = self._to_datetime(X)
+        nw_X = nw.from_native(X, eager_only=True)
 
-        new_features = self._sub(X_dt)
+        dt_arrays = self._to_datetime(nw_X, is_pandas)
 
-        X = pd.concat([X, new_features], axis=1)
+        new_series = self._sub(dt_arrays, nw_X.implementation)
 
-        if self.drop_original:
-            X = X.drop(
-                columns=set(self.variables_ + self.reference_),
-            )
+        nw_X = nw_X.with_columns(*new_series)
 
-        return X
+        if self.drop_original is True:
+            nw_X = nw_X.drop(list(set(self.variables_ + self.reference_)))
 
-    def _to_datetime(self, X: pd.DataFrame):
-        """convert variables to datetime."""
-        # convert datetime variables
-        datetime_df = pd.concat(
-            [
-                pd.to_datetime(
-                    X[variable],
+        return nw_X.to_native()
+
+    def _to_datetime(
+        self, nw_X: nw.DataFrame, is_pandas: bool
+    ) -> Dict[str, np.ndarray]:
+        """Convert the variables and reference columns to numpy datetime64 arrays."""
+        needed = sorted(set(self.variables_ + self.reference_))
+
+        # pandas.to_datetime honours dayfirst/yearfirst/utc precisely; grab the
+        # native namespace once (no `import pandas`) rather than per-column.
+        if is_pandas is True:
+            native_ns = nw.get_native_namespace(nw_X)
+
+        arrays = {}
+        non_dt_columns = []
+        for variable in needed:
+            col = nw_X.get_column(variable)
+            if is_pandas is True:
+                parsed_native = native_ns.to_datetime(
+                    col.to_native(),
                     dayfirst=self.dayfirst,
                     yearfirst=self.yearfirst,
                     utc=self.utc,
                     format=self.format,
                 )
-                for variable in set(self.variables_ + self.reference_)
-            ],
-            axis=1,
-        )
+                parsed = nw.from_native(parsed_native, series_only=True)
+            else:
+                parsed = self._parse_non_pandas_column(col)
 
-        non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
+            if not isinstance(parsed.dtype, nw.Datetime):
+                non_dt_columns.append(variable)
+                continue
+
+            arrays[variable] = parsed.to_numpy()
 
         if non_dt_columns:
             raise ValueError(
@@ -343,23 +391,69 @@ class DatetimeSubtraction(BaseCreation):
                 + (len(non_dt_columns) * "{} ").format(*non_dt_columns)
                 + "could not be converted to datetime. Try setting utc=True"
             )
-        return datetime_df
 
-    def _sub(self, dt_df: pd.DataFrame):
-        """make datetime subtraction"""
-        new_df = pd.DataFrame()
-        for reference in self.reference_:
-            new_varnames = [f"{var}_sub_{reference}" for var in self.variables_]
-            new_df[new_varnames] = (
-                dt_df[self.variables_]
-                .sub(dt_df[reference], axis=0)
-                .div(np.timedelta64(1, self.output_unit).astype("timedelta64[ns]"))
+        return arrays
+
+    def _parse_non_pandas_column(self, col: "nw.Series") -> "nw.Series":
+        """Parse a single non-pandas column to a narwhals Datetime series."""
+        if isinstance(col.dtype, nw.Datetime):
+            return col
+        if isinstance(col.dtype, nw.Date):
+            return col.cast(nw.Datetime)
+        if isinstance(col.dtype, (nw.Categorical, nw.Enum)):
+            col = col.cast(nw.String)
+
+        try:
+            return col.str.to_datetime(format=self.format)
+        except Exception:
+            if self.format is not None:
+                raise
+            # narwhals' vectorized parser needs a single unambiguous format;
+            # fall back to dateutil per value, same flexible guessing that
+            # check_datetime_variables already promises across backends.
+            return self._flexible_parse(col)
+
+    def _flexible_parse(self, col: "nw.Series") -> "nw.Series":
+        values = [
+            None
+            if value is None
+            else _dateutil_parse(
+                value, dayfirst=self.dayfirst, yearfirst=self.yearfirst
             )
+            for value in col.to_list()
+        ]
+        if self.utc is True:
+            values = [
+                None
+                if v is None
+                else (
+                    v.astimezone(timezone.utc)
+                    if v.tzinfo is not None
+                    else v.replace(tzinfo=timezone.utc)
+                )
+                for v in values
+            ]
+        return nw.new_series(col.name, values, backend=col.implementation)
 
-        if self.new_variables_names is not None:
-            new_df.columns = self.new_variables_names
+    def _sub(self, dt_arrays: Dict[str, np.ndarray], backend) -> List:
+        """make datetime subtraction"""
+        names = self._get_new_features_name()
+        # "Y"/"M" are non-linear units: numpy can only divide timedeltas by
+        # them once both sides are cast to a common linear unit (ns), which
+        # is also what pandas does internally for Timedelta / Timedelta.
+        unit_td = np.timedelta64(1, self.output_unit).astype("timedelta64[ns]")
 
-        return new_df
+        new_series = []
+        idx = 0
+        for reference in self.reference_:
+            ref_arr = dt_arrays[reference]
+            for var in self.variables_:
+                diff = (dt_arrays[var] - ref_arr).astype("timedelta64[ns]")
+                result = diff / unit_td
+                new_series.append(nw.new_series(names[idx], result, backend=backend))
+                idx += 1
+
+        return new_series
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""
