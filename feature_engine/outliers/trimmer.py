@@ -1,7 +1,8 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._docstrings.fit_attributes import (
@@ -174,29 +175,35 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
     9  0.54256
     """
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Remove observations with outliers from the dataframe.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X : dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The dataframe without outlier observations.
         """
 
         X = self._check_transform_input_and_state(X)
+        nw_X = nw.from_native(X, eager_only=True)
 
-        for feature in self.right_tail_caps_.keys():
-            inliers = X[feature].le(self.right_tail_caps_[feature])
-            X = X.loc[inliers]
+        conditions = [nw.col(f) <= c for f, c in self.right_tail_caps_.items()]
+        conditions += [nw.col(f) >= c for f, c in self.left_tail_caps_.items()]
 
-        for feature in self.left_tail_caps_.keys():
-            inliers = X[feature].ge(self.left_tail_caps_[feature])
-            X = X.loc[inliers]
+        # A single combined filter() call is pushed down to the native backend
+        # (pandas/polars) - benchmarked on par with or faster than sequential
+        # pandas .loc masking at 50k+ rows, unlike a numpy boolean-mask
+        # extraction which doesn't consistently beat it either.
+        if len(conditions) > 0:
+            combined = conditions[0]
+            for condition in conditions[1:]:
+                combined = combined & condition
+            nw_X = nw_X.filter(combined)
 
-        return X
+        return nw_X.to_native()
