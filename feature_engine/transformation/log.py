@@ -4,8 +4,9 @@
 import warnings
 from typing import Dict, List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import FitFromDictMixin
@@ -126,6 +127,30 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
     2  0.647689
     3  1.523030
     4 -0.234153
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.transformation import LogTransformer
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame({"x": list(np.random.lognormal(size=6))})
+    >>> lt = LogTransformer()
+    >>> lt.fit(X)
+    >>> lt.transform(X)
+    shape: (6, 1)
+    ┌───────────┐
+    │ x         │
+    │ ---       │
+    │ f64       │
+    ╞═══════════╡
+    │ 0.496714  │
+    │ -0.138264 │
+    │ 0.647689  │
+    │ 1.52303   │
+    │ -0.234153 │
+    │ -0.234137 │
+    └───────────┘
     """
 
     def __init__(
@@ -154,7 +179,7 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         self.base = base
         self.C = C
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the constant C to add to the variable before the logarithm
         transformation, if C="auto". Otherwise, this transformer does not learn
@@ -162,11 +187,11 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
 
@@ -176,21 +201,21 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         else:
             X, variables_ = self._fit_setup(X)
 
+        values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+        values = values.astype(float)
+
         C_ = self.C
 
-        # calculate C to add to each variable
+        # 0 for strictly positive variables, abs(min) + 1 (shift to positive)
+        # otherwise.
         if self.C == "auto":
-            # we add 0 to positive variables
-            c_dict = {var: 0 for var in variables_ if X[var].min() > 0}
-
-            # we add the minimum plus 1 to non-positive variables
-            non_positive_vars = [var for var in variables_ if var not in c_dict.keys()]
-            c_dict.update(dict(X[non_positive_vars].min(axis=0).abs() + 1))
-            C_ = c_dict  # type:ignore
+            mins = values.min(axis=0)
+            c_values = np.where(mins > 0, 0, np.abs(mins) + 1)
+            C_ = dict(zip(variables_, c_values.tolist()))
 
         # C=0 is the original LogTransformer contract: no constant is added,
         # so fail fast at fit time exactly as before this class supported C.
-        if C_ == 0 and (X[variables_] <= 0).any().any():
+        if C_ == 0 and np.any(values <= 0):
             raise ValueError(
                 "Some variables contain zero or negative values, can't apply log"
             )
@@ -201,18 +226,25 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _c_as_array(self) -> Union[int, float, np.ndarray]:
+        """Broadcastable form of C_: a plain scalar, or a numpy array ordered
+        to line up column-wise with self.variables_ when C_ is a dict."""
+        if isinstance(self.C_, dict):
+            return np.array([self.C_[var] for var in self.variables_], dtype=float)
+        return self.C_
+
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Transform the variables with the logarithm of x plus the constant C.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the transformed variables.
         """
 
@@ -229,42 +261,60 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 + " constant C, can't apply log."
             )
 
-        if (X[self.variables_] + self.C_ <= 0).any().any():
-            raise ValueError(error_msg)
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        shifted = values + self._c_as_array()
 
-        X[self.variables_] = X[self.variables_].astype(float)
+        if np.any(shifted <= 0):
+            raise ValueError(error_msg)
 
         # transform
         if self.base == "e":
-            X.loc[:, self.variables_] = np.log(X.loc[:, self.variables_] + self.C_)
-        elif self.base == "10":
-            X.loc[:, self.variables_] = np.log10(X.loc[:, self.variables_] + self.C_)
+            result = np.log(shifted)
+        else:
+            result = np.log10(shifted)
+
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_tr: pandas dataframe
+        X_tr: dataframe
             The dataframe with the transformed variables.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        c_arr = self._c_as_array()
+
         # inverse_transform
         if self.base == "e":
-            X.loc[:, self.variables_] = np.exp(X.loc[:, self.variables_]) - self.C_
-        elif self.base == "10":
-            X.loc[:, self.variables_] = 10 ** X.loc[:, self.variables_] - self.C_
+            result = np.exp(values) - c_arr
+        else:
+            result = 10**values - c_arr
+
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 

@@ -217,6 +217,48 @@ mapping each variable to its own constant (``C={"bmi": 2, "s3": 3}``), the same
 way you would with the deprecated :class:`LogCpTransformer()`.
 
 
+With polars
+-----------
+
+:class:`LogTransformer()` works in the same way with a polars dataframe, including
+the ``C="auto"`` shift for variables that contain zero or negative values:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import LogTransformer
+
+    df = pl.DataFrame({"var_1": [-2.0, -1.0, 0.0, 1.0, 2.0]})
+
+    logt = LogTransformer(variables=None, C="auto")
+    logt.fit(df)
+
+    print(logt.C_)
+
+.. code:: text
+
+    {'var_1': 3.0}
+
+.. code:: python
+
+    print(logt.transform(df))
+
+.. code:: text
+
+    shape: (5, 1)
+    ┌──────────┐
+    │ var_1    │
+    │ ---      │
+    │ f64      │
+    ╞══════════╡
+    │ 0.0      │
+    │ 0.693147 │
+    │ 1.098612 │
+    │ 1.386294 │
+    │ 1.609438 │
+    └──────────┘
+
+
 Additional resources
 --------------------
 
