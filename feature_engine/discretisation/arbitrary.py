@@ -4,7 +4,9 @@
 import warnings
 from typing import Dict, List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._docstrings.fit_attributes import (
@@ -110,6 +112,27 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     3    25
     1    17
     Name: x, dtype: int64
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.discretisation import ArbitraryDiscretiser
+    >>> X = pl.DataFrame({"x": [10, 30, 60, 90]})
+    >>> bins = dict(x=[0, 25, 50, 75, 100])
+    >>> ad = ArbitraryDiscretiser(binning_dict=bins)
+    >>> ad.fit(X)
+    >>> ad.transform(X)
+    shape: (4, 1)
+    ┌─────┐
+    │ x   │
+    │ --- │
+    │ i64 │
+    ╞═════╡
+    │ 0   │
+    │ 1   │
+    │ 2   │
+    │ 3   │
+    └─────┘
     """
 
     def __init__(
@@ -138,13 +161,13 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         self.binning_dict = binning_dict
         self.errors = errors
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
@@ -161,30 +184,44 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Sort the variable values into the intervals.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
 
         X = super().transform(X)
+
         # check if NaN values were introduced by the discretisation procedure.
-        if X[self.variables_].isnull().sum().sum() > 0:
+        nw_X = nw.from_native(X, eager_only=True)
+        if self.return_boundaries is True:
+            # missing labels are set to None by _bin_labels()
+            nan_columns = [
+                var
+                for var in self.variables_
+                if nw_X.get_column(var).is_null().any()
+            ]
+        else:
+            # codes are numeric; when return_object=True they're boxed as
+            # python floats in an Object column, where polars' is_null()/
+            # is_nan() can't see NaN - a numpy float cast is reliable on
+            # both backends.
+            nan_columns = [
+                var
+                for var in self.variables_
+                if np.isnan(nw_X.get_column(var).to_numpy().astype(float)).any()
+            ]
 
-            # obtain the name(s) of the columns with null values
-            nan_columns = (
-                X[self.variables_].columns[X[self.variables_].isnull().any()].tolist()
-            )
-
+        if len(nan_columns) > 0:
             if len(nan_columns) > 1:
                 nan_columns_str = ", ".join(nan_columns)
             else:
