@@ -4,7 +4,9 @@
 
 from typing import Optional
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
@@ -134,16 +136,16 @@ class ArbitraryOutlierCapper(BaseOutlier):
         self.min_capping_dict = min_capping_dict
         self.missing_values = missing_values
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             y is not needed in this transformer. You can pass y or None.
         """
         X = check_X(X)
@@ -176,23 +178,29 @@ class ArbitraryOutlierCapper(BaseOutlier):
         else:
             self.left_tail_caps_ = {}
 
-        self.feature_names_in_ = X.columns.to_list()
+        # pandas' .columns is an Index, not a list - list() is required there;
+        # narwhals' .columns is already list[str].
+        is_pandas = nwd.is_pandas_dataframe(X)
+        if is_pandas is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Cap the variable values.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The dataframe with the capped variables.
         """
         return super()._transform(X)
