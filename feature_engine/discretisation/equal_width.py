@@ -3,7 +3,9 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -164,14 +166,14 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         self.return_empty = return_empty
         self.bins = bins
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the boundaries of the equal width intervals / bins for each
         variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
         y: None
@@ -184,23 +186,39 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         # fit
         binner_dict_ = {}
 
-        for var in variables_:
-            tmp, bins = pd.cut(
-                x=X[var],
-                bins=self.bins,
-                retbins=True,
-                duplicates="drop",
-                include_lowest=True,
-            )
-
-            # Prepend/Append infinities
-            bins = list(bins)
-            bins[0] = float("-inf")
-            bins[len(bins) - 1] = float("inf")
-            binner_dict_[var] = bins
+        if len(variables_) > 0:
+            # one narwhals call for every variable at once, instead of a
+            # get_column() round-trip per variable.
+            arr = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+            mins = arr.min(axis=0)
+            maxs = arr.max(axis=0)
+            for var, mn, mx in zip(variables_, mins, maxs):
+                binner_dict_[var] = _equal_width_edges(mn, mx, self.bins)
 
         self.binner_dict_ = binner_dict_
         self.variables_ = variables_
         self._get_feature_names_in(X)
 
         return self
+
+
+def _equal_width_edges(mn: float, mx: float, bins: int) -> List[float]:
+    """Bin-edge computation matching pandas.cut(bins=int, duplicates="drop"):
+    widen a constant [mn, mx] by 0.1% so linspace still produces positive-
+    width bins, then collapse duplicate edges the same way. The outer edges
+    are then clipped to +-inf, same as the pre-migration code did to the
+    retbins output, so transform() never needs an out-of-range branch.
+    """
+    if mn == mx:
+        mn = mn - 0.001 * abs(mn) if mn != 0 else -0.001
+        mx = mx + 0.001 * abs(mx) if mx != 0 else 0.001
+
+    edges = np.linspace(mn, mx, bins + 1)
+    unique_edges = np.unique(edges)
+    if len(unique_edges) < len(edges) and len(edges) != 2:
+        edges = unique_edges
+
+    edges_: List[float] = edges.tolist()
+    edges_[0] = float("-inf")
+    edges_[-1] = float("inf")
+    return edges_
