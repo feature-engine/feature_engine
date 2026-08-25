@@ -3,8 +3,9 @@
 
 from typing import List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -99,6 +100,30 @@ class PowerTransformer(BaseNumericalTransformer):
     2  1.382432
     3  2.141518
     4  0.889517
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.transformation import PowerTransformer
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame({"x": list(np.random.lognormal(size=6))})
+    >>> pt = PowerTransformer()
+    >>> pt.fit(X)
+    >>> pt.transform(X)
+    shape: (6, 1)
+    ┌──────────┐
+    │ x        │
+    │ ---      │
+    │ f64      │
+    ╞══════════╡
+    │ 1.281918 │
+    │ 0.933203 │
+    │ 1.382432 │
+    │ 2.141518 │
+    │ 0.889517 │
+    │ 0.889524 │
+    └──────────┘
     """
 
     def __init__(
@@ -117,17 +142,17 @@ class PowerTransformer(BaseNumericalTransformer):
         self.return_empty = return_empty
         self.exp = exp
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training input samples.
-            Can be the entire dataframe, not just the variables to transform.
+        X: dataframe of shape = [n_samples, n_features].
+            The training input samples. Can be the entire dataframe, not just the
+            variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
 
@@ -139,49 +164,64 @@ class PowerTransformer(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Apply the power transformation to the variables.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas Dataframe
+        X_new: dataframe
             The dataframe with the power transformed variables.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy().astype(float)
+
         # transform
-        X[self.variables_] = X[self.variables_].astype(float)
-        X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], self.exp)
+        result = np.power(values, self.exp)
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_tr: pandas Dataframe
+        X_tr: dataframe
             The dataframe with the power transformed variables.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy().astype(float)
+
         # inverse_transform
-        X.loc[:, self.variables_] = np.power(X.loc[:, self.variables_], 1 / self.exp)
+        result = np.power(values, 1 / self.exp)
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
