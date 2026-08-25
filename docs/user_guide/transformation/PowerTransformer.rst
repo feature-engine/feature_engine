@@ -423,6 +423,43 @@ Result of the inverse transformation:
 As we can see, the original data and the inverse transformed one are identical.
 
 
+With polars
+-----------
+
+:class:`PowerTransformer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import PowerTransformer
+
+    df = pl.DataFrame({
+        "var_1": [4.0, 9.0, 16.0, 25.0, 100.0],
+        "var_2": [1.0, 8.0, 27.0, 64.0, 125.0],
+    })
+
+    tf = PowerTransformer(variables=None, exp=0.5)
+    tf.fit(df)
+    Xt = tf.transform(df)
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌───────┬──────────┐
+    │ var_1 ┆ var_2    │
+    │ ---   ┆ ---      │
+    │ f64   ┆ f64      │
+    ╞═══════╪══════════╡
+    │ 2.0   ┆ 1.0      │
+    │ 3.0   ┆ 2.828427 │
+    │ 4.0   ┆ 5.196152 │
+    │ 5.0   ┆ 8.0      │
+    │ 10.0  ┆ 11.18034 │
+    └───────┴──────────┘
+
+
 Considerations
 --------------
 
