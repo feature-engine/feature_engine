@@ -3,7 +3,9 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -97,6 +99,30 @@ class ReciprocalTransformer(BaseNumericalTransformer):
     2  0.115164
     3  0.110047
     4  0.101726
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.transformation import ReciprocalTransformer
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame({"x": list(10 - np.random.exponential(size=6))})
+    >>> rt = ReciprocalTransformer()
+    >>> rt.fit(X)
+    >>> rt.transform(X)
+    shape: (6, 1)
+    ┌──────────┐
+    │ x        │
+    │ ---      │
+    │ f64      │
+    ╞══════════╡
+    │ 0.104924 │
+    │ 0.143064 │
+    │ 0.115164 │
+    │ 0.110047 │
+    │ 0.101726 │
+    │ 0.101725 │
+    └──────────┘
     """
 
     def __init__(
@@ -109,17 +135,17 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn parameters.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
 
@@ -127,7 +153,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X, variables_ = self._fit_setup(X)
 
         # check if the variables contain the value 0
-        if (X[variables_] == 0).any().any():
+        values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+        if np.any(values == 0):
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
@@ -138,49 +165,56 @@ class ReciprocalTransformer(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Apply the reciprocal 1 / x transformation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the transformed variables.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy()
+
         # check if the variables contain the value 0
-        if (X[self.variables_] == 0).any().any():
+        if np.any(values == 0):
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
             )
 
         # transform
-        X[self.variables_] = X[self.variables_].astype(float)
-        X.loc[:, self.variables_] = 1 / X.loc[:, self.variables_]
+        result = 1 / values
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_tr: pandas dataframe
+        X_tr: dataframe
             The dataframe with the transformed variables.
         """
         # inverse_transform
