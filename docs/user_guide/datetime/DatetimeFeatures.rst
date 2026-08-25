@@ -743,6 +743,60 @@ In the following output we see the resulting dataframe:
 
 As you can see, we do not have the constant features in the transformed dataset.
 
+With polars
+-----------
+
+:class:`DatetimeFeatures()` also works with polars dataframes, and with any other
+dataframe library supported by `narwhals <https://narwhals-dev.github.io/narwhals/>`_.
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.datetime import DatetimeFeatures
+
+    toy_df = pl.DataFrame({
+        "id": [1, 2, 3, 4],
+        "var_date": ["2012-06-21", "1998-02-10", "2010-08-03", "2020-10-31"],
+    })
+
+    dfts = DatetimeFeatures(
+        features_to_extract=["month", "year", "day_of_week", "days_in_month"],
+    )
+
+    df_transf = dfts.fit_transform(toy_df)
+
+    df_transf
+
+We see the new features in the following output:
+
+.. code:: text
+
+    shape: (4, 5)
+    ┌─────┬────────────────┬───────────────┬──────────────────────┬────────────────────────┐
+    │ id  ┆ var_date_month ┆ var_date_year ┆ var_date_day_of_week ┆ var_date_days_in_month │
+    │ --- ┆ ---            ┆ ---           ┆ ---                  ┆ ---                    │
+    │ i64 ┆ i8             ┆ i32           ┆ i8                   ┆ i8                     │
+    ╞═════╪════════════════╪═══════════════╪══════════════════════╪════════════════════════╡
+    │ 1   ┆ 6              ┆ 2012          ┆ 3                    ┆ 30                     │
+    │ 2   ┆ 2              ┆ 1998          ┆ 1                    ┆ 28                     │
+    │ 3   ┆ 8              ┆ 2010          ┆ 1                    ┆ 31                     │
+    │ 4   ┆ 10             ┆ 2020          ┆ 5                    ┆ 31                     │
+    └─────┴────────────────┴───────────────┴──────────────────────┴────────────────────────┘
+
+.. note::
+
+    For non-pandas input, string columns are parsed with narwhals'
+    `Series.str.to_datetime() <https://narwhals-dev.github.io/narwhals/api-reference/series_str/#narwhals.series.SeriesStringNamespace.to_datetime>`_,
+    which can only infer unambiguous formats, like ISO-8601. For anything else, e.g. day-first
+    dates such as *21/06/2012*, pass an explicit `format`. The `dayfirst`, `yearfirst` and
+    `utc` parameters are pandas-`to_datetime`-only options and have no effect on non-pandas
+    input.
+
+.. note::
+
+    `variables="index"` is only supported when `X` is a pandas dataframe, since only pandas
+    dataframes have an index.
+
 Working with different timezones
 --------------------------------
 

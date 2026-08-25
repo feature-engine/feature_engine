@@ -2,9 +2,9 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
-from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from pandas.api.types import is_numeric_dtype as is_numeric
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -35,6 +35,7 @@ from feature_engine.dataframe_checks import (
 from feature_engine.datetime._datetime_constants import (
     FEATURES_DEFAULT,
     FEATURES_FUNCTIONS,
+    FEATURES_FUNCTIONS_NARWHALS,
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
@@ -58,8 +59,11 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     new columns to the dataset. DatetimeFeatures can extract datetime information from
     existing datetime or object-like variables or from the dataframe index.
 
-    DatetimeFeatures uses `pandas.to_datetime` to convert object variables to datetime
-    and pandas.dt to extract the features from datetime.
+    DatetimeFeatures works with pandas, polars, and any other narwhals-supported
+    dataframe. For pandas input, it uses `pandas.to_datetime` and pandas' `.dt`
+    accessor to parse and extract features. For other backends, it uses narwhals'
+    equivalent operations; `dayfirst`, `yearfirst` and `utc` are pandas-only parsing
+    options and have no effect on non-pandas input, so use `format` there instead.
 
     The transformer supports the extraction of the following features:
 
@@ -93,7 +97,8 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         If None, the transformer will find and select all datetime variables,
         including variables of type object that can be converted to datetime.
         If "index", the transformer will extract datetime features from the
-        index of the dataframe.
+        index of the dataframe. "index" is only supported when `X` is a pandas
+        dataframe, since only pandas dataframes have an index.
 
     {return_empty}
 
@@ -119,11 +124,14 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     dayfirst: bool, default="False"
         Specify a date parse order if arg is str or is list-like. If True, parses
         dates with the day first, e.g. 10/11/12 is parsed as 2012-11-10. Same as in
-        `pandas.to_datetime`.
+        `pandas.to_datetime`. Only applied when `X` is a pandas dataframe; ignored
+        for other backends, which have no equivalent parsing option.
 
     yearfirst: bool, default="False"
         Specify a date parse order if arg is str or is list-like.
-        Same as in `pandas.to_datetime`.
+        Same as in `pandas.to_datetime`. Only applied when `X` is a pandas
+        dataframe; ignored for other backends, which have no equivalent parsing
+        option.
 
         - If True parses dates with the year first, e.g. 10/11/12 is parsed as
           2010-11-12.
@@ -131,14 +139,19 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
     utc: bool, default=None
         Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
-        objects as well). Same as in `pandas.to_datetime`.
+        objects as well). Same as in `pandas.to_datetime`. Only applied when `X` is
+        a pandas dataframe; ignored for other backends, which have no equivalent
+        parsing option.
 
     format: str, default None
         The strftime to parse time, e.g. "%d/%m/%Y". Check pandas `to_datetime()` for
         more information on choices. If you have variables with different formats pass
         “mixed”, to infer the format for each element individually. This is risky,
         and you should probably use it along with dayfirst, according to pandas'
-        documentation.
+        documentation. For non-pandas input, `format` is passed to narwhals'
+        `Series.str.to_datetime()`, which does not support "mixed"; unlike pandas,
+        it can only infer a common format across the column when `format=None`, and
+        only for unambiguous formats (e.g. ISO-8601).
 
 
     Attributes
@@ -168,6 +181,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     --------
     pandas.to_datetime
     pandas.dt
+    narwhals.Series.dt
 
     Examples
     --------
@@ -182,6 +196,25 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     0       2022           9                 18
     1       2022          10                 27
     2       2022          12                 24
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.datetime import DatetimeFeatures
+    >>> X = pl.DataFrame(dict(date = ["2022-09-18", "2022-10-27", "2022-12-24"]))
+    >>> dtf = DatetimeFeatures(features_to_extract = ["year", "month", "day_of_month"])
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+    shape: (3, 3)
+    ┌───────────┬────────────┬───────────────────┐
+    │ date_year ┆ date_month ┆ date_day_of_month │
+    │ ---       ┆ ---        ┆ ---               │
+    │ i32       ┆ i8         ┆ i8                │
+    ╞═══════════╪════════════╪═══════════════════╡
+    │ 2022      ┆ 9          ┆ 18                │
+    │ 2022      ┆ 10         ┆ 27                │
+    │ 2022      ┆ 12         ┆ 24                │
+    └───────────┴────────────┴───────────────────┘
     """
 
     def __init__(
@@ -240,7 +273,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         self.features_to_extract = features_to_extract
         self.format = format
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
@@ -249,23 +282,36 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
         # check input dataframe
         X = check_X(X)
+        is_pandas = nwd.is_pandas_dataframe(X)
 
         # special case index
         if self.variables == "index":
+            # polars and other narwhals backends have no index concept.
+            if is_pandas is False:
+                raise TypeError(
+                    "variables='index' requires a pandas dataframe, since only "
+                    f"pandas dataframes have an index. Got {type(X)} instead."
+                )
 
+            pd_ = nw.from_native(X, eager_only=True).__native_namespace__()
+            index_is_dt = pd_.api.types.is_datetime64_any_dtype(X.index)
+            index_is_numeric = pd_.api.types.is_numeric_dtype(X.index)
             if not (
-                is_datetime(X.index)
+                index_is_dt
                 or (
-                    not is_numeric(X.index) and _is_categorical_and_is_datetime(X.index)
+                    index_is_numeric is False
+                    and _is_categorical_and_is_datetime(
+                        nw.from_native(pd_.Series(X.index), series_only=True)
+                    )
                 )
             ):
                 raise TypeError("The dataframe index is not datetime.")
@@ -295,25 +341,28 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             self.features_to_extract_ = self.features_to_extract
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
+        if is_pandas is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Extract the date and time features and add them to the dataframe.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe, shape = [n_samples, n_features x n_df_features]
+        X_new: dataframe, shape = [n_samples, n_features x n_df_features]
             The dataframe with the original variables plus the new variables.
         """
 
@@ -326,18 +375,29 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
+        is_pandas = nwd.is_pandas_dataframe(X)
 
-        # special case index
+        # reorder variables to match train set
+        if is_pandas is True:
+            X = X[self.feature_names_in_]
+        else:
+            X = (
+                nw.from_native(X, eager_only=True)
+                .select(self.feature_names_in_)
+                .to_native()
+            )
+
+        # special case index: only reachable for pandas, fit() already raised
+        # TypeError for any other backend, since only pandas has an index.
         if self.variables == "index":
             # check if dataset contains na
             if self.missing_values == "raise":
                 self._check_index_contains_na(X.index)
 
+            pd_ = nw.from_native(X, eager_only=True).__native_namespace__()
             # convert index to a datetime series
-            idx_datetime = pd.Series(
-                pd.to_datetime(
+            idx_datetime = pd_.Series(
+                pd_.to_datetime(
                     X.index,
                     dayfirst=self.dayfirst,
                     yearfirst=self.yearfirst,
@@ -359,31 +419,57 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             if len(self.variables_) == 0:
                 return X
 
-            # convert datetime variables
-            datetime_df = pd.concat(
-                [
-                    pd.to_datetime(
-                        X[variable],
-                        dayfirst=self.dayfirst,
-                        yearfirst=self.yearfirst,
-                        utc=self.utc,
-                        format=self.format,
-                    )
-                    for variable in self.variables_
-                ],
-                axis=1,
-            )
+            if is_pandas is True:
+                pd_ = nw.from_native(X, eager_only=True).__native_namespace__()
+                # convert datetime variables
+                datetime_df = pd_.concat(
+                    [
+                        pd_.to_datetime(
+                            X[variable],
+                            dayfirst=self.dayfirst,
+                            yearfirst=self.yearfirst,
+                            utc=self.utc,
+                            format=self.format,
+                        )
+                        for variable in self.variables_
+                    ],
+                    axis=1,
+                )
 
-            # create new features
-            for var in self.variables_:
-                for feat in self.features_to_extract_:
-                    X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
-                        datetime_df[var]
-                    )
-            if self.drop_original:
-                X.drop(self.variables_, axis=1, inplace=True)
+                # create new features
+                for var in self.variables_:
+                    for feat in self.features_to_extract_:
+                        X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[
+                            feat
+                        ](datetime_df[var])
+                if self.drop_original:
+                    X.drop(self.variables_, axis=1, inplace=True)
+            else:
+                # dayfirst/yearfirst/utc are pandas.to_datetime-only knobs with no
+                # narwhals equivalent, so only `format` is honoured on this branch.
+                nw_X = nw.from_native(X, eager_only=True)
+                new_series = [
+                    FEATURES_FUNCTIONS_NARWHALS[feat](
+                        self._to_nw_datetime(nw_X.get_column(var))
+                    ).alias(str(var) + FEATURES_SUFFIXES[feat])
+                    for var in self.variables_
+                    for feat in self.features_to_extract_
+                ]
+                nw_X = nw_X.with_columns(*new_series)
+                if self.drop_original:
+                    nw_X = nw_X.drop(self.variables_)
+                X = nw_X.to_native()
 
         return X
+
+    def _to_nw_datetime(self, col: nw.Series) -> nw.Series:
+        """Ensure a narwhals Series has Datetime dtype, parsing strings/categoricals
+        and casting bare Dates (whose `.dt` methods reject hour/minute/second)."""
+        if isinstance(col.dtype, nw.Datetime):
+            return col
+        if isinstance(col.dtype, nw.Date):
+            return col.cast(nw.Datetime())
+        return col.cast(nw.String()).str.to_datetime(format=self.format)
 
     def _get_new_features_name(self) -> List:
         """create the names for the datetime features."""
@@ -401,7 +487,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
         return feature_names
 
-    def _check_index_contains_na(self, index: pd.Index):
+    def _check_index_contains_na(self, index) -> None:
         if index.isnull().any():
             raise ValueError(
                 "The dataframe index contains missing data. "
