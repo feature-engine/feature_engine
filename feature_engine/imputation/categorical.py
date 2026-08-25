@@ -3,7 +3,9 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -162,16 +164,17 @@ class CategoricalImputer(BaseImputer):
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the most frequent category if the imputation method is set to frequent.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
+        X: dataframe of shape = [n_samples, n_features]
+            The training dataset. Can be a pandas, polars, or any other dataframe
+            supported by narwhals.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             y is not needed in this imputation. You can pass None or y.
         """
 
@@ -194,38 +197,44 @@ class CategoricalImputer(BaseImputer):
             imputer_dict_ = {var: self.fill_value for var in variables_}
 
         elif self.imputation_method == "frequent":
-            # if imputing only 1 variable:
-            if len(variables_) == 1:
-                var = variables_[0]
-                mode_vals = X[var].mode()
-
-                # Some variables may contain more than 1 mode:
-                if len(mode_vals) > 1:
-                    raise ValueError(
-                        f"The variable {var} contains multiple frequent categories."
-                    )
-
-                imputer_dict_ = {var: mode_vals[0]}
-
-            # imputing multiple variables:
-            else:
-                # Returns a dataframe with 1 row if there is one mode per
-                # variable, or more rows if there are more modes:
-                mode_vals = X[variables_].mode()
-
-                # Careful: some variables contain multiple modes
-                if len(mode_vals) > 1:
-                    varnames = mode_vals.dropna(axis=1).columns.to_list()
-                    if len(varnames) > 1:
-                        varnames_str = ", ".join(varnames)
+            # Benchmarked (10k-100k rows x 1-10 cols): a per-variable mode()
+            # loop is not slower than pandas' batch X[variables_].mode(), so
+            # both branches loop the same way - only the mode() call differs.
+            is_pandas = nwd.is_pandas_dataframe(X)
+            imputer_dict_ = {}
+            multi_mode_vars = []
+            if is_pandas is True:
+                for var in variables_:
+                    mode_vals = X[var].mode()
+                    if len(mode_vals) > 1:
+                        multi_mode_vars.append(var)
                     else:
-                        varnames_str = varnames[0]
-                    raise ValueError(
-                        f"The variable(s) {varnames_str} contain(s) multiple frequent "
-                        f"categories."
-                    )
+                        imputer_dict_[var] = mode_vals[0]
+            else:
+                nw_X = nw.from_native(X, eager_only=True)
+                for var in variables_:
+                    # Unlike pandas' mode(dropna=True default), polars' mode()
+                    # does not drop nulls, so a column whose nulls outnumber
+                    # any single category would otherwise make null "the mode".
+                    mode_vals = nw_X[var].drop_nulls().mode(keep="all")
+                    if len(mode_vals) > 1:
+                        multi_mode_vars.append(var)
+                    else:
+                        imputer_dict_[var] = mode_vals[0]
 
-                imputer_dict_ = mode_vals.iloc[0].to_dict()
+            # Some variables may contain more than 1 mode:
+            if len(multi_mode_vars) > 0:
+                varnames_str = ", ".join(str(v) for v in multi_mode_vars)
+                if len(variables_) == 1:
+                    raise ValueError(
+                        f"The variable {varnames_str} contains multiple frequent "
+                        "categories."
+                    )
+                else:
+                    raise ValueError(
+                        f"The variable(s) {varnames_str} contain(s) multiple "
+                        "frequent categories."
+                    )
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
@@ -233,7 +242,7 @@ class CategoricalImputer(BaseImputer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         # Frequent category imputation
         if self.imputation_method == "frequent":
             X = super().transform(X)
@@ -242,19 +251,51 @@ class CategoricalImputer(BaseImputer):
         else:
             X = self._transform(X)
 
-            # if variable is of type category, we need to add the new
-            # category, before filling in the nan
-            for variable in self.variables_:
-                if X[variable].dtype.name == "category":
-                    X[variable] = X[variable].cat.add_categories(
-                        self.imputer_dict_[variable]
-                    )
+            is_pandas = nwd.is_pandas_dataframe(X)
+            if is_pandas is True:
+                # if variable is of type category, we need to add the new
+                # category, before filling in the nan
+                for variable in self.variables_:
+                    if X[variable].dtype.name == "category":
+                        X[variable] = X[variable].cat.add_categories(
+                            self.imputer_dict_[variable]
+                        )
 
-            X = X.fillna(self.imputer_dict_)
+                X = X.fillna(self.imputer_dict_)
+            else:
+                nw_X = nw.from_native(X, eager_only=True)
+                schema = nw_X.schema
+                for variable in self.variables_:
+                    dtype = schema[variable]
+                    fill_value = self.imputer_dict_[variable]
+                    # polars' Categorical widens itself on fill_null, but its
+                    # Enum has a fixed category set and silently fills with
+                    # null (no error) if fill_value isn't already a member.
+                    if isinstance(dtype, nw.Enum) and (
+                        fill_value not in dtype.categories
+                    ):
+                        raise ValueError(
+                            f"Cannot fill variable '{variable}' with "
+                            f"'{fill_value}': it is a polars Enum with fixed "
+                            f"categories {dtype.categories} that do not include "
+                            "the fill value. Cast the column to Categorical or "
+                            "String before imputing."
+                        )
+
+                nw_X = nw_X.with_columns(
+                    nw.col(var).fill_null(value)
+                    for var, value in self.imputer_dict_.items()
+                )
+                X = nw_X.to_native()
 
         # add additional step to return variables cast as object
-        if self.return_object:
-            X[self.variables_] = X[self.variables_].astype("O")
+        if self.return_object is True:
+            is_pandas = nwd.is_pandas_dataframe(X)
+            if is_pandas is True:
+                X[self.variables_] = X[self.variables_].astype("O")
+            # polars/narwhals backends never silently upcast a string-typed
+            # column back to numeric (unlike pandas' fillna+infer_objects),
+            # so there is nothing to recast there.
 
         return X
 

@@ -292,7 +292,91 @@ We see that this variable has 3 categories with similar maximum number of observ
     0    Ex
     1    Fa
     2    Gd
-    Name: PoolQC, dtype: object
+    Name: PoolQC, dtype: str
+
+With polars
+-----------
+
+:class:`CategoricalImputer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.imputation import CategoricalImputer
+
+    df = pl.DataFrame({
+        "City": ["London", "Manchester", None, "Bristol", "London", None],
+        "Studies": ["Bachelor", None, "Bachelor", "PhD", None, "Masters"],
+    })
+
+    imputer = CategoricalImputer(imputation_method="frequent")
+    print(imputer.fit_transform(df))
+
+The most frequent category imputation gives the same result as with pandas:
+
+.. code:: text
+
+    shape: (6, 2)
+    ┌────────────┬──────────┐
+    │ City       ┆ Studies  │
+    │ ---        ┆ ---      │
+    │ str        ┆ str      │
+    ╞════════════╪══════════╡
+    │ London     ┆ Bachelor │
+    │ Manchester ┆ Bachelor │
+    │ London     ┆ Bachelor │
+    │ Bristol    ┆ PhD      │
+    │ London     ┆ Bachelor │
+    │ London     ┆ Masters  │
+    └────────────┴──────────┘
+
+Imputing with an arbitrary string also works the same way:
+
+.. code:: python
+
+    imputer = CategoricalImputer(fill_value="Missing")
+    print(imputer.fit_transform(df))
+
+.. code:: text
+
+    shape: (6, 2)
+    ┌────────────┬──────────┐
+    │ City       ┆ Studies  │
+    │ ---        ┆ ---      │
+    │ str        ┆ str      │
+    ╞════════════╪══════════╡
+    │ London     ┆ Bachelor │
+    │ Manchester ┆ Missing  │
+    │ Missing    ┆ Bachelor │
+    │ Bristol    ┆ PhD      │
+    │ London     ┆ Missing  │
+    │ Missing    ┆ Masters  │
+    └────────────┴──────────┘
+
+.. note::
+
+    polars' ``Categorical`` dtype accepts a brand-new fill value automatically,
+    unlike pandas' ``category`` dtype, which needs its categories widened first
+    (:class:`CategoricalImputer()` handles that difference for you on both
+    backends). polars' ``Enum`` dtype, however, has a *fixed* set of categories
+    that cannot be widened. If you impute a fixed-category ``Enum`` column with
+    a `fill_value` that isn't already one of its categories, the transformer
+    raises a clear error instead of silently writing null:
+
+    .. code:: python
+
+        enum_dtype = pl.Enum(["London", "Manchester", "Bristol"])
+        df_enum = df.with_columns(pl.col("City").cast(enum_dtype))
+
+        imputer = CategoricalImputer(fill_value="Missing", variables=["City"])
+        imputer.fit_transform(df_enum)
+
+    .. code:: text
+
+        ValueError: Cannot fill variable 'City' with 'Missing': it is a polars
+        Enum with fixed categories ('London', 'Manchester', 'Bristol') that do
+        not include the fill value. Cast the column to Categorical or String
+        before imputing.
 
 Considerations
 --------------
