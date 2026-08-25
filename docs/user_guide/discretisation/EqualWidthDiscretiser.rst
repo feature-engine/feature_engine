@@ -48,9 +48,10 @@ potentially impact the model's performance in this scenario.
 EqualWidthDiscretiser
 ---------------------
 
-Feture-engine's :class:`EqualWidthDiscretiser()` applies equal width discretisation to numerical variables. It uses
-the `pandas.cut()` function under the hood to find the interval limits and then sort the continuous variables into
-the bins.
+Feture-engine's :class:`EqualWidthDiscretiser()` applies equal width discretisation to numerical variables. It finds
+the interval limits from each variable's minimum and maximum value, then sorts the continuous variables into the
+bins. It works with pandas, polars, and any other dataframe library supported by
+`narwhals <https://narwhals-dev.github.io/narwhals/>`_.
 
 You can specify the variables to be discretised by passing their names in a list when you set up the transformer. Alternatively,
 :class:`EqualWidthDiscretiser()` will automatically infer the data types and compute the interval limits for all numeric
@@ -271,7 +272,7 @@ If we want to output the intervals limits instead of integers, we can set `retur
 .. code:: python
 
     # Set up the discretisation transformer
-    disc = EqualFrequencyDiscretiser(
+    disc = EqualWidthDiscretiser(
         bins=10,
         variables=['LotArea','GrLivArea'],
         return_boundaries=True)
@@ -300,6 +301,48 @@ In the following output we see that the transformed variables now display the in
 While we can't use these
 variables to train machine learning models, as opposed to the variables discretised into integers, they are very useful
 in this format for data analysis, and we can use any feature-engine encoder for further processing.
+
+With polars
+~~~~~~~~~~~
+
+:class:`EqualWidthDiscretiser()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.discretisation import EqualWidthDiscretiser
+
+    df = pl.DataFrame({
+        "x": [10400, 3675, 8640, 11670, 10667, 6120, 9500, 14000, 7200, 5300],
+    })
+
+    disc = EqualWidthDiscretiser(bins=5)
+
+    print(disc.fit_transform(df))
+
+The resulting values match those found with pandas:
+
+.. code:: text
+
+    shape: (10, 1)
+    ┌─────┐
+    │ x   │
+    │ --- │
+    │ i64 │
+    ╞═════╡
+    │ 3   │
+    │ 0   │
+    │ 2   │
+    │ 3   │
+    │ 3   │
+    │ 1   │
+    │ 2   │
+    │ 4   │
+    │ 1   │
+    │ 0   │
+    └─────┘
+
+`return_object`, `return_boundaries`, and `binner_dict_` work identically to the pandas examples above.
 
 See Also
 --------
