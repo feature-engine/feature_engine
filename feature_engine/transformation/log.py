@@ -231,7 +231,7 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         to line up column-wise with self.variables_ when C_ is a dict."""
         if isinstance(self.C_, dict):
             return np.array([self.C_[var] for var in self.variables_], dtype=float)
-        return self.C_  # type: ignore[return-value]
+        return self.C_
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
