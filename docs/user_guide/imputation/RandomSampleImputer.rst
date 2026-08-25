@@ -58,6 +58,55 @@ the np.nan in the variable colour will be replaced using pandas sample as follow
     the imputer will return an error. In addition, the variables indicated as seed
     should not contain missing values themselves.
 
+With polars
+-----------
+
+:class:`RandomSampleImputer()` also accepts polars dataframes as input to `fit()` and
+`transform()`.
+
+.. note::
+
+    pandas' ``.sample()`` and polars' ``.sample()`` are backed by different random
+    number generators. Setting the same integer `random_state` on pandas and on
+    polars input will **not** draw the same values, even from identical data. The
+    reproducibility guarantee is: same seed, same backend (pandas or polars) →
+    same sampled values. It is not a cross-backend guarantee.
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.imputation import RandomSampleImputer
+
+    X_train = pl.DataFrame({
+        "MSSubClass": [60, 20, 60, 20, 50],
+        "YrSold": [2008, 2007, 2008, 2007, 2009],
+        "LotFrontage": [65.0, None, 68.0, 60.0, None],
+    })
+
+    imputer = RandomSampleImputer(
+        variables=["LotFrontage"],
+        random_state=["MSSubClass", "YrSold"],
+        seed="observation",
+        seeding_method="add",
+    )
+    imputer.fit(X_train)
+    imputer.transform(X_train)
+
+.. code:: text
+
+    shape: (5, 3)
+    ┌────────────┬────────┬─────────────┐
+    │ MSSubClass ┆ YrSold ┆ LotFrontage │
+    │ ---        ┆ ---    ┆ ---         │
+    │ i64        ┆ i64    ┆ f64         │
+    ╞════════════╪════════╪═════════════╡
+    │ 60         ┆ 2008   ┆ 65.0        │
+    │ 20         ┆ 2007   ┆ 68.0        │
+    │ 60         ┆ 2008   ┆ 68.0        │
+    │ 20         ┆ 2007   ┆ 60.0        │
+    │ 50         ┆ 2009   ┆ 65.0        │
+    └────────────┴────────┴─────────────┘
+
 Important for GDPR
 ------------------
 

@@ -3,8 +3,10 @@
 
 from typing import List, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -33,13 +35,14 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
 
 # for RandomSampleImputer
 def _define_seed(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     index: int,
     seed_variables: Union[str, int, List[Union[str, int]]],
     how: str = "add",
 ) -> int:
-    # determine seed by adding or multiplying the value of 1 or
-    # more variables
+    # Pandas-only: relies on .loc label-based row access, so it is only
+    # called from the pandas branch of transform(), where X is already
+    # confirmed to be a pandas dataframe.
     if how == "add":
         internal_seed = int(np.round(X.loc[index, seed_variables].sum(), 0))
     elif how == "multiply":
@@ -130,15 +133,40 @@ class RandomSampleImputer(BaseImputer):
     >>>        x1 = [np.nan,1,1,0,np.nan],
     >>>        x2 = ["a", np.nan, "b", np.nan, "a"],
     >>>        ))
-    >>> rsi = RandomSampleImputer()
+    >>> rsi = RandomSampleImputer(random_state=42)
     >>> rsi.fit(X)
     >>> rsi.transform(X)
         x1 x2
-    0  1.0  a
-    1  1.0  b
+    0  0.0  a
+    1  1.0  a
     2  1.0  b
     3  0.0  a
     4  1.0  a
+
+    With polars, sampling is reproducible for a given seed and backend, but a
+    pandas seed and a polars seed do not draw the same values (see the "With
+    polars" section of the user guide):
+
+    >>> import polars as pl
+    >>> X = pl.DataFrame(dict(
+    ...        x1 = [None, 1, 1, 0, None],
+    ...        x2 = ["a", None, "b", None, "a"],
+    ...        ))
+    >>> rsi = RandomSampleImputer(random_state=42)
+    >>> rsi.fit(X)
+    >>> rsi.transform(X)
+    shape: (5, 2)
+    ┌─────┬─────┐
+    │ x1  ┆ x2  │
+    │ --- ┆ --- │
+    │ i64 ┆ str │
+    ╞═════╪═════╡
+    │ 0   ┆ a   │
+    │ 1   ┆ a   │
+    │ 1   ┆ b   │
+    │ 0   ┆ a   │
+    │ 1   ┆ a   │
+    └─────┴─────┘
     """
 
     def __init__(
@@ -177,7 +205,7 @@ class RandomSampleImputer(BaseImputer):
         self.seed = seed
         self.seeding_method = seeding_method
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Makes a copy of the train set. Only stores a copy of the variables to impute.
         This copy is then used to randomly extract the values to fill the missing data
@@ -186,8 +214,9 @@ class RandomSampleImputer(BaseImputer):
         Parameters
         ----------
 
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
+        X: dataframe of shape = [n_samples, n_features]
+            The training dataset. Can be a pandas, polars, or any other dataframe
+            supported by narwhals.
 
         y: None
             y is not needed in this imputation. You can pass None or y.
@@ -203,7 +232,11 @@ class RandomSampleImputer(BaseImputer):
             variables_ = check_all_variables(X, self.variables)
 
         # take a copy of the selected variables
-        X_ = X[variables_].copy()
+        is_pandas = nwd.is_pandas_dataframe(X)
+        if is_pandas is True:
+            X_ = X[variables_].copy()
+        else:
+            X_ = nw.from_native(X, eager_only=True).select(variables_).to_native()
 
         # check the variables assigned to the random state
         if self.seed == "observation":
@@ -225,24 +258,40 @@ class RandomSampleImputer(BaseImputer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Replace missing data with random values taken from the train set.
 
         Parameters
         ----------
 
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the transformed variables.
         """
 
         X = self._transform(X)
 
+        # pandas' .sample() and narwhals/polars' .sample() use different RNGs,
+        # so they never draw the same values for the same seed - "same seed,
+        # same backend" is the reproducibility contract here, not cross-backend
+        # value parity. The pandas branch keeps the original .loc-based logic
+        # verbatim (bit-identical to pre-migration behaviour); the narwhals
+        # branch is a positional (index-free) reimplementation for polars and
+        # other narwhals backends.
+        is_pandas = nwd.is_pandas_dataframe(X)
+        if is_pandas is True:
+            X = self._transform_pandas(X)
+        else:
+            X = self._transform_narwhals(X)
+
+        return X
+
+    def _transform_pandas(self, X):
         # random sampling with a general seed
         if self.seed == "general":
             for feature in self.variables_:
@@ -286,6 +335,53 @@ class RandomSampleImputer(BaseImputer):
                         # replace the missing data point
                         X.loc[i, feature] = random_sample
         return X
+
+    def _transform_narwhals(self, X):
+        nw_X = nw.from_native(X, eager_only=True)
+        nw_pool = nw.from_native(self.X_, eager_only=True)
+
+        if self.seed == "general":
+            for feature in self.variables_:
+                col = nw_X[feature]
+                null_mask = col.is_null()
+                n_samples = int(null_mask.sum())
+                if n_samples > 0:
+                    positions = null_mask.arg_true()
+                    random_sample = (
+                        nw_pool[feature]
+                        .drop_nulls()
+                        .sample(
+                            n_samples, with_replacement=True, seed=self.random_state
+                        )
+                    )
+                    nw_X = nw_X.with_columns(col.scatter(positions, random_sample))
+
+        elif self.seed == "observation" and self.random_state:
+            # Vectorized stand-in for pandas' .loc-based per-row seed lookup:
+            # narwhals dataframes are positional (no row labels), so the seed
+            # for every row is computed up-front with numpy instead of in a
+            # per-row .loc lookup.
+            seed_values = nw_X.select(self.random_state).to_numpy()
+            if self.seeding_method == "add":
+                internal_seeds = np.round(seed_values.sum(axis=1), 0).astype(int)
+            else:
+                internal_seeds = np.round(seed_values.prod(axis=1), 0).astype(int)
+
+            for feature in self.variables_:
+                col = nw_X[feature]
+                null_mask = col.is_null()
+                if int(null_mask.sum()) > 0:
+                    positions = null_mask.arg_true().to_list()
+                    pool = nw_pool[feature].drop_nulls()
+                    random_values = [
+                        pool.sample(
+                            1, with_replacement=True, seed=int(internal_seeds[pos])
+                        ).item()
+                        for pos in positions
+                    ]
+                    nw_X = nw_X.with_columns(col.scatter(positions, random_values))
+
+        return nw_X.to_native()
 
     def _more_tags(self):
         tags_dict = _return_tags()
