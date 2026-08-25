@@ -3,9 +3,11 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+import scipy.special as spsp
 import scipy.stats as stats
-from scipy.special import inv_boxcox
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -119,6 +121,30 @@ class BoxCoxTransformer(BaseNumericalTransformer):
     2  0.662654
     3  1.607518
     4 -0.232237
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.transformation import BoxCoxTransformer
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame({"x": list(np.random.lognormal(size=6))})
+    >>> bct = BoxCoxTransformer()
+    >>> bct.fit(X)
+    >>> bct.transform(X)
+    shape: (6, 1)
+    ┌───────────┐
+    │ x         │
+    │ ---       │
+    │ f64       │
+    ╞═══════════╡
+    │ 0.403681  │
+    │ -0.146883 │
+    │ 0.495725  │
+    │ 0.845914  │
+    │ -0.259585 │
+    │ -0.259565 │
+    └───────────┘
     """
 
     def __init__(
@@ -132,27 +158,31 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the optimal lambda for the BoxCox transformation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
 
         # check input dataframe
         X, variables_ = self._fit_setup(X)
 
-        lambda_dict_ = {}
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(variables_).to_numpy().astype(float)
 
-        for var in variables_:
-            _, lambda_dict_[var] = stats.boxcox(X[var])
+        lambda_dict_ = {}
+        # lambda search is per-column and not vectorizable across columns,
+        # unlike transform()'s elementwise application once lambdas are known
+        for i, var in enumerate(variables_):
+            _, lambda_dict_[var] = stats.boxcox(values[:, i])
 
         self.variables_ = variables_
         self.lambda_dict_ = lambda_dict_
@@ -160,55 +190,71 @@ class BoxCoxTransformer(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Apply the BoxCox transformation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the transformed variables.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy().astype(float)
+
         # check contains zero or negative values
-        if (X[self.variables_] <= 0).any().any():
+        if (values <= 0).any():
             raise ValueError("Data must be positive.")
 
         # transform
-        for feature in self.variables_:
-            X[feature] = stats.boxcox(X[feature], lmbda=self.lambda_dict_[feature])
+        lmbdas = np.array([self.lambda_dict_[var] for var in self.variables_])
+        result = spsp.boxcox(values, lmbdas)
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be inverse transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the original variables.
         """
 
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        values = nw_X.select(self.variables_).to_numpy().astype(float)
+
         # inverse transform
-        for feature in self.variables_:
-            X[feature] = inv_boxcox(X[feature], self.lambda_dict_[feature])
+        lmbdas = np.array([self.lambda_dict_[var] for var in self.variables_])
+        result = spsp.inv_boxcox(values, lmbdas)
+        new_series = [
+            nw.new_series(var, result[:, i], backend=nw_X.implementation)
+            for i, var in enumerate(self.variables_)
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
