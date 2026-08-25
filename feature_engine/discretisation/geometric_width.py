@@ -1,7 +1,8 @@
 from typing import List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -159,14 +160,14 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         self.return_empty = return_empty
         self.bins = bins
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the boundaries of the geometric width intervals / bins for each
         variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
         y: None
@@ -177,10 +178,12 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         X, variables_ = self._fit_setup(X)
 
         # fit
+        nw_X = nw.from_native(X, eager_only=True)
         binner_dict_ = {}
 
         for var in variables_:
-            min_, max_ = X[var].min(), X[var].max()
+            col = nw_X.get_column(var)
+            min_, max_ = col.min(), col.max()
             increment = np.power(max_ - min_, 1.0 / self.bins)
             bins = np.r_[
                 -np.inf, min_ + np.power(increment, np.arange(1, self.bins)), np.inf

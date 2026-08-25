@@ -1,9 +1,25 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.discretisation import GeometricWidthDiscretiser
+
+
+def _normal_dist_data():
+    np.random.seed(0)
+    mu, sigma = 0, 0.1  # mean and standard deviation
+    return {"var": list(np.random.normal(mu, sigma, 100))}
+
+
+def _get_column_values(X, column):
+    return nw.from_native(X, eager_only=True).get_column(column).to_list()
+
+
+def _get_column_dtype(X, column):
+    return nw.from_native(X, eager_only=True).get_column(column).dtype
 
 
 # test init params
@@ -43,14 +59,19 @@ def test_correct_param_assignment_at_init(params):
     assert t.bins == param2
 
 
-def test_fit_and_transform_methods(df_normal_dist):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_and_transform_methods(make_df):
+    data = _normal_dist_data()
+    df = make_df(data)
+
     transformer = GeometricWidthDiscretiser(
         bins=10, variables=None, return_object=False
     )
-    X = transformer.fit_transform(df_normal_dist)
+    X = transformer.fit_transform(df)
 
     # manual calculation
-    min_, max_ = df_normal_dist["var"].min(), df_normal_dist["var"].max()
+    arr = np.array(data["var"])
+    min_, max_ = arr.min(), arr.max()
     increment = np.power(max_ - min_, 1.0 / 10)
     bins = np.r_[-np.inf, min_ + np.power(increment, np.arange(1, 10)), np.inf]
     bins = np.sort(bins)
@@ -58,34 +79,42 @@ def test_fit_and_transform_methods(df_normal_dist):
     # fit params
     assert (transformer.binner_dict_["var"] == bins).all()
 
-    # transform params
-    assert (
-        X["var"] == pd.cut(df_normal_dist["var"], bins=bins, precision=7).cat.codes
-    ).all()
+    # transform params - ground truth from pandas.cut on the same bins; values
+    # must match regardless of which backend the input dataframe uses.
+    expected = list(pd.cut(pd.Series(arr), bins=bins, precision=7).cat.codes)
+    assert _get_column_values(X, "var") == expected
 
 
-def test_automatically_find_variables_and_return_as_object(df_normal_dist):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_automatically_find_variables_and_return_as_object(make_df):
+    df = make_df(_normal_dist_data())
     transformer = GeometricWidthDiscretiser(bins=10, variables=None, return_object=True)
-    X = transformer.fit_transform(df_normal_dist)
-    assert X["var"].dtypes == "O"
+    X = transformer.fit_transform(df)
+    assert _get_column_dtype(X, "var") == nw.Object
 
 
-def test_error_if_input_df_contains_na_in_fit(df_na):
-    # test case 3: when dataset contains na, fit method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_error_if_input_df_contains_na_in_fit(make_df):
+    df_na = make_df({"Age": [20.0, 21.0, float("nan"), 23.0]})
     transformer = GeometricWidthDiscretiser()
     with pytest.raises(ValueError):
         transformer.fit(df_na)
 
 
-def test_error_if_input_df_contains_na_in_transform(df_vartypes, df_na):
-    # test case 4: when dataset contains na, transform method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_error_if_input_df_contains_na_in_transform(make_df):
+    df = make_df({"Age": [20.0, 21.0, 19.0, 23.0]})
+    df_na = make_df({"Age": [20.0, 21.0, float("nan"), 23.0]})
+
     transformer = GeometricWidthDiscretiser()
-    transformer.fit(df_vartypes)
+    transformer.fit(df)
     with pytest.raises(ValueError):
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+        transformer.transform(df_na)
 
 
-def test_non_fitted_error(df_vartypes):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_non_fitted_error(make_df):
+    df = make_df({"Age": [20.0, 21.0, 19.0, 23.0]})
     transformer = GeometricWidthDiscretiser()
     with pytest.raises(NotFittedError):
-        transformer.transform(df_vartypes)
+        transformer.transform(df)
