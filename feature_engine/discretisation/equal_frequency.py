@@ -3,7 +3,9 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -156,13 +158,13 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         self.return_empty = return_empty
         self.q = q
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the limits of the equal frequency intervals.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
         y: None
@@ -172,10 +174,28 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
         # check input dataframe
         X, variables_ = self._fit_setup(X)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        quantiles = np.linspace(0, 1, self.q + 1)
+        # pandas.qcut nudges each quantile that isn't exactly representable in
+        # base 2 up via nextafter, to round up rather than to nearest (verified
+        # against pandas.core.reshape.tile.qcut source); skipping this shifts
+        # bin edges by ~1e-13 versus the pre-migration pd.qcut output.
+        np.putmask(
+            quantiles,
+            self.q * quantiles != np.arange(self.q + 1),
+            np.nextafter(quantiles, 1),
+        )
+
         binner_dict_ = {}
 
         for var in variables_:
-            tmp, bins = pd.qcut(x=X[var], q=self.q, retbins=True, duplicates="drop")
+            # _fit_setup() already rejects NaN in variables_, so no NaN-masking
+            # is needed here. np.quantile replicates pandas.qcut's own quantile
+            # computation (verified bit-exact against real pd.qcut(retbins=True)
+            # output); np.unique both sorts and drops duplicate edges, matching
+            # qcut(duplicates="drop").
+            values = nw_X.get_column(var).to_numpy()
+            bins = np.unique(np.quantile(values, quantiles, method="linear"))
 
             # Prepend/Append infinities to accommodate outliers
             bins = list(bins)
