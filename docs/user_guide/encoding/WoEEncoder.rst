@@ -280,6 +280,41 @@ variable values:
     686  -0.584173  female  22.000000      0      0   7.7250 -0.357528  0.012075
 
 
+With polars
+~~~~~~~~~~~
+
+:class:`WoEEncoder()` also works with polars dataframes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import WoEEncoder
+
+    X = pl.DataFrame(dict(x1 = [1,2,3,4,5], x2 = ["b", "b", "b", "a", "a"]))
+    y = pl.Series([0,1,1,1,0])
+
+    woe = WoEEncoder()
+    woe.fit(X, y)
+    woe.transform(X)
+
+We see the resulting dataframe below:
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌─────┬───────────┐
+    │ x1  ┆ x2        │
+    │ --- ┆ ---       │
+    │ i64 ┆ f64       │
+    ╞═════╪═══════════╡
+    │ 1   ┆ 0.287682  │
+    │ 2   ┆ 0.287682  │
+    │ 3   ┆ 0.287682  │
+    │ 4   ┆ -0.405465 │
+    │ 5   ┆ -0.405465 │
+    └─────┴───────────┘
+
+
 WoE in categorical and numerical variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
