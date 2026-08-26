@@ -1,9 +1,44 @@
+import math
+
+import narwhals as nw
 import pandas as pd
+import polars as pl
 import pytest
 from numpy import nan
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import MeanEncoder
+
+
+def _to_backend(df: pd.DataFrame, make_df):
+    """Rebuild a pandas fixture dataframe on the requested backend.
+
+    Swaps float NaN for None in string columns - polars (unlike pandas)
+    rejects a float NaN mixed into an otherwise-string column.
+    """
+    data = {}
+    for col in df.columns:
+        values = df[col].tolist()
+        if any(isinstance(v, str) for v in values):
+            values = [
+                None if isinstance(v, float) and math.isnan(v) else v for v in values
+            ]
+        data[col] = values
+    return make_df(data)
+
+
+def _assert_values(X, expected: dict) -> None:
+    """NaN-aware, backend-agnostic comparison of a dataframe's contents."""
+    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
+    assert list(result.keys()) == list(expected.keys())
+    for col, exp_values in expected.items():
+        got_values = result[col]
+        assert len(got_values) == len(exp_values)
+        for got, exp in zip(got_values, exp_values):
+            if isinstance(exp, float) and math.isnan(exp):
+                assert got is None or (isinstance(got, float) and math.isnan(got))
+            else:
+                assert got == pytest.approx(exp)
 
 
 # test init params
@@ -32,36 +67,42 @@ def test_raises_error_when_not_allowed_smoothing_param_in_init(smoothing):
 
 
 # fit and transform
-def test_user_enters_1_variable(df_enc):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_user_enters_1_variable(df_enc, make_df):
     # test case 1: 1 variable
+    X = _to_backend(df_enc[["var_A", "var_B"]], make_df)
+    y = df_enc["target"].tolist()
+
     encoder = MeanEncoder(variables=["var_A"])
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X = encoder.transform(df_enc[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
     # expected output
-    transf_df = df_enc.copy()
-    transf_df["var_A"] = [
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-    ]
+    expected = {
+        "var_A": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+        ],
+        "var_B": df_enc["var_B"].tolist(),
+    }
 
     # test init params
     assert encoder.variables == ["var_A"]
@@ -72,61 +113,66 @@ def test_user_enters_1_variable(df_enc):
     }
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    _assert_values(Xt, expected)
 
 
-def test_automatically_find_variables(df_enc):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_automatically_find_variables(df_enc, make_df):
     # test case 2: automatically select variables
+    X = _to_backend(df_enc[["var_A", "var_B"]], make_df)
+    y = df_enc["target"].tolist()
+
     encoder = MeanEncoder(variables=None)
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X = encoder.transform(df_enc[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
     # expected output
-    transf_df = df_enc.copy()
-    transf_df["var_A"] = [
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-    ]
-    transf_df["var_B"] = [
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-    ]
+    expected = {
+        "var_A": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+        ],
+        "var_B": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+        ],
+    }
 
     # test init params
     assert encoder.variables is None
@@ -138,50 +184,49 @@ def test_automatically_find_variables(df_enc):
     }
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    _assert_values(Xt, expected)
 
 
-def test_encoding_when_nan_in_fit_df(df_enc):
-    df = df_enc.copy()
-    df.loc[len(df)] = [nan, nan, 0]
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_encoding_when_nan_in_fit_df(df_enc, make_df):
+    data = {
+        "var_A": df_enc["var_A"].tolist() + [None],
+        "var_B": df_enc["var_B"].tolist() + [None],
+        "target": df_enc["target"].tolist() + [0],
+    }
+    df = make_df(data)
 
     encoder = MeanEncoder(missing_values="ignore")
-    encoder.fit(df[["var_A", "var_B"]], df["target"])
+    encoder.fit(df[["var_A", "var_B"]], data["target"])
 
-    X = encoder.transform(
-        pd.DataFrame(
-            {
-                "var_A": ["A", nan],
-                "var_B": ["A", nan],
-            }
-        )
-    )
+    Xt = encoder.transform(make_df({"var_A": ["A", None], "var_B": ["A", None]}))
 
-    # transform params
-    pd.testing.assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "var_A": [0.3333333333333333, nan],
-                "var_B": [0.2, nan],
-            }
-        ),
+    _assert_values(
+        Xt,
+        {
+            "var_A": [0.3333333333333333, nan],
+            "var_B": [0.2, nan],
+        },
     )
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
-    df_enc, df_enc_rare
+    df_enc, df_enc_rare, make_df
 ):
     # test case 4: when dataset to be transformed contains categories not present
     # in training dataset
+    X = _to_backend(df_enc[["var_A", "var_B"]], make_df)
+    y = df_enc["target"].tolist()
+    X_rare = _to_backend(df_enc_rare[["var_A", "var_B"]], make_df)
 
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
     # check for warning when rare_labels equals 'ignore'
     with pytest.warns(UserWarning) as record:
         encoder = MeanEncoder(unseen="ignore")
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+        encoder.fit(X, y)
+        encoder.transform(X_rare)
 
     # check that at least one warning was raised (Pandas 3 may emit additional
     # deprecation warnings)
@@ -190,20 +235,24 @@ def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
     assert any(r.message.args[0] == msg for r in record)
 
     # check for error when rare_labels equals 'raise'
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError) as record2:
         encoder = MeanEncoder(unseen="raise")
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+        encoder.fit(X, y)
+        encoder.transform(X_rare)
 
     # check that the error message matches
-    assert str(record.value) == msg
+    assert str(record2.value) == msg
 
 
-def test_fit_raises_error_if_df_contains_na(df_enc_na):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_raises_error_if_df_contains_na(df_enc_na, make_df):
     # test case 4: when dataset contains na, fit method
+    X = _to_backend(df_enc_na[["var_A", "var_B"]], make_df)
+    y = df_enc_na["target"].tolist()
+
     encoder = MeanEncoder()
     with pytest.raises(ValueError) as record:
-        encoder.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
+        encoder.fit(X, y)
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
@@ -212,12 +261,17 @@ def test_fit_raises_error_if_df_contains_na(df_enc_na):
     assert str(record.value) == msg
 
 
-def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na, make_df):
     # test case 4: when dataset contains na, transform method
+    X = _to_backend(df_enc[["var_A", "var_B"]], make_df)
+    y = df_enc["target"].tolist()
+    X_na = _to_backend(df_enc_na[["var_A", "var_B"]], make_df)
+
     encoder = MeanEncoder()
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    encoder.fit(X, y)
     with pytest.raises(ValueError) as record:
-        encoder.transform(df_enc_na[["var_A", "var_B"]])
+        encoder.transform(X_na)
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
@@ -226,36 +280,42 @@ def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
     assert str(record.value) == msg
 
 
-def test_user_enters_1_variable_ignore_format(df_enc_numeric):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_user_enters_1_variable_ignore_format(df_enc_numeric, make_df):
     # test case 1: 1 variable
+    X = _to_backend(df_enc_numeric[["var_A", "var_B"]], make_df)
+    y = df_enc_numeric["target"].tolist()
+
     encoder = MeanEncoder(variables=["var_A"], ignore_format=True)
-    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
-    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
     # expected output
-    transf_df = df_enc_numeric.copy()
-    transf_df["var_A"] = [
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-    ]
+    expected = {
+        "var_A": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+        ],
+        "var_B": df_enc_numeric["var_B"].tolist(),
+    }
 
     # test init params
     assert encoder.variables == ["var_A"]
@@ -264,61 +324,66 @@ def test_user_enters_1_variable_ignore_format(df_enc_numeric):
     assert encoder.encoder_dict_ == {"var_A": {1: 0.3333333333333333, 2: 0.2, 3: 0.5}}
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    _assert_values(Xt, expected)
 
 
-def test_automatically_find_variables_ignore_format(df_enc_numeric):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_automatically_find_variables_ignore_format(df_enc_numeric, make_df):
     # test case 2: automatically select variables
+    X = _to_backend(df_enc_numeric[["var_A", "var_B"]], make_df)
+    y = df_enc_numeric["target"].tolist()
+
     encoder = MeanEncoder(variables=None, ignore_format=True)
-    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
-    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
     # expected output
-    transf_df = df_enc_numeric.copy()
-    transf_df["var_A"] = [
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-    ]
-    transf_df["var_B"] = [
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.2,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.3333333333333333,
-        0.5,
-        0.5,
-        0.5,
-        0.5,
-    ]
+    expected = {
+        "var_A": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+        ],
+        "var_B": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+        ],
+    }
 
     # test init params
     assert encoder.variables is None
@@ -330,10 +395,12 @@ def test_automatically_find_variables_ignore_format(df_enc_numeric):
     }
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    _assert_values(Xt, expected)
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
+    # pandas-only: exercises pandas Categorical dtype, which polars has no
+    # direct equivalent for.
     df = df_enc_category_dtypes.copy()
     encoder = MeanEncoder(variables=["var_A"])
     encoder.fit(df[["var_A", "var_B"]], df["target"])
@@ -368,13 +435,16 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes.name == "float64"
 
 
-def test_auto_smoothing(df_enc):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_auto_smoothing(df_enc, make_df):
+    X = _to_backend(df_enc[["var_A", "var_B"]], make_df)
+    y = df_enc["target"].tolist()
+
     encoder = MeanEncoder(smoothing="auto")
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X = encoder.transform(df_enc[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
     # expected output
-    transf_df = df_enc.copy()
     var_A_dict = {
         "A": 0.328335832083958,
         "B": 0.20707964601769913,
@@ -385,8 +455,10 @@ def test_auto_smoothing(df_enc):
         "B": 0.328335832083958,
         "C": 0.4541284403669725,
     }
-    transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
-    transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
+    expected = {
+        "var_A": [var_A_dict[v] for v in df_enc["var_A"]],
+        "var_B": [var_B_dict[v] for v in df_enc["var_B"]],
+    }
 
     # test init params
     assert encoder.variables is None
@@ -398,16 +470,19 @@ def test_auto_smoothing(df_enc):
     }
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    _assert_values(Xt, expected)
 
 
-def test_value_smoothing(df_enc):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_value_smoothing(df_enc, make_df):
+    X = _to_backend(df_enc[["var_A", "var_B"]], make_df)
+    y = df_enc["target"].tolist()
+
     encoder = MeanEncoder(smoothing=100)
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X = encoder.transform(df_enc[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
     # expected output
-    transf_df = df_enc.copy()
     var_A_dict = {
         "A": 0.3018867924528302,
         "B": 0.2909090909090909,
@@ -418,8 +493,10 @@ def test_value_smoothing(df_enc):
         "B": 0.3018867924528302,
         "C": 0.30769230769230765,
     }
-    transf_df["var_A"] = transf_df["var_A"].map(var_A_dict)
-    transf_df["var_B"] = transf_df["var_B"].map(var_B_dict)
+    expected = {
+        "var_A": [var_A_dict[v] for v in df_enc["var_A"]],
+        "var_B": [var_B_dict[v] for v in df_enc["var_B"]],
+    }
 
     # test init params
     assert encoder.variables is None
@@ -431,40 +508,53 @@ def test_value_smoothing(df_enc):
     }
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    _assert_values(Xt, expected)
 
 
-def test_encoding_new_categories(df_enc):
-    df_unseen = pd.DataFrame({"var_A": ["D"], "var_B": ["D"]})
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_encoding_new_categories(df_enc, make_df):
+    X = _to_backend(df_enc[["var_A", "var_B"]], make_df)
+    y = df_enc["target"].tolist()
+    df_unseen = make_df({"var_A": ["D"], "var_B": ["D"]})
+
     encoder = MeanEncoder(unseen="encode")
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    encoder.fit(X, y)
     df_transformed = encoder.transform(df_unseen)
-    assert (df_transformed == df_enc["target"].mean()).all(axis=None)
+    _assert_values(
+        df_transformed,
+        {"var_A": [df_enc["target"].mean()], "var_B": [df_enc["target"].mean()]},
+    )
 
 
-def test_inverse_transform_when_no_unseen():
-    df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_transform_when_no_unseen(make_df):
+    df = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     y = [1, 0, 1, 0, 1, 0]
     enc = MeanEncoder()
     enc.fit(df, y)
     dft = enc.transform(df)
-    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)
+    expected = {"words": ["dog", "dog", "cat", "cat", "cat", "bird"]}
+    _assert_values(enc.inverse_transform(dft), expected)
 
 
-def test_inverse_transform_when_ignore_unseen():
-    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
-    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
-    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_transform_when_ignore_unseen(make_df):
+    df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
     y = [1, 0, 1, 0, 1, 0]
     enc = MeanEncoder(unseen="ignore")
     enc.fit(df1, y)
     dft = enc.transform(df2)
-    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+    _assert_values(
+        enc.inverse_transform(dft),
+        {"words": ["dog", "dog", "cat", "cat", "cat", nan]},
+    )
 
 
-def test_inverse_transform_when_encode_unseen():
-    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
-    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_transform_when_encode_unseen(make_df):
+    df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
     y = [1, 0, 1, 0, 1, 0]
     enc = MeanEncoder(unseen="encode")
     enc.fit(df1, y)
@@ -478,8 +568,9 @@ def test_inverse_transform_when_encode_unseen():
     assert str(record.value) == msg
 
 
-def test_inverse_transform_raises_non_fitted_error():
-    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_inverse_transform_raises_non_fitted_error(make_df):
+    df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     y = [1, 0, 1, 0, 1, 0]
     enc = MeanEncoder()
 
@@ -487,11 +578,11 @@ def test_inverse_transform_raises_non_fitted_error():
     with pytest.raises(NotFittedError):
         enc.inverse_transform(df1)
 
-    df1.loc[len(df1) - 1] = nan
+    df1_na = make_df({"words": ["dog", "dog", "cat", "cat", "cat", None]})
 
     with pytest.raises(ValueError):
-        enc.fit(df1, y)
+        enc.fit(df1_na, y)
 
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError):
-        enc.inverse_transform(df1)
+        enc.inverse_transform(df1_na)
