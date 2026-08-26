@@ -3,8 +3,10 @@
 
 from typing import List, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -35,14 +37,37 @@ from feature_engine.tags import _return_tags
 
 
 class WoE:
-    def _check_fit_input(self, X: pd.DataFrame, y: pd.Series):
+    def _check_fit_input(self, X: IntoDataFrame, y: IntoSeries):
         """
         Check that X is dataframe, and y a binary series with values 0 and 1.
         """
         X, y = check_X_y(X, y)
 
+        if nwd.is_into_series(y):
+            y_nw = nw.from_native(y, series_only=True)
+        else:
+            # y is a numpy array here (e.g. list/array-like y input, which
+            # sklearn's check_X_y machinery converts to numpy via
+            # column_or_1d) - it has no .nunique()/.groupby(), so wrap it
+            # against X's backend to get one consistent narwhals Series.
+            is_pandas = nwd.is_pandas_dataframe(X)
+            y_nw = nw.new_series(
+                name="target",
+                values=y,
+                backend=nw.from_native(X, eager_only=True).implementation,
+            )
+            if is_pandas is True:
+                # new_series() gives pandas a fresh default RangeIndex, but
+                # _calculate_woe()'s y.groupby(X[var]) aligns the two
+                # Series by index - a mismatch against X's own index
+                # silently drops every row instead of raising, leaving
+                # encoder_dict_ empty. Line it up with X's index.
+                native_y = y_nw.to_native()
+                native_y.index = X.index
+                y_nw = nw.from_native(native_y, series_only=True)
+
         # check that y is binary
-        if y.nunique() != 2:
+        if y_nw.n_unique() != 2:
             raise ValueError(
                 "This encoder is designed for binary classification. The target "
                 "used has more than 2 unique values."
@@ -50,14 +75,16 @@ class WoE:
 
         # if target does not have values 0 and 1, we need to remap, to be able to
         # compute the averages.
-        if y.min() != 0 or y.max() != 1:
-            y = pd.Series(np.where(y == y.min(), 0, 1))
-        return X, y
+        y_min, y_max = y_nw.min(), y_nw.max()
+        if y_min != 0 or y_max != 1:
+            y_nw = (y_nw != y_min).cast(nw.Int64()).alias("target")
+
+        return X, y_nw.to_native()
 
     def _calculate_woe(
         self,
-        X: pd.DataFrame,
-        y: pd.Series,
+        X: IntoDataFrame,
+        y: IntoSeries,
         variable: Union[str, int],
         fill_value: Union[float, None] = None,
     ):
@@ -198,6 +225,28 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
     2   3  0.287682
     3   4 -0.405465
     4   5 -0.405465
+
+    With polars
+
+    >>> import polars as pl
+    >>> from feature_engine.encoding import WoEEncoder
+    >>> X = pl.DataFrame(dict(x1 = [1,2,3,4,5], x2 = ["b", "b", "b", "a", "a"]))
+    >>> y = pl.Series([0,1,1,1,0])
+    >>> woe = WoEEncoder()
+    >>> woe.fit(X, y)
+    >>> woe.transform(X)
+    shape: (5, 2)
+    ┌─────┬───────────┐
+    │ x1  ┆ x2        │
+    │ --- ┆ ---       │
+    │ i64 ┆ f64       │
+    ╞═════╪═══════════╡
+    │ 1   ┆ 0.287682  │
+    │ 2   ┆ 0.287682  │
+    │ 3   ┆ 0.287682  │
+    │ 4   ┆ -0.405465 │
+    │ 5   ┆ -0.405465 │
+    └─────┴───────────┘
     """
 
     def __init__(
@@ -218,17 +267,17 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         self.unseen = unseen
         self.fill_value = fill_value
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Learn the WoE.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the categorical variables.
 
-        y: pandas series.
+        y: Series.
             Target, must be binary.
         """
         X, y = self._check_fit_input(X, y)
@@ -238,12 +287,57 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         encoder_dict_ = {}
         vars_that_fail = []
 
-        for var in variables_:
-            try:
-                _, _, woe = self._calculate_woe(X, y, var, self.fill_value)
-                encoder_dict_[var] = woe.to_dict()
-            except ValueError:
-                vars_that_fail.append(var)
+        # _calculate_woe() keeps its pandas-native two-groupby implementation
+        # (it's directly unit-tested for that exact pandas-Series-with-
+        # category-index return contract); polars and other narwhals
+        # backends compute the same ratio-then-log logic with a single
+        # group_by() instead - it derives the negative-class count as the
+        # complement of the positive-class count per category, so only one
+        # groupby is needed instead of two (benchmarked competitive with,
+        # and often faster than, pandas-native at 50k-100k rows).
+        is_pandas = nwd.is_pandas_dataframe(X)
+
+        if is_pandas is True:
+            for var in variables_:
+                try:
+                    _, _, woe = self._calculate_woe(X, y, var, self.fill_value)
+                    encoder_dict_[var] = woe.to_dict()
+                except ValueError:
+                    vars_that_fail.append(var)
+        else:
+            nw_X = nw.from_native(X, eager_only=True)
+            y_nw = nw.from_native(y, series_only=True)
+            target_name = "__feature_engine_woe_target__"
+            nw_Xy = nw_X.with_columns(y_nw.alias(target_name))
+
+            total_pos = y_nw.sum()
+            total_neg = len(y_nw) - total_pos
+
+            for var in variables_:
+                grouped = (
+                    nw_Xy.group_by(var, drop_null_keys=True)
+                    .agg(
+                        nw.col(target_name).sum().alias("__pos_n__"),
+                        nw.len().alias("__n__"),
+                    )
+                    .sort(var)
+                )
+                categories = grouped.get_column(var).to_list()
+                pos = (grouped.get_column("__pos_n__") / total_pos).to_numpy()
+                neg = (
+                    (grouped.get_column("__n__") - grouped.get_column("__pos_n__"))
+                    / total_neg
+                ).to_numpy()
+
+                if (pos == 0).any() or (neg == 0).any():
+                    if self.fill_value is None:
+                        vars_that_fail.append(var)
+                        continue
+                    pos = np.where(pos == 0, self.fill_value, pos)
+                    neg = np.where(neg == 0, self.fill_value, neg)
+
+                woe = np.log(pos / neg)
+                encoder_dict_[var] = dict(zip(categories, woe))
 
         if len(vars_that_fail) > 0:
             vars_that_fail_str = (
@@ -263,17 +357,17 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         self._get_feature_names_in(X)
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Replace categories with the learned parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The dataset to transform.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features].
+        X_new: dataframe of shape = [n_samples, n_features].
             The dataframe containing the categories replaced by numbers.
         """
 
