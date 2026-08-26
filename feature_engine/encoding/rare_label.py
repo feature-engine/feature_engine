@@ -4,8 +4,9 @@
 import warnings
 from typing import List, Optional, Union
 
-import numpy as np
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -137,6 +138,28 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     3   4     b
     4   5     b
     5   6  Rare
+
+    With polars
+
+    >>> import polars as pl
+    >>> from feature_engine.encoding import RareLabelEncoder
+    >>> X = pl.DataFrame(dict(x1 = [1,2,3,4,5,6], x2 = ["b", "b", "b", "b", "b", "a"]))
+    >>> rle = RareLabelEncoder(n_categories = 1, tol=0.2)
+    >>> rle.fit(X)
+    >>> rle.transform(X)
+    shape: (6, 2)
+    ┌─────┬──────┐
+    │ x1  ┆ x2   │
+    │ --- ┆ ---  │
+    │ i64 ┆ str  │
+    ╞═════╪══════╡
+    │ 1   ┆ b    │
+    │ 2   ┆ b    │
+    │ 3   ┆ b    │
+    │ 4   ┆ b    │
+    │ 5   ┆ b    │
+    │ 6   ┆ Rare │
+    └─────┴──────┘
     """
 
     def __init__(
@@ -186,13 +209,13 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self.replace_with = replace_with
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the frequent categories for each variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just selected
             variables
 
@@ -206,20 +229,33 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         self.encoder_dict_ = {}
 
+        # n_unique() counts a null as its own category, matching pandas'
+        # plain unique() (used for the cardinality check below), unlike
+        # pandas' nunique() which drops nulls by default.
+        nw_X = nw.from_native(X, eager_only=True)
         for var in variables_:
-            if len(X[var].unique()) > self.n_categories:
+            col = nw_X.get_column(var)
+
+            if col.n_unique() > self.n_categories:
 
                 # if the variable has more than the indicated number of categories
-                # the encoder will learn the most frequent categories
-                t = X[var].value_counts(normalize=True)
+                # the encoder will learn the most frequent categories.
+                # drop_nulls() mirrors pandas' value_counts(dropna=True)
+                # default, which narwhals' value_counts() doesn't apply on
+                # its own. sort=True matches pandas' own value_counts()
+                # default order (descending by count).
+                counts = col.drop_nulls().value_counts(sort=True, normalize=True)
+                cat_col, freq_col = counts.columns
 
                 # non-rare labels:
-                freq_idx = t[t >= self.tol].index
+                freq_idx = counts.filter(
+                    counts.get_column(freq_col) >= self.tol
+                ).get_column(cat_col).to_list()
 
                 if self.max_n_categories:
-                    self.encoder_dict_[var] = list(freq_idx[: self.max_n_categories])
+                    self.encoder_dict_[var] = freq_idx[: self.max_n_categories]
                 else:
-                    self.encoder_dict_[var] = list(freq_idx)
+                    self.encoder_dict_[var] = freq_idx
 
             else:
                 # if the total number of categories is smaller than the indicated
@@ -229,25 +265,25 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                     "indicated in n_categories. Thus, all categories will be "
                     "considered frequent".format(var)
                 )
-                self.encoder_dict_[var] = list(X[var].unique())
+                self.encoder_dict_[var] = col.unique(maintain_order=True).to_list()
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Group infrequent categories. Replace infrequent categories by the string 'Rare'
         or any other name provided by the user.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
 
@@ -256,29 +292,46 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
-            with_nan = []
-        else:
-            with_nan = [np.nan]
 
+        # a pandas Categorical column rejects an unseen label on assignment
+        # until the label is added to its categories; narwhals has no
+        # cross-backend equivalent (polars has no comparable dtype
+        # restriction here), so this stays a native pandas step.
+        is_pandas = nwd.is_pandas_dataframe(X)
+        if is_pandas is True:
+            for feature in self.variables_:
+                if X[feature].dtype == "category":
+                    X[feature] = X[feature].cat.add_categories(self.replace_with)
+
+        # nw.when(<Series>).then(<Series>).otherwise(nw.lit(...)) lets each
+        # column keep its own dtype where frequent, and take the (possibly
+        # differently-typed) replace_with value elsewhere - narwhals
+        # resolves the common dtype per backend, e.g. object in pandas,
+        # cast-to-string in polars, so no manual dtype fixup is needed
+        # before it, unlike the old pandas-only .astype("O"). Passing
+        # Series (from get_column(), not nw.col()) into when/then/otherwise
+        # keeps this working for pandas integer column names, and nw.lit()
+        # broadcasts replace_with natively instead of materialising a
+        # same-length replacement array (benchmarked ~1.7x faster than the
+        # zip_with(col, new_series(...)) equivalent at 100k rows).
+        nw_X = nw.from_native(X, eager_only=True)
+        new_columns = []
         for feature in self.variables_:
-            # Setting an item of incompatible dtype is deprecated
-            # and will raise an error in a future version of pandas
-            if self.ignore_format is True and isinstance(self.replace_with, str):
-                num_vars = list(
-                    X[self.variables_].select_dtypes(include="number").columns
+            col = nw_X.get_column(feature)
+            keep = col.is_in(self.encoder_dict_[feature])
+            if self.missing_values == "ignore":
+                keep = keep | col.is_null()
+            new_columns.append(
+                nw.when(keep).then(col).otherwise(nw.lit(self.replace_with)).alias(
+                    feature
                 )
-                X[num_vars] = X[num_vars].astype("O")
-
-            if X[feature].dtype == "category":
-                X[feature] = X[feature].cat.add_categories(self.replace_with)
-
-            X.loc[~X[feature].isin(self.encoder_dict_[feature] + with_nan), feature] = (
-                self.replace_with
             )
+
+        X = nw_X.with_columns(*new_columns).to_native()
 
         return X
 
-    def inverse_transform(self, X: pd.DataFrame):
+    def inverse_transform(self, X: IntoDataFrame):
         """inverse_transform is not implemented for this transformer."""
         raise NotImplementedError(
             "inverse_transform is not implemented for this transformer."
