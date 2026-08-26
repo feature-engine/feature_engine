@@ -3,8 +3,8 @@
 
 from typing import List, Optional, Union
 
-import numpy as np
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -196,7 +196,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         self.drop_last = drop_last
         self.drop_last_binary = drop_last_binary
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoDataFrame] = None):
         """
         Learns the unique categories per variable. If top_categories is indicated,
         it will learn the most popular categories. Alternatively, it learns all
@@ -205,7 +205,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         Parameters
         ----------
 
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: pandas or polars dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just selected variables.
 
@@ -218,56 +218,56 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
+        nw_X = nw.from_native(X, eager_only=True)
         self.encoder_dict_ = {}
 
         for var in variables_:
+            col = nw_X.get_column(var)
 
             # make dummies only for the most popular categories
             if self.top_categories:
-                self.encoder_dict_[var] = [
-                    x
-                    for x in X[var]
-                    .value_counts()
-                    .sort_values(ascending=False)
-                    .head(self.top_categories)
-                    .index
-                ]
+                top = col.value_counts(sort=True, name="count").head(
+                    self.top_categories
+                )
+                self.encoder_dict_[var] = top.get_column(var).to_list()
 
             else:
-                category_ls = list(X[var].unique())
+                category_ls = col.unique(maintain_order=True).to_list()
 
                 # return k-1 dummies
-                if self.drop_last:
+                if self.drop_last is True:
                     self.encoder_dict_[var] = category_ls[:-1]
 
                 # return k dummies
                 else:
                     self.encoder_dict_[var] = category_ls
 
-        self.variables_binary_ = [var for var in variables_ if X[var].nunique() == 2]
+        self.variables_binary_ = [
+            var for var in variables_ if nw_X.get_column(var).n_unique() == 2
+        ]
 
         # automatically encode binary variables as 1 dummy
-        if self.drop_last_binary:
+        if self.drop_last_binary is True:
             for var in self.variables_binary_:
-                category = X[var].unique()[0]
+                category = nw_X.get_column(var).unique(maintain_order=True)[0]
                 self.encoder_dict_[var] = [category]
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Replaces the categorical variables by the binary variables.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: pandas or polars dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe.
+        X_new: pandas or polars dataframe.
             The transformed dataframe. The shape of the dataframe will be different from
             the original as it includes the dummy variables in place of the
             original categorical ones.
@@ -278,20 +278,43 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 
+        nw_X = nw.from_native(X, eager_only=True)
+        dummy_frames = []
+        # a placeholder Series name, swapped back out below by a fixed-length
+        # prefix slice (never by parsing the category suffix): to_dummies()
+        # only prefixes with the Series name when it's truthy, so a falsy
+        # real name (e.g. an int column literally named 0) would otherwise
+        # silently drop the prefix and make every dummy column look "missing".
+        tmp_name = "__ohe_tmp__"
         for feature in self.variables_:
-            for category in self.encoder_dict_[feature]:
-                dummy_df = pd.DataFrame(
-                    {f"{feature}_{category}": np.where(X[feature] == category, 1, 0)},
-                    index=X.index,
+            desired = [
+                f"{feature}_{category}" for category in self.encoder_dict_[feature]
+            ]
+            dummies = (
+                nw_X.get_column(feature).alias(tmp_name).to_dummies(separator="_")
+            )
+            dummies = dummies.rename(
+                {c: f"{feature}{c[len(tmp_name):]}" for c in dummies.columns}
+            )
+            # categories learned in fit() but absent from, or unseen categories
+            # present in, this particular transform batch: to_dummies() only
+            # creates columns for values it actually finds, so any learned
+            # category missing here is filled with an all-0 column, and
+            # selecting just `desired` drops any column for a category that
+            # wasn't learned (unseen categories are encoded as 0 across the
+            # board, matching the pre-narwhals behaviour).
+            missing = [c for c in desired if c not in dummies.columns]
+            if len(missing) > 0:
+                dummies = dummies.with_columns(
+                    **{c: nw.lit(0, dtype=nw.Int8) for c in missing}
                 )
-                X = pd.concat([X, dummy_df], axis=1)
+            dummy_frames.append(dummies.select(desired))
 
-        # drop the original non-encoded variables.
-        X.drop(labels=self.variables_, axis=1, inplace=True)
+        nw_X = nw.concat([nw_X.drop(*self.variables_), *dummy_frames], how="horizontal")
 
-        return X
+        return nw_X.to_native()
 
-    def inverse_transform(self, X: pd.DataFrame):
+    def inverse_transform(self, X: IntoDataFrame):
         """inverse_transform is not implemented for this transformer."""
         raise NotImplementedError(
             "inverse_transform is not implemented for this transformer."
