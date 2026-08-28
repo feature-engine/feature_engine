@@ -472,6 +472,23 @@ def test_extract_features_from_variables_containing_nans():
     )
 
 
+def test_ignore_nan_for_week_and_days_in_month():
+    # week and days_in_month must propagate NaN like the other features when
+    # missing_values="ignore", instead of raising on the int cast of a NaT.
+    X = DatetimeFeatures(
+        features_to_extract=["week", "days_in_month"], missing_values="ignore"
+    ).fit_transform(dates_nan)
+    pd.testing.assert_frame_equal(
+        X,
+        pd.DataFrame(
+            {
+                "dates_na_week": [5.0, np.nan, 22.0, np.nan],
+                "dates_na_days_in_month": [28.0, np.nan, 30.0, np.nan],
+            }
+        ),
+    )
+
+
 def test_extract_features_with_different_datetime_parsing_options(df_datetime):
     X = DatetimeFeatures(
         features_to_extract=["day_of_month"], dayfirst=True
