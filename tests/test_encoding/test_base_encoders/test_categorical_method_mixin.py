@@ -1,3 +1,4 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
 import pytest
@@ -103,7 +104,7 @@ def test_raises_error_when_nan_introduced():
     msg = "During the encoding, NaN values were introduced in the feature(s) words."
 
     with pytest.raises(ValueError) as record:
-        enc._check_nan_values_after_transformation(output_df)
+        enc._check_nan_values_after_transformation(nw.from_native(output_df))
     assert str(record.value) == msg
 
     with pytest.raises(ValueError) as record:
@@ -122,7 +123,7 @@ def test_raises_warning_when_nan_introduced():
     assert record[0].message.args[0] == msg
 
     with pytest.warns(UserWarning) as record:
-        enc._check_nan_values_after_transformation(output_df)
+        enc._check_nan_values_after_transformation(nw.from_native(output_df))
     assert record[0].message.args[0] == msg
 
 

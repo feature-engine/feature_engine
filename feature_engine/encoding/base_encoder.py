@@ -1,8 +1,6 @@
 import warnings
 from typing import List, Union
 
-import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -163,11 +161,17 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
     def _get_feature_names_in(self, X: IntoDataFrame):
         """
-        Returns attributes `featrure_names_in_` and `n_feature_names_in_`, which are
+        Sets attributes `feature_names_in_` and `n_features_in_`, which are
         standard for all transformers in the library.
+
+        Parameters
+        ----------
+        X: narwhals dataframe
+            The dataframe returned by `check_X` / `check_X_y` at the start of `fit`.
         """
-        # save input features
-        self.feature_names_in_ = X.columns
+        # save input features. list() normalises both a narwhals `.columns`
+        # (already a list) and a pandas `Index` to a plain list.
+        self.feature_names_in_ = list(X.columns)
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
@@ -175,30 +179,31 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
     def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA.
+        in the fit method.
 
         Parameters
         ----------
         X: dataframe
+            The dataframe entered by the user, in any library supported by narwhals.
 
         Raises
         ------
         TypeError
             If the input is not a dataframe
         ValueError
-            - If the variable(s) contain null values.
-            - If the df has different number of features than the df used in fit()
+            If the df has a different number of features than the df used in fit()
 
         Returns
         -------
-        X: dataframe
-            The same dataframe entered by the user.
+        nw_X: narwhals dataframe
+            The narwhalified version of the dataframe entered by the user.
         """
 
         # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe
+        # check that input is a dataframe. check_X returns a narwhals frame; the
+        # original native X is kept for the column-count check below.
         nw_X = check_X(X)
 
         # Check input data contains same number of columns as df used to fit
@@ -231,28 +236,32 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         return X
 
     def _encode(self, X: IntoDataFrame) -> IntoDataFrame:
+        # X is the narwhals frame returned by _check_transform_input_and_state().
+        # replace_strict() maps known categories and fills unseen/missing ones via
+        # `default` in a single expression, and resolves to a plain numeric dtype
+        # on both pandas and polars. get_column()/Series.replace_strict() (rather
+        # than nw.col(), which only accepts string names) is what lets this handle
+        # pandas integer column names too.
         default = self._unseen if self.unseen == "encode" else None
         new_series = [
-            nw_X.get_column(feature).replace_strict(mapping, default=default)
+            X.get_column(feature).replace_strict(mapping, default=default)
             for feature, mapping in self.encoder_dict_.items()
         ]
-        X = nw_X.with_columns(*new_series)
+        X = X.with_columns(*new_series)
 
         if self.unseen != "encode":
             # check if nan values were introduced by the transformation
             self._check_nan_values_after_transformation(X)
-        
-        X = X.to_native()
 
-        return X
+        return X.to_native()
 
-    def _check_nan_values_after_transformation(self, X):
-
+    def _check_nan_values_after_transformation(self, X: IntoDataFrame):
+        # X is the encoded narwhals frame built by _encode().
         # check if NaN values were introduced by the encoding
         nan_columns = [
             feature
             for feature in self.encoder_dict_.keys()
-            if nw_X.get_column(feature).null_count() > 0
+            if X.get_column(feature).null_count() > 0
         ]
 
         if len(nan_columns) > 0:
