@@ -257,7 +257,7 @@ class DatetimeSubtraction(BaseCreation):
             It is not needed in this transformer. You can pass y or None.
         """
         # Common checks and attributes
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # check variables are datetime
         if self.variables is None:
@@ -287,17 +287,14 @@ class DatetimeSubtraction(BaseCreation):
 
         # check if dataset contains na
         if self.missing_values == "raise":
-            vars_ = list(set(self.variables_ + self.reference_))
-            _check_contains_na(X, vars_)
+            vars = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars)
 
         # save input features
-        if nwd.is_pandas_dataframe(X) is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
+        nw_X.columns
 
         # save train set shape
-        self.n_features_in_ = X.shape[1]
+        self.n_features_in_ = nw_X.shape[1]
 
         return self
 
@@ -320,26 +317,14 @@ class DatetimeSubtraction(BaseCreation):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
 
         if self.missing_values == "raise":
-            vars_ = list(set(self.variables_ + self.reference_))
-            _check_contains_na(X, vars_)
-
-        is_pandas = nwd.is_pandas_dataframe(X)
-
-        # reorder variables to match train set
-        if is_pandas is True:
-            X = X[self.feature_names_in_]
-        else:
-            X = nw.from_native(X, eager_only=True).select(
-                self.feature_names_in_
-            ).to_native()
-
-        nw_X = nw.from_native(X, eager_only=True)
+            vars = list(set(self.variables_ + self.reference_))
+            _check_contains_na(X, vars)
 
         dt_arrays = self._to_datetime(nw_X, is_pandas)
 
@@ -353,7 +338,7 @@ class DatetimeSubtraction(BaseCreation):
         return nw_X.to_native()
 
     def _to_datetime(
-        self, nw_X: nw.DataFrame, is_pandas: bool
+        self, nw_X: nw.DataFrame,
     ) -> Dict[str, np.ndarray]:
         """Convert the variables and reference columns to numpy datetime64 arrays."""
         needed = sorted(set(self.variables_ + self.reference_))
