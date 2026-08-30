@@ -167,11 +167,7 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         standard for all transformers in the library.
         """
         # save input features
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
+        self.feature_names_in_ = X.columns
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
@@ -203,23 +199,12 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # Check input data contains same number of columns as df used to fit
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # reorder df to match train set
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
-            X = X[self.feature_names_in_]
-        else:
-            X = (
-                nw.from_native(X, eager_only=True)
-                .select(self.feature_names_in_)
-                .to_native()
-            )
-
-        return X
+        return nw_X
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Replace categories with the learned parameters.
@@ -235,44 +220,35 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
             The dataframe containing the categories replaced by numbers.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
-        X = self._encode(X)
+        X = self._encode(nw_X)
 
         return X
 
     def _encode(self, X: IntoDataFrame) -> IntoDataFrame:
-        # replace categories by the learned parameters.
-        # narwhals' replace_strict() lets one expression both map known
-        # categories and fill unseen/missing ones via `default`, so the
-        # pandas-only category-dtype fixup this used to need (map() leaves
-        # category dtype behind) is no longer necessary: replace_strict
-        # already resolves to a plain numeric dtype on both backends.
-        # get_column()/Series.replace_strict() (rather than nw.col(), which
-        # only accepts string names) is what lets this handle pandas
-        # integer column names too, same as DecisionTreeFeatures.
         default = self._unseen if self.unseen == "encode" else None
-        nw_X = nw.from_native(X, eager_only=True)
         new_series = [
             nw_X.get_column(feature).replace_strict(mapping, default=default)
             for feature, mapping in self.encoder_dict_.items()
         ]
-        X = nw_X.with_columns(*new_series).to_native()
+        X = nw_X.with_columns(*new_series)
 
         if self.unseen != "encode":
             # check if nan values were introduced by the transformation
             self._check_nan_values_after_transformation(X)
+        
+        X = X.to_native()
 
         return X
 
     def _check_nan_values_after_transformation(self, X):
 
         # check if NaN values were introduced by the encoding
-        nw_X = nw.from_native(X, eager_only=True)
         nan_columns = [
             feature
             for feature in self.encoder_dict_.keys()
@@ -312,11 +288,10 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
             original values.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # replace encoded categories by the original values. get_column()
         # rather than nw.col() again, to support pandas integer column names.
-        nw_X = nw.from_native(X, eager_only=True)
         new_series = [
             nw_X.get_column(feature).replace_strict(
                 {v: k for k, v in mapping.items()}, default=None
