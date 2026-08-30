@@ -324,7 +324,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             check_classification_targets(y)
             self._is_binary = type_of_target(y)
 
-        # backend themselves, so keep working with the native X.
         _, y = check_X_y(X, y)
 
         # find or check for numerical variables
