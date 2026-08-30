@@ -162,7 +162,7 @@ class MeanImputer(BaseImputer):
         """
 
         # check input dataframe
-        check_X(X)
+        nw_X = check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -172,45 +172,16 @@ class MeanImputer(BaseImputer):
 
         # find imputation parameters: mean or median
         if len(variables_) == 0:
-            # narwhals' select() with no expressions collapses rows too, so
-            # skip the backend branches entirely rather than special-case that.
             imputer_dict_ = {}
         else:
-            # Benchmarked (10k-100k rows x 1-10 cols): pandas' bulk .mean()/
-            # .median() is consistently slower than a single NumPy
-            # nanmean/nanmedian pass over the same values (0.5-1.05x, mostly
-            # a real win), so the pandas branch takes that route. Polars'
-            # native aggregation already beats a NumPy round-trip (1.8-3.5x
-            # for mean, competitive-to-faster for median), so it keeps using
-            # narwhals expressions directly instead.
-            is_pandas = nwd.is_pandas_dataframe(X)
-            if is_pandas is True:
-                values = X[variables_].to_numpy()
-                reducer = (
-                    np.nanmean if self.imputation_method == "mean" else np.nanmedian
-                )
-                # Nullable extension dtypes can produce object arrays; keep
-                # those on the pandas-native fallback path below.
-                if values.dtype.kind in "biuf":
-                    # pandas' mean()/median() do not warn for all-missing
-                    # columns; NumPy's equivalents do, so silence only those.
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore", RuntimeWarning)
-                        result = reducer(values, axis=0)
-                    imputer_dict_ = dict(zip(variables_, result))
-                elif self.imputation_method == "mean":
-                    imputer_dict_ = X[variables_].mean().to_dict()
-                else:
-                    imputer_dict_ = X[variables_].median().to_dict()
-            else:
-                nw_X = nw.from_native(X, eager_only=True)
-                stats = nw_X.select(
-                    *[
-                        getattr(nw.col(var), self.imputation_method)()
-                        for var in variables_
-                    ]
-                )
-                imputer_dict_ = stats.rows(named=True)[0]
+            nw_X = nw.from_native(X, eager_only=True)
+            stats = nw_X.select(
+                *[
+                    getattr(nw.col(var), self.imputation_method)()
+                    for var in variables_
+                ]
+            )
+            imputer_dict_ = stats.rows(named=True)[0]
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
