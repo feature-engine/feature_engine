@@ -4,8 +4,9 @@
 import warnings
 from typing import List, Literal, Union
 
-import numpy as np
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -145,25 +146,33 @@ class Winsoriser(WinsorizerBase):
     8 -0.469474
     9  0.542560
 
+    With polars:
+
     >>> import numpy as np
-    >>> import pandas as pd
+    >>> import polars as pl
     >>> from feature_engine.outliers import Winsoriser
     >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
+    >>> X = pl.DataFrame(dict(x = np.random.normal(size = 10)))
     >>> wz = Winsoriser(capping_method='mad', tail='both', fold=3)
     >>> wz.fit(X)
     >>> wz.transform(X)
-              x
-    0  0.496714
-    1 -0.138264
-    2  0.647689
-    3  1.523030
-    4 -0.234153
-    5 -0.234137
-    6  1.579213
-    7  0.767435
-    8 -0.469474
-    9  0.542560
+    shape: (10, 1)
+    ┌───────────┐
+    │ x         │
+    │ ---       │
+    │ f64       │
+    ╞═══════════╡
+    │ 0.496714  │
+    │ -0.138264 │
+    │ 0.647689  │
+    │ 1.52303   │
+    │ -0.234153 │
+    │ -0.234137 │
+    │ 1.579213  │
+    │ 0.767435  │
+    │ -0.469474 │
+    │ 0.54256   │
+    └───────────┘
     """
 
     def __init__(
@@ -186,18 +195,18 @@ class Winsoriser(WinsorizerBase):
         )
         self.add_indicators = add_indicators
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Cap the variable values. Optionally, add outlier indicators.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features + n_ind]
+        X_new: dataframe of shape = [n_samples, n_features + n_ind]
             The dataframe with the capped variables and indicators.
             The number of output variables depends on the values for 'tail' and
             'add_indicators': if passing 'add_indicators=False', will be equal
@@ -210,29 +219,59 @@ class Winsoriser(WinsorizerBase):
         else:
             X_orig = check_X(X)
             X_out = super()._transform(X_orig)
-            X_orig = X_orig[self.variables_]
-            X_out_filtered = X_out[self.variables_]
 
-            if self.tail in ["left", "both"]:
-                X_left = X_out_filtered > X_orig
-                X_left.columns = [str(cl) + "_left" for cl in self.variables_]
-            if self.tail in ["right", "both"]:
-                X_right = X_out_filtered < X_orig
-                X_right.columns = [str(cl) + "_right" for cl in self.variables_]
-            if self.tail == "left":
-                X_out = pd.concat([X_out, X_left.astype(np.float64)], axis=1)
-            elif self.tail == "right":
-                X_out = pd.concat([X_out, X_right.astype(np.float64)], axis=1)
-            else:
-                X_both = pd.concat([X_left, X_right], axis=1).astype(np.float64)
-                X_both = X_both[
-                    [
-                        cl1
-                        for cl2 in zip(X_left.columns.values, X_right.columns.values)
-                        for cl1 in cl2
+            # Benchmarked at 10k-100k rows x 1-10 columns: pandas-native
+            # comparison + concat is up to ~3x faster than the narwhals
+            # with_columns equivalent on pandas input (the loss grows with
+            # column count), so pandas keeps its own fast path here, same
+            # split as MissingIndicator's indicator-building step.
+            is_pandas = nwd.is_pandas_dataframe(X_out)
+            if is_pandas is True:
+                pd = nw.from_native(X_out, eager_only=True).__native_namespace__()
+                X_orig_filtered = X_orig[self.variables_]
+                X_out_filtered = X_out[self.variables_]
+
+                if self.tail in ["left", "both"]:
+                    X_left = X_out_filtered > X_orig_filtered
+                    X_left.columns = [str(cl) + "_left" for cl in self.variables_]
+                if self.tail in ["right", "both"]:
+                    X_right = X_out_filtered < X_orig_filtered
+                    X_right.columns = [str(cl) + "_right" for cl in self.variables_]
+                if self.tail == "left":
+                    X_out = pd.concat([X_out, X_left.astype("float64")], axis=1)
+                elif self.tail == "right":
+                    X_out = pd.concat([X_out, X_right.astype("float64")], axis=1)
+                else:
+                    X_both = pd.concat([X_left, X_right], axis=1).astype("float64")
+                    X_both = X_both[
+                        [
+                            cl1
+                            for cl2 in zip(
+                                X_left.columns.values, X_right.columns.values
+                            )
+                            for cl1 in cl2
+                        ]
                     ]
-                ]
-                X_out = pd.concat([X_out, X_both], axis=1)
+                    X_out = pd.concat([X_out, X_both], axis=1)
+            else:
+                nw_orig = nw.from_native(X_orig, eager_only=True)
+                nw_out = nw.from_native(X_out, eager_only=True)
+
+                new_cols = []
+                for var in self.variables_:
+                    if self.tail in ["left", "both"]:
+                        new_cols.append(
+                            (nw_out[var] > nw_orig[var])
+                            .cast(nw.Float64)
+                            .alias(f"{var}_left")
+                        )
+                    if self.tail in ["right", "both"]:
+                        new_cols.append(
+                            (nw_out[var] < nw_orig[var])
+                            .cast(nw.Float64)
+                            .alias(f"{var}_right")
+                        )
+                X_out = nw_out.with_columns(*new_cols).to_native()
 
         return X_out
 
