@@ -197,7 +197,6 @@ class CategoricalImputer(BaseImputer):
             imputer_dict_ = {var: self.fill_value for var in variables_}
 
         elif self.imputation_method == "frequent":
-            nw_X = nw.from_native(X, eager_only=True)
             imputer_dict_ = {}
             for var in variables_:
                 # polars' mode() keeps nulls (unlike pandas' default), so drop
