@@ -52,7 +52,6 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe. The variable_handling and dataframe_checks
         # helpers below detect the dataframe backend themselves, so keep passing
         # them the native X rather than the narwhals frame check_X returns.
         check_X(X)
