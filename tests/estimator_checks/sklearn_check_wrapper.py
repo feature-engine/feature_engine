@@ -50,10 +50,6 @@ class _SklearnCheckInputWrapper(TransformerMixin, BaseEstimator):
 
     def __init__(self, estimator=None, random_state=None):
         self.estimator = estimator
-        # Surfaced as a top-level param so sklearn's ``set_random_state`` (which
-        # only looks at shallow param names) can seed the wrapped estimator in
-        # the checks that require deterministic output, e.g.
-        # ``check_estimators_pickle`` / ``check_pipeline_consistency``.
         self.random_state = random_state
 
     @staticmethod
