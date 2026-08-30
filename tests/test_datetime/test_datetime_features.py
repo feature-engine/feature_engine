@@ -1,5 +1,7 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 from sklearn.pipeline import Pipeline
@@ -7,6 +9,7 @@ from sklearn.pipeline import Pipeline
 from feature_engine.datetime import DatetimeFeatures
 from feature_engine.datetime._datetime_constants import (
     FEATURES_DEFAULT,
+    FEATURES_FUNCTIONS,
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
@@ -22,6 +25,39 @@ dates_idx_dt = pd.DataFrame(
     [4, 3, 2, 1],
     index=pd.date_range("2003-02-27", periods=4, freq="D"),
 )
+
+# ISO-8601 strings parse identically on pandas and polars/narwhals (unlike the
+# dateutil-style formats in df_datetime above, which are pandas-only), so these
+# back the cross-backend tests. Covers a leap day and a year/quarter/month
+# boundary, so "all" features exercise every derived (non-1:1) narwhals feature.
+CROSS_BACKEND_DATES = [
+    "2020-01-01 00:00:00",
+    "2020-02-29 12:30:45",
+    "2020-12-31 23:59:59",
+    "2021-07-15 06:07:08",
+]
+CROSS_BACKEND_DATA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "Age": [20, 21, 19, 18],
+    "date": CROSS_BACKEND_DATES,
+}
+feat_names_default_cb = [f"date{FEATURES_SUFFIXES[feat]}" for feat in FEATURES_DEFAULT]
+
+
+def _expected_cross_backend_features(feats):
+    """Reference feature values computed with pandas' native FEATURES_FUNCTIONS,
+    the ground truth both the pandas and the narwhals extraction paths must match."""
+    dt = pd.Series(pd.to_datetime(CROSS_BACKEND_DATES))
+    return {
+        f"date{FEATURES_SUFFIXES[feat]}": list(FEATURES_FUNCTIONS[feat](dt))
+        for feat in feats
+    }
+
+
+def _to_py_values(column):
+    # normalise pandas/numpy and polars scalar containers to plain Python ints
+    # so the two backends' outputs compare equal regardless of dtype width.
+    return [int(v) for v in column]
 
 
 _false_input_params = [
@@ -173,72 +209,46 @@ def test_raises_non_fitted_error(df_datetime):
         DatetimeFeatures().transform(df_datetime)
 
 
-def test_extract_datetime_features_with_default_options(
-    df_datetime, df_datetime_transformed
-):
-    transformer = DatetimeFeatures()
-    X = transformer.fit_transform(df_datetime)
-    pd.testing.assert_frame_equal(
-        X,
-        df_datetime_transformed[
-            vars_non_dt + [var + feat for var in vars_dt for feat in feat_names_default]
-        ],
-        check_dtype=False,
-    )
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_extract_datetime_features_with_default_options(make_df):
+    X = make_df(CROSS_BACKEND_DATA)
+    Xt = DatetimeFeatures().fit_transform(X)
+
+    result = nw.from_native(Xt, eager_only=True)
+    assert result.columns == vars_non_dt + feat_names_default_cb
+    for col, expected in _expected_cross_backend_features(FEATURES_DEFAULT).items():
+        assert _to_py_values(result.get_column(col)) == expected
 
 
-def test_extract_datetime_features_from_specified_variables(
-    df_datetime, df_datetime_transformed
-):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_extract_datetime_features_from_specified_variables(make_df):
+    data = dict(CROSS_BACKEND_DATA)
+    data["date2"] = CROSS_BACKEND_DATES
+    X = make_df(data)
+
     # single datetime variable
-    X = DatetimeFeatures(variables="date_obj1").fit_transform(df_datetime)
-    pd.testing.assert_frame_equal(
-        X,
-        df_datetime_transformed[
-            vars_non_dt
-            + ["datetime_range", "date_obj2", "time_obj"]
-            + ["date_obj1" + feat for feat in feat_names_default]
-        ],
-        check_dtype=False,
-    )
+    Xt = DatetimeFeatures(variables="date").fit_transform(X)
+    result = nw.from_native(Xt, eager_only=True)
+    assert result.columns == vars_non_dt + ["date2"] + feat_names_default_cb
+    for col, expected in _expected_cross_backend_features(FEATURES_DEFAULT).items():
+        assert _to_py_values(result.get_column(col)) == expected
 
-    # multiple datetime variables
-    X = DatetimeFeatures(variables=["datetime_range", "date_obj2"]).fit_transform(
-        df_datetime
-    )
-    pd.testing.assert_frame_equal(
-        X,
-        df_datetime_transformed[
-            vars_non_dt
-            + ["date_obj1", "time_obj"]
-            + [
-                var + feat
-                for var in ["datetime_range", "date_obj2"]
-                for feat in feat_names_default
-            ]
-        ],
-        check_dtype=False,
-    )
+    # multiple datetime variables, in different order than they appear in X
+    Xt = DatetimeFeatures(variables=["date2", "date"]).fit_transform(X)
+    result = nw.from_native(Xt, eager_only=True)
+    expected_cols = vars_non_dt + [
+        f"date2{FEATURES_SUFFIXES[feat]}" for feat in FEATURES_DEFAULT
+    ] + feat_names_default_cb
+    assert result.columns == expected_cols
+    for col, expected in _expected_cross_backend_features(FEATURES_DEFAULT).items():
+        assert _to_py_values(result.get_column(col)) == expected
+        assert _to_py_values(result.get_column(col.replace("date", "date2"))) == (
+            expected
+        )
 
-    # multiple datetime variables in different order than they appear in the df
-    X = DatetimeFeatures(variables=["date_obj2", "date_obj1"]).fit_transform(
-        df_datetime
-    )
-    pd.testing.assert_frame_equal(
-        X,
-        df_datetime_transformed[
-            vars_non_dt
-            + ["datetime_range", "time_obj"]
-            + [
-                var + feat
-                for var in ["date_obj2", "date_obj1"]
-                for feat in feat_names_default
-            ]
-        ],
-        check_dtype=False,
-    )
 
-    # datetime variable is index
+def test_extract_datetime_features_from_index():
+    # "index" is pandas-only: polars and other narwhals backends have no index.
     X = DatetimeFeatures(
         variables="index", features_to_extract=["month", "day_of_month"]
     ).fit_transform(dates_idx_dt)
@@ -259,38 +269,43 @@ def test_extract_datetime_features_from_specified_variables(
     )
 
 
-def test_extract_all_datetime_features(df_datetime, df_datetime_transformed):
-    X = DatetimeFeatures(features_to_extract="all").fit_transform(df_datetime)
-    pd.testing.assert_frame_equal(
-        X, df_datetime_transformed.drop(vars_dt, axis=1), check_dtype=False
-    )
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_variables_index_raises_on_non_pandas(make_df):
+    X = make_df(CROSS_BACKEND_DATA)
+    transformer = DatetimeFeatures(variables="index")
+    if make_df is pd.DataFrame:
+        with pytest.raises(TypeError, match="The dataframe index is not datetime."):
+            transformer.fit(X)
+    else:
+        with pytest.raises(TypeError, match="variables='index' requires a pandas"):
+            transformer.fit(X)
 
 
-def test_extract_specified_datetime_features(df_datetime, df_datetime_transformed):
-    X = DatetimeFeatures(features_to_extract=["semester", "week"]).fit_transform(
-        df_datetime
-    )
-    pd.testing.assert_frame_equal(
-        X,
-        df_datetime_transformed[
-            vars_non_dt
-            + [var + "_" + feat for var in vars_dt for feat in ["semester", "week"]]
-        ],
-        check_dtype=False,
-    )
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_extract_all_datetime_features(make_df):
+    X = make_df(CROSS_BACKEND_DATA)
+    Xt = DatetimeFeatures(features_to_extract="all").fit_transform(X)
 
-    # different order than they appear in the glossary
-    X = DatetimeFeatures(features_to_extract=["hour", "day_of_week"]).fit_transform(
-        df_datetime
-    )
-    pd.testing.assert_frame_equal(
-        X,
-        df_datetime_transformed[
-            vars_non_dt
-            + [var + "_" + feat for var in vars_dt for feat in ["hour", "day_of_week"]]
-        ],
-        check_dtype=False,
-    )
+    result = nw.from_native(Xt, eager_only=True)
+    expected = _expected_cross_backend_features(FEATURES_SUPPORTED)
+    assert result.columns == vars_non_dt + list(expected.keys())
+    for col, values in expected.items():
+        assert _to_py_values(result.get_column(col)) == values
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize(
+    "features", [["semester", "week"], ["hour", "day_of_week"]]
+)
+def test_extract_specified_datetime_features(make_df, features):
+    X = make_df(CROSS_BACKEND_DATA)
+    Xt = DatetimeFeatures(features_to_extract=features).fit_transform(X)
+
+    result = nw.from_native(Xt, eager_only=True)
+    expected = _expected_cross_backend_features(features)
+    assert result.columns == vars_non_dt + list(expected.keys())
+    for col, values in expected.items():
+        assert _to_py_values(result.get_column(col)) == values
 
 
 def test_extract_features_from_categorical_variable(
@@ -418,43 +433,53 @@ def test_extract_features_from_localized_tz_variables():
     pd.testing.assert_frame_equal(X, df_expected, check_dtype=False)
 
 
-def test_extract_features_without_dropping_original_variables(
-    df_datetime, df_datetime_transformed
-):
-    X = DatetimeFeatures(
-        variables=["datetime_range", "date_obj2"],
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_extract_features_without_dropping_original_variables(make_df):
+    data = dict(CROSS_BACKEND_DATA)
+    data["date2"] = CROSS_BACKEND_DATES
+    X = make_df(data)
+
+    Xt = DatetimeFeatures(
+        variables=["date", "date2"],
         features_to_extract=["week", "quarter"],
         drop_original=False,
-    ).fit_transform(df_datetime)
+    ).fit_transform(X)
 
-    pd.testing.assert_frame_equal(
-        X,
-        pd.concat(
-            [df_datetime_transformed[column] for column in vars_non_dt]
-            + [df_datetime[var] for var in vars_dt]
-            + [
-                df_datetime_transformed[feat]
-                for feat in [
-                    var + "_" + feat
-                    for var in ["datetime_range", "date_obj2"]
-                    for feat in ["week", "quarter"]
-                ]
-            ],
-            axis=1,
-        ),
-        check_dtype=False,
+    result = nw.from_native(Xt, eager_only=True)
+    expected_cols = (
+        vars_non_dt
+        + ["date", "date2"]
+        + [
+            f"{var}{FEATURES_SUFFIXES[feat]}"
+            for var in ["date", "date2"]
+            for feat in ["week", "quarter"]
+        ]
     )
+    assert result.columns == expected_cols
+    for col, values in _expected_cross_backend_features(["week", "quarter"]).items():
+        assert _to_py_values(result.get_column(col)) == values
+        assert _to_py_values(result.get_column(col.replace("date", "date2"))) == (
+            values
+        )
 
 
-def test_extract_features_from_variables_containing_nans():
-    X = DatetimeFeatures(
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_extract_features_from_variables_containing_nans(make_df):
+    X = make_df({"dates_na": ["2010-02-01", None, "1922-06-01", None]})
+    Xt = DatetimeFeatures(
         features_to_extract=["year"], missing_values="ignore"
-    ).fit_transform(dates_nan)
-    pd.testing.assert_frame_equal(
-        X,
-        pd.DataFrame({"dates_na_year": [2010, np.nan, 1922, np.nan]}),
-    )
-    # dt variable is index
+    ).fit_transform(X)
+
+    result = nw.from_native(Xt, eager_only=True).get_column("dates_na_year")
+    values = result.to_list()
+    assert values[0] == 2010 or values[0] == 2010.0
+    assert values[1] is None or (isinstance(values[1], float) and np.isnan(values[1]))
+    assert values[2] == 1922 or values[2] == 1922.0
+    assert values[3] is None or (isinstance(values[3], float) and np.isnan(values[3]))
+
+
+def test_extract_features_from_index_containing_nans():
+    # "index" is pandas-only: polars and other narwhals backends have no index.
     X = DatetimeFeatures(
         variables="index", features_to_extract=["month"], missing_values="ignore"
     ).fit_transform(dates_idx_nan)
@@ -470,6 +495,26 @@ def test_extract_features_from_variables_containing_nans():
             axis=1,
         ),
     )
+
+
+def test_polars_string_parsing_needs_explicit_format_for_ambiguous_dates():
+    # dayfirst/yearfirst are pandas.to_datetime-only: narwhals' generic
+    # str.to_datetime() has no day/year-first heuristic, so an ambiguous,
+    # non-ISO format needs an explicit `format` on non-pandas input.
+    X = pl.DataFrame({"date_obj1": ["01-Jan-2010", "24-Feb-1945"]})
+    transformer = DatetimeFeatures(variables="date_obj1", features_to_extract=["year"])
+    transformer.fit(X)
+    with pytest.raises(Exception, match="could not find an appropriate format"):
+        transformer.transform(X)
+
+    transformer = DatetimeFeatures(
+        variables="date_obj1", features_to_extract=["year"], format="%d-%b-%Y"
+    )
+    transformer.fit(X)
+    Xt = transformer.transform(X)
+    assert nw.from_native(Xt, eager_only=True).get_column(
+        "date_obj1_year"
+    ).to_list() == [2010, 1945]
 
 
 def test_extract_features_with_different_datetime_parsing_options(df_datetime):
@@ -490,6 +535,20 @@ def test_extract_features_with_different_datetime_parsing_options(df_datetime):
         pd.DataFrame({"date_obj2_year": [2010, 2009, 1995, 2004]}),
         check_dtype=False,
     )
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out_cross_backend(make_df):
+    X = make_df(CROSS_BACKEND_DATA)
+    transformer = DatetimeFeatures()
+    Xt = transformer.fit_transform(X)
+    result = nw.from_native(Xt, eager_only=True)
+    assert result.columns == transformer.get_feature_names_out()
+
+    transformer = DatetimeFeatures(drop_original=False)
+    Xt = transformer.fit_transform(X)
+    result = nw.from_native(Xt, eager_only=True)
+    assert result.columns == transformer.get_feature_names_out()
 
 
 def test_get_feature_names_out(df_datetime, df_datetime_transformed):
