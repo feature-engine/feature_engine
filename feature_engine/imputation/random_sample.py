@@ -332,8 +332,6 @@ class RandomSampleImputer(BaseImputer):
         return X
 
     def _transform_narwhals(self, X):
-        nw_X = nw.from_native(X, eager_only=True)
-        nw_pool = nw.from_native(self.X_, eager_only=True)
 
         if self.seed == "general":
             for feature in self.variables_:
