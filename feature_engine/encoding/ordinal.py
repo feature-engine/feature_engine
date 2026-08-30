@@ -208,9 +208,9 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         """
 
         if self.encoding_method == "ordered":
-            X, y = check_X_y(X, y)
+            nw_X, y = check_X_y(X, y)
         else:
-            X = check_X(X)
+            nw_X = check_X(X)
 
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
@@ -222,9 +222,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # the encode/transform hot path in base_encoder.py, which is only
         # ~1.1x), so pandas keeps its native groupby/unique fast path and
         # only polars (and other backends) go through narwhals.
-        is_pandas = nwd.is_pandas_dataframe(X)
-
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             for var in variables_:
                 if self.encoding_method == "ordered":
                     if nwd.is_pandas_series(y):
@@ -258,8 +256,6 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                     )
                 self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
         else:
-            nw_X = nw.from_native(X, eager_only=True)
-
             if self.encoding_method == "ordered":
                 # y may already be a Series (polars, from check_X_y) or a
                 # plain numpy array (sklearn's column_or_1d path for
