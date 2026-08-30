@@ -27,14 +27,14 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        X: dataframe.
-            The same dataframe entered by the user.
+        X: narwhals dataframe.
+            The narwhalified version of the dataframe entered by the user.
         """
         check_is_fitted(self)
-        check_X(X)
+        nw_X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        return X
+        return nw_X
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -50,7 +50,7 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         X_new: dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the selected variables.
         """
-        X = self._transform(X)
+        nw_X = self._transform(X)
 
         # pandas-native fillna is ~1.3-1.6x faster than narwhals-generic
         # fill_null equivalent at the 10k-100k
@@ -58,7 +58,6 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             X = X.fillna(value=self.imputer_dict_)
             X = X.infer_objects()
         else:
-            nw_X = nw.from_native(X, eager_only=True)
             nw_X = nw_X.with_columns(
                 nw.col(var).fill_null(value)
                 for var, value in self.imputer_dict_.items()
