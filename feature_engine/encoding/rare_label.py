@@ -5,7 +5,6 @@ import warnings
 from typing import List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -223,7 +222,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             y is not required. You can pass y or None.
         """
 
-        X = check_X(X)
+        nw_X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
@@ -232,7 +231,6 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # n_unique() counts a null as its own category, matching pandas'
         # plain unique() (used for the cardinality check below), unlike
         # pandas' nunique() which drops nulls by default.
-        nw_X = nw.from_native(X, eager_only=True)
         for var in variables_:
             col = nw_X.get_column(var)
 
@@ -287,7 +285,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             The dataframe where rare categories have been grouped.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # check if dataset contains na
         if self.missing_values == "raise":
@@ -296,12 +294,16 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # a pandas Categorical column rejects an unseen label on assignment
         # until the label is added to its categories; narwhals has no
         # cross-backend equivalent (polars has no comparable dtype
-        # restriction here), so this stays a native pandas step.
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
+        # restriction here), so this stays a native pandas step. Operate on a
+        # copy so the user's dataframe is not mutated.
+        if nw_X.implementation.is_pandas():
+            native_X = nw_X.to_native().copy()
             for feature in self.variables_:
-                if X[feature].dtype == "category":
-                    X[feature] = X[feature].cat.add_categories(self.replace_with)
+                if native_X[feature].dtype == "category":
+                    native_X[feature] = native_X[feature].cat.add_categories(
+                        self.replace_with
+                    )
+            nw_X = nw.from_native(native_X, eager_only=True)
 
         # nw.when(<Series>).then(<Series>).otherwise(nw.lit(...)) lets each
         # column keep its own dtype where frequent, and take the (possibly
@@ -314,7 +316,6 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # broadcasts replace_with natively instead of materialising a
         # same-length replacement array (benchmarked ~1.7x faster than the
         # zip_with(col, new_series(...)) equivalent at 100k rows).
-        nw_X = nw.from_native(X, eager_only=True)
         new_columns = []
         for feature in self.variables_:
             col = nw_X.get_column(feature)
