@@ -41,17 +41,35 @@ class TransformXyMixin:
             The transformed target variable of length [n_samples - n_rows]. It contains
             as many rows as those left in X_new.
         """
-        X, y = check_X_y(X, y)
+        # check_X_y validates X against y and returns X as a narwhals dataframe;
+        # y stays native.
+        nw_X, y = check_X_y(X, y)
 
-        if nwd.is_pandas_dataframe(X) is True:
+        if nw_X.implementation.is_pandas():
+            # pandas rows carry labels, so y can be realigned on the index of
+            # the rows that transform() kept.
             X = self.transform(X)
             y = y.loc[X.index]
         else:
+            # positional backends (polars, pyarrow, ...) have no row labels:
+            # tag each row with its position, transform, then use the tags that
+            # survived to subset y.
             row_index_col = "__feature_engine_row_index__"
-            nw_X = nw.from_native(X, eager_only=True).with_row_index(row_index_col)
-            X = self.transform(nw_X.to_native())
+            nw_X = nw_X.with_row_index(row_index_col)
+            # the tag column leaves X one column wider than the training set,
+            # which transform()'s column-count check (when the transformer has
+            # one) would reject. Widen the reference by one for the duration of
+            # this internal call only.
+            has_count_check = hasattr(self, "n_features_in_")
+            if has_count_check:
+                self.n_features_in_ += 1
+            try:
+                X = self.transform(nw_X.to_native())
+            finally:
+                if has_count_check:
+                    self.n_features_in_ -= 1
             nw_X = nw.from_native(X, eager_only=True)
-            row_positions = nw_X.get_column(row_index_col)
+            row_positions = nw_X.get_column(row_index_col).to_list()
             X = nw_X.drop(row_index_col).to_native()
             if nwd.is_into_series(y):
                 y = nw.from_native(y, series_only=True)[row_positions].to_native()

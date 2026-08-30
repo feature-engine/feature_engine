@@ -346,7 +346,9 @@ class RandomSampleImputer(BaseImputer):
                             n_samples, with_replacement=True, seed=self.random_state
                         )
                     )
-                    nw_X = X.with_columns(col.scatter(positions, random_sample))
+                    # reassign X so each variable's imputation is carried over
+                    # to the next iteration
+                    X = X.with_columns(col.scatter(positions, random_sample))
 
         elif self.seed == "observation" and self.random_state:
             # Vectorized stand-in for pandas' .loc-based per-row seed lookup:
@@ -360,7 +362,7 @@ class RandomSampleImputer(BaseImputer):
                 internal_seeds = np.round(seed_values.prod(axis=1), 0).astype(int)
 
             for feature in self.variables_:
-                col = nw_X[feature]
+                col = X[feature]
                 null_mask = col.is_null()
                 if int(null_mask.sum()) > 0:
                     positions = null_mask.arg_true().to_list()
@@ -371,9 +373,11 @@ class RandomSampleImputer(BaseImputer):
                         ).item()
                         for pos in positions
                     ]
-                    nw_X = X.with_columns(col.scatter(positions, random_values))
+                    # reassign X so each variable's imputation is carried over
+                    # to the next iteration
+                    X = X.with_columns(col.scatter(positions, random_values))
 
-        return nw_X
+        return X.to_native()
 
     def _more_tags(self):
         tags_dict = _return_tags()
