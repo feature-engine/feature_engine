@@ -4,7 +4,6 @@
 import warnings
 from typing import List, Optional, Union
 
-import narwhals as nw
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -217,7 +216,7 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         y: Series, default = None
             y is not needed in this encoder. You can pass y or None.
         """
-        X = check_X(X)
+        nw_X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
@@ -235,7 +234,6 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # has no dropna param and keeps NaN as a countable category otherwise.
         # sort=True matches pandas' own value_counts() default (descending
         # by count), so encoder_dict_ has the same category order as before.
-        nw_X = nw.from_native(X, eager_only=True)
         for var in variables_:
             counts = nw_X.get_column(var).drop_nulls().value_counts(
                 sort=True, normalize=normalize
