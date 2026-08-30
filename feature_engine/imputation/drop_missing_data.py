@@ -224,8 +224,9 @@ class DropMissingData(BaseImputer, TransformXyMixin):
             [n_samples - n_samples_with_na, n_features]
         """
 
-        X = self._transform(X)
-        return self._select_rows(X, keep=True)
+        nw_X = self._transform(X)
+        # TODO
+        return self._select_rows(nw_X, keep=True)
 
     def return_na_data(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -256,16 +257,14 @@ class DropMissingData(BaseImputer, TransformXyMixin):
             # evaluate missingness on, so nothing can ever be "missing".
             if keep is True:
                 return X
-            is_pandas = nwd.is_pandas_dataframe(X)
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X):
                 return X.iloc[:0]
-            return nw.from_native(X, eager_only=True).head(0).to_native()
+            return X.head(0).to_native()
 
-        is_pandas = nwd.is_pandas_dataframe(X)
         # Benchmarked: a numpy-backed mask beats both pandas' own axis=1
         # isnull()/notna().sum() (a known-slow reduction) and the narwhals
         # path below, so pandas keeps this dedicated fast path.
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             if self.threshold is not None:
                 non_null_count = X[self.variables_].notna().to_numpy().sum(axis=1)
                 mask = non_null_count >= len(self.variables_) * self.threshold
@@ -275,7 +274,6 @@ class DropMissingData(BaseImputer, TransformXyMixin):
                 mask = ~mask
             return X[mask]
         else:
-            nw_X = nw.from_native(X, eager_only=True)
             if self.threshold is not None:
                 non_null_count = nw.sum_horizontal(
                     (~nw.col(var).is_null()).cast(nw.Int64)
@@ -289,7 +287,7 @@ class DropMissingData(BaseImputer, TransformXyMixin):
                 )
             if keep is False:
                 expr = ~expr
-            return nw_X.filter(expr).to_native()
+            return X.filter(expr).to_native()
 
     def _more_tags(self):
         tags_dict = _return_tags()
