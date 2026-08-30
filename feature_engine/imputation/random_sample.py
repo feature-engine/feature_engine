@@ -221,7 +221,7 @@ class RandomSampleImputer(BaseImputer):
         """
 
         # check input dataframe
-        check_X(X)
+        nw_X = check_X(X)
 
         # find variables to impute
         if self.variables is None:
@@ -230,11 +230,10 @@ class RandomSampleImputer(BaseImputer):
             variables_ = check_all_variables(X, self.variables)
 
         # take a copy of the selected variables
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             X_ = X[variables_].copy()
         else:
-            X_ = nw.from_native(X, eager_only=True).select(variables_).to_native()
+            X_ = nw_X.select(variables_)
 
         # check the variables assigned to the random state
         if self.seed == "observation":
@@ -272,20 +271,12 @@ class RandomSampleImputer(BaseImputer):
             The dataframe without missing values in the transformed variables.
         """
 
-        X = self._transform(X)
+        nw_X = self._transform(X)
 
-        # pandas' .sample() and narwhals/polars' .sample() use different RNGs,
-        # so they never draw the same values for the same seed - "same seed,
-        # same backend" is the reproducibility contract here, not cross-backend
-        # value parity. The pandas branch keeps the original .loc-based logic
-        # verbatim (bit-identical to pre-migration behaviour); the narwhals
-        # branch is a positional (index-free) reimplementation for polars and
-        # other narwhals backends.
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             X = self._transform_pandas(X)
         else:
-            X = self._transform_narwhals(X)
+            X = self._transform_narwhals(nw_X)
 
         return X
 
@@ -346,26 +337,26 @@ class RandomSampleImputer(BaseImputer):
 
         if self.seed == "general":
             for feature in self.variables_:
-                col = nw_X[feature]
+                col = X[feature]
                 null_mask = col.is_null()
                 n_samples = int(null_mask.sum())
                 if n_samples > 0:
                     positions = null_mask.arg_true()
                     random_sample = (
-                        nw_pool[feature]
+                        self.X_[feature]
                         .drop_nulls()
                         .sample(
                             n_samples, with_replacement=True, seed=self.random_state
                         )
                     )
-                    nw_X = nw_X.with_columns(col.scatter(positions, random_sample))
+                    nw_X = X.with_columns(col.scatter(positions, random_sample))
 
         elif self.seed == "observation" and self.random_state:
             # Vectorized stand-in for pandas' .loc-based per-row seed lookup:
             # narwhals dataframes are positional (no row labels), so the seed
             # for every row is computed up-front with numpy instead of in a
             # per-row .loc lookup.
-            seed_values = nw_X.select(self.random_state).to_numpy()
+            seed_values = X.select(self.random_state).to_numpy()
             if self.seeding_method == "add":
                 internal_seeds = np.round(seed_values.sum(axis=1), 0).astype(int)
             else:
@@ -376,16 +367,16 @@ class RandomSampleImputer(BaseImputer):
                 null_mask = col.is_null()
                 if int(null_mask.sum()) > 0:
                     positions = null_mask.arg_true().to_list()
-                    pool = nw_pool[feature].drop_nulls()
+                    pool = self.X_[feature].drop_nulls()
                     random_values = [
                         pool.sample(
                             1, with_replacement=True, seed=int(internal_seeds[pos])
                         ).item()
                         for pos in positions
                     ]
-                    nw_X = nw_X.with_columns(col.scatter(positions, random_values))
+                    nw_X = X.with_columns(col.scatter(positions, random_values))
 
-        return nw_X.to_native()
+        return nw_X
 
     def _more_tags(self):
         tags_dict = _return_tags()
