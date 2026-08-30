@@ -60,9 +60,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     existing datetime or object-like variables or from the dataframe index.
 
     DatetimeFeatures works with pandas, polars, and any other narwhals-supported
-    dataframe. For pandas input, it uses `pandas.to_datetime` and pandas' `.dt`
-    accessor to parse and extract features. For other backends, it uses narwhals'
-    equivalent operations; `dayfirst`, `yearfirst` and `utc` are pandas-only parsing
+    dataframe. `dayfirst`, `yearfirst` and `utc` are pandas-only parsing
     options and have no effect on non-pandas input, so use `format` there instead.
 
     The transformer supports the extraction of the following features:
