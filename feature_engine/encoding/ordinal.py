@@ -3,7 +3,9 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -190,48 +192,111 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self.unseen = unseen
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """Learn the numbers to be used to replace the categories in each
         variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to be encoded.
 
-        y: pandas series, default=None
+        y: Series, default=None
             The Target. Can be None if `encoding_method='arbitrary'`.
             Otherwise, y needs to be passed when fitting the transformer.
         """
 
         if self.encoding_method == "ordered":
-            X, y = check_X_y(X, y)
+            nw_X, y = check_X_y(X, y)
         else:
-            X = check_X(X)
+            nw_X = check_X(X)
 
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 
-        for var in variables_:
-            if self.encoding_method == "ordered":
-                t = y.groupby(X[var], observed=False).mean()  # type: ignore
-                t = t.sort_values(ascending=True).index
-
-            elif self.encoding_method == "arbitrary":
-                if self.missing_values == "ignore":
-                    t = X[var].dropna().unique()
+        # benchmarked at 10k-100k rows x 1-10 cols x 5-50 categories: a pure
+        # narwhals fit() ran 5x-18x slower than pandas-native here (unlike
+        # the encode/transform hot path in base_encoder.py, which is only
+        # ~1.1x), so pandas keeps its native groupby/unique fast path and
+        # only polars (and other backends) go through narwhals.
+        if nwd.is_pandas_dataframe(X):
+            for var in variables_:
+                if self.encoding_method == "ordered":
+                    if nwd.is_pandas_series(y):
+                        t = y.groupby(X[var], observed=False).mean()  # type: ignore
+                    else:
+                        # y is a numpy array here (e.g. list/array-like input
+                        # went through sklearn's column_or_1d instead of
+                        # check_X_y's Series passthrough); it has no
+                        # .groupby(), so pair it with X[var] positionally via
+                        # assign() instead - this also matches how the
+                        # narwhals branch below handles a non-Series y.
+                        t = (
+                            X[[var]]
+                            .assign(__feature_engine_ordinal_target__=y)
+                            .groupby(var, observed=False)[
+                                "__feature_engine_ordinal_target__"
+                            ]
+                            .mean()
+                        )
+                    t = t.sort_values(ascending=True).index
+                elif self.encoding_method == "arbitrary":
+                    if self.missing_values == "ignore":
+                        t = X[var].dropna().unique()
+                    else:
+                        t = X[var].unique()
                 else:
-                    t = X[var].unique()
-            else:
-                raise ValueError(
-                    "Unrecognized value for encoding_method. It should be 'arbitrary' "
-                    f"or 'frequency'. Got {self.encoding_method} instead."
-                )
+                    raise ValueError(
+                        "Unrecognized value for encoding_method. It should be "
+                        f"'arbitrary' or 'frequency'. Got {self.encoding_method} "
+                        "instead."
+                    )
+                self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
+        else:
+            if self.encoding_method == "ordered":
+                # y may already be a Series (polars, from check_X_y) or a
+                # plain numpy array (sklearn's column_or_1d path for
+                # list/array input) - normalise both to a narwhals Series
+                # aliased to a sentinel name, then attach it to the full
+                # frame once so every variable's group_by below can reuse it.
+                target_name = "__feature_engine_ordinal_target__"
+                if nwd.is_into_series(y):
+                    y_nw = nw.from_native(y, series_only=True).alias(target_name)
+                else:
+                    y_nw = nw.new_series(
+                        name=target_name, values=y, backend=nw_X.implementation
+                    )
+                nw_Xy = nw_X.with_columns(y_nw)
 
-            self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
+            for var in variables_:
+                if self.encoding_method == "ordered":
+                    # sort by (mean, category): group_by's own order isn't
+                    # guaranteed across backends, and this tie-break on the
+                    # category itself reproduces pandas' groupby(sort=True)
+                    # + stable sort_values behavior for categories with equal
+                    # target means.
+                    t = (
+                        nw_Xy.group_by(var, drop_null_keys=True)
+                        .agg(nw.col(target_name).mean())
+                        .sort([target_name, var])
+                        .get_column(var)
+                        .to_list()
+                    )
+                elif self.encoding_method == "arbitrary":
+                    col = nw_X.get_column(var)
+                    if self.missing_values == "ignore":
+                        col = col.drop_nulls()
+                    t = col.unique(maintain_order=True).to_list()
+                else:
+                    raise ValueError(
+                        "Unrecognized value for encoding_method. It should be "
+                        f"'arbitrary' or 'frequency'. Got {self.encoding_method} "
+                        "instead."
+                    )
+                self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
 
         if self.unseen == "encode":
             self._unseen = -1

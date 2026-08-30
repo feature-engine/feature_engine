@@ -532,6 +532,62 @@ might otherwise go unnoticed.
 The power of ordinal ordered encoder resides in its intrinsic capacity of finding monotonic relationships.
 
 
+With polars
+~~~~~~~~~~~
+
+:class:`OrdinalEncoder()` works the same way with a polars dataframe. Let's create a toy dataset:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import OrdinalEncoder
+
+    X = pl.DataFrame({
+        "city": ["London", "Manchester", "Liverpool", "London", "Manchester", "Liverpool"],
+        "price": [500, 300, 250, 520, 310, 260],
+    })
+    y = pl.Series("target", [1, 0, 0, 1, 0, 1])
+
+Let's set up :class:`OrdinalEncoder()` to encode `city` with ordered ordinal encoding, and fit it to the data:
+
+.. code:: python
+
+    encoder = OrdinalEncoder(encoding_method="ordered", variables=["city"])
+    encoder.fit(X, y)
+
+    encoder.encoder_dict_
+
+We see the resulting mappings from category to integer:
+
+.. code:: python
+
+    {'city': {'Manchester': 0, 'Liverpool': 1, 'London': 2}}
+
+Now let's transform the data:
+
+.. code:: python
+
+    encoder.transform(X)
+
+We obtain a polars dataframe with the categories in `city` replaced by their ordinal number:
+
+.. code:: text
+
+    shape: (6, 2)
+    ┌──────┬───────┐
+    │ city ┆ price │
+    │ ---  ┆ ---   │
+    │ i64  ┆ i64   │
+    ╞══════╪═══════╡
+    │ 2    ┆ 500   │
+    │ 0    ┆ 300   │
+    │ 1    ┆ 250   │
+    │ 2    ┆ 520   │
+    │ 0    ┆ 310   │
+    │ 1    ┆ 260   │
+    └──────┴───────┘
+
+
 Additional resources
 --------------------
 
