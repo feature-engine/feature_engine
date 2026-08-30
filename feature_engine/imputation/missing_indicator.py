@@ -164,7 +164,7 @@ class MissingIndicator(BaseImputer):
         """
 
         # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # find variables for which indicator should be added
         if self.variables is None:
