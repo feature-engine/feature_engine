@@ -240,7 +240,6 @@ class CategoricalImputer(BaseImputer):
 
                 X = X.fillna(self.imputer_dict_)
             else:
-                nw_X = nw.from_native(X, eager_only=True)
                 schema = nw_X.schema
                 for variable in self.variables_:
                     dtype = schema[variable]
