@@ -251,7 +251,7 @@ class CategoricalImputer(BaseImputer):
             X = self._transform(X)
 
             is_pandas = nwd.is_pandas_dataframe(X)
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X):
                 # if variable is of type category, we need to add the new
                 # category, before filling in the nan. Copy first so the
                 # in-place column reassignment doesn't mutate the caller's
