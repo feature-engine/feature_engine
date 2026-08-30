@@ -193,7 +193,6 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         if self.threshold is None and self.missing_only is True:
             # Benchmarked: a per-column isnull().sum() loop beats a narwhals-
             # generic call on pandas input, matching MissingIndicator's split.
-            is_pandas = nwd.is_pandas_dataframe(X)
             if nwd.is_pandas_dataframe(X):
                 variables_ = [
                     var for var in variables_ if X[var].isnull().sum() > 0
