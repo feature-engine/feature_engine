@@ -181,7 +181,7 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         """
 
         # check input dataframe
-        check_X(X)
+        nw_X = check_X(X)
 
         # find variables for which indicator should be added
         if self.variables is None:
