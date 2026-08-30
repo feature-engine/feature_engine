@@ -2,7 +2,6 @@ from datetime import timezone
 from typing import Dict, List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from dateutil.parser import parse as _dateutil_parse
 from narwhals.typing import IntoDataFrame, IntoSeries
@@ -291,7 +290,7 @@ class DatetimeSubtraction(BaseCreation):
             _check_contains_na(X, vars)
 
         # save input features
-        nw_X.columns
+        self.feature_names_in_ = nw_X.columns
 
         # save train set shape
         self.n_features_in_ = nw_X.shape[1]
@@ -326,7 +325,7 @@ class DatetimeSubtraction(BaseCreation):
             vars = list(set(self.variables_ + self.reference_))
             _check_contains_na(X, vars)
 
-        dt_arrays = self._to_datetime(nw_X, is_pandas)
+        dt_arrays = self._to_datetime(nw_X)
 
         new_series = self._sub(dt_arrays, nw_X.implementation)
 
@@ -337,11 +336,10 @@ class DatetimeSubtraction(BaseCreation):
 
         return nw_X.to_native()
 
-    def _to_datetime(
-        self, nw_X: nw.DataFrame,
-    ) -> Dict[str, np.ndarray]:
+    def _to_datetime(self, nw_X: nw.DataFrame) -> Dict[str, np.ndarray]:
         """Convert the variables and reference columns to numpy datetime64 arrays."""
         needed = sorted(set(self.variables_ + self.reference_))
+        is_pandas = nw_X.implementation.is_pandas()
 
         # pandas.to_datetime honours dayfirst/yearfirst/utc precisely; grab the
         # native namespace once (no `import pandas`) rather than per-column.
