@@ -215,7 +215,6 @@ class EndTailImputer(BaseImputer):
 
         # Narwhals aggregation matches/beats pandas-native on pandas and is
         # 3-10x faster on polars (benchmarked), so one path serves both backends.
-        nw_X = nw.from_native(X, eager_only=True)
         exprs = [self._end_value_expr(v) for v in variables_]
         agg = nw_X.select(*exprs)
         imputer_dict_ = {k: v[0] for k, v in agg.to_dict(as_series=False).items()}
