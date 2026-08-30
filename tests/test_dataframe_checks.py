@@ -1,3 +1,4 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -28,8 +29,8 @@ from feature_engine.dataframe_checks import (
 def test_check_X_returns_df_unchanged(make_df, assert_equal_fn):
     df = make_df({"a": [1, 2, 3], "b": [4.0, 5.0, 6.0]})
     X = check_X(df)
-    assert isinstance(X, type(df))
-    assert_equal_fn(X, df)
+    assert isinstance(X, nw.DataFrame)
+    assert_equal_fn(X.to_native(), df)
 
 
 @pytest.mark.parametrize(
@@ -45,7 +46,9 @@ def test_check_X_returns_df_with_mixed_dtypes(make_df, assert_equal_fn):
         "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
     }
     df = make_df(data)
-    assert_equal_fn(check_X(df), df)
+    X = check_X(df)
+    assert isinstance(X, nw.DataFrame)
+    assert_equal_fn(X.to_native(), df)
 
 
 @pytest.mark.parametrize(
@@ -265,8 +268,8 @@ def test_check_X_y_returns_df_and_series_unchanged(
     df = make_df({"a": [1, 2, 3], "b": [4, 5, 6]})
     s = make_series([0, 1, 2])
     X, y = check_X_y(df, s)
-    assert isinstance(X, type(df)) and isinstance(y, type(s))
-    assert_frame_fn(X, df)
+    assert isinstance(X, nw.DataFrame) and isinstance(y, type(s))
+    assert_frame_fn(X.to_native(), df)
     assert_series_fn(y, s)
 
 
@@ -278,7 +281,8 @@ def test_check_X_y_returns_df_and_multioutput_y_unchanged(make_df, assert_frame_
     df = make_df({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]})
     d = make_df({"t1": [1, 2, 3, 4], "t2": [5, 6, 7, 8]})
     X, y = check_X_y(df, d)
-    assert_frame_fn(X, df)
+    assert isinstance(X, nw.DataFrame)
+    assert_frame_fn(X.to_native(), df)
     assert_frame_fn(y, d)
 
 
@@ -299,7 +303,8 @@ def test_check_X_y_with_array_like_y_returns_check_y_output(
 ):
     df = make_df({"a": [1, 2, 3], "b": [4, 5, 6]})
     X, y_out = check_X_y(df, y)
-    assert_frame_fn(X, df)
+    assert isinstance(X, nw.DataFrame)
+    assert_frame_fn(X.to_native(), df)
     np.testing.assert_array_equal(y_out, check_y(y))
 
 
@@ -308,7 +313,8 @@ def test_check_X_y_returns_pandas_with_non_typical_index():
     df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
     s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
     x, y = check_X_y(df, s)
-    assert_frame_equal(df, x)
+    assert isinstance(x, nw.DataFrame)
+    assert_frame_equal(df, x.to_native())
     assert_series_equal(s, y)
 
 

@@ -8,11 +8,11 @@ import narwhals as nw
 import narwhals.dependencies as nwd
 import narwhals.selectors as nws
 import numpy as np
-from narwhals.typing import IntoDataFrame, IntoDataFrameT, IntoSeries
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.utils.validation import _check_y, check_consistent_length, column_or_1d
 
 
-def check_X(X: IntoDataFrameT) -> IntoDataFrameT:
+def check_X(X: IntoDataFrame) -> IntoDataFrame:
     """
     Checks that X is a dataframe from any library supported by narwhals (for example
     pandas, polars, modin, cuDF, or PyArrow).
@@ -34,8 +34,8 @@ def check_X(X: IntoDataFrameT) -> IntoDataFrameT:
 
     Returns
     -------
-    X : dataframe.
-        The validated dataframe in its native format.
+    X : narwhals dataframe.
+        The validated dataframe in narwhals format.
     """
     if nwd.is_into_dataframe(X):
         # from_native() raises narwhals.exceptions.DuplicateError, a ValueError
@@ -53,7 +53,7 @@ def check_X(X: IntoDataFrameT) -> IntoDataFrameT:
             f"(e.g. pandas, polars, PyArrow). Got {type(X)} instead."
         )
 
-    return nw_X.to_native()
+    return nw_X
 
 
 def check_y(
@@ -121,10 +121,10 @@ def check_y(
 
 
 def check_X_y(
-    X: IntoDataFrameT,
+    X: IntoDataFrame,
     y: Union[IntoSeries, IntoDataFrame, np.generic, np.ndarray, List],
     y_numeric: bool = False,
-) -> Tuple[IntoDataFrameT, Union[IntoSeries, IntoDataFrame, np.ndarray]]:
+) -> Tuple[IntoDataFrame, Union[IntoSeries, IntoDataFrame, np.ndarray]]:
     """
     Ensures X and y are compatible dataframe/array-like objects with a consistent
     number of rows. If both are pandas objects, checks that their indexes match.
@@ -156,16 +156,16 @@ def check_X_y(
 
     Returns
     -------
-    X: dataframe
+    X: narwhals dataframe
     y: Series, DataFrame, or numpy array
     """
     X = check_X(X)
     y = check_y(y, y_numeric=y_numeric)
     check_consistent_length(X, y)
 
-    if nwd.is_pandas_dataframe(X):
+    if X.implementation.is_pandas():
         if nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y):
-            if not X.index.equals(y.index):
+            if not X.to_native().index.equals(y.index):
                 raise ValueError("The indexes of X and y do not match.")
 
     return X, y
