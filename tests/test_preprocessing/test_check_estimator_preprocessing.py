@@ -14,6 +14,7 @@ from tests.estimator_checks.estimator_checks import (
     check_feature_engine_estimator,
     test_df,
 )
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
@@ -51,7 +52,10 @@ else:
         ],
     )
     def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+        return check_estimator(
+            estimator=wrap_for_check_estimator(estimator),
+            expected_failed_checks=failed_tests,
+        )
 
 
 @pytest.mark.parametrize("estimator", [MatchCategories(), MatchVariables()])

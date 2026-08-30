@@ -16,6 +16,7 @@ from tests.estimator_checks.estimator_checks import check_feature_engine_estimat
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
 )
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
@@ -37,7 +38,7 @@ if sklearn_version > parse_version("1.6"):
     @pytest.mark.parametrize("estimator", _estimators)
     def test_check_estimator_from_sklearn(estimator):
         return check_estimator(
-            estimator=estimator,
+            estimator=wrap_for_check_estimator(estimator),
             expected_failed_checks=estimator._more_tags()["_xfail_checks"],
         )
 
