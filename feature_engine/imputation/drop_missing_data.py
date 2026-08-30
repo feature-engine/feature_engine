@@ -198,7 +198,6 @@ class DropMissingData(BaseImputer, TransformXyMixin):
                     var for var in variables_ if X[var].isnull().sum() > 0
                 ]
             else:
-                nw_X = nw.from_native(X, eager_only=True)
                 null_counts = nw_X.select(variables_).null_count().row(0)
                 variables_ = [
                     var for var, count in zip(variables_, null_counts) if count > 0
