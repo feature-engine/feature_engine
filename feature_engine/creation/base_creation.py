@@ -100,7 +100,6 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe. As in fit, the checks below detect the
         # backend themselves, so keep working with the native X.
         check_X(X)
 
