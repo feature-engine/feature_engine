@@ -143,9 +143,7 @@ class RandomSampleImputer(BaseImputer):
     3  0.0  a
     4  1.0  a
 
-    With polars, sampling is reproducible for a given seed and backend, but a
-    pandas seed and a polars seed do not draw the same values (see the "With
-    polars" section of the user guide):
+    With polars:
 
     >>> import polars as pl
     >>> X = pl.DataFrame(dict(
