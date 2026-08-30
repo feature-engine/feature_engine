@@ -255,7 +255,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             Target. It is not needed in this encoder. You can pass y or None.
         """
 
-        X = check_X(X)
+        nw_X = check_X(X)
         variables_ = self._check_or_select_variables(X)
 
         if self.keywords and not all(
@@ -283,7 +283,6 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         # "impute" can fill_null("") directly and "ignore" can drop_nulls()
         # before casting, with no leftover "nan"/"<NA>" text sentinels to
         # special-case downstream.
-        nw_X = nw.from_native(X, eager_only=True)
         for var in cols_to_iterate:
             col = nw_X.get_column(var)
             if self.missing_values == "impute":
@@ -330,12 +329,12 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         """
 
         check_is_fitted(self)
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
         if len(self.variables_) == 0:
-            return X
+            return nw_X.to_native()
 
         # String similarity (difflib.SequenceMatcher) has no vectorised
         # narwhals/backend equivalent, so it is computed in numpy: the
@@ -350,7 +349,6 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         # (as used in DecisionTreeFeatures) would save at most ~10ms out of
         # a transform that is already tens of ms to seconds - not worth the
         # code duplication here.
-        nw_X = nw.from_native(X, eager_only=True)
         new_series = []
         for var in self.variables_:
             col = nw_X.get_column(var)
