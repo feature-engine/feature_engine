@@ -205,7 +205,7 @@ class EndTailImputer(BaseImputer):
             y is not needed in this imputation. You can pass None or y.
         """
         # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
