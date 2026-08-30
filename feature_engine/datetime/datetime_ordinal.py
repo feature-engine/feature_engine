@@ -267,8 +267,6 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
-        # Convert to narwhals once here and back to native once in the
-        # per-backend helpers - no other round-trips in between.
         nw_X = nw.from_native(X, eager_only=True)
 
         # variables can be native Date/Datetime columns, or string/categorical
