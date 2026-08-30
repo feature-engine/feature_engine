@@ -310,7 +310,7 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
         """
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
 
         # confirm model type and target variables are compatible.
         if self.regression is True:
@@ -336,8 +336,6 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             self.variables_ = variables_
             self._get_feature_names_in(X)
             return self
-
-        nw_X = nw.from_native(X, eager_only=True)
 
         # only needed for "ordered": pairs the target with X once so every
         # variable's group_by below can reuse it, instead of rebuilding it
@@ -382,9 +380,9 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         X_new: dataframe of shape = [n_samples, n_features].
             Dataframe with variables encoded with decision tree predictions.
         """
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        X = self._encode(X)
+        X = self._encode(nw_X)
 
         return X
 
