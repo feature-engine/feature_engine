@@ -71,6 +71,7 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # fill_null equivalent at the 10k-100k
         if nwd.is_pandas_dataframe(X):
             X = X.fillna(value=self.imputer_dict_)
+            X = X.infer_objects()
         else:
             nw_X = nw.from_native(X, eager_only=True)
             nw_X = nw_X.with_columns(
