@@ -223,7 +223,7 @@ class RandomSampleImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # find variables to impute
         if self.variables is None:
@@ -292,6 +292,12 @@ class RandomSampleImputer(BaseImputer):
         return X
 
     def _transform_pandas(self, X):
+        # copy first: the .loc assignments below fill NaNs in place, and
+        # BaseImputer._transform no longer returns a copy (#1002), so without
+        # this the caller's dataframe (and self.X_ when it is the same object)
+        # would be mutated.
+        X = X.copy()
+
         # random sampling with a general seed
         if self.seed == "general":
             for feature in self.variables_:
