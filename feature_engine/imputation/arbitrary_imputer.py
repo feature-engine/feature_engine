@@ -1,11 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
-import pandas as pd
-
-import warnings
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
@@ -120,6 +119,28 @@ class ArbitraryImputer(BaseImputer):
     2    1.0    b
     3    0.0  NaN
     4 -999.0    a
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.imputation import ArbitraryImputer
+    >>> X = pl.DataFrame({"x1": [None, 1, 1, 0, None],
+    >>>                   "x2": ["a", None, "b", None, "a"]})
+    >>> ai = ArbitraryImputer(arbitrary_number=-999)
+    >>> ai.fit(X)
+    >>> ai.transform(X)
+    shape: (5, 2)
+    ┌──────┬──────┐
+    │ x1   ┆ x2   │
+    │ ---  ┆ ---  │
+    │ i64  ┆ str  │
+    ╞══════╪══════╡
+    │ -999 ┆ a    │
+    │ 1    ┆ null │
+    │ 1    ┆ b    │
+    │ 0    ┆ null │
+    │ -999 ┆ a    │
+    └──────┴──────┘
     """
 
     def __init__(
@@ -144,13 +165,13 @@ class ArbitraryImputer(BaseImputer):
 
         self.imputer_dict = imputer_dict
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This method does not learn any parameter.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset.
 
         y: None
@@ -158,11 +179,11 @@ class ArbitraryImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # find or check for numerical variables
         # create the imputer dictionary
-        if self.imputer_dict:
+        if self.imputer_dict is not None:
             variables_ = check_numerical_variables(
                 X, list(self.imputer_dict.keys())
             )

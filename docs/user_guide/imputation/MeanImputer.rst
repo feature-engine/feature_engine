@@ -310,6 +310,55 @@ center of the distribution:
 Because of the increase in the number of observations at the center, the variance of 
 the variable decreases, and the kurtosis coefficient increases.
 
+With polars
+-----------
+
+:class:`MeanImputer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+	import polars as pl
+	from feature_engine.imputation import MeanImputer
+
+	df = pl.DataFrame({
+	    "Age": [20, 21, 19, None, 23, 40, 41, 37],
+	    "Marks": [0.9, 0.8, 0.7, None, 0.3, None, 0.8, 0.6],
+	})
+
+	transformer = MeanImputer(imputation_method="mean")
+	transformer.fit(df)
+
+	print(transformer.imputer_dict_)
+
+The learned mean values match those found with pandas:
+
+.. code:: text
+
+	{'Age': 28.714285714285715, 'Marks': 0.6833333333333332}
+
+.. code:: python
+
+	print(transformer.transform(df))
+
+.. code:: text
+
+	shape: (8, 2)
+	┌───────────┬──────────┐
+	│ Age       ┆ Marks    │
+	│ ---       ┆ ---      │
+	│ f64       ┆ f64      │
+	╞═══════════╪══════════╡
+	│ 20.0      ┆ 0.9      │
+	│ 21.0      ┆ 0.8      │
+	│ 19.0      ┆ 0.7      │
+	│ 28.714286 ┆ 0.683333 │
+	│ 23.0      ┆ 0.3      │
+	│ 40.0      ┆ 0.683333 │
+	│ 41.0      ┆ 0.8      │
+	│ 37.0      ┆ 0.6      │
+	└───────────┴──────────┘
+
+
 Additional resources
 --------------------
 
