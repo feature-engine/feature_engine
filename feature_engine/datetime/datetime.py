@@ -285,19 +285,18 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             It is not needed in this transformer. You can pass y or None.
         """
         # check input dataframe
-        X = check_X(X)
-        is_pandas = nwd.is_pandas_dataframe(X)
+        nw_X = check_X(X)
 
         # special case index
         if self.variables == "index":
             # polars and other narwhals backends have no index concept.
-            if is_pandas is False:
+            if nwd.is_pandas_dataframe(X):
                 raise TypeError(
                     "variables='index' requires a pandas dataframe, since only "
                     f"pandas dataframes have an index. Got {type(X)} instead."
                 )
 
-            pd_ = nw.from_native(X, eager_only=True).__native_namespace__()
+            pd_ = nw_X.__native_namespace__()
             index_is_dt = pd_.api.types.is_datetime64_any_dtype(X.index)
             index_is_numeric = pd_.api.types.is_numeric_dtype(X.index)
             if not (
@@ -365,22 +364,10 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
-
-        is_pandas = nwd.is_pandas_dataframe(X)
-
-        # reorder variables to match train set
-        if is_pandas is True:
-            X = X[self.feature_names_in_]
-        else:
-            X = (
-                nw.from_native(X, eager_only=True)
-                .select(self.feature_names_in_)
-                .to_native()
-            )
 
         # special case index: only reachable for pandas, fit() already raised
         # TypeError for any other backend, since only pandas has an index.
@@ -389,7 +376,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             if self.missing_values == "raise":
                 self._check_index_contains_na(X.index)
 
-            pd_ = nw.from_native(X, eager_only=True).__native_namespace__()
+            pd_ = nw_X.__native_namespace__()
             # convert index to a datetime series
             idx_datetime = pd_.Series(
                 pd_.to_datetime(
