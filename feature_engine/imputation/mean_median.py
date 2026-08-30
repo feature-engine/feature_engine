@@ -174,7 +174,6 @@ class MeanImputer(BaseImputer):
         if len(variables_) == 0:
             imputer_dict_ = {}
         else:
-            nw_X = nw.from_native(X, eager_only=True)
             stats = nw_X.select(
                 *[
                     getattr(nw.col(var), self.imputation_method)()
