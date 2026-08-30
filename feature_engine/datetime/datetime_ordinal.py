@@ -133,7 +133,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     >>> from feature_engine.datetime import DatetimeOrdinal
     >>> X = pl.DataFrame(dict(date = ["2023-01-01", "2023-01-02", "2023-01-03"]))
     >>> dtf = DatetimeOrdinal(start_date="2023-01-01")
-    >>> _ = dtf.fit(X)
+    >>> dtf.fit(X)
     >>> dtf.transform(X)
     shape: (3, 1)
     ┌──────────────┐
