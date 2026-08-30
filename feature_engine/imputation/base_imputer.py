@@ -40,8 +40,7 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         _check_X_matches_training_df(X, self.n_features_in_)
 
         # reorder df to match train set
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             X = X[self.feature_names_in_]
         else:
             X = (
@@ -68,25 +67,10 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         """
         X = self._transform(X)
 
-        # Benchmarked: pandas-native fillna is ~1.3-1.6x faster than the
-        # narwhals-generic fill_null equivalent at the 10k-100k row sizes
-        # imputers are typically used at (the gap narrows to parity only
-        # past ~1M rows), so pandas keeps its own fast path here.
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
-            # Namespace of the dataframe already in hand, not a fresh import:
-            # pandas can only reach this branch already imported by the caller.
-            pd = nw.from_native(X, eager_only=True).__native_namespace__()
-            pandas_lt_3 = int(pd.__version__.split(".")[0]) < 3
-            # In pandas < 3, fillna downcasts object columns and warns; the
-            # option applies the pandas 3 behavior: no downcasting, and
-            # infer_objects restores numeric dtypes.
-            if pandas_lt_3 is True:
-                with pd.option_context("future.no_silent_downcasting", True):
-                    X = X.fillna(value=self.imputer_dict_)
-            else:
-                X = X.fillna(value=self.imputer_dict_)
-            X = X.infer_objects()
+        # pandas-native fillna is ~1.3-1.6x faster than narwhals-generic
+        # fill_null equivalent at the 10k-100k
+        if nwd.is_pandas_dataframe(X):
+            X = X.fillna(value=self.imputer_dict_)
         else:
             nw_X = nw.from_native(X, eager_only=True)
             nw_X = nw_X.with_columns(
@@ -100,8 +84,7 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     def _get_feature_names_in(self, X):
         """Get the names and number of features in the train set (the dataframe
         used during fit)."""
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             self.feature_names_in_ = list(X.columns)
         else:
             self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
