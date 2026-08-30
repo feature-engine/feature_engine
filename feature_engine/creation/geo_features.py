@@ -262,7 +262,6 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
             The fitted transformer.
         """
 
-        # so keep working with the native X, not the narwhals frame check_X returns.
         check_X(X)
         is_pandas = nwd.is_pandas_dataframe(X)
 
