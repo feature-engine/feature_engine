@@ -179,7 +179,7 @@ class CategoricalImputer(BaseImputer):
         """
 
         # check input dataframe
-        check_X(X)
+        nw_X = check_X(X)
 
         # select variables to encode
         if self.ignore_format is True:
