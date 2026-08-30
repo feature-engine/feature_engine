@@ -52,8 +52,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # check variables are numerical
         if self.variables is None:
@@ -101,8 +100,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe
-        X = check_X(X)
+        check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
