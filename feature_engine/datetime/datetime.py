@@ -146,10 +146,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         more information on choices. If you have variables with different formats pass
         “mixed”, to infer the format for each element individually. This is risky,
         and you should probably use it along with dayfirst, according to pandas'
-        documentation. For non-pandas input, `format` is passed to narwhals'
-        `Series.str.to_datetime()`, which does not support "mixed"; unlike pandas,
-        it can only infer a common format across the column when `format=None`, and
-        only for unambiguous formats (e.g. ISO-8601).
+        documentation.
 
 
     Attributes
