@@ -195,7 +195,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         """
         # check input dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # parse the user-provided start_date into its ordinal representation.
         # datetime.datetime is a subclass of datetime.date, so both are handled
@@ -228,13 +228,10 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             _check_contains_na(X, self.variables_)
 
         # save input features
-        if nwd.is_pandas_dataframe(X):
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
+        self.feature_names_in_ = nw_X.columns
 
         # save train set shape
-        self.n_features_in_ = X.shape[1]
+        self.n_features_in_ = nw_X.shape[1]
 
         return self
 
@@ -257,7 +254,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
@@ -268,8 +265,6 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
-
-        nw_X = nw.from_native(X, eager_only=True)
 
         # variables can be native Date/Datetime columns, or string/categorical
         # columns holding parseable date values - the latter need parsing into
