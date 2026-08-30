@@ -41,7 +41,7 @@ class WoE:
         """
         Check that X is dataframe, and y a binary series with values 0 and 1.
         """
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
 
         if nwd.is_into_series(y):
             y_nw = nw.from_native(y, series_only=True)
@@ -50,13 +50,12 @@ class WoE:
             # sklearn's check_X_y machinery converts to numpy via
             # column_or_1d) - it has no .nunique()/.groupby(), so wrap it
             # against X's backend to get one consistent narwhals Series.
-            is_pandas = nwd.is_pandas_dataframe(X)
             y_nw = nw.new_series(
                 name="target",
                 values=y,
-                backend=nw.from_native(X, eager_only=True).implementation,
+                backend=nw_X.implementation,
             )
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X):
                 # new_series() gives pandas a fresh default RangeIndex, but
                 # _calculate_woe()'s y.groupby(X[var]) aligns the two
                 # Series by index - a mismatch against X's own index
@@ -295,9 +294,7 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         # complement of the positive-class count per category, so only one
         # groupby is needed instead of two (benchmarked competitive with,
         # and often faster than, pandas-native at 50k-100k rows).
-        is_pandas = nwd.is_pandas_dataframe(X)
-
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             for var in variables_:
                 try:
                     _, _, woe = self._calculate_woe(X, y, var, self.fill_value)
@@ -371,9 +368,9 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
             The dataframe containing the categories replaced by numbers.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        X = self._encode(X)
+        X = self._encode(nw_X)
         return X
 
     def _more_tags(self):
