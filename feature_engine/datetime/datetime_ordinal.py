@@ -76,7 +76,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         contain missing values. If 'ignore', missing data will be ignored when
         performing the transformation.
 
-    start_date: str, datetime.datetime, default=None
+    start_date: str, datetime.date, datetime.datetime, default=None
         A reference date from which the ordinal values will be calculated.
         If provided, the ordinal value of `start_date` will be 1, the day after will be
         2, and so on. Days before `start_date` will take negative values.
@@ -120,7 +120,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     >>> from feature_engine.datetime import DatetimeOrdinal
     >>> X = pd.DataFrame(dict(date = ["2023-01-01", "2023-01-02", "2023-01-03"]))
     >>> dtf = DatetimeOrdinal(start_date="2023-01-01")
-    >>> dtf.fit(X)
+    >>> _ = dtf.fit(X)
     >>> dtf.transform(X)
        date_ordinal
     0             1
@@ -133,7 +133,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     >>> from feature_engine.datetime import DatetimeOrdinal
     >>> X = pl.DataFrame(dict(date = ["2023-01-01", "2023-01-02", "2023-01-03"]))
     >>> dtf = DatetimeOrdinal(start_date="2023-01-01")
-    >>> dtf.fit(X)
+    >>> _ = dtf.fit(X)
     >>> dtf.transform(X)
     shape: (3, 1)
     ┌──────────────┐
@@ -181,7 +181,8 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         This transformer does not learn any parameter.
 
         Finds datetime variables or checks that the variables selected by the user
-        can be converted to datetime.
+        can be converted to datetime. Also parses `start_date`, if provided, into
+        its ordinal representation.
 
         Parameters
         ----------
@@ -191,6 +192,11 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         y: Series=None
             It is not needed in this transformer. You can pass y or None.
+
+        Raises
+        ------
+        ValueError
+            If `start_date` was provided but cannot be parsed into a date.
         """
         # check input dataframe
         X = check_X(X)
