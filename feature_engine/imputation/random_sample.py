@@ -4,6 +4,7 @@
 from typing import List, Optional, Union
 
 import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
