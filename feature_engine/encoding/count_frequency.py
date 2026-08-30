@@ -4,7 +4,7 @@
 import warnings
 from typing import List, Optional, Union
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -157,6 +157,26 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
     1   2  0.25
     2   3  0.25
     3   4  0.50
+
+    With polars
+
+    >>> import polars as pl
+    >>> from feature_engine.encoding import CountEncoder
+    >>> X = pl.DataFrame(dict(x1 = [1,2,3,4], x2 = ["c", "a", "b", "c"]))
+    >>> cf = CountEncoder(encoding_method='count')
+    >>> cf.fit(X)
+    >>> cf.transform(X)
+    shape: (4, 2)
+    ┌─────┬─────┐
+    │ x1  ┆ x2  │
+    │ --- ┆ --- │
+    │ i64 ┆ i64 │
+    ╞═════╪═════╡
+    │ 1   ┆ 2   │
+    │ 2   ┆ 1   │
+    │ 3   ┆ 1   │
+    │ 4   ┆ 2   │
+    └─────┴─────┘
     """
 
     def __init__(
@@ -183,37 +203,44 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self.unseen = unseen
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the counts or frequencies which will be used to replace the categories.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
-        y: pandas Series, default = None
+        y: Series, default = None
             y is not needed in this encoder. You can pass y or None.
         """
-        X = check_X(X)
+        nw_X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
+        if self.encoding_method not in ["count", "frequency"]:
+            raise ValueError(
+                "Unrecognized value for encoding_method. It should be 'count' or "
+                f"'frequency'. Got {self.encoding_method} instead."
+            )
+        normalize = self.encoding_method == "frequency"
+
         self.encoder_dict_ = {}
 
-        # learn encoding maps
+        # learn encoding maps. drop_nulls() before value_counts() mirrors
+        # pandas' value_counts(dropna=True) default - narwhals' value_counts()
+        # has no dropna param and keeps NaN as a countable category otherwise.
+        # sort=True matches pandas' own value_counts() default (descending
+        # by count), so encoder_dict_ has the same category order as before.
         for var in variables_:
-            if self.encoding_method == "count":
-                self.encoder_dict_[var] = X[var].value_counts().to_dict()
-
-            elif self.encoding_method == "frequency":
-                self.encoder_dict_[var] = X[var].value_counts(normalize=True).to_dict()
-            else:
-                raise ValueError(
-                    "Unrecognized value for encoding_method. It should be 'count' or "
-                    f"'frequency'. Got {self.encoding_method} instead."
-                )
+            counts = nw_X.get_column(var).drop_nulls().value_counts(
+                sort=True, normalize=normalize
+            )
+            keys = counts.get_column(counts.columns[0]).to_list()
+            values = counts.get_column(counts.columns[1]).to_list()
+            self.encoder_dict_[var] = dict(zip(keys, values))
 
         # unseen categories are replaced by 0
         if self.unseen == "encode":
