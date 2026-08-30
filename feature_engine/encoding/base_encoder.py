@@ -1,7 +1,7 @@
 import warnings
 from typing import List, Union
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -121,11 +121,11 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
     - GetFeatureNamesOutMixin brings method get_feature_names_out().
     """
 
-    def _check_na(self, X: pd.DataFrame, variables):
+    def _check_na(self, X: IntoDataFrame, variables):
         if self.missing_values == "raise":
             _check_contains_na(X, variables, error_msg="optional")
 
-    def _check_or_select_variables(self, X: pd.DataFrame):
+    def _check_or_select_variables(self, X: IntoDataFrame):
         """
         Finds categorical variables, or alternatively checks that the variables
         entered by the user are of type object (categorical).
@@ -133,7 +133,7 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
         Parameters
         ----------
-        X: Pandas DataFrame
+        X: dataframe
 
         Raises
         ------
@@ -159,115 +159,105 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
         return variables_
 
-    def _get_feature_names_in(self, X: pd.DataFrame):
+    def _get_feature_names_in(self, X: IntoDataFrame):
         """
-        Returns attributes `featrure_names_in_` and `n_feature_names_in_`, which are
+        Sets attributes `feature_names_in_` and `n_features_in_`, which are
         standard for all transformers in the library.
+
+        Parameters
+        ----------
+        X: narwhals dataframe
+            The dataframe returned by `check_X` / `check_X_y` at the start of `fit`.
         """
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
+        # save input features. list() normalises both a narwhals `.columns`
+        # (already a list) and a pandas `Index` to a plain list.
+        self.feature_names_in_ = list(X.columns)
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
-    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
-        in the fit method. Checks absence of NA.
+        in the fit method.
 
         Parameters
         ----------
-        X: Pandas DataFrame
+        X: dataframe
+            The dataframe entered by the user, in any library supported by narwhals.
 
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
+            If the input is not a dataframe
         ValueError
-            - If the variable(s) contain null values.
-            - If the df has different number of features than the df used in fit()
+            If the df has a different number of features than the df used in fit()
 
         Returns
         -------
-        X: Pandas DataFrame
-            The same dataframe entered by the user.
+        nw_X: narwhals dataframe
+            The narwhalified version of the dataframe entered by the user.
         """
 
-        # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
-        # Check input data contains same number of columns as df used to fit
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # reorder df to match train set
-        X = X[self.feature_names_in_]
+        return nw_X
 
-        return X
-
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Replace categories with the learned parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The dataset to transform.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features].
+        X_new: dataframe of shape = [n_samples, n_features].
             The dataframe containing the categories replaced by numbers.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
-        X = self._encode(X)
+        X = self._encode(nw_X)
 
         return X
 
-    def _encode(self, X: pd.DataFrame) -> pd.DataFrame:
-        # replace categories by the learned parameters
-        for feature in self.encoder_dict_.keys():
-            X[feature] = X[feature].map(self.encoder_dict_[feature])
+    def _encode(self, X: IntoDataFrame) -> IntoDataFrame:
+        default = self._unseen if self.unseen == "encode" else None
+        new_series = [
+            X.get_column(feature).replace_strict(mapping, default=default)
+            for feature, mapping in self.encoder_dict_.items()
+        ]
+        X = X.with_columns(*new_series)
 
-            # if original variables are cast as categorical, they will remain
-            # categorical after the encoding, and this is probably not desired
-            if X[feature].dtype.name == "category":
-                if all(isinstance(x, int) for x in X[feature]):
-                    X[feature] = X[feature].astype("int")
-                else:
-                    X[feature] = X[feature].astype("float")
-
-        if self.unseen == "encode":
-            X[self.variables_] = X[self.variables_].fillna(self._unseen)
-        else:
+        if self.unseen != "encode":
             # check if nan values were introduced by the transformation
             self._check_nan_values_after_transformation(X)
 
-        return X
+        return X.to_native()
 
-    def _check_nan_values_after_transformation(self, X):
+    def _check_nan_values_after_transformation(self, X: IntoDataFrame):
+        nan_columns = [
+            feature
+            for feature in self.encoder_dict_.keys()
+            if X.get_column(feature).null_count() > 0
+        ]
 
-        # check if NaN values were introduced by the encoding
-        if X[self.variables_].isnull().sum().sum() > 0:
-
-            # obtain the name(s) of the columns have null values
-            nan_columns = (
-                X[self.encoder_dict_.keys()]
-                .columns[X[self.encoder_dict_.keys()].isnull().any()]
-                .tolist()
-            )
+        if len(nan_columns) > 0:
 
             if len(nan_columns) > 1:
-                nan_columns_str = ", ".join(nan_columns)
+                nan_columns_str = ", ".join(str(col) for col in nan_columns)
             else:
-                nan_columns_str = nan_columns[0]
+                nan_columns_str = str(nan_columns[0])
 
             if self.unseen == "ignore":
                 warnings.warn(
@@ -280,27 +270,32 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
                     f"{nan_columns_str}."
                 )
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Convert the encoded variable back to the original values.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The transformed dataframe.
 
         Returns
         -------
-        X_tr: pandas dataframe of shape = [n_samples, n_features].
+        X_tr: dataframe of shape = [n_samples, n_features].
             The un-transformed dataframe, with the categorical variables containing the
             original values.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
-        # replace encoded categories by the original values
-        for feature in self.encoder_dict_.keys():
-            inv_map = {v: k for k, v in self.encoder_dict_[feature].items()}
-            X[feature] = X[feature].map(inv_map)
+        # replace encoded categories by the original values. get_column()
+        # rather than nw.col() again, to support pandas integer column names.
+        new_series = [
+            nw_X.get_column(feature).replace_strict(
+                {v: k for k, v in mapping.items()}, default=None
+            )
+            for feature, mapping in self.encoder_dict_.items()
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 
