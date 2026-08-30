@@ -336,7 +336,9 @@ class DatetimeSubtraction(BaseCreation):
 
         return nw_X.to_native()
 
-    def _to_datetime(self, nw_X: nw.DataFrame) -> Dict[str, np.ndarray]:
+    def _to_datetime(
+        self, nw_X: nw.DataFrame
+    ) -> Dict[Union[str, int], np.ndarray]:
         """Convert the variables and reference columns to numpy datetime64 arrays."""
         needed = sorted(set(self.variables_ + self.reference_))
         is_pandas = nw_X.implementation.is_pandas()
@@ -418,7 +420,7 @@ class DatetimeSubtraction(BaseCreation):
             ]
         return nw.new_series(col.name, values, backend=col.implementation)
 
-    def _sub(self, dt_arrays: Dict[str, np.ndarray], backend) -> List:
+    def _sub(self, dt_arrays: Dict[Union[str, int], np.ndarray], backend) -> List:
         """make datetime subtraction"""
         names = self._get_new_features_name()
         # "Y"/"M" are non-linear units: numpy can only divide timedeltas by
