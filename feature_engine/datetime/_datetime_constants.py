@@ -154,7 +154,7 @@ def _nw_days_in_month(x: nw.Series) -> nw.Series:
 
 
 # Narwhals-native equivalents of FEATURES_FUNCTIONS above, used for dataframe
-# backends other than pandas. Kept separate from FEATURES_FUNCTIONS (rather than
+# backends other than pandas. Kept separate from FEATURES_FUNCTIONS 
 # merged into one dispatch) because roughly a third of these features (week,
 # month_end, quarter_end, quarter_start, year_start, year_end, leap_year,
 # days_in_month) benchmarked 2x-53x slower than pandas-native when run through
