@@ -521,6 +521,39 @@ We see the names of the columns below:
      'embarked_S',
      'embarked_C']
 
+With polars
+-----------
+
+:class:`OneHotEncoder()` works the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import OneHotEncoder
+
+    X = pl.DataFrame({"x1": ["b", "b", "b", "a", "a"], "x2": [1, 2, 3, 4, 5]})
+
+    ohe = OneHotEncoder(variables=["x1"])
+    ohe.fit(X)
+
+    print(ohe.transform(X))
+
+.. code:: text
+
+    shape: (5, 3)
+    ┌─────┬──────┬──────┐
+    │ x2  ┆ x1_b ┆ x1_a │
+    │ --- ┆ ---  ┆ ---  │
+    │ i64 ┆ i8   ┆ i8   │
+    ╞═════╪══════╪══════╡
+    │ 1   ┆ 1    ┆ 0    │
+    │ 2   ┆ 1    ┆ 0    │
+    │ 3   ┆ 1    ┆ 0    │
+    │ 4   ┆ 0    ┆ 1    │
+    │ 5   ┆ 0    ┆ 1    │
+    └─────┴──────┴──────┘
+
+
 Considerations
 --------------
 
