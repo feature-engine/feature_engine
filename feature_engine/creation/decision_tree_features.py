@@ -394,7 +394,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe. As in fit, keep working with native X.
         check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
