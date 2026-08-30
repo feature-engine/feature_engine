@@ -219,7 +219,7 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             The target.
         """
 
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
@@ -230,9 +230,7 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # at low column counts (the common case), so pandas keeps its native
         # groupby/value_counts fast path and only polars (and other
         # backends) go through narwhals.
-        is_pandas = nwd.is_pandas_dataframe(X)
-
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             y_prior = y.mean()
 
             if self.unseen == "encode":
@@ -265,7 +263,6 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                     + (1.0 - _lambda) * y_prior
                 ).to_dict()
         else:
-            nw_X = nw.from_native(X, eager_only=True)
             target_name = "__feature_engine_mean_target__"
             if nwd.is_into_series(y):
                 y_nw = nw.from_native(y, series_only=True).alias(target_name)
