@@ -179,7 +179,7 @@ class ArbitraryImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # find or check for numerical variables
         # create the imputer dictionary
