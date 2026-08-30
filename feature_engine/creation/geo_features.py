@@ -262,8 +262,9 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
             The fitted transformer.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        # check input dataframe. The checks below detect the backend themselves,
+        # so keep working with the native X, not the narwhals frame check_X returns.
+        check_X(X)
         is_pandas = nwd.is_pandas_dataframe(X)
 
         # Coordinate variables
@@ -353,8 +354,8 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe
-        X = check_X(X)
+        # check that input is a dataframe. As in fit, keep working with native X.
+        check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)

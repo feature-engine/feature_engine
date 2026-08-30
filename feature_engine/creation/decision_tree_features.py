@@ -324,7 +324,9 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             check_classification_targets(y)
             self._is_binary = type_of_target(y)
 
-        X, y = check_X_y(X, y)
+        # check_X_y validates X and normalises y; the checks below detect the
+        # backend themselves, so keep working with the native X.
+        _, y = check_X_y(X, y)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -394,8 +396,8 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe
-        X = check_X(X)
+        # check that input is a dataframe. As in fit, keep working with native X.
+        check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
