@@ -162,7 +162,7 @@ class MeanImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
