@@ -30,24 +30,9 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         X: dataframe.
             The same dataframe entered by the user.
         """
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
         X = check_X(X)
-
-        # Check that input df contains same number of columns as df used to fit
         _check_X_matches_training_df(X, self.n_features_in_)
-
-        # reorder df to match train set
-        if nwd.is_pandas_dataframe(X):
-            X = X[self.feature_names_in_]
-        else:
-            X = (
-                nw.from_native(X, eager_only=True)
-                .select(self.feature_names_in_)
-                .to_native()
-            )
 
         return X
 
