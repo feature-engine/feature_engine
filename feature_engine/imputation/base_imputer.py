@@ -31,7 +31,7 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             The same dataframe entered by the user.
         """
         check_is_fitted(self)
-        X = check_X(X)
+        check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
 
         return X
