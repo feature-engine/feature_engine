@@ -2,7 +2,9 @@
 # License: BSD 3 clause
 from typing import List, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -203,64 +205,122 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         self.unseen = unseen
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Learn the mean value of the target for each category of the variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to be encoded.
 
-        y: pandas series
+        y: Series
             The target.
         """
 
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 
-        y_prior = y.mean()
+        # benchmarked at 10k-100k rows x 1-10 cols x 5-50 categories: a pure
+        # narwhals fit() ran ~1.5x-2.9x slower than pandas-native here, worse
+        # at low column counts (the common case), so pandas keeps its native
+        # groupby/value_counts fast path and only polars (and other
+        # backends) go through narwhals.
+        if nwd.is_pandas_dataframe(X):
+            y_prior = y.mean()
 
-        if self.unseen == "encode":
-            self._unseen = y_prior
+            if self.unseen == "encode":
+                self._unseen = y_prior
 
-        if self.smoothing == "auto":
-            y_var = y.var(ddof=0)
-        for var in variables_:
             if self.smoothing == "auto":
-                damping = y.groupby(X[var]).var(ddof=0) / y_var
+                y_var = y.var(ddof=0)
+
+            for var in variables_:
+                # y may be a Series (aligned with X by index, per check_X_y)
+                # or a numpy array (list/array-like y goes through sklearn's
+                # column_or_1d, which has no .groupby()) - pair the latter
+                # with X[var] positionally via assign() instead.
+                if nwd.is_pandas_series(y):
+                    target, group_keys = y, X[var]
+                else:
+                    target_name = "__feature_engine_mean_target__"
+                    paired = X[[var]].assign(**{target_name: y})
+                    target, group_keys = paired[target_name], paired[var]
+
+                if self.smoothing == "auto":
+                    damping = target.groupby(group_keys).var(ddof=0) / y_var
+                else:
+                    damping = self.smoothing
+                counts = X[var].value_counts()
+                counts.index = counts.index.infer_objects()
+                _lambda = counts / (counts + damping)
+                self.encoder_dict_[var] = (
+                    _lambda * target.groupby(group_keys, observed=False).mean()
+                    + (1.0 - _lambda) * y_prior
+                ).to_dict()
+        else:
+            target_name = "__feature_engine_mean_target__"
+            if nwd.is_into_series(y):
+                y_nw = nw.from_native(y, series_only=True).alias(target_name)
             else:
-                damping = self.smoothing
-            counts = X[var].value_counts()
-            counts.index = counts.index.infer_objects()
-            _lambda = counts / (counts + damping)
-            self.encoder_dict_[var] = (
-                _lambda * y.groupby(X[var], observed=False).mean()
-                + (1.0 - _lambda) * y_prior
-            ).to_dict()
+                y_nw = nw.new_series(
+                    name=target_name, values=y, backend=nw_X.implementation
+                )
+            nw_Xy = nw_X.with_columns(y_nw)
+
+            y_prior = y_nw.mean()
+
+            if self.unseen == "encode":
+                self._unseen = y_prior
+
+            if self.smoothing == "auto":
+                y_var = y_nw.var(ddof=0)
+
+            for var in variables_:
+                aggs = [
+                    nw.col(target_name).mean().alias("__mean__"),
+                    nw.col(target_name).len().alias("__count__"),
+                ]
+                if self.smoothing == "auto":
+                    aggs.append(nw.col(target_name).var(ddof=0).alias("__var__"))
+                grouped = nw_Xy.group_by(var, drop_null_keys=True).agg(*aggs)
+                stats = grouped.to_dict(as_series=False)
+
+                mapping = {}
+                for i, cat in enumerate(stats[var]):
+                    n_i = stats["__count__"][i]
+                    if self.smoothing == "auto":
+                        damping = stats["__var__"][i] / y_var
+                    else:
+                        damping = self.smoothing
+                    _lambda = n_i / (n_i + damping)
+                    mapping[cat] = (
+                        _lambda * stats["__mean__"][i] + (1.0 - _lambda) * y_prior
+                    )
+                self.encoder_dict_[var] = mapping
 
         # assign underscore parameters at the end in case code above fails
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Convert the encoded variable back to the original values.
 
         Note that if unseen was set to 'encode', then this method is not implemented.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The transformed dataframe.
 
         Returns
         -------
-        X_tr: pandas dataframe of shape = [n_samples, n_features].
+        X_tr: dataframe of shape = [n_samples, n_features].
             The un-transformed dataframe, with the categorical variables containing the
             original values.
         """
