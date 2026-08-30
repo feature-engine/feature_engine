@@ -1,0 +1,101 @@
+# AGENTS.md
+
+Conventions for working in this repo. Optimize for readability and speed, 
+in that order of how you decide, but don't ship a slow default when a 
+fast one is free.
+
+## Inputs
+
+Feature-engine transformers take dataframes (pandas, polars, or any other
+narwhals-supported backend) as input, not numpy arrays. Don't add
+handling for array input.
+
+## Never import pandas in library code
+
+pandas is an optional dependency (see `pyproject.toml` — it lives under
+`[project.optional-dependencies]`, not core `dependencies`), so `import
+pandas` must never appear anywhere in `feature_engine/`, not at module level
+and not locally/lazily inside a function either — importing the module
+itself would break a polars-only install regardless of which class is used.
+
+Backend checks go through `narwhals.dependencies` (`nwd.is_pandas_dataframe`,
+`nwd.is_pandas_series`, `nwd.is_pandas_index`, `nwd.is_into_series`, etc.).
+Once a branch is confirmed pandas, call its methods/attributes directly on
+the object already in hand (`.loc`, `.columns`, `.index`, `.select_dtypes`,
+...) — no import needed for that, since Python only needs a module imported
+to reference the module itself (`pd.something`), not to call methods on an
+object that's already an instance of that module's class.
+
+## Booleans and control flow
+
+- Compare booleans explicitly: `if x is True:` / `if x is False:`, never
+  `if x:` / `if not x:`.
+- Check container emptiness with `len(x) == 0`, never `if not x:`.
+- `isinstance(...)` checks and `in`/`not in` membership tests are already
+  explicit — leave them as-is, this rule isn't about those.
+- The explicit `is True`/`is False` comparison is for flow control
+  (`if`/`while` conditions) only — don't tack it onto a variable
+  assignment. When a function already returns a strict bool (e.g.
+  `nwd.is_pandas_dataframe(X)`), assign it directly:
+  `is_pandas = nwd.is_pandas_dataframe(X)`, not
+  `is_pandas = nwd.is_pandas_dataframe(X) is True`. The `if`/`while` site
+  that later consumes `is_pandas` still spells out `if is_pandas is True:`.
+
+## Comments
+
+Max 2 lines. Only explain a non-obvious WHY (a hidden constraint, a subtle
+backend difference, a workaround) — never describe WHAT the code does.
+
+## Don't anticipate errors
+
+Don't add error handling or validation for scenarios that can't happen. If
+unsure whether something can happen, check it (grep, run a quick repro) or
+ask — don't guess and defensively code around it.
+
+## Redundant lists/sets
+
+- Narwhals' `.columns` is already `list[str]` — don't wrap it in `list()`.
+- pandas' `.columns` is an `Index`, not a list — `list()` is required there
+  (an `Index == list` comparison is elementwise, not a clean bool).
+
+## Keep tests passing when you change a function or class
+
+Whenever you change a function or class, run its corresponding tests. If
+they fail, resolve it — don't leave it — by figuring out whether the test
+needs updating (e.g. it exercised behavior that's no longer supported) or
+the implementation has a real bug, and fixing whichever one is wrong.
+
+## Keep docs in sync with transformer changes
+
+When new functionality is introduced in a transformer, update its
+corresponding `docs/user_guide/<module>/<ClassName>.rst` with a short
+worked example showing the new functionality.
+
+## Verify before applying
+
+Benchmark before claiming a speedup, and diff old-vs-new output across
+realistic and edge cases (empty/all-NaN, both backends, both dtype
+branches) before trusting a rewrite — logic mistakes here are easy to make
+and easy to miss without an actual comparison.
+
+## Tests
+
+- `pytest.raises(ExceptionType, match=msg)`, never
+  `with pytest.raises() as record: ... assert str(record.value) == msg`.
+- Dataframe-agnostic means one test, both backends: parametrize each
+  behavior over `@pytest.mark.parametrize("make_df", [pd.DataFrame,
+  pl.DataFrame])` and assert the same input produces the same output
+  values on both. Never write a separate pandas-only test and a
+  separate polars-only test for the same behavior — that duplicates
+  the test and hides the point of being dataframe-agnostic, which is
+  that the same input gives the same output regardless of backend.
+  Keep a test single-backend only when the behavior itself is
+  backend-specific (e.g. integer column names, which polars doesn't
+  support; pandas nullable extension dtypes).
+
+## API changes
+
+- New parameters default to preserve current behavior.
+- When adding a parameter to a function called from multiple sites (or a
+  shared private helper), thread it through every call site, not just the
+  one you're looking at.

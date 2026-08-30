@@ -1,9 +1,7 @@
 import pandas as pd
 import pytest
-import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.fixes import parse_version
 
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsoriser
 from feature_engine.tags import _return_tags
@@ -16,45 +14,35 @@ _estimators = [
     Winsoriser(),
 ]
 
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
+FAILED_CHECKS = _return_tags()["_xfail_checks"]
+FAILED_CHECKS_AOC = _return_tags()["_xfail_checks"]
 
-if sklearn_version < parse_version("1.6"):
+msg1 = "transformers raise errors when data variation is low, " "thus this check fails"
 
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(estimator)
+msg2 = "transformer has 1 mandatory parameter"
 
-else:
-    FAILED_CHECKS = _return_tags()["_xfail_checks"]
-    FAILED_CHECKS_AOC = _return_tags()["_xfail_checks"]
+FAILED_CHECKS.update({"check_fit2d_1sample": msg1})
+FAILED_CHECKS_AOC.update(
+    {
+        "check_fit2d_1sample": msg1,
+        "check_parameters_default_constructible": msg2,
+    }
+)
 
-    msg1 = (
-        "transformers raise errors when data variation is low, " "thus this check fails"
+
+@pytest.mark.parametrize(
+    "estimator, failed_tests",
+    [
+        (_estimators[0], FAILED_CHECKS_AOC),
+        (_estimators[1], FAILED_CHECKS),
+        (_estimators[2], FAILED_CHECKS),
+    ],
+)
+def test_check_estimator_from_sklearn(estimator, failed_tests):
+    return check_estimator(
+        estimator=wrap_for_check_estimator(estimator),
+        expected_failed_checks=failed_tests,
     )
-
-    msg2 = "transformer has 1 mandatory parameter"
-
-    FAILED_CHECKS.update({"check_fit2d_1sample": msg1})
-    FAILED_CHECKS_AOC.update(
-        {
-            "check_fit2d_1sample": msg1,
-            "check_parameters_default_constructible": msg2,
-        }
-    )
-
-    @pytest.mark.parametrize(
-        "estimator, failed_tests",
-        [
-            (_estimators[0], FAILED_CHECKS_AOC),
-            (_estimators[1], FAILED_CHECKS),
-            (_estimators[2], FAILED_CHECKS),
-        ],
-    )
-    def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(
-            estimator=wrap_for_check_estimator(estimator),
-            expected_failed_checks=failed_tests,
-        )
 
 
 @pytest.mark.parametrize("estimator", _estimators)

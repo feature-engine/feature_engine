@@ -206,6 +206,43 @@ In the following plots we see that the variables are non-normally distributed, b
 .. image:: ../../images/nonnormalvars2.png
 
 
+With polars
+-----------
+
+:class:`BoxCoxTransformer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import BoxCoxTransformer
+
+    df = pl.DataFrame({
+        "var_1": [4.0, 9.0, 16.0, 25.0, 100.0],
+        "var_2": [1.0, 8.0, 27.0, 64.0, 125.0],
+    })
+
+    boxcox = BoxCoxTransformer(variables=None)
+    boxcox.fit(df)
+    Xt = boxcox.transform(df)
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌──────────┬──────────┐
+    │ var_1    ┆ var_2    │
+    │ ---      ┆ ---      │
+    │ f64      ┆ f64      │
+    ╞══════════╪══════════╡
+    │ 1.225161 ┆ 0.0      │
+    │ 1.810873 ┆ 2.666746 │
+    │ 2.177001 ┆ 4.93175  │
+    │ 2.435721 ┆ 6.969848 │
+    │ 3.117497 ┆ 8.854291 │
+    └──────────┴──────────┘
+
+
 Additional resources
 --------------------
 

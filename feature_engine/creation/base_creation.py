@@ -1,6 +1,8 @@
 from typing import Optional
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -37,21 +39,20 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         self.missing_values = missing_values
         self.drop_original = drop_original
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y: pandas Series, or np.array. Defaults to None.
+        y: Series, or np.array. Defaults to None.
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # check variables are numerical
         if self.variables is None:
@@ -71,33 +72,35 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # save input features
-        self.feature_names_in_ = X.columns.tolist()
+        if nwd.is_pandas_dataframe(X) is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Common input and transformer checks.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: Pandas dataframe
+        X_new: dataframe
             The dataframe with the original variables plus the new variables.
         """
 
         # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe
-        X = check_X(X)
+        check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
@@ -111,7 +114,12 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # reorder variables to match train set
-        X = X[self.feature_names_in_]
+        if nwd.is_pandas_dataframe(X) is True:
+            X = X[self.feature_names_in_]
+        else:
+            X = nw.from_native(X, eager_only=True).select(
+                self.feature_names_in_
+            ).to_native()
 
         return X
 
