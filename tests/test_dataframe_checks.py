@@ -423,6 +423,14 @@ def test_contains_na_raises_for_mix_of_null_and_nan_across_dtypes(make_df):
         _check_contains_na(df, ["Age", "City"])
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_no_ops_when_variables_is_empty(make_df):
+    # on the narwhals/polars backend, nw.col([]) raises a TypeError, so an
+    # empty `variables` list must short-circuit before any column selection
+    df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
+    assert _check_contains_na(df, []) is None
+
+
 # --------------------------
 # test _check_contains_inf
 # --------------------------
