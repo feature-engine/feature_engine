@@ -179,7 +179,7 @@ class CategoricalImputer(BaseImputer):
         """
 
         # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         # select variables to encode
         if self.ignore_format is True:
@@ -254,9 +254,17 @@ class CategoricalImputer(BaseImputer):
             is_pandas = nwd.is_pandas_dataframe(X)
             if is_pandas is True:
                 # if variable is of type category, we need to add the new
-                # category, before filling in the nan
-                for variable in self.variables_:
-                    if X[variable].dtype.name == "category":
+                # category, before filling in the nan. Copy first so the
+                # in-place column reassignment doesn't mutate the caller's
+                # dataframe (BaseImputer._transform no longer returns a copy).
+                cat_vars = [
+                    var
+                    for var in self.variables_
+                    if X[var].dtype.name == "category"
+                ]
+                if cat_vars:
+                    X = X.copy()
+                    for variable in cat_vars:
                         X[variable] = X[variable].cat.add_categories(
                             self.imputer_dict_[variable]
                         )
