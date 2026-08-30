@@ -267,7 +267,7 @@ class CategoricalImputer(BaseImputer):
 
         # add additional step to return variables cast as object
         if self.return_object is True:
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X):
                 X[self.variables_] = X[self.variables_].astype("O")
             # polars/narwhals backends never silently upcast a string-typed
             # column back to numeric (unlike pandas' fillna+infer_objects),
