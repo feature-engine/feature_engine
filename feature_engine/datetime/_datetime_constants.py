@@ -73,7 +73,7 @@ FEATURES_FUNCTIONS = {
     "year_start": lambda x: x.dt.is_year_start.astype(np.int64),
     "year_end": lambda x: x.dt.is_year_end.astype(np.int64),
     "leap_year": lambda x: x.dt.is_leap_year.astype(np.int64),
-    "days_in_month": lambda x: x.dt.days_in_month.astype("float64"),
+    "days_in_month": lambda x: x.dt.days_in_month,
     "hour": lambda x: x.dt.hour,
     "minute": lambda x: x.dt.minute,
     "second": lambda x: x.dt.second,
