@@ -6,7 +6,6 @@ from typing import List, Optional, Union
 
 import narwhals as nw
 import narwhals.dependencies as nwd
-import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
