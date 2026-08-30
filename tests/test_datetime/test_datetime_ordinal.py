@@ -1,180 +1,200 @@
 import datetime
+import math
+
 import pandas as pd
+import polars as pl
 import pytest
 
 from feature_engine.datetime import DatetimeOrdinal
 
+DATE_COLS = ["date_col_1", "date_col_2"]
 
-@pytest.fixture(scope="module")
-def df_datetime_ordinal():
-    df = pd.DataFrame(
-        {
-            "date_col_1": pd.to_datetime(
-                ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]
-            ),
-            "date_col_2": pd.to_datetime(
-                ["2024-02-10", "2024-02-11", "2024-02-12", "2024-02-13", "2024-02-14"]
-            ),
-            "non_date_col": [1, 2, 3, 4, 5],
-        }
-    )
-    return df
+DATE_DATA = {
+    "date_col_1": [
+        "2023-01-01",
+        "2023-01-02",
+        "2023-01-03",
+        "2023-01-04",
+        "2023-01-05",
+    ],
+    "date_col_2": [
+        "2024-02-10",
+        "2024-02-11",
+        "2024-02-12",
+        "2024-02-13",
+        "2024-02-14",
+    ],
+    "non_date_col": [1, 2, 3, 4, 5],
+}
 
-
-@pytest.fixture(scope="module")
-def df_datetime_ordinal_na():
-    df = pd.DataFrame(
-        {
-            "date_col_1": pd.to_datetime(
-                ["2023-01-01", "2023-01-02", None, "2023-01-04", "2023-01-05"]
-            ),
-            "date_col_2": pd.to_datetime(
-                ["2024-02-10", "2024-02-11", "2024-02-12", None, "2024-02-14"]
-            ),
-        }
-    )
-    return df
+DATE_DATA_NA = {
+    "date_col_1": ["2023-01-01", "2023-01-02", None, "2023-01-04", "2023-01-05"],
+    "date_col_2": ["2024-02-10", "2024-02-11", "2024-02-12", None, "2024-02-14"],
+}
 
 
+def _make_datetime_df(make_df, data: dict, date_cols=DATE_COLS):
+    """Build a dataframe where `date_cols` hold a native Date/Datetime dtype
+    (not strings), the same way real datetime columns arrive in practice -
+    constructed differently per backend since pandas and polars have no
+    shared literal syntax for it."""
+    if make_df is pd.DataFrame:
+        return pd.DataFrame(
+            {
+                col: pd.to_datetime(values) if col in date_cols else values
+                for col, values in data.items()
+            }
+        )
+    df = pl.DataFrame(data)
+    return df.with_columns([pl.col(c).str.to_datetime() for c in date_cols])
+
+
+def _expected_ordinal(date_strings, start_date_ordinal=None):
+    result = []
+    for s in date_strings:
+        if s is None:
+            result.append(None)
+            continue
+        ordinal = datetime.date.fromisoformat(s).toordinal()
+        if start_date_ordinal is not None:
+            ordinal = ordinal - start_date_ordinal + 1
+        result.append(ordinal)
+    return result
+
+
+def _as_comparable_ints(values):
+    """Normalize a result column to plain ints/None regardless of whether the
+    backend represented missing ordinals as NaN (pandas float64) or null
+    (polars Int64) - same values, different native missing-data convention."""
+    out = []
+    for v in values:
+        if v is None or (isinstance(v, float) and math.isnan(v)):
+            out.append(None)
+        else:
+            out.append(int(v))
+    return out
+
+
+def _get_col(X, col):
+    if isinstance(X, pd.DataFrame):
+        return X[col].tolist()
+    return X[col].to_list()
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize(
     "variables_param",
-    [
-        ["date_col_1", "date_col_2"],  # Case 1: 'variables' are specified
-        None,  # Case 2: 'variables' not specified
-    ],
-    ids=[
-        "variables_specified",
-        "variables_auto_find",
-    ],  # Optional but recommended for test readability
+    [["date_col_1", "date_col_2"], None],
+    ids=["variables_specified", "variables_auto_find"],
 )
-def test_datetime_ordinal_feature_creation(df_datetime_ordinal, variables_param):
-    """
-    Tests that the ordinal features are created correctly,
-    both when variables are specified and when they are auto-detected.
-    """
+def test_datetime_ordinal_feature_creation(make_df, variables_param):
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=variables_param)
-    X_transformed = transformer.fit_transform(df_datetime_ordinal)
+    Xt = transformer.fit_transform(X)
 
-    # --- Common validation logic for both tests ---
-    expected_ordinal_1 = pd.Series(
-        [d.toordinal() for d in df_datetime_ordinal["date_col_1"]],
-        name="date_col_1_ordinal",
+    assert _as_comparable_ints(_get_col(Xt, "date_col_1_ordinal")) == _expected_ordinal(
+        DATE_DATA["date_col_1"]
     )
-    expected_ordinal_2 = pd.Series(
-        [d.toordinal() for d in df_datetime_ordinal["date_col_2"]],
-        name="date_col_2_ordinal",
+    assert _as_comparable_ints(_get_col(Xt, "date_col_2_ordinal")) == _expected_ordinal(
+        DATE_DATA["date_col_2"]
     )
 
-    pd.testing.assert_series_equal(
-        X_transformed["date_col_1_ordinal"], expected_ordinal_1
-    )
-    pd.testing.assert_series_equal(
-        X_transformed["date_col_2_ordinal"], expected_ordinal_2
-    )
-
-    # Check if original columns are dropped and non-date column remains
-    assert "non_date_col" in X_transformed.columns
-    assert "date_col_1" not in X_transformed.columns
-    assert "date_col_2" not in X_transformed.columns
+    columns = Xt.columns
+    assert "non_date_col" in columns
+    assert "date_col_1" not in columns
+    assert "date_col_2" not in columns
 
 
-def test_datetime_ordinal_with_start_date(df_datetime_ordinal):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_with_start_date(make_df):
     start_date_str = "2023-01-01"
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=["date_col_1"], start_date=start_date_str)
-    X_transformed = transformer.fit_transform(df_datetime_ordinal)
+    Xt = transformer.fit_transform(X)
 
-    start_ordinal = pd.to_datetime(start_date_str).toordinal()
-    expected_ordinal = pd.Series(
-        [d.toordinal() - start_ordinal + 1 for d in df_datetime_ordinal["date_col_1"]],
-        name="date_col_1_ordinal",
+    start_ordinal = datetime.date.fromisoformat(start_date_str).toordinal()
+    expected = _expected_ordinal(
+        DATE_DATA["date_col_1"], start_date_ordinal=start_ordinal
     )
 
-    pd.testing.assert_series_equal(
-        X_transformed["date_col_1_ordinal"], expected_ordinal
-    )
-    assert "date_col_2" in X_transformed.columns
-    assert "date_col_1" not in X_transformed.columns
+    assert _as_comparable_ints(_get_col(Xt, "date_col_1_ordinal")) == expected
+    assert "date_col_2" in Xt.columns
+    assert "date_col_1" not in Xt.columns
 
 
-def test_datetime_ordinal_with_start_date_datetime_object(df_datetime_ordinal):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_with_start_date_datetime_object(make_df):
     start_date_obj = datetime.date(2023, 1, 1)
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=["date_col_1"], start_date=start_date_obj)
-    X_transformed = transformer.fit_transform(df_datetime_ordinal)
+    Xt = transformer.fit_transform(X)
 
-    start_ordinal = pd.to_datetime(start_date_obj).toordinal()
-    expected_ordinal = pd.Series(
-        [d.toordinal() - start_ordinal + 1 for d in df_datetime_ordinal["date_col_1"]],
-        name="date_col_1_ordinal",
+    expected = _expected_ordinal(
+        DATE_DATA["date_col_1"], start_date_ordinal=start_date_obj.toordinal()
     )
-
-    pd.testing.assert_series_equal(
-        X_transformed["date_col_1_ordinal"], expected_ordinal
-    )
+    assert _as_comparable_ints(_get_col(Xt, "date_col_1_ordinal")) == expected
 
 
-def test_datetime_ordinal_missing_values_raise(df_datetime_ordinal_na):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_missing_values_raise(make_df):
+    X = _make_datetime_df(make_df, DATE_DATA_NA)
     transformer = DatetimeOrdinal(missing_values="raise")
     with pytest.raises(
         ValueError, match="Some of the variables in the dataset contain NaN"
     ):
-        transformer.fit(df_datetime_ordinal_na)
+        transformer.fit(X)
 
 
-def test_datetime_ordinal_missing_values_ignore(df_datetime_ordinal_na):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_missing_values_ignore(make_df):
+    X = _make_datetime_df(make_df, DATE_DATA_NA)
     transformer = DatetimeOrdinal(missing_values="ignore")
-    X_transformed = transformer.fit_transform(df_datetime_ordinal_na)
+    Xt = transformer.fit_transform(X)
 
-    # Expected values for date_col_1_ordinal, handling None
-    expected_ordinal_1 = pd.Series(
-        [
-            d.toordinal() if pd.notna(d) else pd.NA
-            for d in df_datetime_ordinal_na["date_col_1"]
-        ],
-        name="date_col_1_ordinal",
-        dtype=object,
-    )
-    expected_ordinal_2 = pd.Series(
-        [
-            d.toordinal() if pd.notna(d) else pd.NA
-            for d in df_datetime_ordinal_na["date_col_2"]
-        ],
-        name="date_col_2_ordinal",
-        dtype=object,
-    )
-
-    pd.testing.assert_series_equal(
-        X_transformed["date_col_1_ordinal"], expected_ordinal_1
-    )
-    pd.testing.assert_series_equal(
-        X_transformed["date_col_2_ordinal"], expected_ordinal_2
-    )
+    assert _as_comparable_ints(
+        _get_col(Xt, "date_col_1_ordinal")
+    ) == _expected_ordinal(DATE_DATA_NA["date_col_1"])
+    assert _as_comparable_ints(
+        _get_col(Xt, "date_col_2_ordinal")
+    ) == _expected_ordinal(DATE_DATA_NA["date_col_2"])
 
 
 def test_datetime_ordinal_invalid_start_date():
+    # start_date is parsed in fit(), not __init__, so __init__ only stores it.
+    transformer = DatetimeOrdinal(start_date="not-a-date")
+    assert transformer.start_date == "not-a-date"
+
+    X = pd.DataFrame(DATE_DATA)
     with pytest.raises(
         ValueError, match="start_date could not be converted to datetime"
     ):
-        DatetimeOrdinal(start_date="not-a-date")
+        transformer.fit(X)
 
 
-def test_datetime_ordinal_non_datetime_variable_error(df_datetime_ordinal):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_non_datetime_variable_error(make_df):
+    X = make_df(DATE_DATA)
     transformer = DatetimeOrdinal(variables=["non_date_col"])
     with pytest.raises(TypeError):
-        transformer.fit(df_datetime_ordinal)
+        transformer.fit(X)
 
 
-def test_datetime_ordinal_drop_original_false(df_datetime_ordinal):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_drop_original_false(make_df):
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=["date_col_1"], drop_original=False)
-    X_transformed = transformer.fit_transform(df_datetime_ordinal)
+    Xt = transformer.fit_transform(X)
 
-    assert "date_col_1" in X_transformed.columns
-    assert "date_col_1_ordinal" in X_transformed.columns
-    assert "date_col_2" in X_transformed.columns
+    assert "date_col_1" in Xt.columns
+    assert "date_col_1_ordinal" in Xt.columns
+    assert "date_col_2" in Xt.columns
 
 
-def test_datetime_ordinal_get_feature_names_out(df_datetime_ordinal):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_get_feature_names_out(make_df):
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=["date_col_1", "date_col_2"])
-    transformer.fit(df_datetime_ordinal)
+    transformer.fit(X)
     feature_names_out = transformer.get_feature_names_out()
 
     expected_feature_names = [
@@ -185,13 +205,13 @@ def test_datetime_ordinal_get_feature_names_out(df_datetime_ordinal):
     assert sorted(feature_names_out) == sorted(expected_feature_names)
 
 
-def test_datetime_ordinal_get_feature_names_out_with_input_features(
-    df_datetime_ordinal,
-):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_get_feature_names_out_with_input_features(make_df):
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=["date_col_1"], drop_original=False)
-    transformer.fit(df_datetime_ordinal)
+    transformer.fit(X)
     feature_names_out = transformer.get_feature_names_out(
-        input_features=df_datetime_ordinal.columns.tolist()
+        input_features=list(X.columns)
     )
 
     expected_feature_names = [
@@ -203,52 +223,49 @@ def test_datetime_ordinal_get_feature_names_out_with_input_features(
     assert sorted(feature_names_out) == sorted(expected_feature_names)
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_datetime_ordinal_get_feature_names_out_with_input_features_drop_original(
-    df_datetime_ordinal,
+    make_df,
 ):
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=["date_col_1"], drop_original=True)
-    transformer.fit(df_datetime_ordinal)
+    transformer.fit(X)
     feature_names_out = transformer.get_feature_names_out(
-        input_features=df_datetime_ordinal.columns.tolist()
+        input_features=list(X.columns)
     )
 
     expected_feature_names = ["date_col_1_ordinal", "date_col_2", "non_date_col"]
     assert sorted(feature_names_out) == sorted(expected_feature_names)
 
 
-def test_datetime_ordinal_non_datetime_variable_in_transform(df_datetime_ordinal):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_non_datetime_variable_in_transform(make_df):
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(variables=["date_col_1"])
-    transformer.fit(df_datetime_ordinal)
-    # Create a new dataframe where 'date_col_1' is no longer datetime
-    X_test = df_datetime_ordinal.copy()
-    X_test["date_col_1"] = ["a", "b", "c", "d", "e"]
+    transformer.fit(X)
 
-    with pytest.raises(ValueError):
+    junk_data = {**DATE_DATA, "date_col_1": ["a", "b", "c", "d", "e"]}
+    X_test = make_df(junk_data)
+
+    # pandas raises ValueError, polars raises its own ComputeError - different
+    # exception classes, but both signal the same "not a real date" failure.
+    with pytest.raises(Exception):
         transformer.transform(X_test)
 
 
-def test_datetime_ordinal_missing_values_raise_in_transform(
-    df_datetime_ordinal, df_datetime_ordinal_na
-):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_datetime_ordinal_missing_values_raise_in_transform(make_df):
+    X = _make_datetime_df(make_df, DATE_DATA)
     transformer = DatetimeOrdinal(missing_values="raise")
+    transformer.fit(X)
 
-    # 1. Fit using the 3-column dataframe (df_datetime_ordinal)
-    transformer.fit(df_datetime_ordinal)
+    na_data = {**DATE_DATA_NA, "non_date_col": [1, 2, 3, 4, 5]}
+    X_test = _make_datetime_df(make_df, na_data)
 
-    # 2. Copy the NA dataframe (which initially has 2 columns)
-    X_test = df_datetime_ordinal_na.copy()
-
-    # 3. Add 'non_date_col' to match the column count (3) from the fit data.
-    #    (The content doesn't matter, matching the column count is what's important
-    #    to avoid the column mismatch error).
-    X_test["non_date_col"] = [1, 2, 3, 4, 5]
-
-    # 4. Now, test that it raises the NaN error (not the column mismatch error).
-    #    The match string is aligned with the error found in the fit test (Failure 1).
     with pytest.raises(
         ValueError, match="Some of the variables in the dataset contain NaN"
     ):
-        transformer.transform(X_test)  # 3 columns + NA data
+        transformer.transform(X_test)
 
 
 def test_raises_error_for_invalid_missing_values():
@@ -271,14 +288,12 @@ def test_more_tags_returns_expected_tags():
     assert transformer._more_tags() == expected_tags
 
 
-def test_return_empty():
-    # DatetimeOrdinal.__init__ does not store `self.start_date = start_date`
-    # (only the derived `self.start_date_`), which breaks sklearn's
-    # get_params()/clone() for this transformer. Because of that, it cannot go
-    # through the shared, clone-based check_return_empty check, nor through
-    # check_feature_engine_estimator at all. This test instantiates the
-    # transformer directly instead.
-    X = pd.DataFrame({"var_num": [1.0, 2.0, 3.0]})
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_return_empty(make_df):
+    # Instantiated directly rather than via the shared, clone-based
+    # check_return_empty helper, which parametrizes over a fixed transformer list
+    # this one is not part of.
+    X = make_df({"var_num": [1.0, 2.0, 3.0]})
 
     transformer = DatetimeOrdinal(variables=None, return_empty=False)
     with pytest.raises(
@@ -294,8 +309,7 @@ def test_return_empty():
         transformer.fit(X)
     assert transformer.variables_ == []
 
-    # if return_empty=True, transformer should return same df
-    # after transformation
-    dft = transformer.transform(X)
-    pd.testing.assert_frame_equal(dft, X)
+    # if return_empty=True, transformer should return same df after transformation
+    Xt = transformer.transform(X)
+    assert _get_col(Xt, "var_num") == _get_col(X, "var_num")
     assert transformer.get_feature_names_out() == list(X.columns)
