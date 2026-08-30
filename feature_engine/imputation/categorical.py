@@ -200,7 +200,6 @@ class CategoricalImputer(BaseImputer):
             # Benchmarked (10k-100k rows x 1-10 cols): a per-variable mode()
             # loop is not slower than pandas' batch X[variables_].mode(), so
             # both branches loop the same way - only the mode() call differs.
-            is_pandas = nwd.is_pandas_dataframe(X)
             imputer_dict_ = {}
             multi_mode_vars = []
             if is_pandas is True:
