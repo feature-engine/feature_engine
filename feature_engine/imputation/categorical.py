@@ -202,7 +202,7 @@ class CategoricalImputer(BaseImputer):
             # both branches loop the same way - only the mode() call differs.
             imputer_dict_ = {}
             multi_mode_vars = []
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X):
                 for var in variables_:
                     mode_vals = X[var].mode()
                     if len(mode_vals) > 1:
