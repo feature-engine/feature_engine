@@ -153,12 +153,12 @@ def _nw_days_in_month(x: nw.Series) -> nw.Series:
     return x.dt.truncate("1mo").dt.offset_by("1mo").dt.offset_by("-1d").dt.day()
 
 
-# Narwhals-native equivalents of FEATURES_FUNCTIONS above, used for dataframe
-# backends other than pandas. Kept separate from FEATURES_FUNCTIONS 
-#  because roughly a third of these features (week,
-# month_end, quarter_end, quarter_start, year_start, year_end, leap_year,
-# days_in_month) benchmarked 2x-53x slower than pandas-native when run through
-# narwhals on a pandas backend, so pandas keeps its fast, unchanged native path.
+# narwhals-native equivalents of FEATURES_FUNCTIONS above, used for dataframe
+# backends other than pandas. Kept separate from FEATURES_FUNCTIONS because
+# roughly a third of these features (week, month_end, quarter_end, quarter_start,
+# year_start, year_end, leap_year, days_in_month) benchmarked 2x-53x slower than
+# pandas-native when run through narwhals on a pandas backend, so pandas keeps its
+# fast, unchanged native path.
 FEATURES_FUNCTIONS_NARWHALS = {
     "month": lambda x: x.dt.month(),
     "quarter": _nw_quarter,

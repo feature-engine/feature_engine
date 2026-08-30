@@ -59,9 +59,9 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     new columns to the dataset. DatetimeFeatures can extract datetime information from
     existing datetime or object-like variables or from the dataframe index.
 
-    DatetimeFeatures works with pandas, polars, and any other narwhals-supported
-    dataframe. `dayfirst`, `yearfirst` and `utc` are pandas-only parsing
-    options and have no effect on non-pandas input, so use `format` there instead.
+    DatetimeFeatures works with pandas and polars dataframes. `dayfirst`,
+    `yearfirst` and `utc` are pandas-only parsing options and have no effect on
+    polars input, so use `format` there instead.
 
     The transformer supports the extraction of the following features:
 
@@ -176,7 +176,6 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     --------
     pandas.to_datetime
     pandas.dt
-    narwhals.Series.dt
 
     Examples
     --------
@@ -290,7 +289,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         # special case index
         if self.variables == "index":
             # polars and other narwhals backends have no index concept.
-            if nwd.is_pandas_dataframe(X):
+            if not nwd.is_pandas_dataframe(X):
                 raise TypeError(
                     "variables='index' requires a pandas dataframe, since only "
                     f"pandas dataframes have an index. Got {type(X)} instead."
@@ -334,14 +333,9 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         else:
             self.features_to_extract_ = self.features_to_extract
 
-        # save input features
-        if is_pandas is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
-
-        # save train set shape
-        self.n_features_in_ = X.shape[1]
+        # save input features and train set shape
+        self.feature_names_in_ = nw_X.columns
+        self.n_features_in_ = nw_X.shape[1]
 
         return self
 
@@ -389,9 +383,14 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
                 index=X.index,
             )
 
-            # create new features
-            for feat in self.features_to_extract_:
-                X[FEATURES_SUFFIXES[feat][1:]] = FEATURES_FUNCTIONS[feat](idx_datetime)
+            # add the new features without mutating the input dataframe
+            new_columns = {
+                FEATURES_SUFFIXES[feat][1:]: FEATURES_FUNCTIONS[feat](idx_datetime)
+                for feat in self.features_to_extract_
+            }
+            X = pd_.concat(
+                [X, pd_.DataFrame(new_columns, index=X.index)], axis=1
+            )
 
         else:
             # check if dataset contains na
@@ -401,8 +400,8 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             if len(self.variables_) == 0:
                 return X
 
-            if is_pandas is True:
-                pd_ = nw.from_native(X, eager_only=True).__native_namespace__()
+            if nwd.is_pandas_dataframe(X):
+                pd_ = nw_X.__native_namespace__()
                 # convert datetime variables
                 datetime_df = pd_.concat(
                     [
@@ -418,18 +417,24 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
                     axis=1,
                 )
 
-                # create new features
-                for var in self.variables_:
-                    for feat in self.features_to_extract_:
-                        X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[
-                            feat
-                        ](datetime_df[var])
+                # build all the new features, then add them in a single insertion
+                # (avoids fragmenting the frame when many features are extracted)
+                # and without mutating the input dataframe.
+                new_columns = {
+                    str(var) + FEATURES_SUFFIXES[feat]: FEATURES_FUNCTIONS[feat](
+                        datetime_df[var]
+                    )
+                    for var in self.variables_
+                    for feat in self.features_to_extract_
+                }
+                X = pd_.concat(
+                    [X, pd_.DataFrame(new_columns, index=X.index)], axis=1
+                )
                 if self.drop_original:
-                    X.drop(self.variables_, axis=1, inplace=True)
+                    X = X.drop(columns=self.variables_)
             else:
                 # dayfirst/yearfirst/utc are pandas.to_datetime-only knobs with no
-                # narwhals equivalent, so only `format` is honoured on this branch.
-                nw_X = nw.from_native(X, eager_only=True)
+                # equivalent on other backends, so only `format` is honoured here.
                 new_series = [
                     FEATURES_FUNCTIONS_NARWHALS[feat](
                         self._to_nw_datetime(nw_X.get_column(var))

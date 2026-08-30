@@ -746,8 +746,7 @@ As you can see, we do not have the constant features in the transformed dataset.
 With polars
 -----------
 
-:class:`DatetimeFeatures()` also works with polars dataframes, and with any other
-dataframe library supported by `narwhals <https://narwhals-dev.github.io/narwhals/>`_.
+:class:`DatetimeFeatures()` also works with polars dataframes.
 
 .. code:: python
 
@@ -785,12 +784,12 @@ We see the new features in the following output:
 
 .. note::
 
-    For non-pandas input, string columns are parsed with narwhals'
-    `Series.str.to_datetime() <https://narwhals-dev.github.io/narwhals/api-reference/series_str/#narwhals.series.SeriesStringNamespace.to_datetime>`_,
-    which can only infer unambiguous formats, like ISO-8601. For anything else, e.g. day-first
-    dates such as *21/06/2012*, pass an explicit `format`. The `dayfirst`, `yearfirst` and
-    `utc` parameters are pandas-`to_datetime`-only options and have no effect on non-pandas
-    input.
+    When parsing string columns, pandas relies on `dateutil` and can infer loose or
+    ambiguous formats. Polars parses dates natively and needs the format to be
+    unambiguous and consistent across the column: ISO 8601 (e.g. *2012-06-21*) parses
+    reliably, but looser formats, such as day-first dates like *21/06/2012*, require an
+    explicit `format`. The `dayfirst`, `yearfirst` and `utc` parameters are
+    `pandas.to_datetime`-only options and have no effect on polars input.
 
 .. note::
 
