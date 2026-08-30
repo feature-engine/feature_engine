@@ -219,7 +219,7 @@ class CategoricalImputer(BaseImputer):
 
         # Imputation with string
         else:
-            X = self._transform(X)
+            nw_X = self._transform(X)
 
             if nwd.is_pandas_dataframe(X):
                 # if variable is of type category, we need to add the new
