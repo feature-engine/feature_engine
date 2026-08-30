@@ -199,14 +199,10 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
             The narwhalified version of the dataframe entered by the user.
         """
 
-        # Check method fit has been called
         check_is_fitted(self)
 
-        # check that input is a dataframe. check_X returns a narwhals frame; the
-        # original native X is kept for the column-count check below.
         nw_X = check_X(X)
 
-        # Check input data contains same number of columns as df used to fit
         _check_X_matches_training_df(X, self.n_features_in_)
 
         return nw_X
@@ -236,12 +232,6 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         return X
 
     def _encode(self, X: IntoDataFrame) -> IntoDataFrame:
-        # X is the narwhals frame returned by _check_transform_input_and_state().
-        # replace_strict() maps known categories and fills unseen/missing ones via
-        # `default` in a single expression, and resolves to a plain numeric dtype
-        # on both pandas and polars. get_column()/Series.replace_strict() (rather
-        # than nw.col(), which only accepts string names) is what lets this handle
-        # pandas integer column names too.
         default = self._unseen if self.unseen == "encode" else None
         new_series = [
             X.get_column(feature).replace_strict(mapping, default=default)
@@ -256,8 +246,6 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         return X.to_native()
 
     def _check_nan_values_after_transformation(self, X: IntoDataFrame):
-        # X is the encoded narwhals frame built by _encode().
-        # check if NaN values were introduced by the encoding
         nan_columns = [
             feature
             for feature in self.encoder_dict_.keys()
