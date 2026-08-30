@@ -255,8 +255,9 @@ Categorical features with 2 modes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is possible that one variable has more than one mode. In that case, the
-transformer will raise an error. For example, when you set the transformer to
-impute the variable ‘PoolQC` with the most frequent value:
+transformer imputes with the first one, taking the modes in sorted order. For
+example, when you set the transformer to impute the variable `'PoolQC'` with
+the most frequent value:
 
 .. code:: python
 
@@ -267,25 +268,14 @@ impute the variable ‘PoolQC` with the most frequent value:
 
    imputer.fit(X_train)
 
-'PoolQC`  has more than 1 mode, so the transformer raises the following error:
-
-.. code:: python
-
-    196     self.imputer_dict_ = {var: mode_vals[0]}
-    198 # imputing multiple variables:
-    199 else:
-    200     # Returns a dataframe with 1 row if there is one mode per
-    201     # variable, or more rows if there are more modes:
-
-    ValueError: The variable PoolQC contains multiple frequent categories.
-
-We can check that the variable has various modes like this:
+`'PoolQC'` has more than 1 mode:
 
 .. code:: python
 
     X_train['PoolQC'].mode()
 
-We see that this variable has 3 categories with similar maximum number of observations:
+We see that this variable has 3 categories with a similar maximum number of
+observations:
 
 .. code:: python
 
@@ -293,6 +283,18 @@ We see that this variable has 3 categories with similar maximum number of observ
     1    Fa
     2    Gd
     Name: PoolQC, dtype: str
+
+so the transformer picks the first one, `'Ex'`:
+
+.. code:: python
+
+    imputer.imputer_dict_
+
+.. code:: python
+
+    {'PoolQC': 'Ex'}
+
+The pick is deterministic and is the same for pandas and polars.
 
 With polars
 -----------

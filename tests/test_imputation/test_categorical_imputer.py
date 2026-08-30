@@ -231,32 +231,33 @@ def test_error_when_imputation_method_not_frequent_or_missing():
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_error_when_variable_contains_multiple_modes(make_df):
+def test_uses_smallest_mode_when_variable_has_multiple_modes(make_df):
+    # every non-null value of "Name" is unique, so all are modes. The imputer
+    # picks the sorted-smallest one ("fred") - deterministically and
+    # identically for pandas and polars - instead of raising.
     df_na = make_df(DATA)
 
-    msg = "The variable Name contains multiple frequent categories."
+    # explicit variable
     imputer = CategoricalImputer(imputation_method="frequent", variables="Name")
-    with pytest.raises(ValueError, match=msg):
-        imputer.fit(df_na)
+    imputer.fit(df_na)
+    assert imputer.imputer_dict_ == {"Name": "fred"}
+    assert _cols(imputer.transform(df_na), ["Name"])["Name"] == [
+        "tom",
+        "nick",
+        "krish",
+        "fred",
+        "peter",
+        "fred",
+        "fred",
+        "sam",
+    ]
 
-    msg = "The variable(s) Name contain(s) multiple frequent categories."
+    # auto-selected: only "Name" is multi-mode; "City" and "Studies" each have
+    # a single mode and are unaffected.
     imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(ValueError, match=r"The variable\(s\) Name contain\(s\)"):
-        imputer.fit(df_na)
-
-    # add a duplicate of the tied "Name" column via narwhals so the same
-    # dataframe-building step works for both backends.
-    df_dup = (
-        nw.from_native(df_na, eager_only=True)
-        .with_columns(nw.col("Name").alias("Name_dup"))
-        .to_native()
-    )
-    imputer = CategoricalImputer(imputation_method="frequent")
-    with pytest.raises(
-        ValueError,
-        match=r"The variable\(s\) Name, Name_dup contain\(s\)",
-    ):
-        imputer.fit(df_dup)
+    imputer.fit(df_na)
+    assert imputer.imputer_dict_["Name"] == "fred"
+    assert imputer.imputer_dict_["City"] == "London"
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])

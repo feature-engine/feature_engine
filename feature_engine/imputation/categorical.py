@@ -197,43 +197,15 @@ class CategoricalImputer(BaseImputer):
             imputer_dict_ = {var: self.fill_value for var in variables_}
 
         elif self.imputation_method == "frequent":
-            # Benchmarked (10k-100k rows x 1-10 cols): a per-variable mode()
-            # loop is not slower than pandas' batch X[variables_].mode(), so
-            # both branches loop the same way - only the mode() call differs.
+            nw_X = nw.from_native(X, eager_only=True)
             imputer_dict_ = {}
-            multi_mode_vars = []
-            if nwd.is_pandas_dataframe(X):
-                for var in variables_:
-                    mode_vals = X[var].mode()
-                    if len(mode_vals) > 1:
-                        multi_mode_vars.append(var)
-                    else:
-                        imputer_dict_[var] = mode_vals[0]
-            else:
-                nw_X = nw.from_native(X, eager_only=True)
-                for var in variables_:
-                    # Unlike pandas' mode(dropna=True default), polars' mode()
-                    # does not drop nulls, so a column whose nulls outnumber
-                    # any single category would otherwise make null "the mode".
-                    mode_vals = nw_X[var].drop_nulls().mode(keep="all")
-                    if len(mode_vals) > 1:
-                        multi_mode_vars.append(var)
-                    else:
-                        imputer_dict_[var] = mode_vals[0]
-
-            # Some variables may contain more than 1 mode:
-            if len(multi_mode_vars) > 0:
-                varnames_str = ", ".join(str(v) for v in multi_mode_vars)
-                if len(variables_) == 1:
-                    raise ValueError(
-                        f"The variable {varnames_str} contains multiple frequent "
-                        "categories."
-                    )
-                else:
-                    raise ValueError(
-                        f"The variable(s) {varnames_str} contain(s) multiple "
-                        "frequent categories."
-                    )
+            for var in variables_:
+                # polars' mode() keeps nulls (unlike pandas' default), so drop
+                # them first. When a variable has several equally-frequent
+                # categories, sort and take the smallest so fit() is
+                # reproducible and pandas and polars agree.
+                modes = sorted(nw_X[var].drop_nulls().mode(keep="all").to_list())
+                imputer_dict_[var] = modes[0]
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
