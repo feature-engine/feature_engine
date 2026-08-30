@@ -214,11 +214,10 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             None.
         """
 
-        X = check_X(X)
+        nw_X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
-        nw_X = nw.from_native(X, eager_only=True)
         self.encoder_dict_ = {}
 
         for var in variables_:
@@ -273,12 +272,11 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             original categorical ones.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 
-        nw_X = nw.from_native(X, eager_only=True)
         dummy_frames = []
         # a placeholder Series name, swapped back out below by a fixed-length
         # prefix slice (never by parsing the category suffix): to_dummies()
