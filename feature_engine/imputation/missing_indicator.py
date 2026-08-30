@@ -164,7 +164,7 @@ class MissingIndicator(BaseImputer):
         """
 
         # check input dataframe
-        check_X(X)
+        nw_X = check_X(X)
 
         # find variables for which indicator should be added
         if self.variables is None:
@@ -177,13 +177,11 @@ class MissingIndicator(BaseImputer):
             # than narwhals' single null_count() call on pandas input (the
             # loop calls straight into pandas' C implementation with no
             # narwhals overhead), so pandas keeps its own fast path here.
-            is_pandas = nwd.is_pandas_dataframe(X)
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X):
                 variables_ = [
                     var for var in variables_ if X[var].isnull().sum() > 0
                 ]
             else:
-                nw_X = nw.from_native(X, eager_only=True)
                 null_counts = nw_X.select(variables_).null_count().row(0)
                 variables_ = [
                     var
@@ -213,13 +211,12 @@ class MissingIndicator(BaseImputer):
             The dataframe containing the additional binary variables.
         """
 
-        X = self._transform(X)
+        nw_X = self._transform(X)
 
         # Benchmarked: building a separate indicator frame and concatenating
         # it (pandas-native) is ~2-5x faster than narwhals' with_columns
         # equivalent on pandas input, so pandas keeps its own fast path here.
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             pd = nw.from_native(X, eager_only=True).__native_namespace__()
             X_indicators = (
                 X[self.variables_]
@@ -229,7 +226,6 @@ class MissingIndicator(BaseImputer):
             )
             X = pd.concat([X, X_indicators], axis=1)
         else:
-            nw_X = nw.from_native(X, eager_only=True)
             nw_X = nw_X.with_columns(
                 nw.col(var).is_null().cast(nw.Int8).alias(f"{var}_na")
                 for var in self.variables_
