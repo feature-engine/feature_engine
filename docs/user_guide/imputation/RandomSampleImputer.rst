@@ -64,14 +64,6 @@ With polars
 :class:`RandomSampleImputer()` also accepts polars dataframes as input to `fit()` and
 `transform()`.
 
-.. note::
-
-    pandas' ``.sample()`` and polars' ``.sample()`` are backed by different random
-    number generators. Setting the same integer `random_state` on pandas and on
-    polars input will **not** draw the same values, even from identical data. The
-    reproducibility guarantee is: same seed, same backend (pandas or polars) →
-    same sampled values. It is not a cross-backend guarantee.
-
 .. code:: python
 
     import polars as pl
