@@ -324,7 +324,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             check_classification_targets(y)
             self._is_binary = type_of_target(y)
 
-        # check_X_y validates X and normalises y; the checks below detect the
         # backend themselves, so keep working with the native X.
         _, y = check_X_y(X, y)
 
