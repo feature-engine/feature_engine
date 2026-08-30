@@ -120,7 +120,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     >>> from feature_engine.datetime import DatetimeOrdinal
     >>> X = pd.DataFrame(dict(date = ["2023-01-01", "2023-01-02", "2023-01-03"]))
     >>> dtf = DatetimeOrdinal(start_date="2023-01-01")
-    >>> _ = dtf.fit(X)
+    >>> dtf.fit(X)
     >>> dtf.transform(X)
        date_ordinal
     0             1
@@ -193,10 +193,6 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         y: Series=None
             It is not needed in this transformer. You can pass y or None.
 
-        Raises
-        ------
-        ValueError
-            If `start_date` was provided but cannot be parsed into a date.
         """
         # check input dataframe
         X = check_X(X)
