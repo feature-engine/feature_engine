@@ -162,21 +162,6 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 f"Got {missing_values} instead."
             )
 
-        self.start_date_: Optional[datetime.date]
-        if start_date is not None:
-            if isinstance(start_date, datetime.date):
-                self.start_date_ = start_date
-            else:
-                try:
-                    self.start_date_ = _parse_datetime(start_date)
-                except Exception as e:
-                    raise ValueError(
-                        f"start_date could not be converted to datetime. "
-                        f"Got {start_date} instead. Error: {e}"
-                    )
-        else:
-            self.start_date_ = None
-
         if not isinstance(drop_original, bool):
             raise ValueError(
                 "drop_original takes only booleans True or False. "
@@ -188,6 +173,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
         self.missing_values = missing_values
+        self.start_date = start_date
         self.drop_original = drop_original
 
     def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
@@ -209,6 +195,23 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # check input dataframe
         X = check_X(X)
 
+        # parse the user-provided start_date into its ordinal representation.
+        # datetime.datetime is a subclass of datetime.date, so both are handled
+        # by the isinstance branch; strings are parsed with dateutil.
+        self.start_date_ordinal_: Optional[int]
+        if self.start_date is None:
+            self.start_date_ordinal_ = None
+        elif isinstance(self.start_date, datetime.date):
+            self.start_date_ordinal_ = self.start_date.toordinal()
+        else:
+            try:
+                self.start_date_ordinal_ = _parse_datetime(self.start_date).toordinal()
+            except Exception as e:
+                raise ValueError(
+                    f"start_date could not be converted to datetime. "
+                    f"Got {self.start_date} instead. Error: {e}"
+                )
+
         if self.variables is None:
             self.variables_ = find_datetime_variables(
                 X, return_empty=self.return_empty
@@ -222,15 +225,8 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         if self.missing_values == "raise" and len(self.variables_) > 0:
             _check_contains_na(X, self.variables_)
 
-        self.start_date_ordinal_: Optional[int]
-        if self.start_date_ is not None:
-            self.start_date_ordinal_ = self.start_date_.toordinal()
-        else:
-            self.start_date_ordinal_ = None
-
         # save input features
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X):
             self.feature_names_in_ = list(X.columns)
         else:
             self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
@@ -264,18 +260,6 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        is_pandas = nwd.is_pandas_dataframe(X)
-
-        # reorder variables to match train set
-        if is_pandas is True:
-            X = X[self.feature_names_in_]
-        else:
-            X = (
-                nw.from_native(X, eager_only=True)
-                .select(self.feature_names_in_)
-                .to_native()
-            )
-
         if len(self.variables_) == 0:
             return X
 
@@ -283,10 +267,13 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
+        # Convert to narwhals once here and back to native once in the
+        # per-backend helpers - no other round-trips in between.
+        nw_X = nw.from_native(X, eager_only=True)
+
         # variables can be native Date/Datetime columns, or string/categorical
         # columns holding parseable date values - the latter need parsing into
         # a real datetime dtype before the ordinal can be computed.
-        nw_X = nw.from_native(X, eager_only=True)
         schema = nw_X.schema
         to_parse = [
             var
@@ -298,12 +285,9 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 nw.col(var).cast(nw.String).str.to_datetime() for var in to_parse
             )
 
-        if is_pandas is True:
-            X = self._transform_pandas(nw_X.to_native())
-        else:
-            X = self._transform_narwhals(nw_X)
-
-        return X
+        if nwd.is_pandas_dataframe(X):
+            return self._transform_pandas(nw_X.to_native())
+        return self._transform_narwhals(nw_X)
 
     def _transform_pandas(self, X):
         """Vectorized ordinal computation via numpy datetime64[D] arithmetic.

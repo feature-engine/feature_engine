@@ -160,10 +160,15 @@ def test_datetime_ordinal_missing_values_ignore(make_df):
 
 
 def test_datetime_ordinal_invalid_start_date():
+    # start_date is parsed in fit(), not __init__, so __init__ only stores it.
+    transformer = DatetimeOrdinal(start_date="not-a-date")
+    assert transformer.start_date == "not-a-date"
+
+    X = pd.DataFrame(DATE_DATA)
     with pytest.raises(
         ValueError, match="start_date could not be converted to datetime"
     ):
-        DatetimeOrdinal(start_date="not-a-date")
+        transformer.fit(X)
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -285,12 +290,9 @@ def test_more_tags_returns_expected_tags():
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_return_empty(make_df):
-    # DatetimeOrdinal.__init__ does not store `self.start_date = start_date`
-    # (only the derived `self.start_date_`), which breaks sklearn's
-    # get_params()/clone() for this transformer. Because of that, it cannot go
-    # through the shared, clone-based check_return_empty check, nor through
-    # check_feature_engine_estimator at all. This test instantiates the
-    # transformer directly instead.
+    # Instantiated directly rather than via the shared, clone-based
+    # check_return_empty helper, which parametrizes over a fixed transformer list
+    # this one is not part of.
     X = make_df({"var_num": [1.0, 2.0, 3.0]})
 
     transformer = DatetimeOrdinal(variables=None, return_empty=False)
