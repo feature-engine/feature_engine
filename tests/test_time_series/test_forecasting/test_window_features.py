@@ -452,6 +452,43 @@ def test_multiple_windows(df_time):
     assert df_time_tr.equals(X_tr)
 
 
+def test_min_periods_is_used(df_time):
+    # min_periods was accepted and documented but never reached pandas
+    # rolling(), so the leading rows stayed NaN whatever the user asked for.
+    variables = ["ambient_temp", "module_temp", "irradiation"]
+
+    transformer = WindowFeatures(window=3, min_periods=1)
+    df_tr = transformer.fit_transform(df_time)
+
+    expected = (
+        df_time[variables].rolling(window=3, min_periods=1).agg("mean").shift(periods=1)
+    )
+    expected.columns = [f"{var}_window_3_mean" for var in variables]
+
+    assert_frame_equal(df_tr[expected.columns], expected)
+
+    # with min_periods=1 only the very first row (shifted out) remains NaN
+    assert df_tr["ambient_temp_window_3_mean"].isna().sum() == 1
+
+    # the default is unchanged: pandas requires a full window
+    df_default = WindowFeatures(window=3).fit_transform(df_time)
+    assert df_default["ambient_temp_window_3_mean"].isna().sum() == 3
+
+
+def test_min_periods_is_used_with_multiple_windows(df_time):
+    transformer = WindowFeatures(window=[2, 3], min_periods=1)
+    df_tr = transformer.fit_transform(df_time)
+
+    for win in (2, 3):
+        expected = (
+            df_time["ambient_temp"].rolling(window=win, min_periods=1).mean().shift(1)
+        )
+        assert_frame_equal(
+            df_tr[[f"ambient_temp_window_{win}_mean"]],
+            expected.to_frame(f"ambient_temp_window_{win}_mean"),
+        )
+
+
 def test_sort_index(df_time):
     # Shuffle dataframe
     Xs = df_time.copy()
