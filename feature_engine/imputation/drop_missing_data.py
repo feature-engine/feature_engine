@@ -215,6 +215,11 @@ class DropMissingData(BaseImputer, TransformXyMixin):
 
         Parameters
         ----------
+        X: pandas dataframe of shape = [n_samples, n_features]
+            The dataframe to be transformed.
+
+        Returns
+        -------
         X_na: pandas dataframe of shape = [n_samples_with_na, features]
             The subset of the dataframe with the rows with missing data.
         """
