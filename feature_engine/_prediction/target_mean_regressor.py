@@ -115,7 +115,7 @@ class TargetMeanRegressor(RegressorMixin, BaseTargetMeanEstimator):
         X : pandas dataframe of shape = [n_samples, ]
             The input samples.
 
-        Return
+        Returns
         -------
         y_pred: ndarray of shape (n_samples,)
             Returns predicted values.
