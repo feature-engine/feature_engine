@@ -139,7 +139,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
-        Return
+        Returns
         -------
         p: array-like of shape (n_samples, n_classes)
             Returns the probability of the sample for each class in the model, where
@@ -159,7 +159,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
-        Return
+        Returns
         -------
         p: array-like of shape (n_samples, n_classes)
             Returns the log-probability of the sample for each class in the model,
@@ -178,7 +178,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
-        Return
+        Returns
         -------
         y_pred: ndarray of shape (n_samples,)
             Vector containing the class labels for each sample.
