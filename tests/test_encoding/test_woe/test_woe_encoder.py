@@ -1,147 +1,90 @@
 import math
 import re
 
-import narwhals as nw
 import numpy as np
 import pandas as pd
-import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import WoEEncoder
+from tests.backend_helpers import make_series, to_dict
 
-VAR_A = [
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    0.8472978603872037,
-    0.8472978603872037,
-    0.8472978603872037,
-    0.8472978603872037,
-]
-
-VAR_B = [
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    -0.5389965007326869,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.15415067982725836,
-    0.8472978603872037,
-    0.8472978603872037,
-    0.8472978603872037,
-    0.8472978603872037,
-]
-
-DF_ENC = {
-    "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-    "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-    "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+WOE_A = {
+    "A": 0.15415067982725836,
+    "B": -0.5389965007326869,
+    "C": 0.8472978603872037,
 }
-
-DF_ENC_NUMERIC = {
-    "var_A": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3],
-    "var_B": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3],
-    "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+WOE_B = {
+    "A": -0.5389965007326869,
+    "B": 0.15415067982725836,
+    "C": 0.8472978603872037,
 }
+VAR_A = [WOE_A["A"]] * 6 + [WOE_A["B"]] * 10 + [WOE_A["C"]] * 4
+VAR_B = [WOE_B["A"]] * 10 + [WOE_B["B"]] * 6 + [WOE_B["C"]] * 4
 
-DF_ENC_RARE = {
-    "var_A": ["B"] * 9 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,
-    "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-    "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-}
-
-# None (not np.nan) is what both pandas and polars accept as a missing
-# value inside a string column literal.
-DF_ENC_NA = {
-    "var_A": [None] + ["B"] * 8 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,
-    "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-    "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-}
+MSG_NA = (
+    "Some of the variables in the dataset contain NaN. Check and "
+    "remove those before using this transformer."
+)
 
 
-def _none_to_nan(values):
-    # Missing values print as None for polars, NaN for pandas float columns
-    # - both mean "missing" here, so normalize both sides before comparing.
-    return [np.nan if v is None else v for v in values]
-
-
-def assert_df_equal(X, expected: dict, abs_tol: float = 1e-5) -> None:
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    assert list(result.keys()) == list(expected.keys())
-    for col, values in expected.items():
-        assert _none_to_nan(result[col]) == pytest.approx(
-            _none_to_nan(values), abs=abs_tol, nan_ok=True
-        )
-
-
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_automatically_select_variables(make_df):
-    df_enc = make_df(DF_ENC)
-    encoder = WoEEncoder(variables=None)
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X = encoder.transform(df_enc[["var_A", "var_B"]])
-
-    assert encoder.encoder_dict_ == {
-        "var_A": {
-            "A": 0.15415067982725836,
-            "B": -0.5389965007326869,
-            "C": 0.8472978603872037,
-        },
-        "var_B": {
-            "A": -0.5389965007326869,
-            "B": 0.15415067982725836,
-            "C": 0.8472978603872037,
-        },
-    }
-    assert_df_equal(X, {"var_A": VAR_A, "var_B": VAR_B})
-
-
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_user_passes_variables(make_df):
-    df_enc = make_df(DF_ENC)
-    encoder = WoEEncoder(variables=["var_A", "var_B"])
-    encoder.fit(df_enc, df_enc["target"])
-    X = encoder.transform(df_enc)
-
-    assert encoder.encoder_dict_ == {
-        "var_A": {
-            "A": 0.15415067982725836,
-            "B": -0.5389965007326869,
-            "C": 0.8472978603872037,
-        },
-        "var_B": {
-            "A": -0.5389965007326869,
-            "B": 0.15415067982725836,
-            "C": 0.8472978603872037,
-        },
-    }
-    assert_df_equal(
-        X, {"var_A": VAR_A, "var_B": VAR_B, "target": DF_ENC["target"]}
+def _msg_zero_division(features):
+    return (
+        "During the WoE calculation, some of the categories in the "
+        "following features contained 0 in the denominator or numerator, "
+        f"and hence the WoE can't be calculated: {features}."
     )
+
+
+def test_automatically_select_variables(make_df, data_enc):
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc["target"])
+
+    encoder = WoEEncoder(variables=None)
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
+
+    assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
+    assert isinstance(Xt, make_df)
+    assert to_dict(Xt) == {
+        "var_A": pytest.approx(VAR_A),
+        "var_B": pytest.approx(VAR_B),
+    }
+
+
+@pytest.mark.parametrize("to_target", [list, np.array])
+def test_target_as_list_or_array(make_df, data_enc, to_target):
+    # a list or numpy array target takes a different code path than a Series
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    y = to_target(data_enc["target"])
+
+    encoder = WoEEncoder(variables=None)
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
+
+    assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
+    assert isinstance(Xt, make_df)
+    assert to_dict(Xt) == {
+        "var_A": pytest.approx(VAR_A),
+        "var_B": pytest.approx(VAR_B),
+    }
+
+
+def test_user_passes_variables(make_df, data_enc):
+    X = make_df(data_enc)
+    y = make_series(make_df, data_enc["target"])
+
+    encoder = WoEEncoder(variables=["var_A", "var_B"])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
+
+    assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
+    assert isinstance(Xt, make_df)
+    assert to_dict(Xt) == {
+        "var_A": pytest.approx(VAR_A),
+        "var_B": pytest.approx(VAR_B),
+        "target": data_enc["target"],
+    }
 
 
 _targets = [
@@ -151,165 +94,132 @@ _targets = [
 ]
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("target", _targets)
-def test_when_target_class_not_0_1(make_df, target):
-    data = dict(DF_ENC)
+def test_when_target_class_not_0_1(make_df, data_enc, target):
+    data = dict(data_enc)
     data["target"] = target
-    df_enc = make_df(data)
+    X = make_df(data)
+    y = make_series(make_df, target)
+
     encoder = WoEEncoder(variables=["var_A", "var_B"])
-    encoder.fit(df_enc, df_enc["target"])
-    X = encoder.transform(df_enc)
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
-    assert encoder.encoder_dict_ == {
-        "var_A": {
-            "A": 0.15415067982725836,
-            "B": -0.5389965007326869,
-            "C": 0.8472978603872037,
-        },
-        "var_B": {
-            "A": -0.5389965007326869,
-            "B": 0.15415067982725836,
-            "C": 0.8472978603872037,
-        },
+    assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
+    assert isinstance(Xt, make_df)
+    assert to_dict(Xt) == {
+        "var_A": pytest.approx(VAR_A),
+        "var_B": pytest.approx(VAR_B),
+        "target": target,
     }
-    assert_df_equal(X, {"var_A": VAR_A, "var_B": VAR_B, "target": target})
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_warn_if_transform_df_contains_categories_not_seen_in_fit(make_df):
-    df_enc = make_df(DF_ENC)
-    df_enc_rare = make_df(DF_ENC_RARE)
+def test_warn_if_transform_df_contains_categories_not_seen_in_fit(
+    make_df, data_enc, data_enc_rare
+):
     # test case 3: when dataset to be transformed contains categories not present
     # in training dataset
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc["target"])
+    X_rare = make_df(data_enc_rare)[["var_A", "var_B"]]
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
-    # check for error when rare_labels equals 'raise'
-    with pytest.warns(UserWarning) as record:
-        encoder = WoEEncoder(unseen="ignore")
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+    # check for warning when unseen equals 'ignore'
+    encoder = WoEEncoder(unseen="ignore")
+    encoder.fit(X, y)
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        encoder.transform(X_rare)
 
-    # check that at least one warning was raised (Pandas 3 may emit additional
-    # deprecation warnings)
-    assert len(record) >= 1
-    # check that the message matches
-    assert any(r.message.args[0] == msg for r in record)
-
-    # check for error when rare_labels equals 'raise'
+    # check for error when unseen equals 'raise'
     encoder = WoEEncoder(unseen="raise")
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
+    encoder.fit(X, y)
     with pytest.raises(ValueError, match=re.escape(msg)):
-        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+        encoder.transform(X_rare)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_error_if_target_not_binary(make_df):
     # test case 4: the target is not binary
+    data = {
+        "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
+        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
+        "target": [1, 1, 2, 2, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+    }
+    X = make_df(data)[["var_A", "var_B"]]
+    y = make_series(make_df, data["target"])
+
     encoder = WoEEncoder(variables=None)
     with pytest.raises(ValueError):
-        df = {
-            "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-            "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-            "target": [1, 1, 2, 2, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-        }
-        df = make_df(df)
-        encoder.fit(df[["var_A", "var_B"]], df["target"])
+        encoder.fit(X, y)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_error_if_denominator_probability_is_zero_1_var(make_df):
-    df = {
+    data = {
         "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
         "target": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
     }
-    df = make_df(df)
     encoder = WoEEncoder(variables=None)
+    with pytest.raises(ValueError, match=re.escape(_msg_zero_division("var_A"))):
+        encoder.fit(
+            make_df(data)[["var_A", "var_B"]], make_series(make_df, data["target"])
+        )
 
-    msg = (
-        "During the WoE calculation, some of the categories in the "
-        "following features contained 0 in the denominator or numerator, "
-        "and hence the WoE can't be calculated: var_A."
-    )
-    with pytest.raises(ValueError, match=msg):
-        encoder.fit(df[["var_A", "var_B"]], df["target"])
-
-    df = {
+    data = {
         "var_A": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
         "var_B": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "target": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
     }
-    df = make_df(df)
     encoder = WoEEncoder(variables=None)
-
-    msg = (
-        "During the WoE calculation, some of the categories in the "
-        "following features contained 0 in the denominator or numerator, "
-        "and hence the WoE can't be calculated: var_B."
-    )
-    with pytest.raises(ValueError, match=msg):
-        encoder.fit(df[["var_A", "var_B"]], df["target"])
+    with pytest.raises(ValueError, match=re.escape(_msg_zero_division("var_B"))):
+        encoder.fit(
+            make_df(data)[["var_A", "var_B"]], make_series(make_df, data["target"])
+        )
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_error_if_denominator_probability_is_zero_2_vars(make_df):
-    df = {
+    data = {
         "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
         "var_C": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "target": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
     }
-    df = make_df(df)
     encoder = WoEEncoder(variables=None)
-
-    msg = (
-        "During the WoE calculation, some of the categories in the "
-        "following features contained 0 in the denominator or numerator, "
-        "and hence the WoE can't be calculated: var_A, var_C."
-    )
-    with pytest.raises(ValueError, match=msg):
-        encoder.fit(df, df["target"])
+    msg = _msg_zero_division("var_A, var_C")
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        encoder.fit(make_df(data), make_series(make_df, data["target"]))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_error_if_numerator_probability_is_zero(make_df):
-    df = {
+    data = {
         "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
         "var_C": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
         "target": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
     }
-    df = make_df(df)
+    X = make_df(data)
+    y = make_series(make_df, data["target"])
     encoder = WoEEncoder(variables=None)
 
-    msg = (
-        "During the WoE calculation, some of the categories in the "
-        "following features contained 0 in the denominator or numerator, "
-        "and hence the WoE can't be calculated: var_A, var_C."
-    )
-    with pytest.raises(ValueError, match=msg):
-        encoder.fit(df, df["target"])
+    msg = _msg_zero_division("var_A, var_C")
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        encoder.fit(X, y)
 
-    msg = (
-        "During the WoE calculation, some of the categories in the "
-        "following features contained 0 in the denominator or numerator, "
-        "and hence the WoE can't be calculated: var_A."
-    )
-    with pytest.raises(ValueError, match=msg):
-        encoder.fit(df[["var_A", "var_B"]], df["target"])
+    msg = _msg_zero_division("var_A")
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        encoder.fit(X[["var_A", "var_B"]], y)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_fill_value(make_df):
-    df = {
+    data = {
         "var_A": ["A"] * 9 + ["B"] * 6 + ["C"] * 3 + ["D"] * 2,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
         "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
     }
-    df = make_df(df)
+    X = make_df(data)
+    y = make_series(make_df, data["target"])
+
     encoder = WoEEncoder(variables=None, fill_value=1)
-    encoder.fit(df, df["target"])
+    encoder.fit(X, y)
     woe_exp_a = {
         "A": -0.6337237600891445,
         "B": -0.07410797215372196,
@@ -328,7 +238,7 @@ def test_fill_value(make_df):
             assert math.isclose(encoder.encoder_dict_[var][k], woe_exp[var][k])
 
     encoder = WoEEncoder(variables=None, fill_value=10)
-    encoder.fit(df, df["target"])
+    encoder.fit(X, y)
     woe_exp_a = {
         "A": -0.6337237600891445,
         "B": -0.07410797215372196,
@@ -353,67 +263,57 @@ def test_assigns_fill_value_at_init(fill_value):
     assert encoder.fill_value == fill_value
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_error_if_contains_na_in_fit(make_df):
+def test_error_if_contains_na_in_fit(make_df, data_enc_na):
     # test case 9: when dataset contains na, fit method
-    df_enc_na = make_df(DF_ENC_NA)
+    X = make_df(data_enc_na)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc_na["target"])
+
     encoder = WoEEncoder(variables=None)
-    msg = (
-        "Some of the variables in the dataset contain NaN. Check and "
-        "remove those before using this transformer."
-    )
-    with pytest.raises(ValueError, match=msg):
-        encoder.fit(df_enc_na[["var_A", "var_B"]], df_enc_na["target"])
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        encoder.fit(X, y)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_error_if_df_contains_na_in_transform(make_df):
-    # test case 10: when dataset contains na, transform method}
-    df_enc = make_df(DF_ENC)
-    df_enc_na = make_df(DF_ENC_NA)
+def test_error_if_df_contains_na_in_transform(make_df, data_enc, data_enc_na):
+    # test case 10: when dataset contains na, transform method
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc["target"])
+    X_na = make_df(data_enc_na)[["var_A", "var_B"]]
+
     encoder = WoEEncoder(variables=None)
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    msg = (
-        "Some of the variables in the dataset contain NaN. Check and "
-        "remove those before using this transformer."
-    )
-    with pytest.raises(ValueError, match=msg):
-        encoder.transform(df_enc_na[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        encoder.transform(X_na)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_on_numerical_variables(make_df):
+def test_on_numerical_variables(make_df, data_enc_numeric):
     # ignore_format=True
-    df_enc_numeric = make_df(DF_ENC_NUMERIC)
+    X = make_df(data_enc_numeric)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc_numeric["target"])
+
     encoder = WoEEncoder(variables=None, ignore_format=True)
-    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
-    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
     # init params
     assert encoder.variables is None
     # fit params
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
-        "var_A": {
-            1: 0.15415067982725836,
-            2: -0.5389965007326869,
-            3: 0.8472978603872037,
-        },
-        "var_B": {
-            1: -0.5389965007326869,
-            2: 0.15415067982725836,
-            3: 0.8472978603872037,
-        },
+        "var_A": {1: WOE_A["A"], 2: WOE_A["B"], 3: WOE_A["C"]},
+        "var_B": {1: WOE_B["A"], 2: WOE_B["B"], 3: WOE_B["C"]},
     }
     assert encoder.n_features_in_ == 2
     # transform params
-    assert_df_equal(X, {"var_A": VAR_A, "var_B": VAR_B})
+    assert isinstance(Xt, make_df)
+    assert to_dict(Xt) == {
+        "var_A": pytest.approx(VAR_A),
+        "var_B": pytest.approx(VAR_B),
+    }
 
 
-def test_variables_cast_as_category():
+def test_variables_cast_as_category(df_enc_category_dtypes):
     # pandas Categorical dtype has no direct polars equivalent.
-    df = pd.DataFrame(DF_ENC)
-    df[["var_A", "var_B"]] = df[["var_A", "var_B"]].astype("category")
+    df = df_enc_category_dtypes.copy()
     encoder = WoEEncoder(variables=None)
     encoder.fit(df[["var_A", "var_B"]], df["target"])
     X = encoder.transform(df[["var_A", "var_B"]])
@@ -434,9 +334,9 @@ def test_error_if_rare_labels_not_permitted_value(errors):
         WoEEncoder(unseen=errors)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_inverse_transform_raises_non_fitted_error(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    y = make_series(make_df, [0, 1, 0, 1, 1, 0])
     enc = WoEEncoder()
 
     # Test when fit is not called prior to transform.
@@ -446,7 +346,7 @@ def test_inverse_transform_raises_non_fitted_error(make_df):
     df1_na = make_df({"words": ["dog", "dog", "cat", "cat", "cat", None]})
 
     with pytest.raises(ValueError):
-        enc.fit(df1_na, make_df({"target": [0, 1, 0, 1, 1, 0]})["target"])
+        enc.fit(df1_na, y)
 
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError):
