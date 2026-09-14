@@ -47,14 +47,15 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        X: dataframe.
-            The same dataframe entered by the user.
+        nw_X: narwhals dataframe
+            The narwhalified version of the dataframe entered by the user, with
+            the variables in the same order as in the train set.
         """
         # check if class was fitted
         check_is_fitted(self)
 
         # check that input is a dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # Check that the dataframe contains the same number of columns
         # than the dataframe used to fit the transformer.
@@ -65,18 +66,11 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
-        # reorder to match training set
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
-            X = X[self.feature_names_in_]
-        else:
-            X = (
-                nw.from_native(X, eager_only=True)
-                .select(nw.col(*self.feature_names_in_))
-                .to_native()
-            )
-
-        return X
+        # reorder to match training set. pandas selects by label, which also
+        # supports integer column names.
+        if nwd.is_pandas_dataframe(X):
+            return nw.from_native(X[self.feature_names_in_], eager_only=True)
+        return nw_X.select(nw.col(*self.feature_names_in_))
 
     def _transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -94,9 +88,7 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         """
 
         # check if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
+        nw_X = self._check_transform_input_and_state(X)
 
         both = [
             var
@@ -147,9 +139,9 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             ]
 
         if len(new_series) > 0:
-            X = nw_X.with_columns(*new_series).to_native()
+            nw_X = nw_X.with_columns(*new_series)
 
-        return X
+        return nw_X.to_native()
 
     def _more_tags(self):
         tags_dict = _return_tags()
@@ -276,7 +268,7 @@ class WinsorizerBase(BaseOutlier):
         """
 
         # check input dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -299,7 +291,6 @@ class WinsorizerBase(BaseOutlier):
         else:
             self.fold_ = self.fold
 
-        nw_X = nw.from_native(X, eager_only=True)
         values = nw_X.select(nw.col(*self.variables_)).to_numpy()
 
         # nan-aware reductions: with missing_values="ignore", values may contain
@@ -367,12 +358,10 @@ class WinsorizerBase(BaseOutlier):
                     var: float(q) for var, q in zip(self.variables_, q_lo)
                 }
 
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw_X.columns
-        self.n_features_in_ = X.shape[1]
+        # list() normalises both a narwhals `.columns` (already a list) and a
+        # pandas Index to a plain list.
+        self.feature_names_in_ = list(nw_X.columns)
+        self.n_features_in_ = nw_X.shape[1]
 
         return self
 
