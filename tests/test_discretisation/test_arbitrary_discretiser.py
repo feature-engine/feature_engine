@@ -1,38 +1,29 @@
 import re
 
-import narwhals as nw
 import numpy as np
 import pandas as pd
-import polars as pl
 import pytest
-from sklearn.datasets import fetch_california_housing
 
 from feature_engine.discretisation import ArbitraryDiscretiser
+from tests.backend_helpers import to_dict
+
+BINS = [0, 20, 40, 60, np.inf]
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_arbitrary_discretiser(make_df):
-    california_dataset = fetch_california_housing()
-    data_pd = pd.DataFrame(
-        california_dataset.data, columns=california_dataset.feature_names
-    )
-    user_dict = {"HouseAge": [0, 20, 40, 60, np.inf]}
+def test_arbitrary_discretiser(make_df, data_california):
+    user_dict = {"HouseAge": BINS}
 
     # ground truth via pandas.cut - bins are user-supplied and fixed, so both
     # backends must reproduce this exact output.
+    house_age = pd.Series(data_california["HouseAge"])
     expected_codes = pd.cut(
-        data_pd["HouseAge"],
-        bins=[0, 20, 40, 60, np.inf],
-        labels=False,
-        include_lowest=True,
-    ).to_numpy()
+        house_age, bins=BINS, labels=False, include_lowest=True
+    ).tolist()
     expected_labels = (
-        pd.cut(data_pd["HouseAge"], bins=[0, 20, 40, 60, np.inf], include_lowest=True)
-        .astype(str)
-        .to_numpy()
+        pd.cut(house_age, bins=BINS, include_lowest=True).astype(str).tolist()
     )
 
-    data = make_df(data_pd)
+    data = make_df(data_california)
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=False
@@ -46,18 +37,17 @@ def test_arbitrary_discretiser(make_df):
     assert transformer.variables_ == ["HouseAge"]
     assert transformer.binner_dict_ == user_dict
     # transform params
-    result_codes = nw.from_native(X, eager_only=True).get_column("HouseAge").to_numpy()
-    assert np.array_equal(result_codes, expected_codes)
+    assert isinstance(X, make_df)
+    assert to_dict(X)["HouseAge"] == expected_codes
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=True
     )
     X = transformer.fit_transform(data)
-    result_labels = nw.from_native(X, eager_only=True).get_column("HouseAge").to_numpy()
-    assert np.array_equal(result_labels, expected_labels)
+    assert isinstance(X, make_df)
+    assert to_dict(X)["HouseAge"] == expected_labels
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_error_if_input_df_contains_na_in_transform(make_df):
     # test case 1: when dataset contains na, transform method raises
     age_dict = {"Age": [0, 10, 20, 30, np.inf]}
@@ -70,7 +60,6 @@ def test_error_if_input_df_contains_na_in_transform(make_df):
         transformer.transform(data_na)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("return_object", [False, True])
 def test_error_when_nan_introduced_during_transform(make_df, return_object):
     # test warning/error when NA are introduced during the discretisation,
@@ -115,5 +104,5 @@ def test_error_if_binning_dict_not_dict_type(binning_dict):
         "binning_dict must be a dictionary with the interval limits per "
         f"variable. Got {binning_dict} instead."
     )
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(ValueError, match=re.escape(msg)):
         ArbitraryDiscretiser(binning_dict=binning_dict)
