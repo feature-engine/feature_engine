@@ -1,36 +1,12 @@
-import narwhals as nw
-import pandas as pd
-import polars as pl
 import pytest
 
 from feature_engine.imputation import ArbitraryImputer, ArbitraryNumberImputer
-
-DATA = {
-    "Name": ["tom", "nick", "krish", None, "peter", None, "fred", "sam"],
-    "City": [
-        "London",
-        "Manchester",
-        None,
-        None,
-        "London",
-        "London",
-        "Bristol",
-        "Manchester",
-    ],
-    "Age": [20.0, 21.0, 19.0, None, 23.0, 40.0, 41.0, 37.0],
-    "Marks": [0.9, 0.8, 0.7, None, 0.3, None, 0.8, 0.6],
-}
+from tests.backend_helpers import null_count, to_dict
 
 
-def _null_count(X, col) -> int:
-    return nw.from_native(X, eager_only=True)[col].is_null().sum()
-
-
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_impute_with_99_and_automatically_select_variables(make_df):
-    X = make_df(DATA)
+def test_impute_with_99_and_automatically_select_variables(make_df, data_na):
     imputer = ArbitraryImputer(arbitrary_number=99, variables=None)
-    X_transformed = imputer.fit_transform(X)
+    X_transformed = imputer.fit_transform(make_df(data_na))
 
     # test init params
     assert imputer.arbitrary_number == 99
@@ -38,25 +14,24 @@ def test_impute_with_99_and_automatically_select_variables(make_df):
 
     # test fit attributes
     assert imputer.variables_ == ["Age", "Marks"]
-    assert imputer.n_features_in_ == 4
+    assert imputer.n_features_in_ == 5
     assert imputer.imputer_dict_ == {"Age": 99, "Marks": 99}
 
     # selected variables should not contain NA, non-selected should still
-    assert _null_count(X_transformed, "Age") == 0
-    assert _null_count(X_transformed, "Marks") == 0
-    assert _null_count(X_transformed, "Name") > 0
-    assert _null_count(X_transformed, "City") > 0
+    assert isinstance(X_transformed, make_df)
+    assert null_count(X_transformed, "Age") == 0
+    assert null_count(X_transformed, "Marks") == 0
+    assert null_count(X_transformed, "Name") > 0
+    assert null_count(X_transformed, "City") > 0
 
-    result = nw.from_native(X_transformed, eager_only=True).to_dict(as_series=False)
-    assert result["Age"] == [20.0, 21.0, 19.0, 99.0, 23.0, 40.0, 41.0, 37.0]
-    assert result["Marks"] == [0.9, 0.8, 0.7, 99.0, 0.3, 99.0, 0.8, 0.6]
+    result = to_dict(X_transformed)
+    assert result["Age"] == [20, 21, 19, 99, 23, 40, 41, 37]
+    assert result["Marks"] == [0.9, 0.8, 0.7, 99, 0.3, 99, 0.8, 0.6]
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_impute_with_1_and_single_variable_entered_by_user(make_df):
-    X = make_df(DATA)
+def test_impute_with_1_and_single_variable_entered_by_user(make_df, data_na):
     imputer = ArbitraryImputer(arbitrary_number=-1, variables=["Age"])
-    X_transformed = imputer.fit_transform(X)
+    X_transformed = imputer.fit_transform(make_df(data_na))
 
     # test init params
     assert imputer.arbitrary_number == -1
@@ -64,12 +39,12 @@ def test_impute_with_1_and_single_variable_entered_by_user(make_df):
 
     # test fit attributes
     assert imputer.variables_ == ["Age"]
-    assert imputer.n_features_in_ == 4
+    assert imputer.n_features_in_ == 5
     assert imputer.imputer_dict_ == {"Age": -1}
 
-    assert _null_count(X_transformed, "Age") == 0
-    result = nw.from_native(X_transformed, eager_only=True).to_dict(as_series=False)
-    assert result["Age"] == [20.0, 21.0, 19.0, -1.0, 23.0, 40.0, 41.0, 37.0]
+    assert isinstance(X_transformed, make_df)
+    assert null_count(X_transformed, "Age") == 0
+    assert to_dict(X_transformed)["Age"] == [20, 21, 19, -1, 23, 40, 41, 37]
 
 
 def test_error_when_arbitrary_number_is_string():
@@ -77,24 +52,23 @@ def test_error_when_arbitrary_number_is_string():
         ArbitraryImputer(arbitrary_number="arbitrary")
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_dictionary_of_imputation_values(make_df):
-    X = make_df(DATA)
+def test_dictionary_of_imputation_values(make_df, data_na):
     imputer = ArbitraryImputer(imputer_dict={"Age": -42, "Marks": -999})
-    X_transformed = imputer.fit_transform(X)
+    X_transformed = imputer.fit_transform(make_df(data_na))
 
     # test fit params
-    assert imputer.n_features_in_ == 4
+    assert imputer.n_features_in_ == 5
     assert imputer.imputer_dict_ == {"Age": -42, "Marks": -999}
 
-    assert _null_count(X_transformed, "Age") == 0
-    assert _null_count(X_transformed, "Marks") == 0
-    assert _null_count(X_transformed, "Name") > 0
-    assert _null_count(X_transformed, "City") > 0
+    assert isinstance(X_transformed, make_df)
+    assert null_count(X_transformed, "Age") == 0
+    assert null_count(X_transformed, "Marks") == 0
+    assert null_count(X_transformed, "Name") > 0
+    assert null_count(X_transformed, "City") > 0
 
-    result = nw.from_native(X_transformed, eager_only=True).to_dict(as_series=False)
-    assert result["Age"] == [20.0, 21.0, 19.0, -42.0, 23.0, 40.0, 41.0, 37.0]
-    assert result["Marks"] == [0.9, 0.8, 0.7, -999.0, 0.3, -999.0, 0.8, 0.6]
+    result = to_dict(X_transformed)
+    assert result["Age"] == [20, 21, 19, -42, 23, 40, 41, 37]
+    assert result["Marks"] == [0.9, 0.8, 0.7, -999, 0.3, -999, 0.8, 0.6]
 
 
 def test_imputer_error_when_dictionary_value_is_string():
