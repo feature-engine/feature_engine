@@ -229,11 +229,7 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         self.encoder_dict_ = {}
 
-        # learn encoding maps. drop_nulls() before value_counts() mirrors
-        # pandas' value_counts(dropna=True) default - narwhals' value_counts()
-        # has no dropna param and keeps NaN as a countable category otherwise.
-        # sort=True matches pandas' own value_counts() default (descending
-        # by count), so encoder_dict_ has the same category order as before.
+        # learn encoding maps.
         for var in variables_:
             counts = nw_X.get_column(var).drop_nulls().value_counts(
                 sort=True, normalize=normalize
