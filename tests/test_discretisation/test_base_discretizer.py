@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
-import polars as pl
 import pytest
-from sklearn.datasets import fetch_california_housing
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
+from tests.backend_helpers import to_dict
+
+BINS = [0, 20, 40, 60, np.inf]
 
 
 # test init params
@@ -42,39 +43,31 @@ class MockClassFit(BaseDiscretiser):
         # bins are hard-coded rather than learnt, so this mock works unchanged
         # on both pandas and polars input.
         self.variables_ = ["HouseAge"]
-        self.binner_dict_ = {"HouseAge": [0, 20, 40, 60, np.inf]}
+        self.binner_dict_ = {"HouseAge": BINS}
         self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = list(X.columns)
         return self
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_transform(make_df):
-    california_dataset = fetch_california_housing()
-    data_pd = pd.DataFrame(
-        california_dataset.data, columns=california_dataset.feature_names
-    )
-
+def test_transform(make_df, data_california):
     # ground truth via pandas.cut: bins are fixed by MockClassFit, so both
     # backends must reproduce this exact output.
+    house_age = pd.Series(data_california["HouseAge"])
     expected_codes = pd.cut(
-        data_pd["HouseAge"],
-        bins=[0, 20, 40, 60, np.inf],
-        labels=False,
-        include_lowest=True,
-    ).to_numpy()
+        house_age, bins=BINS, labels=False, include_lowest=True
+    ).tolist()
     expected_labels = (
-        pd.cut(data_pd["HouseAge"], bins=[0, 20, 40, 60, np.inf], include_lowest=True)
-        .astype(str)
-        .to_numpy()
+        pd.cut(house_age, bins=BINS, include_lowest=True).astype(str).tolist()
     )
 
-    data = make_df(data_pd)
+    data = make_df(data_california)
 
     transformer = MockClassFit(return_boundaries=False)
     X = transformer.fit_transform(data)
-    assert np.array_equal(X["HouseAge"].to_numpy(), expected_codes)
+    assert isinstance(X, make_df)
+    assert to_dict(X)["HouseAge"] == expected_codes
 
     transformer = MockClassFit(return_object=False, return_boundaries=True)
     X = transformer.fit_transform(data)
-    assert np.array_equal(X["HouseAge"].to_numpy(), expected_labels)
+    assert isinstance(X, make_df)
+    assert to_dict(X)["HouseAge"] == expected_labels
