@@ -190,8 +190,7 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
             The dataframe without outlier observations.
         """
 
-        X = self._check_transform_input_and_state(X)
-        nw_X = nw.from_native(X, eager_only=True)
+        nw_X = self._check_transform_input_and_state(X)
 
         conditions = [nw.col(f) <= c for f, c in self.right_tail_caps_.items()]
         conditions += [nw.col(f) >= c for f, c in self.left_tail_caps_.items()]
