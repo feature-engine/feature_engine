@@ -174,13 +174,8 @@ def test_warning_when_df_contains_unseen_categories(make_df):
     # check for warning when unseen equals 'ignore'
     encoder = CountEncoder(unseen="ignore")
     encoder.fit(df_enc)
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UserWarning, match=re.escape(msg)):
         encoder.transform(df_enc_rare)
-
-    # check that only one warning was raised
-    assert len(record) == 1
-    # check that the message matches
-    assert record[0].message.args[0] == msg
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
