@@ -46,8 +46,7 @@ def data_enc_numeric():
     }
 
 
-@pytest.fixture
-def data_enc_big():
+def _data_enc_big():
     return {
         "var_A": ["A"] * 6
         + ["B"] * 10
@@ -70,4 +69,43 @@ def data_enc_big():
         + ["E"] * 2
         + ["F"] * 2
         + ["G"] * 6,
+    }
+
+
+@pytest.fixture
+def data_enc_big():
+    return _data_enc_big()
+
+
+@pytest.fixture
+def data_enc_big_na():
+    data = _data_enc_big()
+    data["var_A"][0] = None
+    return data
+
+
+@pytest.fixture
+def data_enc_top():
+    return {
+        "var_A": ["A"] * 5
+        + ["B"] * 11
+        + ["C"] * 4
+        + ["D"] * 9
+        + ["E"] * 2
+        + ["F"] * 2
+        + ["G"] * 7,
+        "var_B": ["A"] * 11
+        + ["B"] * 7
+        + ["C"] * 4
+        + ["D"] * 9
+        + ["E"] * 2
+        + ["F"] * 2
+        + ["G"] * 5,
+        "var_C": ["A"] * 4
+        + ["B"] * 5
+        + ["C"] * 11
+        + ["D"] * 9
+        + ["E"] * 2
+        + ["F"] * 2
+        + ["G"] * 7,
     }
