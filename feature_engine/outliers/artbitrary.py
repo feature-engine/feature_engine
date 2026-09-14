@@ -4,8 +4,6 @@
 
 from typing import Optional
 
-import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_input_dictionary import (
@@ -148,7 +146,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
         y: Series, default=None
             y is not needed in this transformer. You can pass y or None.
         """
-        X = check_X(X)
+        nw_X = check_X(X)
 
         # find variables to be capped
         if self.min_capping_dict is None and self.max_capping_dict:
@@ -178,14 +176,10 @@ class ArbitraryOutlierCapper(BaseOutlier):
         else:
             self.left_tail_caps_ = {}
 
-        # pandas' .columns is an Index, not a list - list() is required there;
-        # narwhals' .columns is already list[str].
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
-        self.n_features_in_ = X.shape[1]
+        # list() normalises both a narwhals `.columns` (already a list) and a
+        # pandas Index to a plain list.
+        self.feature_names_in_ = list(nw_X.columns)
+        self.n_features_in_ = nw_X.shape[1]
 
         return self
 
