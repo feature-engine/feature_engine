@@ -1,26 +1,13 @@
-import narwhals as nw
+import re
+
 import pandas as pd
-import polars as pl
 import pytest
 from sklearn.pipeline import Pipeline
 
 from feature_engine.encoding import OneHotEncoder
+from tests.backend_helpers import to_dict
 
-DF_ENC_BIG = {
-    "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4 + ["D"] * 10 + ["E"] * 2
-    + ["F"] * 2 + ["G"] * 6,
-    "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4 + ["D"] * 10 + ["E"] * 2
-    + ["F"] * 2 + ["G"] * 6,
-    "var_C": ["A"] * 4 + ["B"] * 6 + ["C"] * 10 + ["D"] * 10 + ["E"] * 2
-    + ["F"] * 2 + ["G"] * 6,
-}
-
-DF_ENC_NUMERIC = {
-    "var_A": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3],
-    "var_B": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3],
-}
-
-DF_ENC_BINARY = {
+DATA_ENC_BINARY = {
     "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
     "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
     "var_C": ["AHA"] * 12 + ["UHU"] * 8,
@@ -29,18 +16,10 @@ DF_ENC_BINARY = {
 }
 
 
-def _columns(X):
-    return list(nw.from_native(X, eager_only=True).columns)
-
-
-def _colsum(X, col):
-    return sum(nw.from_native(X, eager_only=True).get_column(col).to_list())
-
-
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("index_", [[1, 2, 3], [3, 2, 1], [4, 9, 2]])
 def test_concat_with_non_ordered_index(make_df, index_):
     data = {"varA": ["a", "b", "c"], "varB": ["d", "d", "a"]}
+    # only pandas has a row index to scramble
     if make_df is pd.DataFrame:
         df = make_df(data, index=index_)
     else:
@@ -55,19 +34,18 @@ def test_concat_with_non_ordered_index(make_df, index_):
         "varB_d": [1, 1, 0],
         "varB_a": [0, 0, 1],
     }
-    result = nw.from_native(dft, eager_only=True).to_dict(as_series=False)
-    assert list(result.keys()) == list(expected.keys())
-    for col, values in expected.items():
-        assert list(result[col]) == values
+    assert isinstance(dft, make_df)
+    assert list(dft.columns) == list(expected)
+    assert to_dict(dft) == expected
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_encode_categories_in_k_binary_plus_select_vars_automatically(make_df):
+def test_encode_categories_in_k_binary_plus_select_vars_automatically(
+    make_df, data_enc_big
+):
     # test case 1: encode all categories into k binary variables, select variables
     # automatically
-    df = make_df(DF_ENC_BIG)
     encoder = OneHotEncoder(top_categories=None, variables=None, drop_last=False)
-    X = encoder.fit_transform(df)
+    X = encoder.fit_transform(make_df(data_enc_big))
 
     # test init params
     assert encoder.top_categories is None
@@ -91,20 +69,21 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(make_df):
         "var_C": ["A", "B", "C", "D", "E", "F", "G"],
     }
     # test transform output
-    for col, expected_sum in transf.items():
-        assert _colsum(X, col) == expected_sum
-    assert "var_A" not in _columns(X)
+    assert isinstance(X, make_df)
+    result = to_dict(X)
+    assert {col: sum(result[col]) for col in transf} == transf
+    assert "var_A" not in result
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(make_df):
+def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(
+    make_df, data_enc_big
+):
     # test case 2: encode all categories into k-1 binary variables,
     # pass list of variables
-    df = make_df(DF_ENC_BIG)
     encoder = OneHotEncoder(
         top_categories=None, variables=["var_A", "var_B"], drop_last=True
     )
-    X = encoder.fit_transform(df)
+    X = encoder.fit_transform(make_df(data_enc_big))
 
     # test init params
     assert encoder.top_categories is None
@@ -125,29 +104,18 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(make_df):
         "var_B": ["A", "B", "C", "D", "E", "F"],
     }
     # test transform output
-    columns = _columns(X)
-    for col in transf.keys():
-        assert _colsum(X, col) == transf[col]
-    assert "var_B" not in columns
-    assert "var_B_G" not in columns
-    assert "var_C" in columns
+    assert isinstance(X, make_df)
+    result = to_dict(X)
+    assert {col: sum(result[col]) for col in transf} == transf
+    assert "var_B" not in result
+    assert "var_B_G" not in result
+    assert result["var_C"] == data_enc_big["var_C"]
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_encode_top_categories(make_df):
+def test_encode_top_categories(make_df, data_enc_top):
     # test case 3: encode only the most popular categories
-    data = {
-        "var_A": ["A"] * 5 + ["B"] * 11 + ["C"] * 4 + ["D"] * 9 + ["E"] * 2
-        + ["F"] * 2 + ["G"] * 7,
-        "var_B": ["A"] * 11 + ["B"] * 7 + ["C"] * 4 + ["D"] * 9 + ["E"] * 2
-        + ["F"] * 2 + ["G"] * 5,
-        "var_C": ["A"] * 4 + ["B"] * 5 + ["C"] * 11 + ["D"] * 9 + ["E"] * 2
-        + ["F"] * 2 + ["G"] * 7,
-    }
-    df = make_df(data)
-
     encoder = OneHotEncoder(top_categories=4, variables=None, drop_last=False)
-    X = encoder.fit_transform(df)
+    X = encoder.fit_transform(make_df(data_enc_top))
 
     # test init params
     assert encoder.top_categories == 4
@@ -168,11 +136,11 @@ def test_encode_top_categories(make_df):
         "var_C": ["C", "D", "G", "B"],
     }
     # test transform output
-    columns = _columns(X)
-    for col in transf.keys():
-        assert _colsum(X, col) == transf[col]
-    assert "var_B" not in columns
-    assert "var_B_F" not in columns
+    assert isinstance(X, make_df)
+    result = to_dict(X)
+    assert {col: sum(result[col]) for col in transf} == transf
+    assert "var_B" not in result
+    assert "var_B_F" not in result
 
 
 # init params
@@ -194,33 +162,25 @@ def test_raises_error_when_not_allowed_smoothing_param_in_init(drop_binary):
         OneHotEncoder(drop_last_binary=drop_binary)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_raises_error_if_df_contains_na(make_df):
-    # test case 4: when dataset contains na, fit method
-    data_na = dict(DF_ENC_BIG)
-    data_na["var_A"] = [None] + list(DF_ENC_BIG["var_A"][1:])
-    df_na = make_df(data_na)
-    df = make_df(DF_ENC_BIG)
-
+def test_raises_error_if_df_contains_na(make_df, data_enc_big, data_enc_big_na):
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer."
     )
 
+    # test case 4: when dataset contains na, fit method
     encoder = OneHotEncoder()
-    with pytest.raises(ValueError, match=msg):
-        encoder.fit(df_na)
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        encoder.fit(make_df(data_enc_big_na))
 
     # test case 4: when dataset contains na, transform method
     encoder = OneHotEncoder()
-    encoder.fit(df)
-    with pytest.raises(ValueError, match=msg):
-        encoder.transform(df_na)
+    encoder.fit(make_df(data_enc_big))
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        encoder.transform(make_df(data_enc_big_na))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_encode_numerical_variables(make_df):
-    df = make_df(DF_ENC_NUMERIC)
+def test_encode_numerical_variables(make_df, data_enc_numeric):
     encoder = OneHotEncoder(
         top_categories=None,
         variables=None,
@@ -228,16 +188,16 @@ def test_encode_numerical_variables(make_df):
         ignore_format=True,
     )
 
-    X = encoder.fit_transform(df)
+    X = encoder.fit_transform(make_df(data_enc_numeric)[["var_A", "var_B"]])
 
     # test fit attr
     transf = {
-        "var_A_1": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_A_2": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_A_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-        "var_B_1": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_B_2": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_B_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        "var_A_1": [1] * 6 + [0] * 14,
+        "var_A_2": [0] * 6 + [1] * 10 + [0] * 4,
+        "var_A_3": [0] * 16 + [1] * 4,
+        "var_B_1": [1] * 10 + [0] * 10,
+        "var_B_2": [0] * 10 + [1] * 6 + [0] * 4,
+        "var_B_3": [0] * 16 + [1] * 4,
     }
 
     assert encoder.variables_ == ["var_A", "var_B"]
@@ -245,15 +205,14 @@ def test_encode_numerical_variables(make_df):
     assert encoder.n_features_in_ == 2
     assert encoder.encoder_dict_ == {"var_A": [1, 2, 3], "var_B": [1, 2, 3]}
     # test transform output
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    for col, values in transf.items():
-        assert list(result[col]) == values
+    assert isinstance(X, make_df)
+    assert to_dict(X) == transf
 
 
-def test_variables_cast_as_category():
+def test_variables_cast_as_category(df_enc_numeric):
     # pandas-specific: category dtype has no polars equivalent behavior
     # under test here (encoding categorical-dtype columns).
-    df = pd.DataFrame(DF_ENC_NUMERIC)
+    df = df_enc_numeric[["var_A", "var_B"]].copy()
     df[["var_A", "var_B"]] = df[["var_A", "var_B"]].astype("category")
 
     encoder = OneHotEncoder(
@@ -265,12 +224,12 @@ def test_variables_cast_as_category():
     X = encoder.fit_transform(df)
 
     transf = {
-        "var_A_1": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_A_2": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_A_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-        "var_B_1": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_B_2": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_B_3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        "var_A_1": [1] * 6 + [0] * 14,
+        "var_A_2": [0] * 6 + [1] * 10 + [0] * 4,
+        "var_A_3": [0] * 16 + [1] * 4,
+        "var_B_1": [1] * 10 + [0] * 10,
+        "var_B_2": [0] * 10 + [1] * 6 + [0] * 4,
+        "var_B_3": [0] * 16 + [1] * 4,
     }
 
     transf = pd.DataFrame(transf).astype("int32")
@@ -283,25 +242,23 @@ def test_variables_cast_as_category():
     pd.testing.assert_frame_equal(X, transf)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_encode_into_k_dummy_plus_drop_binary(make_df):
-    df = make_df(DF_ENC_BINARY)
     encoder = OneHotEncoder(
         top_categories=None, variables=None, drop_last=False, drop_last_binary=True
     )
-    X = encoder.fit_transform(df)
+    X = encoder.fit_transform(make_df(DATA_ENC_BINARY))
 
     # test fit attr
     transf = {
-        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-        "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_A_C": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-        "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_B_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_B_C": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_num": DATA_ENC_BINARY["var_num"],
+        "var_A_A": [1] * 6 + [0] * 14,
+        "var_A_B": [0] * 6 + [1] * 10 + [0] * 4,
+        "var_A_C": [0] * 16 + [1] * 4,
+        "var_B_A": [1] * 10 + [0] * 10,
+        "var_B_B": [0] * 10 + [1] * 6 + [0] * 4,
+        "var_B_C": [0] * 16 + [1] * 4,
+        "var_C_AHA": [1] * 12 + [0] * 8,
+        "var_D_OHO": [1] * 5 + [0] * 15,
     }
 
     assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
@@ -314,30 +271,26 @@ def test_encode_into_k_dummy_plus_drop_binary(make_df):
         "var_D": ["OHO"],
     }
     # test transform output
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    assert list(result.keys()) == list(transf.keys())
-    for col, values in transf.items():
-        assert list(result[col]) == values
-    assert "var_C_B" not in result.keys()
+    assert isinstance(X, make_df)
+    assert list(X.columns) == list(transf)
+    assert to_dict(X) == transf
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_encode_into_kminus1_dummyy_plus_drop_binary(make_df):
-    df = make_df(DF_ENC_BINARY)
     encoder = OneHotEncoder(
         top_categories=None, variables=None, drop_last=True, drop_last_binary=True
     )
-    X = encoder.fit_transform(df)
+    X = encoder.fit_transform(make_df(DATA_ENC_BINARY))
 
     # test fit attr
     transf = {
-        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-        "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_B_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_num": DATA_ENC_BINARY["var_num"],
+        "var_A_A": [1] * 6 + [0] * 14,
+        "var_A_B": [0] * 6 + [1] * 10 + [0] * 4,
+        "var_B_A": [1] * 10 + [0] * 10,
+        "var_B_B": [0] * 10 + [1] * 6 + [0] * 4,
+        "var_C_AHA": [1] * 12 + [0] * 8,
+        "var_D_OHO": [1] * 5 + [0] * 15,
     }
 
     assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
@@ -350,16 +303,13 @@ def test_encode_into_kminus1_dummyy_plus_drop_binary(make_df):
         "var_D": ["OHO"],
     }
     # test transform output
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    assert list(result.keys()) == list(transf.keys())
-    for col, values in transf.items():
-        assert list(result[col]) == values
-    assert "var_C_B" not in result.keys()
+    assert isinstance(X, make_df)
+    assert list(X.columns) == list(transf)
+    assert to_dict(X) == transf
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_encode_into_top_categories_plus_drop_binary(make_df):
-    df = make_df(DF_ENC_BINARY)
+    df = make_df(DATA_ENC_BINARY)
     # top_categories = 1
     encoder = OneHotEncoder(
         top_categories=1, variables=None, drop_last=False, drop_last_binary=True
@@ -368,11 +318,11 @@ def test_encode_into_top_categories_plus_drop_binary(make_df):
 
     # test fit attr
     transf = {
-        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-        "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_num": DATA_ENC_BINARY["var_num"],
+        "var_A_B": [0] * 6 + [1] * 10 + [0] * 4,
+        "var_B_A": [1] * 10 + [0] * 10,
+        "var_C_AHA": [1] * 12 + [0] * 8,
+        "var_D_OHO": [1] * 5 + [0] * 15,
     }
 
     assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
@@ -385,11 +335,9 @@ def test_encode_into_top_categories_plus_drop_binary(make_df):
         "var_D": ["OHO"],
     }
     # test transform output
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    assert list(result.keys()) == list(transf.keys())
-    for col, values in transf.items():
-        assert list(result[col]) == values
-    assert "var_C_B" not in result.keys()
+    assert isinstance(X, make_df)
+    assert list(X.columns) == list(transf)
+    assert to_dict(X) == transf
 
     # top_categories = 2
     encoder = OneHotEncoder(
@@ -399,13 +347,13 @@ def test_encode_into_top_categories_plus_drop_binary(make_df):
 
     # test fit attr
     transf = {
-        "var_num": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-        "var_A_B": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_A_A": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_B_A": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_B_B": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-        "var_C_AHA": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        "var_D_OHO": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "var_num": DATA_ENC_BINARY["var_num"],
+        "var_A_B": [0] * 6 + [1] * 10 + [0] * 4,
+        "var_A_A": [1] * 6 + [0] * 14,
+        "var_B_A": [1] * 10 + [0] * 10,
+        "var_B_B": [0] * 10 + [1] * 6 + [0] * 4,
+        "var_C_AHA": [1] * 12 + [0] * 8,
+        "var_D_OHO": [1] * 5 + [0] * 15,
     }
 
     assert encoder.variables_ == ["var_A", "var_B", "var_C", "var_D"]
@@ -418,18 +366,15 @@ def test_encode_into_top_categories_plus_drop_binary(make_df):
         "var_D": ["OHO"],
     }
     # test transform output
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    assert list(result.keys()) == list(transf.keys())
-    for col, values in transf.items():
-        assert list(result[col]) == values
-    assert "var_C_B" not in result.keys()
+    assert isinstance(X, make_df)
+    assert list(X.columns) == list(transf)
+    assert to_dict(X) == transf
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_get_feature_names_out(make_df):
-    df = make_df(DF_ENC_BINARY)
+    df = make_df(DATA_ENC_BINARY)
     original_features = ["var_num"]
-    input_features = list(DF_ENC_BINARY.keys())
+    input_features = list(DATA_ENC_BINARY)
 
     tr = OneHotEncoder()
     tr.fit(df)
@@ -481,11 +426,10 @@ def test_get_feature_names_out(make_df):
         tr.get_feature_names_out(["var_A", "hola"])
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_get_feature_names_out_from_pipeline(make_df):
-    df = make_df(DF_ENC_BINARY)
+    df = make_df(DATA_ENC_BINARY)
     original_features = ["var_num"]
-    input_features = list(DF_ENC_BINARY.keys())
+    input_features = list(DATA_ENC_BINARY)
 
     tr = Pipeline([("transformer", OneHotEncoder())])
     tr.fit(df)
@@ -500,9 +444,8 @@ def test_get_feature_names_out_from_pipeline(make_df):
     assert tr.get_feature_names_out(input_features=input_features) == feat_out
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_inverse_transform_raises_not_implemented_error(make_df):
-    df = make_df(DF_ENC_BINARY)
+    df = make_df(DATA_ENC_BINARY)
     enc = OneHotEncoder().fit(df)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df)
