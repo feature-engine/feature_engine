@@ -1,29 +1,13 @@
 import re
 import warnings
 
-import narwhals as nw
 import pandas as pd
-import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import CountEncoder, CountFrequencyEncoder
+from tests.backend_helpers import null_count, to_dict
 
-DATA_ENC = {
-    "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-    "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-    "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-}
-DATA_ENC_RARE = {
-    "var_A": ["B"] * 9 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,
-    "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-    "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-}
-DATA_ENC_NA = {
-    "var_A": [None] + ["B"] * 8 + ["A"] * 6 + ["C"] * 4 + ["D"] * 1,
-    "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-    "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-}
 DATA_VARTYPES = {
     "Name": ["tom", "nick", "krish", "jack"],
     "City": ["London", "Manchester", "Liverpool", "Bristol"],
@@ -31,21 +15,6 @@ DATA_VARTYPES = {
     "Marks": [0.9, 0.8, 0.7, 0.6],
     "dob": ["2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27"],
 }
-
-
-def _to_dict(X):
-    # to_dict(as_series=False) is a convenient, backend-agnostic way to read
-    # values back out for comparison, regardless of pandas vs polars. pandas
-    # returns NaN where polars returns None, so normalise NaN to None.
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    return {
-        c: [None if isinstance(v, float) and v != v else v for v in values]
-        for c, values in result.items()
-    }
-
-
-def _null_count(X, col):
-    return nw.from_native(X, eager_only=True)[col].null_count()
 
 
 # init parameters
@@ -80,12 +49,10 @@ def test_init_param_assignment(params):
 
 
 # fit and transform
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_encode_1_variable_with_counts(make_df):
+def test_encode_1_variable_with_counts(make_df, data_enc):
     # test case 1: 1 variable, counts
-    df_enc = make_df(DATA_ENC)
     encoder = CountEncoder(encoding_method="count", variables=["var_A"])
-    X = encoder.fit_transform(df_enc)
+    X = encoder.fit_transform(make_df(data_enc))
 
     # init params
     assert encoder.encoding_method == "count"
@@ -96,19 +63,17 @@ def test_encode_1_variable_with_counts(make_df):
     assert encoder.n_features_in_ == 3
     # transform params
     assert isinstance(X, make_df)
-    assert _to_dict(X) == {
+    assert to_dict(X) == {
         "var_A": [6] * 6 + [10] * 10 + [4] * 4,
-        "var_B": DATA_ENC["var_B"],
-        "target": DATA_ENC["target"],
+        "var_B": data_enc["var_B"],
+        "target": data_enc["target"],
     }
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_automatically_select_variables_encode_with_frequency(make_df):
+def test_automatically_select_variables_encode_with_frequency(make_df, data_enc):
     # test case 2: automatically select variables, frequency
-    df_enc = make_df(DATA_ENC)
     encoder = CountEncoder(encoding_method="frequency", variables=None)
-    X = encoder.fit_transform(df_enc)
+    X = encoder.fit_transform(make_df(data_enc))
 
     # init params
     assert encoder.encoding_method == "frequency"
@@ -122,22 +87,19 @@ def test_automatically_select_variables_encode_with_frequency(make_df):
     assert encoder.n_features_in_ == 3
     # transform params
     assert isinstance(X, make_df)
-    assert _to_dict(X) == {
+    assert to_dict(X) == {
         "var_A": [0.3] * 6 + [0.5] * 10 + [0.2] * 4,
         "var_B": [0.5] * 10 + [0.3] * 6 + [0.2] * 4,
-        "target": DATA_ENC["target"],
+        "target": data_enc["target"],
     }
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_encoding_when_nan_in_fit_df(make_df):
-    df_enc = make_df(DATA_ENC)
-
+def test_encoding_when_nan_in_fit_df(make_df, data_enc):
     encoder = CountEncoder(
         encoding_method="frequency",
         missing_values="ignore",
     )
-    encoder.fit(df_enc)
+    encoder.fit(make_df(data_enc))
 
     X = encoder.transform(
         make_df({"var_A": ["A", None], "var_B": ["A", None], "target": [1, 0]})
@@ -145,13 +107,13 @@ def test_encoding_when_nan_in_fit_df(make_df):
 
     # transform params
     assert isinstance(X, make_df)
-    assert _to_dict(X) == {"var_A": [0.3, None], "var_B": [0.5, None], "target": [1, 0]}
+    assert to_dict(X) == {"var_A": [0.3, None], "var_B": [0.5, None], "target": [1, 0]}
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])
-def test_error_if_encoding_method_not_recognized_in_fit(enc_method, make_df):
-    df_enc = make_df(DATA_ENC)
+def test_error_if_encoding_method_not_recognized_in_fit(
+    enc_method, make_df, data_enc
+):
     enc = CountEncoder()
     enc.encoding_method = enc_method
     msg = (
@@ -159,31 +121,28 @@ def test_error_if_encoding_method_not_recognized_in_fit(enc_method, make_df):
         f"'frequency'. Got {enc_method} instead."
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
-        enc.fit(df_enc)
+        enc.fit(make_df(data_enc))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_warning_when_df_contains_unseen_categories(make_df):
+def test_warning_when_df_contains_unseen_categories(
+    make_df, data_enc, data_enc_rare
+):
     # dataset to be transformed contains categories not present in
     # training dataset (unseen categories), unseen set to ignore.
-    df_enc = make_df(DATA_ENC)
-    df_enc_rare = make_df(DATA_ENC_RARE)
-
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
     # check for warning when unseen equals 'ignore'
     encoder = CountEncoder(unseen="ignore")
-    encoder.fit(df_enc)
+    encoder.fit(make_df(data_enc))
     with pytest.warns(UserWarning, match=re.escape(msg)):
-        encoder.transform(df_enc_rare)
+        encoder.transform(make_df(data_enc_rare))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_error_when_df_contains_unseen_categories(make_df):
+def test_error_when_df_contains_unseen_categories(make_df, data_enc, data_enc_rare):
     # dataset to be transformed contains categories not present in
     # training dataset (unseen categories), unseen set to raise.
-    df_enc = make_df(DATA_ENC)
-    df_enc_rare = make_df(DATA_ENC_RARE)
+    df_enc = make_df(data_enc)
+    df_enc_rare = make_df(data_enc_rare)
 
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
@@ -202,28 +161,23 @@ def test_error_when_df_contains_unseen_categories(make_df):
         encoder.transform(df_enc_rare)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_no_error_triggered_when_df_contains_unseen_categories_and_unseen_is_encode(
-    make_df,
+    make_df, data_enc, data_enc_rare
 ):
     # dataset to be transformed contains categories not present in
     # training dataset (unseen categories).
-    df_enc = make_df(DATA_ENC)
-    df_enc_rare = make_df(DATA_ENC_RARE)
 
     # check for no error and no warning when unseen equals 'encode'
     warnings.simplefilter("error")
     encoder = CountEncoder(unseen="encode")
-    encoder.fit(df_enc)
+    encoder.fit(make_df(data_enc))
     with warnings.catch_warnings():
-        encoder.transform(df_enc_rare)
+        encoder.transform(make_df(data_enc_rare))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("errors", ["raise", "ignore", "encode"])
-def test_fit_raises_error_if_df_contains_na(errors, make_df):
+def test_fit_raises_error_if_df_contains_na(errors, make_df, data_enc_na):
     # test case 4: when dataset contains na, fit method
-    df_enc_na = make_df(DATA_ENC_NA)
     encoder = CountEncoder(unseen=errors)
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
@@ -231,27 +185,25 @@ def test_fit_raises_error_if_df_contains_na(errors, make_df):
         "`missing_values='ignore'` when initialising this transformer."
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
-        encoder.fit(df_enc_na)
+        encoder.fit(make_df(data_enc_na))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("errors", ["raise", "ignore", "encode"])
-def test_transform_raises_error_if_df_contains_na(errors, make_df):
+def test_transform_raises_error_if_df_contains_na(
+    errors, make_df, data_enc, data_enc_na
+):
     # test case 4: when dataset contains na, transform method
-    df_enc = make_df(DATA_ENC)
-    df_enc_na = make_df(DATA_ENC_NA)
     encoder = CountEncoder(unseen=errors)
-    encoder.fit(df_enc)
+    encoder.fit(make_df(data_enc))
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
         "`missing_values='ignore'` when initialising this transformer."
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
-        encoder.transform(df_enc_na)
+        encoder.transform(make_df(data_enc_na))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_zero_encoding_for_new_categories(make_df):
     df_fit = make_df(
         {"col1": ["a", "a", "b", "a", "c"], "col2": ["1", "2", "3", "1", "2"]}
@@ -265,14 +217,13 @@ def test_zero_encoding_for_new_categories(make_df):
     assert isinstance(result, make_df)
 
     # check that no NaNs are added
-    assert _null_count(result, "col1") == 0
-    assert _null_count(result, "col2") == 0
+    assert null_count(result, "col1") == 0
+    assert null_count(result, "col2") == 0
 
     # check that the counts are correct for both new and old
-    assert _to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
+    assert to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_zero_encoding_for_unseen_categories_if_unseen_is_encode(make_df):
     df_fit = make_df(
         {"col1": ["a", "a", "b", "a", "c"], "col2": ["1", "2", "3", "1", "2"]}
@@ -287,11 +238,11 @@ def test_zero_encoding_for_unseen_categories_if_unseen_is_encode(make_df):
     assert isinstance(result, make_df)
 
     # check that no NaNs are added
-    assert _null_count(result, "col1") == 0
-    assert _null_count(result, "col2") == 0
+    assert null_count(result, "col1") == 0
+    assert null_count(result, "col2") == 0
 
     # check that the counts are correct
-    assert _to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
+    assert to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
 
     # with frequency
     encoder = CountEncoder(encoding_method="frequency", unseen="encode").fit(df_fit)
@@ -299,17 +250,16 @@ def test_zero_encoding_for_unseen_categories_if_unseen_is_encode(make_df):
     assert isinstance(result, make_df)
 
     # check that no NaNs are added
-    assert _null_count(result, "col1") == 0
-    assert _null_count(result, "col2") == 0
+    assert null_count(result, "col1") == 0
+    assert null_count(result, "col2") == 0
 
     # check that the frequencies are correct
-    assert _to_dict(result) == {
+    assert to_dict(result) == {
         "col1": [0.6, 0, 0.2, 0.6, 0.2],
         "col2": [0.4, 0.4, 0.2, 0.4, 0],
     }
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_nan_encoding_for_new_categories_if_unseen_is_ignore(make_df):
     df_fit = make_df(
         {"col1": ["a", "a", "b", "a", "c"], "col2": ["1", "2", "3", "1", "2"]}
@@ -322,23 +272,21 @@ def test_nan_encoding_for_new_categories_if_unseen_is_ignore(make_df):
     assert isinstance(result, make_df)
 
     # check that 1 NaN is added per variable
-    assert _null_count(result, "col1") == 1
-    assert _null_count(result, "col2") == 1
+    assert null_count(result, "col1") == 1
+    assert null_count(result, "col2") == 1
 
     # check that the counts are correct for both new and old
-    assert _to_dict(result) == {
+    assert to_dict(result) == {
         "col1": [3, None, 1, 3, 1],
         "col2": [2, 2, 1, 2, None],
     }
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_ignore_variable_format_with_frequency(make_df):
-    df_vartypes = make_df(DATA_VARTYPES)
     encoder = CountEncoder(
         encoding_method="frequency", variables=None, ignore_format=True
     )
-    X = encoder.fit_transform(df_vartypes)
+    X = encoder.fit_transform(make_df(DATA_VARTYPES))
 
     # init params
     assert encoder.encoding_method == "frequency"
@@ -348,7 +296,7 @@ def test_ignore_variable_format_with_frequency(make_df):
     assert encoder.n_features_in_ == 5
     # transform params
     assert isinstance(X, make_df)
-    assert _to_dict(X) == {
+    assert to_dict(X) == {
         "Name": [0.25, 0.25, 0.25, 0.25],
         "City": [0.25, 0.25, 0.25, 0.25],
         "Age": [0.25, 0.25, 0.25, 0.25],
@@ -402,7 +350,6 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes == float
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_inverse_transform_when_no_unseen(make_df):
     words = ["dog", "dog", "cat", "cat", "cat", "bird"]
     df = make_df({"words": words})
@@ -411,10 +358,9 @@ def test_inverse_transform_when_no_unseen(make_df):
     dft = enc.transform(df)
     X = enc.inverse_transform(dft)
     assert isinstance(X, make_df)
-    assert _to_dict(X) == {"words": words}
+    assert to_dict(X) == {"words": words}
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_inverse_transform_when_ignore_unseen(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     df2 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
@@ -423,10 +369,9 @@ def test_inverse_transform_when_ignore_unseen(make_df):
     dft = enc.transform(df2)
     X = enc.inverse_transform(dft)
     assert isinstance(X, make_df)
-    assert _to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
+    assert to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_inverse_transform_when_encode_unseen(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     df2 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
@@ -435,10 +380,9 @@ def test_inverse_transform_when_encode_unseen(make_df):
     dft = enc.transform(df2)
     X = enc.inverse_transform(dft)
     assert isinstance(X, make_df)
-    assert _to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
+    assert to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_inverse_transform_raises_non_fitted_error(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     enc = CountEncoder()
@@ -457,7 +401,6 @@ def test_inverse_transform_raises_non_fitted_error(make_df):
         enc.inverse_transform(df1_na)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_count_frequency_encoder_is_deprecated(make_df):
     """CountFrequencyEncoder should emit a FutureWarning and still work."""
     X = make_df({"var_A": ["A"] * 6 + ["B"] * 2 + ["C"] * 2})
@@ -472,4 +415,4 @@ def test_count_frequency_encoder_is_deprecated(make_df):
     X_new = enc_new.fit_transform(X)
     assert isinstance(X_old, make_df)
     assert isinstance(X_new, make_df)
-    assert _to_dict(X_old) == _to_dict(X_new) == {"var_A": [6] * 6 + [2] * 2 + [2] * 2}
+    assert to_dict(X_old) == to_dict(X_new) == {"var_A": [6] * 6 + [2] * 2 + [2] * 2}
