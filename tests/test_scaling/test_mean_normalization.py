@@ -1,13 +1,11 @@
 import re
 
-import narwhals as nw
-import numpy as np
 import pandas as pd
-import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.scaling import MeanNormalisationScaler, MeanNormalizationScaler
+from tests.backend_helpers import to_dict
 from tests.estimator_checks.fit_functionality_checks import check_return_empty
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
@@ -19,27 +17,17 @@ DEPRECATION_WARNING = (
     "To silence this warning, use MeanNormalisationScaler instead."
 )
 
+MSG_NA = (
+    "Some of the variables in the dataset contain NaN. Check and "
+    "remove those before using this transformer."
+)
+
 DATA = {
     "Name": ["tom", "nick", "krish", "jack"],
     "City": ["London", "Manchester", "Liverpool", "Bristol"],
     "Age": [20, 21, 19, 18],
     "Marks": [0.9, 0.8, 0.7, 0.6],
 }
-
-
-def _none_to_nan(values):
-    # Missing values print as None for polars, NaN for pandas float columns
-    # - both mean "missing" here, so normalize both sides before comparing.
-    return [np.nan if v is None else v for v in values]
-
-
-def assert_df_equal(X, expected: dict, abs_tol: float = 1e-4) -> None:
-    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
-    assert list(result.keys()) == list(expected.keys())
-    for col, values in expected.items():
-        assert _none_to_nan(result[col]) == pytest.approx(
-            _none_to_nan(values), abs=abs_tol, nan_ok=True
-        )
 
 
 @pytest.fixture(
@@ -62,117 +50,116 @@ def test_mean_normalization_scaler_raises_future_warning():
         MeanNormalizationScaler()
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_transforming_int_vars(make_df, transformer_class):
-    df = make_df(
-        {
-            "var1": [1.0, 2.0, 3.0],
-            "var2": [4.0, 5.0, 3.0],
-            "var3": [40.0, 20.0, 30.0],
-        }
-    )
-    expected = {
-        "var1": [-0.5, 0.0, 0.5],
-        "var2": [0, 0.5, -0.5],
-        "var3": [0.5, -0.5, 0.0],
+    data = {
+        "var1": [1.0, 2.0, 3.0],
+        "var2": [4.0, 5.0, 3.0],
+        "var3": [40.0, 20.0, 30.0],
     }
 
     transformer = make_transformer(transformer_class, variables=None)
-    X = transformer.fit_transform(df)
-    assert_df_equal(X, expected)
+    X = transformer.fit_transform(make_df(data))
+    assert isinstance(X, make_df)
+    assert to_dict(X) == {
+        "var1": pytest.approx([-0.5, 0.0, 0.5]),
+        "var2": pytest.approx([0, 0.5, -0.5]),
+        "var3": pytest.approx([0.5, -0.5, 0.0]),
+    }
 
     Xit = transformer.inverse_transform(X)
-    assert_df_equal(
-        Xit,
-        {"var1": [1.0, 2.0, 3.0], "var2": [4.0, 5.0, 3.0], "var3": [40.0, 20.0, 30.0]},
-    )
+    assert isinstance(Xit, make_df)
+    assert to_dict(Xit) == {col: pytest.approx(values) for col, values in data.items()}
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_mean_normalization_plus_automatically_find_variables(
     make_df, transformer_class
 ):
-    df = make_df(DATA)
-
     transformer = make_transformer(transformer_class, variables=None)
-    X = transformer.fit_transform(df)
+    X = transformer.fit_transform(make_df(DATA))
 
     assert transformer.variables is None
     assert transformer.variables_ == ["Age", "Marks"]
     assert transformer.n_features_in_ == 4
 
-    expected = dict(DATA)
-    expected["Age"] = [0.16667, 0.5, -0.16667, -0.5]
-    expected["Marks"] = [0.5, 0.16667, -0.16667, -0.5]
-    assert_df_equal(X, expected)
+    assert isinstance(X, make_df)
+    assert to_dict(X) == {
+        "Name": DATA["Name"],
+        "City": DATA["City"],
+        "Age": pytest.approx([0.16667, 0.5, -0.16667, -0.5], abs=1e-4),
+        "Marks": pytest.approx([0.5, 0.16667, -0.16667, -0.5], abs=1e-4),
+    }
 
     Xit = transformer.inverse_transform(X)
-    assert_df_equal(Xit, DATA)
+    assert isinstance(Xit, make_df)
+    assert to_dict(Xit) == {
+        "Name": DATA["Name"],
+        "City": DATA["City"],
+        "Age": pytest.approx(DATA["Age"]),
+        "Marks": pytest.approx(DATA["Marks"]),
+    }
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_mean_normalization_plus_user_passes_var_list(make_df, transformer_class):
-    df = make_df(DATA)
-
     transformer = make_transformer(transformer_class, variables="Age")
-    X = transformer.fit_transform(df)
+    X = transformer.fit_transform(make_df(DATA))
 
     assert transformer.variables == "Age"
     assert transformer.variables_ == ["Age"]
     assert transformer.n_features_in_ == 4
 
-    expected = dict(DATA)
-    expected["Age"] = [0.16667, 0.5, -0.16667, -0.5]
-    assert_df_equal(X, expected)
+    assert isinstance(X, make_df)
+    assert to_dict(X) == {
+        "Name": DATA["Name"],
+        "City": DATA["City"],
+        "Age": pytest.approx([0.16667, 0.5, -0.16667, -0.5], abs=1e-4),
+        "Marks": DATA["Marks"],
+    }
 
     Xit = transformer.inverse_transform(X)
-    assert_df_equal(Xit, DATA)
+    assert isinstance(Xit, make_df)
+    assert to_dict(Xit) == {
+        "Name": DATA["Name"],
+        "City": DATA["City"],
+        "Age": pytest.approx(DATA["Age"]),
+        "Marks": DATA["Marks"],
+    }
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_fit_raises_error_if_na_in_df(make_df, transformer_class):
     data_na = dict(DATA)
     data_na["Age"] = [20, None, 19, 18]
-    df_na = make_df(data_na)
 
     transformer = make_transformer(transformer_class)
-    with pytest.raises(ValueError):
-        transformer.fit(df_na)
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        transformer.fit(make_df(data_na))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_transform_raises_error_if_na_in_df(make_df, transformer_class):
     data_na = dict(DATA)
     data_na["Age"] = [20, None, 19, 18]
-    df_na = make_df(data_na)
 
     transformer = make_transformer(transformer_class)
     transformer.fit(make_df(DATA))
-    with pytest.raises(ValueError):
-        transformer.transform(df_na)
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        transformer.transform(make_df(data_na))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_non_fitted_error(make_df, transformer_class):
-    df = make_df(DATA)
     transformer = make_transformer(transformer_class)
     with pytest.raises(NotFittedError):
-        transformer.transform(df)
+        transformer.transform(make_df(DATA))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_constant_columns_error(make_df, transformer_class):
-    df = make_df(
-        {
-            "var1": [1.0, 2.0, 3.0],
-            "var2": [4.0, 5.0, 3.0],
-            "var3": [7.0, 7.0, 7.0],
-        }
-    )
+    data = {
+        "var1": [1.0, 2.0, 3.0],
+        "var2": [4.0, 5.0, 3.0],
+        "var3": [7.0, 7.0, 7.0],
+    }
 
     transformer = make_transformer(transformer_class)
     with pytest.raises(ValueError, match=re.escape("Division by zero is not allowed")):
-        transformer.fit(df)
+        transformer.fit(make_df(data))
 
 
 def test_raises_non_fitted_error_when_error_during_fit(transformer_class):
