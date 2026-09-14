@@ -27,7 +27,6 @@ from feature_engine._docstrings.init_parameters.outliers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
@@ -217,8 +216,9 @@ class Winsoriser(WinsorizerBase):
             X_out = super()._transform(X)
 
         else:
-            X_orig = check_X(X)
-            X_out = super()._transform(X_orig)
+            # X_out is validated and reordered by _transform(); the indicators
+            # compare it against the user's native X, variable by variable.
+            X_out = super()._transform(X)
 
             # Benchmarked at 10k-100k rows x 1-10 columns: pandas-native
             # comparison + concat is up to ~3x faster than the narwhals
@@ -228,7 +228,7 @@ class Winsoriser(WinsorizerBase):
             is_pandas = nwd.is_pandas_dataframe(X_out)
             if is_pandas is True:
                 pd = nw.from_native(X_out, eager_only=True).__native_namespace__()
-                X_orig_filtered = X_orig[self.variables_]
+                X_orig_filtered = X[self.variables_]
                 X_out_filtered = X_out[self.variables_]
 
                 if self.tail in ["left", "both"]:
@@ -254,7 +254,7 @@ class Winsoriser(WinsorizerBase):
                     ]
                     X_out = pd.concat([X_out, X_both], axis=1)
             else:
-                nw_orig = nw.from_native(X_orig, eager_only=True)
+                nw_orig = nw.from_native(X, eager_only=True)
                 nw_out = nw.from_native(X_out, eager_only=True)
 
                 new_cols = []
