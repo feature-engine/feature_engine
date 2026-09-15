@@ -195,7 +195,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         if not isinstance(replace_with, (str, int, float)):
             raise ValueError(
-                "replace_with can should be a string, integer or float. "
+                "replace_with should be a string, integer or float. "
                 f"Got {replace_with} instead."
             )
 

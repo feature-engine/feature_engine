@@ -56,7 +56,7 @@ def test_raises_error_when_max_n_categories_not_allowed(max_n_categories):
 @pytest.mark.parametrize("replace_with", [set("hello"), ["auto"], None])
 def test_error_if_replace_with_not_string(replace_with):
     msg = (
-        "replace_with can should be a string, integer or float. "
+        "replace_with should be a string, integer or float. "
         f"Got {replace_with} instead."
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
