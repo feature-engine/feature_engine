@@ -8,11 +8,11 @@ both backends.
 """
 
 import datetime
-
 import pytest
 
 
-def _data_na():
+@pytest.fixture
+def data_na():
     return {
         "Name": ["tom", "nick", "krish", None, "peter", None, "fred", "sam"],
         "City": [
@@ -41,14 +41,9 @@ def _data_na():
 
 
 @pytest.fixture
-def data_na():
-    return _data_na()
-
-
-@pytest.fixture
-def data_na_dob():
+def data_na_dob(data_na):
     # dob is never null: exercises a datetime variable that missing_only=True
     # should exclude from variables_.
-    data = _data_na()
-    data["dob"] = [datetime.datetime(2020, 2, 24, 0, i) for i in range(8)]
-    return data
+    dob = [datetime.datetime(2020, 2, 24, 0, i) for i in range(8)]
+    # returns a new dict with every key of data_na plus dob
+    return data_na | {"dob": dob}
