@@ -436,7 +436,7 @@ def test_get_feature_names_out(make_df):
     assert tr.get_feature_names_out(input_features=None) == feat_out
     assert tr.get_feature_names_out(input_features=input_features) == feat_out
 
-    msg = "input_features must be a list or an array. Got {input_features} instead."
+    msg = "input_features must be a list or an array. Got var_A instead."
     with pytest.raises(ValueError, match=re.escape(msg)):
         tr.get_feature_names_out("var_A")
 
