@@ -154,7 +154,10 @@ class ArbitraryImputer(BaseImputer):
         if isinstance(arbitrary_number, int) or isinstance(arbitrary_number, float):
             self.arbitrary_number = arbitrary_number
         else:
-            raise ValueError("arbitrary_number must be numeric of type int or float")
+            raise ValueError(
+                "arbitrary_number must be numeric of type int or float. "
+                f"Got {arbitrary_number} instead."
+            )
 
         _check_numerical_dict(imputer_dict)
 
