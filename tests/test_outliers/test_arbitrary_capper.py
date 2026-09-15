@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from feature_engine.outliers import ArbitraryOutlierCapper
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 DATA = {"var": np.random.RandomState(0).normal(0, 0.1, 20).tolist()}
 
@@ -46,8 +46,8 @@ def test_right_end_capping(make_df):
     assert transformer.n_features_in_ == 1
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var": pytest.approx(expected)}
-    assert max(to_dict(Xt)["var"]) <= 0.10727677848029868 + 1e-8
+    assert frame_to_dict(Xt) == {"var": pytest.approx(expected)}
+    assert max(frame_to_dict(Xt)["var"]) <= 0.10727677848029868 + 1e-8
 
 
 def test_both_ends_capping(make_df):
@@ -71,7 +71,7 @@ def test_both_ends_capping(make_df):
     )
     # test transform output
     assert isinstance(Xt, make_df)
-    result = to_dict(Xt)
+    result = frame_to_dict(Xt)
     assert result == {"var": pytest.approx(expected)}
     assert max(result["var"]) <= 0.20857275540714884 + 1e-8
     assert min(result["var"]) >= -0.19661115230025186 - 1e-8
@@ -98,7 +98,7 @@ def test_left_tail_capping(make_df):
     )
     # test transform output
     assert isinstance(Xt, make_df)
-    result = to_dict(Xt)
+    result = frame_to_dict(Xt)
     assert result == {"var": pytest.approx(expected)}
     assert min(result["var"]) >= -0.17486039103044 - 1e-8
 
@@ -118,7 +118,7 @@ def test_ignores_na_in_input_df(make_df):
     assert transformer.n_features_in_ == 5
     # test transform output
     assert isinstance(Xt, make_df)
-    result = to_dict(Xt)
+    result = frame_to_dict(Xt)
     assert result["Age"] == expected
     assert min(v for v in result["Age"] if v is not None) >= 20
 
