@@ -15,6 +15,54 @@ MSG_NA = (
 )
 
 
+# init parameters
+@pytest.mark.parametrize(
+    "enc_method",
+    ["other", "Ordered", "", False, 1, 0.5, None, ["ordered"], ("arbitrary",)],
+)
+def test_error_if_encoding_method_not_allowed(enc_method):
+    msg = (
+        "encoding_method takes only values 'ordered' and 'arbitrary'. "
+        f"Got {enc_method} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        OrdinalEncoder(encoding_method=enc_method)
+
+
+@pytest.mark.parametrize(
+    "unseen", ["empanada", False, 1, None, ("raise", "ignore"), ["ignore"]]
+)
+def test_error_if_unseen_not_permitted_value(unseen):
+    msg = (
+        "Parameter `unseen` takes only values ignore, raise, encode. "
+        f"Got {unseen} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        OrdinalEncoder(unseen=unseen)
+
+
+@pytest.mark.parametrize(
+    "encoding_method, missing_values, ignore_format, unseen",
+    [
+        ("ordered", "raise", False, "ignore"),
+        ("arbitrary", "ignore", True, "raise"),
+        ("ordered", "ignore", True, "encode"),
+    ],
+)
+def test_init_param_assignment(encoding_method, missing_values, ignore_format, unseen):
+    encoder = OrdinalEncoder(
+        encoding_method=encoding_method,
+        missing_values=missing_values,
+        ignore_format=ignore_format,
+        unseen=unseen,
+    )
+    assert encoder.encoding_method == encoding_method
+    assert encoder.missing_values == missing_values
+    assert encoder.ignore_format is ignore_format
+    assert encoder.unseen == unseen
+
+
+# fit and transform
 def test_ordered_encoding_1_variable(make_df, data_enc):
     # test case 1: 1 variable, ordered encoding
     X = make_df(data_enc)[["var_A", "var_B"]]
@@ -24,9 +72,6 @@ def test_ordered_encoding_1_variable(make_df, data_enc):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    # test init params
-    assert encoder.encoding_method == "ordered"
-    assert encoder.variables == ["var_A"]
     # test fit attr
     assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": {"A": 1, "B": 0, "C": 2}}
@@ -62,9 +107,6 @@ def test_arbitrary_encoding_automatically_find_variables(make_df, data_enc):
     encoder = OrdinalEncoder(encoding_method="arbitrary", variables=None)
     Xt = encoder.fit_transform(make_df(data_enc))
 
-    # test init params
-    assert encoder.encoding_method == "arbitrary"
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
@@ -104,23 +146,11 @@ def test_encoding_when_nan_in_fit_df(make_df, data_enc):
     assert frame_to_dict(Xt) == {"var_A": [1, None], "var_B": [0, None]}
 
 
-@pytest.mark.parametrize(
-    "enc_method",
-    ["other", "Ordered", "", False, 1, 0.5, None, ["ordered"], ("arbitrary",)],
-)
-def test_error_if_encoding_method_not_allowed(enc_method):
-    msg = (
-        "encoding_method takes only values 'ordered' and 'arbitrary'. "
-        f"Got {enc_method} instead."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        OrdinalEncoder(encoding_method=enc_method)
-
-
 def test_error_if_ordinal_encoding_and_no_y_passed(make_df, data_enc):
     # test case 3: raises error if target is  not passed
     encoder = OrdinalEncoder(encoding_method="ordered")
-    with pytest.raises(ValueError):
+    msg = "requires y to be passed, but the target y is None"
+    with pytest.raises(ValueError, match=re.escape(msg)):
         encoder.fit(make_df(data_enc))
 
 
@@ -172,9 +202,6 @@ def test_ordered_encoding_1_variable_ignore_format(make_df, data_enc_numeric):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    # test init params
-    assert encoder.encoding_method == "ordered"
-    assert encoder.variables == ["var_A"]
     # test fit attr
     assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": {1: 1, 2: 0, 3: 2}}
@@ -197,9 +224,6 @@ def test_arbitrary_encoding_automatically_find_variables_ignore_format(
     )
     Xt = encoder.fit_transform(X)
 
-    # test init params
-    assert encoder.encoding_method == "arbitrary"
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
@@ -216,8 +240,7 @@ def test_arbitrary_encoding_automatically_find_variables_ignore_format(
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
-    # pandas-only: polars has no equivalent "unused categorical categories"
-    # concept to exercise here.
+    # pandas-only.
     df = df_enc_category_dtypes.copy()
     encoder = OrdinalEncoder(encoding_method="ordered", variables=["var_A"])
     encoder.fit(df[["var_A", "var_B"]], df["target"])
@@ -230,14 +253,6 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
     assert X["var_A"].dtypes.name == "int64"
-
-
-@pytest.mark.parametrize(
-    "unseen", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
-)
-def test_error_if_unseen_not_permitted_value(unseen):
-    with pytest.raises(ValueError):
-        OrdinalEncoder(unseen=unseen)
 
 
 def test_inverse_transform_when_no_unseen(make_df):
@@ -276,18 +291,22 @@ def test_inverse_transform_when_encode_unseen(make_df):
 def test_inverse_transform_raises_non_fitted_error(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     enc = OrdinalEncoder(encoding_method="arbitrary")
+    msg = (
+        "This OrdinalEncoder instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1)
 
     df1_na = make_df({"words": ["dog", "dog", "cat", "cat", "cat", None]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
         enc.fit(df1_na)
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1_na)
 
 
