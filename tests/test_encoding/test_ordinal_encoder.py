@@ -104,18 +104,17 @@ def test_encoding_when_nan_in_fit_df(make_df, data_enc):
     assert frame_to_dict(Xt) == {"var_A": [1, None], "var_B": [0, None]}
 
 
-@pytest.mark.parametrize("enc_method", ["other", False, 1])
+@pytest.mark.parametrize(
+    "enc_method",
+    ["other", "Ordered", "", False, 1, 0.5, None, ["ordered"], ("arbitrary",)],
+)
 def test_error_if_encoding_method_not_allowed(enc_method):
-    with pytest.raises(ValueError):
+    msg = (
+        "encoding_method takes only values 'ordered' and 'arbitrary'. "
+        f"Got {enc_method} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         OrdinalEncoder(encoding_method=enc_method)
-
-
-@pytest.mark.parametrize("enc_method", ["other", False, 1])
-def test_error_if_encoding_method_not_recognized_in_fit(enc_method, make_df, data_enc):
-    enc = OrdinalEncoder()
-    enc.encoding_method = enc_method
-    with pytest.raises(ValueError):
-        enc.fit(make_df(data_enc))
 
 
 def test_error_if_ordinal_encoding_and_no_y_passed(make_df, data_enc):
