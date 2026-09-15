@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 BINS = [0, 20, 40, 60, np.inf]
 
@@ -65,9 +65,9 @@ def test_transform(make_df, data_california):
     transformer = MockClassFit(return_boundaries=False)
     X = transformer.fit_transform(data)
     assert isinstance(X, make_df)
-    assert to_dict(X)["HouseAge"] == expected_codes
+    assert frame_to_dict(X)["HouseAge"] == expected_codes
 
     transformer = MockClassFit(return_object=False, return_boundaries=True)
     X = transformer.fit_transform(data)
     assert isinstance(X, make_df)
-    assert to_dict(X)["HouseAge"] == expected_labels
+    assert frame_to_dict(X)["HouseAge"] == expected_labels
