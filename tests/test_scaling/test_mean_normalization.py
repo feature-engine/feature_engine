@@ -5,7 +5,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.scaling import MeanNormalisationScaler, MeanNormalizationScaler
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 from tests.estimator_checks.fit_functionality_checks import check_return_empty
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
@@ -60,7 +60,7 @@ def test_transforming_int_vars(make_df, transformer_class):
     transformer = make_transformer(transformer_class, variables=None)
     X = transformer.fit_transform(make_df(data))
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var1": pytest.approx([-0.5, 0.0, 0.5]),
         "var2": pytest.approx([0, 0.5, -0.5]),
         "var3": pytest.approx([0.5, -0.5, 0.0]),
@@ -68,7 +68,9 @@ def test_transforming_int_vars(make_df, transformer_class):
 
     Xit = transformer.inverse_transform(X)
     assert isinstance(Xit, make_df)
-    assert to_dict(Xit) == {col: pytest.approx(values) for col, values in data.items()}
+    assert frame_to_dict(Xit) == {
+        col: pytest.approx(values) for col, values in data.items()
+    }
 
 
 def test_mean_normalization_plus_automatically_find_variables(
@@ -82,7 +84,7 @@ def test_mean_normalization_plus_automatically_find_variables(
     assert transformer.n_features_in_ == 4
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "Name": DATA["Name"],
         "City": DATA["City"],
         "Age": pytest.approx([0.16667, 0.5, -0.16667, -0.5], abs=1e-4),
@@ -91,7 +93,7 @@ def test_mean_normalization_plus_automatically_find_variables(
 
     Xit = transformer.inverse_transform(X)
     assert isinstance(Xit, make_df)
-    assert to_dict(Xit) == {
+    assert frame_to_dict(Xit) == {
         "Name": DATA["Name"],
         "City": DATA["City"],
         "Age": pytest.approx(DATA["Age"]),
@@ -108,7 +110,7 @@ def test_mean_normalization_plus_user_passes_var_list(make_df, transformer_class
     assert transformer.n_features_in_ == 4
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "Name": DATA["Name"],
         "City": DATA["City"],
         "Age": pytest.approx([0.16667, 0.5, -0.16667, -0.5], abs=1e-4),
@@ -117,7 +119,7 @@ def test_mean_normalization_plus_user_passes_var_list(make_df, transformer_class
 
     Xit = transformer.inverse_transform(X)
     assert isinstance(Xit, make_df)
-    assert to_dict(Xit) == {
+    assert frame_to_dict(Xit) == {
         "Name": DATA["Name"],
         "City": DATA["City"],
         "Age": pytest.approx(DATA["Age"]),
