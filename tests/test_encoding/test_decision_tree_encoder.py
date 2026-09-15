@@ -28,7 +28,10 @@ def _rounded(X, decimals=6):
 
 
 # init parameters
-@pytest.mark.parametrize("enc_method", ["count", False, 1])
+@pytest.mark.parametrize(
+    "enc_method",
+    ["count", "Ordered", "", False, 1, None, ["ordered"], ("arbitrary",)],
+)
 def test_error_if_encoding_method_not_permitted_value(enc_method):
     msg = (
         "`encoding_method` takes only values 'ordered' and 'arbitrary'."
@@ -67,23 +70,53 @@ def test_error_if_precision_gets_not_permitted_value(precision):
 
 
 @pytest.mark.parametrize(
-    "encoding_method,ignore_format,precision,unseen,fill_value",
+    "params",
     [
-        ("arbitrary", True, 1, "raise", None),
-        ("ordered", False, 2, "ignore", 1),
-        ("ordered", False, None, "encode", 0.1),
+        {
+            "encoding_method": "arbitrary",
+            "cv": 3,
+            "scoring": "neg_mean_squared_error",
+            "regression": True,
+            "param_grid": None,
+            "random_state": None,
+            "ignore_format": True,
+            "precision": 1,
+            "unseen": "raise",
+            "fill_value": None,
+            "n_jobs": None,
+        },
+        {
+            "encoding_method": "ordered",
+            "cv": 5,
+            "scoring": "roc_auc",
+            "regression": False,
+            "param_grid": {"max_depth": [1, 2]},
+            "random_state": 0,
+            "ignore_format": False,
+            "precision": None,
+            "unseen": "encode",
+            "fill_value": 0.1,
+            "n_jobs": -1,
+        },
+        {
+            "encoding_method": "ordered",
+            "cv": 2,
+            "scoring": "accuracy",
+            "regression": False,
+            "param_grid": {"max_depth": [3]},
+            "random_state": 42,
+            "ignore_format": False,
+            "precision": 2,
+            "unseen": "ignore",
+            "fill_value": 1,
+            "n_jobs": 2,
+        },
     ],
 )
-def test_init_param_assignment(
-    encoding_method, ignore_format, precision, unseen, fill_value
-):
-    DecisionTreeEncoder(
-        encoding_method=encoding_method,
-        ignore_format=ignore_format,
-        precision=precision,
-        unseen=unseen,
-        fill_value=fill_value,
-    )
+def test_init_param_assignment(params):
+    encoder = DecisionTreeEncoder(**params)
+    for param, value in params.items():
+        assert getattr(encoder, param) == value
 
 
 # fit attributes
@@ -110,12 +143,8 @@ def test_ordered_encoding_dictionary(make_df, data_enc):
     encoder = DecisionTreeEncoder(regression=False, encoding_method="ordered")
     encoder.fit(X, y)
 
-    # ordered ranks: var_A -> B(mean 0.2) < A(mean 0.333) < C(mean 0.5)
-    #                var_B -> A(mean 0.2) < B(mean 0.333) < C(mean 0.5)
-    # so var_A's ordinal codes are B=0, A=1, C=2 (split at code <= 0.5,
-    # i.e. B alone); var_B's are A=0, B=1, C=2 (split at code <= 0.5, i.e. A
-    # alone). Same tree-split logic as the arbitrary-encoding case above,
-    # applied to the reordered codes.
+    # codes by target mean: var_A B=0, A=1, C=2 and var_B A=0, B=1, C=2
+    # both trees split code 0 from the rest
     expected_encodings = {
         "var_A": {"B": 0.2, "A": 0.4, "C": 0.4},
         "var_B": {"A": 0.2, "B": 0.4, "C": 0.4},
@@ -272,8 +301,11 @@ def test_error_when_regression_is_false_and_target_is_continuous(make_df, data_e
     random = np.random.RandomState(42)
     y = make_series(make_df, random.normal(0, 10, len(data_enc["target"])))
     encoder = DecisionTreeEncoder(regression=False)
-    # the error message comes from sklearn api - won't test
-    with pytest.raises(ValueError):
+    msg = (
+        "Unknown label type: continuous. Maybe you are trying to fit a classifier, "
+        "which expects discrete classes on a regression target with continuous values."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         encoder.fit(X, y)
 
 
@@ -396,17 +428,25 @@ def test_inverse_transform_when_encode_unseen(make_df):
 def test_inverse_transform_raises_non_fitted_error(make_df):
     X = make_df({"words": ["dog", "dog", "dog", "cat", "cat", "cat", "bird"]})
     y = make_series(make_df, [0, 0, 1, 1, 1, 1, 0])
-    enc = DecisionTreeEncoder()
+    enc = DecisionTreeEncoder(regression=False)
+    msg = (
+        "This DecisionTreeEncoder instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
+    msg_na = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(X)
 
     X_na = make_df({"words": ["dog", "dog", "dog", "cat", "cat", "cat", None]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape(msg_na)):
         enc.fit(X_na, y)
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(X_na)
