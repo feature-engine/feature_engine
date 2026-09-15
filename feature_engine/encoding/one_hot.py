@@ -218,28 +218,21 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
 
-        self.encoder_dict_ = {}
+        encoder_dict_ = {}
 
         for var in variables_:
             col = nw_X.get_column(var)
 
-            # make dummies only for the most popular categories
-            if self.top_categories:
+            if self.top_categories is not None:
                 top = col.value_counts(sort=True, name="count").head(
                     self.top_categories
                 )
-                self.encoder_dict_[var] = top.get_column(var).to_list()
+                encoder_dict_[var] = top.get_column(var).to_list()
 
             else:
                 category_ls = col.unique(maintain_order=True).to_list()
-
-                # return k-1 dummies
-                if self.drop_last is True:
-                    self.encoder_dict_[var] = category_ls[:-1]
-
-                # return k dummies
-                else:
-                    self.encoder_dict_[var] = category_ls
+                # return k-1 vs k dummies
+                encoder_dict_[var] = category_ls[:-1] if self.drop_last is True else category_ls
 
         self.variables_binary_ = [
             var for var in variables_ if nw_X.get_column(var).n_unique() == 2
@@ -249,9 +242,10 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         if self.drop_last_binary is True:
             for var in self.variables_binary_:
                 category = nw_X.get_column(var).unique(maintain_order=True)[0]
-                self.encoder_dict_[var] = [category]
+                encoder_dict_[var] = [category]
 
         self.variables_ = variables_
+        self.encoder_dict_ = encoder_dict_
         self._get_feature_names_in(X)
         return self
 
