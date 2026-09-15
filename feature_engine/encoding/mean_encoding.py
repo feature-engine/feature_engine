@@ -225,12 +225,20 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         self.encoder_dict_ = {}
 
-        # benchmarked at 10k-100k rows x 1-10 cols x 5-50 categories: a pure
-        # narwhals fit() ran ~1.5x-2.9x slower than pandas-native here, worse
-        # at low column counts (the common case), so pandas keeps its native
-        # groupby/value_counts fast path and only polars (and other
-        # backends) go through narwhals.
+        # pair y with X by position, so list, array and series targets all work
+        target_name = "__feature_engine_mean_target__"
+        if nwd.is_into_series(y):
+            y_nw = nw.from_native(y, series_only=True).alias(target_name)
+        else:
+            y_nw = nw.new_series(
+                name=target_name, values=y, backend=nw_X.implementation
+            )
+        nw_Xy = nw_X.with_columns(y_nw)
+
+        # pandas is faster than narwhals.
         if nwd.is_pandas_dataframe(X):
+            # pandas series with the index of X
+            y = nw_Xy[target_name].to_native()
             y_prior = y.mean()
 
             if self.unseen == "encode":
@@ -240,38 +248,18 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 y_var = y.var(ddof=0)
 
             for var in variables_:
-                # y may be a Series (aligned with X by index, per check_X_y)
-                # or a numpy array (list/array-like y goes through sklearn's
-                # column_or_1d, which has no .groupby()) - pair the latter
-                # with X[var] positionally via assign() instead.
-                if nwd.is_pandas_series(y):
-                    target, group_keys = y, X[var]
-                else:
-                    target_name = "__feature_engine_mean_target__"
-                    paired = X[[var]].assign(**{target_name: y})
-                    target, group_keys = paired[target_name], paired[var]
-
                 if self.smoothing == "auto":
-                    damping = target.groupby(group_keys).var(ddof=0) / y_var
+                    damping = y.groupby(X[var]).var(ddof=0) / y_var
                 else:
                     damping = self.smoothing
                 counts = X[var].value_counts()
                 counts.index = counts.index.infer_objects()
                 _lambda = counts / (counts + damping)
                 self.encoder_dict_[var] = (
-                    _lambda * target.groupby(group_keys, observed=False).mean()
+                    _lambda * y.groupby(X[var], observed=False).mean()
                     + (1.0 - _lambda) * y_prior
                 ).to_dict()
         else:
-            target_name = "__feature_engine_mean_target__"
-            if nwd.is_into_series(y):
-                y_nw = nw.from_native(y, series_only=True).alias(target_name)
-            else:
-                y_nw = nw.new_series(
-                    name=target_name, values=y, backend=nw_X.implementation
-                )
-            nw_Xy = nw_X.with_columns(y_nw)
-
             y_prior = y_nw.mean()
 
             if self.unseen == "encode":
