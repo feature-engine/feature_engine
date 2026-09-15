@@ -112,8 +112,10 @@ This occurs when a category shows only 1 of the possible values of the target (e
 always takes 1 or 0). In practice, this happens mostly when a category has a low frequency
 in the dataset, that is, when only very few observations show that category.
 
-To overcome this limitation, consider using a variable transformation method to group
-those categories together, for example by using feature-engine's :class:`RareLabelEncoder()`.
+A common way to obtain a WoE for these categories is to replace the zero count by 0.5,
+which is what :class:`WoEEncoder()` does. Still, WoE values calculated from very few
+observations are unreliable, so consider grouping infrequent categories first, for
+example with feature-engine's :class:`RareLabelEncoder()`.
 
 Taking into account the above considerations, conducting a detailed exploratory data
 analysis (EDA) is essential as part of the data science and model-building process.
@@ -162,9 +164,46 @@ with feature-engine's imputers.
 
 :class:`WoEEncoder()` will ignore unseen categories by default, in which case, they will
 be replaced by np.nan after the encoding. You have the option to make the encoder raise
-an error instead, by setting `unseen='raise'`. You can also replace unseen categories
-by an arbitrary value you need to define in `fill_value`, although we do not recommend
-this option because it may lead to unpredictable results.
+an error instead, by setting `unseen='raise'`.
+
+Categories with no positive or no negative cases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attention::
+
+    **New in version 2.0:** :class:`WoEEncoder()` used to raise an error when a category
+    had no positive or no negative cases, unless you set the parameter `fill_value`.
+    `fill_value` was removed. The encoder now replaces zero counts by 0.5 and lists the
+    affected variables in the attribute `variables_with_zero_counts_`.
+
+When a category has no positive or no negative cases in the training set,
+:class:`WoEEncoder()` replaces the zero count by 0.5 to calculate the WoE, and stores the
+names of the affected variables in `variables_with_zero_counts_`. In the following
+example, the category red has only positive cases:
+
+.. code:: python
+
+    import pandas as pd
+    from feature_engine.encoding import WoEEncoder
+
+    X = pd.DataFrame(
+        {"colour": ["blue", "blue", "blue", "red", "red", "green", "green", "green"]}
+    )
+    y = pd.Series([1, 0, 1, 1, 1, 0, 1, 0])
+
+    woe = WoEEncoder()
+    woe.fit(X, y)
+
+    print(woe.encoder_dict_)
+    print(woe.variables_with_zero_counts_)
+
+There are 5 positive and 3 negative cases. Red has 2 positive cases and no negative
+cases, so its WoE is log((2 / 5) / (0.5 / 3)) = 0.88:
+
+.. code:: python
+
+    {'colour': {'blue': 0.1823215567939548, 'green': -1.203972804325936, 'red': 0.8754687373539001}}
+    ['colour']
 
 Python example
 --------------
@@ -278,6 +317,41 @@ variable values:
     402   0.210092  female  30.000000      1      0  13.8583 -0.357528  0.679905
     1193 -0.584173    male  29.881135      0      0   7.7250 -0.357528  0.012075
     686  -0.584173  female  22.000000      0      0   7.7250 -0.357528  0.012075
+
+
+With polars
+~~~~~~~~~~~
+
+:class:`WoEEncoder()` also works with polars dataframes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import WoEEncoder
+
+    X = pl.DataFrame(dict(x1 = [1,2,3,4,5], x2 = ["b", "b", "b", "a", "a"]))
+    y = pl.Series([0,1,1,1,0])
+
+    woe = WoEEncoder()
+    woe.fit(X, y)
+    woe.transform(X)
+
+We see the resulting dataframe below:
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌─────┬───────────┐
+    │ x1  ┆ x2        │
+    │ --- ┆ ---       │
+    │ i64 ┆ f64       │
+    ╞═════╪═══════════╡
+    │ 1   ┆ 0.287682  │
+    │ 2   ┆ 0.287682  │
+    │ 3   ┆ 0.287682  │
+    │ 4   ┆ -0.405465 │
+    │ 5   ┆ -0.405465 │
+    └─────┴───────────┘
 
 
 WoE in categorical and numerical variables
