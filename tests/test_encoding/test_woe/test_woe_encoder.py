@@ -337,6 +337,16 @@ def test_on_numerical_variables(make_df, data_enc_numeric):
     }
 
 
+def test_integer_column_names(data_enc):
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: data_enc["var_A"], 1: data_enc["var_B"]})
+    y = pd.Series(data_enc["target"])
+
+    encoder = WoEEncoder().fit(X, y)
+
+    assert encoder.encoder_dict_ == {0: WOE_A, 1: WOE_B}
+
+
 def test_variables_cast_as_category(df_enc_category_dtypes):
     # pandas Categorical dtype has no direct polars equivalent.
     df = df_enc_category_dtypes.copy()

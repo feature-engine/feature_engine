@@ -4,8 +4,6 @@
 from typing import List, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
-import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._docstrings.fit_attributes import (
@@ -71,27 +69,48 @@ class WoE:
         variable: Union[str, int],
         fill_value: Union[float, None] = None,
     ):
-        total_pos = y.sum()
-        inverse_y = y.ne(1).copy()
-        total_neg = inverse_y.sum()
+        """
+        Return a narwhals dataframe with one row per category of the variable and the
+        columns __category__, __pos__ and __neg__, the fraction of positive and
+        negative cases, and __woe__, the weight of evidence.
+        """
+        # narwhals expressions need string column names, pandas allows integers
+        col = nw.from_native(X, eager_only=True).get_column(variable)
+        nw_Xy = add_target_to_X(col.alias("__category__").to_frame(), y)
+        total_pos = nw_Xy[TARGET_NAME].sum()
+        total_neg = len(nw_Xy) - total_pos
 
-        pos = y.groupby(X[variable], observed=False).sum() / total_pos
-        neg = inverse_y.groupby(X[variable], observed=False).sum() / total_neg
+        stats = (
+            nw_Xy.group_by("__category__", drop_null_keys=True)
+            .agg(nw.col(TARGET_NAME).sum().alias("__pos__"), nw.len().alias("__n__"))
+            .sort("__category__")
+            .select(
+                "__category__",
+                (nw.col("__pos__") / total_pos).alias("__pos__"),
+                ((nw.col("__n__") - nw.col("__pos__")) / total_neg).alias("__neg__"),
+            )
+        )
 
-        if not (pos[:] == 0).sum() == 0 or not (neg[:] == 0).sum() == 0:
-            if fill_value is None:
+        pos, neg = nw.col("__pos__"), nw.col("__neg__")
+        if fill_value is None:
+            has_zero = bool(stats.select(((pos == 0) | (neg == 0)).any()).item())
+            if has_zero is True:
                 raise ValueError(
                     "The proportion of one of the classes for a category in "
                     "variable {} is zero, and log of zero is not defined".format(
                         variable
                     )
                 )
-            else:
-                pos[pos[:] == 0] = fill_value
-                neg[neg[:] == 0] = fill_value
+        else:
+            pos = nw.when(pos == 0).then(fill_value).otherwise(pos)
+            neg = nw.when(neg == 0).then(fill_value).otherwise(neg)
 
-        woe = np.log(pos / neg)
-        return pos, neg, woe
+        return stats.select(
+            "__category__",
+            pos.alias("__pos__"),
+            neg.alias("__neg__"),
+            (pos / neg).log().alias("__woe__"),
+        )
 
 
 @Substitution(
@@ -270,50 +289,19 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         encoder_dict_ = {}
         vars_that_fail = []
 
-        # pandas uses _calculate_woe(); other backends count the negative class
-        # as total minus positive, so they need one group_by instead of two
-        if nwd.is_pandas_dataframe(X):
-            for var in variables_:
-                try:
-                    _, _, woe = self._calculate_woe(X, y, var, self.fill_value)
-                    encoder_dict_[var] = woe.to_dict()
-                except ValueError:
-                    vars_that_fail.append(var)
-        else:
-            nw_Xy = add_target_to_X(nw.from_native(X, eager_only=True), y)
-
-            total_pos = nw_Xy[TARGET_NAME].sum()
-            total_neg = len(nw_Xy) - total_pos
-
-            for var in variables_:
-                grouped = (
-                    nw_Xy.group_by(var, drop_null_keys=True)
-                    .agg(
-                        nw.col(TARGET_NAME).sum().alias("__pos_n__"),
-                        nw.len().alias("__n__"),
-                    )
-                    .sort(var)
-                )
-                categories = grouped.get_column(var).to_list()
-                pos = (grouped.get_column("__pos_n__") / total_pos).to_numpy()
-                neg = (
-                    (grouped.get_column("__n__") - grouped.get_column("__pos_n__"))
-                    / total_neg
-                ).to_numpy()
-
-                if (pos == 0).any() or (neg == 0).any():
-                    if self.fill_value is None:
-                        vars_that_fail.append(var)
-                        continue
-                    pos = np.where(pos == 0, self.fill_value, pos)
-                    neg = np.where(neg == 0, self.fill_value, neg)
-
-                woe = np.log(pos / neg)
-                encoder_dict_[var] = dict(zip(categories, woe))
+        for var in variables_:
+            try:
+                woe = self._calculate_woe(X, y, var, self.fill_value)
+            except ValueError:
+                vars_that_fail.append(var)
+                continue
+            encoder_dict_[var] = dict(
+                zip(woe["__category__"].to_list(), woe["__woe__"].to_list())
+            )
 
         if len(vars_that_fail) > 0:
             vars_that_fail_str = (
-                ", ".join(vars_that_fail)
+                ", ".join(str(var) for var in vars_that_fail)
                 if len(vars_that_fail) > 1
                 else vars_that_fail[0]
             )
