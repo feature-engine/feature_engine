@@ -6,7 +6,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import MeanEncoder
-from tests.backend_helpers import make_series, to_dict
+from tests.backend_helpers import make_series, frame_to_dict
 
 MEAN_A = {"A": 0.3333333333333333, "B": 0.2, "C": 0.5}
 MEAN_B = {"A": 0.2, "B": 0.3333333333333333, "C": 0.5}
@@ -55,7 +55,7 @@ def test_user_enters_1_variable(make_df, data_enc):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [MEAN_A[v] for v in data_enc["var_A"]],
         "var_B": data_enc["var_B"],
     }
@@ -78,7 +78,7 @@ def test_automatically_find_variables(make_df, data_enc):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [MEAN_A[v] for v in data_enc["var_A"]],
         "var_B": [MEAN_B[v] for v in data_enc["var_B"]],
     }
@@ -96,7 +96,7 @@ def test_target_as_list_or_array(make_df, data_enc, to_target):
 
     assert encoder.encoder_dict_ == {"var_A": MEAN_A, "var_B": MEAN_B}
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [MEAN_A[v] for v in data_enc["var_A"]],
         "var_B": [MEAN_B[v] for v in data_enc["var_B"]],
     }
@@ -117,7 +117,10 @@ def test_encoding_when_nan_in_fit_df(make_df, data_enc):
     Xt = encoder.transform(make_df({"var_A": ["A", None], "var_B": ["A", None]}))
 
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var_A": [0.3333333333333333, None], "var_B": [0.2, None]}
+    assert frame_to_dict(Xt) == {
+        "var_A": [0.3333333333333333, None],
+        "var_B": [0.2, None],
+    }
 
 
 def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
@@ -195,7 +198,7 @@ def test_user_enters_1_variable_ignore_format(make_df, data_enc_numeric):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [mean_a[v] for v in data_enc_numeric["var_A"]],
         "var_B": data_enc_numeric["var_B"],
     }
@@ -221,7 +224,7 @@ def test_automatically_find_variables_ignore_format(make_df, data_enc_numeric):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [mean_a[v] for v in data_enc_numeric["var_A"]],
         "var_B": [mean_b[v] for v in data_enc_numeric["var_B"]],
     }
@@ -271,7 +274,7 @@ def test_auto_smoothing(make_df, data_enc):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [var_A_dict[v] for v in data_enc["var_A"]],
         "var_B": [var_B_dict[v] for v in data_enc["var_B"]],
     }
@@ -305,7 +308,7 @@ def test_value_smoothing(make_df, data_enc):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [var_A_dict[v] for v in data_enc["var_A"]],
         "var_B": [var_B_dict[v] for v in data_enc["var_B"]],
     }
@@ -322,7 +325,7 @@ def test_encoding_new_categories(make_df, data_enc):
 
     target_mean = sum(data_enc["target"]) / len(data_enc["target"])
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var_A": [target_mean], "var_B": [target_mean]}
+    assert frame_to_dict(Xt) == {"var_A": [target_mean], "var_B": [target_mean]}
 
 
 def test_inverse_transform_when_no_unseen(make_df):
@@ -334,7 +337,7 @@ def test_inverse_transform_when_no_unseen(make_df):
     dft = enc.transform(df)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": words}
+    assert frame_to_dict(Xi) == {"words": words}
 
 
 def test_inverse_transform_when_ignore_unseen(make_df):
@@ -346,7 +349,7 @@ def test_inverse_transform_when_ignore_unseen(make_df):
     dft = enc.transform(df2)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
+    assert frame_to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
 def test_inverse_transform_when_encode_unseen(make_df):
