@@ -236,12 +236,8 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
             if col.n_unique() > self.n_categories:
 
-                # if the variable has more than the indicated number of categories
-                # the encoder will learn the most frequent categories.
-                # drop_nulls() mirrors pandas' value_counts(dropna=True)
-                # default, which narwhals' value_counts() doesn't apply on
-                # its own. sort=True matches pandas' own value_counts()
-                # default order (descending by count).
+                # learn the most frequent categories, dropping nulls and sorting
+                # by frequency like pandas' value_counts()
                 counts = col.drop_nulls().value_counts(sort=True, normalize=True)
                 cat_col, freq_col = counts.columns
 
@@ -291,11 +287,8 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
-        # a pandas Categorical column rejects an unseen label on assignment
-        # until the label is added to its categories; narwhals has no
-        # cross-backend equivalent (polars has no comparable dtype
-        # restriction here), so this stays a native pandas step. Operate on a
-        # copy so the user's dataframe is not mutated.
+        # pandas categorical columns need replace_with added to their categories;
+        # work on a copy so the user's dataframe is not changed
         if nw_X.implementation.is_pandas():
             native_X = nw_X.to_native().copy()
             for feature in self.variables_:
@@ -305,17 +298,8 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                     )
             nw_X = nw.from_native(native_X, eager_only=True)
 
-        # nw.when(<Series>).then(<Series>).otherwise(nw.lit(...)) lets each
-        # column keep its own dtype where frequent, and take the (possibly
-        # differently-typed) replace_with value elsewhere - narwhals
-        # resolves the common dtype per backend, e.g. object in pandas,
-        # cast-to-string in polars, so no manual dtype fixup is needed
-        # before it, unlike the old pandas-only .astype("O"). Passing
-        # Series (from get_column(), not nw.col()) into when/then/otherwise
-        # keeps this working for pandas integer column names, and nw.lit()
-        # broadcasts replace_with natively instead of materialising a
-        # same-length replacement array (benchmarked ~1.7x faster than the
-        # zip_with(col, new_series(...)) equivalent at 100k rows).
+        # narwhals resolves the dtype when mixing each column with replace_with;
+        # series from get_column() also work with pandas integer column names
         new_columns = []
         for feature in self.variables_:
             col = nw_X.get_column(feature)

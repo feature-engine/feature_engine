@@ -28,6 +28,70 @@ ENC_BIG_RARE = {
 }
 
 
+# init parameters
+@pytest.mark.parametrize("tol", ["hello", [0.5], -1, 1.5, None])
+def test_error_if_tol_not_between_0_and_1(tol):
+    msg = f"tol takes values between 0 and 1. Got {tol} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RareLabelEncoder(tol=tol)
+
+
+@pytest.mark.parametrize("n_cat", ["hello", [0.5], -0.1, 1.5, -1, None])
+def test_error_if_n_categories_not_int(n_cat):
+    msg = f"n_categories takes only positive integer numbers. Got {n_cat} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RareLabelEncoder(n_categories=n_cat)
+
+
+@pytest.mark.parametrize("max_n_categories", ["hello", ["auto"], -1, 0.5])
+def test_raises_error_when_max_n_categories_not_allowed(max_n_categories):
+    msg = (
+        "max_n_categories takes only positive integer numbers. "
+        f"Got {max_n_categories} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RareLabelEncoder(max_n_categories=max_n_categories)
+
+
+@pytest.mark.parametrize("replace_with", [set("hello"), ["auto"], None])
+def test_error_if_replace_with_not_string(replace_with):
+    msg = (
+        "replace_with can should be a string, integer or float. "
+        f"Got {replace_with} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RareLabelEncoder(replace_with=replace_with)
+
+
+@pytest.mark.parametrize(
+    "tol, n_categories, max_n_categories, replace_with, missing_values, ignore_format",
+    [
+        (0.05, 10, None, "Rare", "raise", False),
+        (0, 0, 3, "Other", "ignore", True),
+        (1, 5, 0, 1, "raise", True),
+        (0.5, 2, 10, 0.5, "ignore", False),
+    ],
+)
+def test_init_param_assignment(
+    tol, n_categories, max_n_categories, replace_with, missing_values, ignore_format
+):
+    encoder = RareLabelEncoder(
+        tol=tol,
+        n_categories=n_categories,
+        max_n_categories=max_n_categories,
+        replace_with=replace_with,
+        missing_values=missing_values,
+        ignore_format=ignore_format,
+    )
+    assert encoder.tol == tol
+    assert encoder.n_categories == n_categories
+    assert encoder.max_n_categories == max_n_categories
+    assert encoder.replace_with == replace_with
+    assert encoder.missing_values == missing_values
+    assert encoder.ignore_format is ignore_format
+
+
+# fit and transform
 def test_defo_params_plus_automatically_find_variables(make_df, data_enc_big):
     # test case 1: defo params, automatically select variables
     encoder = RareLabelEncoder(
@@ -35,11 +99,6 @@ def test_defo_params_plus_automatically_find_variables(make_df, data_enc_big):
     )
     X = encoder.fit_transform(make_df(data_enc_big))
 
-    # test init params
-    assert encoder.tol == 0.06
-    assert encoder.n_categories == 5
-    assert encoder.replace_with == "Rare"
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B", "var_C"]
     assert encoder.n_features_in_ == 3
@@ -201,11 +260,6 @@ def test_user_provides_grouping_label_name_and_variable_list(make_df, data_enc_b
     )
     X = encoder.fit_transform(make_df(data_enc_big))
 
-    # test init params
-    assert encoder.tol == 0.15
-    assert encoder.n_categories == 5
-    assert encoder.replace_with == "Other"
-    assert encoder.variables == ["var_A", "var_B"]
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.n_features_in_ == 3
@@ -226,31 +280,6 @@ def test_user_provides_grouping_label_name_and_variable_list(make_df, data_enc_b
         + ["G"] * 6,
         "var_C": data_enc_big["var_C"],
     }
-
-
-# init params
-@pytest.mark.parametrize("tol", ["hello", [0.5], -1, 1.5])
-def test_error_if_tol_not_between_0_and_1(tol):
-    with pytest.raises(ValueError):
-        RareLabelEncoder(tol=tol)
-
-
-@pytest.mark.parametrize("n_cat", ["hello", [0.5], -0.1, 1.5])
-def test_error_if_n_categories_not_int(n_cat):
-    with pytest.raises(ValueError):
-        RareLabelEncoder(n_categories=n_cat)
-
-
-@pytest.mark.parametrize("max_n_categories", ["hello", ["auto"], -1, 0.5])
-def test_raises_error_when_max_n_categories_not_allowed(max_n_categories):
-    with pytest.raises(ValueError):
-        RareLabelEncoder(max_n_categories=max_n_categories)
-
-
-@pytest.mark.parametrize("replace_with", [set("hello"), ["auto"]])
-def test_error_if_replace_with_not_string(replace_with):
-    with pytest.raises(ValueError):
-        RareLabelEncoder(replace_with=replace_with)
 
 
 def test_warning_if_variable_cardinality_less_than_n_categories(
@@ -335,10 +364,8 @@ def test_max_n_categories_with_numeric_var(data_enc_numeric):
 
 
 def test_max_n_categories_with_numeric_var_polars(data_enc_numeric):
-    # polars can't hold mixed int/str values in one column like pandas'
-    # object dtype does, so a numeric variable with a string replace_with
-    # is cast to string entirely instead - a real, backend-specific
-    # difference from the pandas behaviour above, not a bug.
+    # polars can't mix int and str in one column, so a numeric variable with a
+    # string replace_with is cast to string
     df_enc_numeric = pl.DataFrame(data_enc_numeric)
     rare_encoder = RareLabelEncoder(
         tol=0.10, max_n_categories=2, n_categories=1, ignore_format=True
@@ -356,7 +383,8 @@ def test_max_n_categories_with_numeric_var_polars(data_enc_numeric):
 def test_inverse_transform_raises_not_implemented_error(make_df, data_enc_big):
     df_enc_big = make_df(data_enc_big)
     enc = RareLabelEncoder().fit(df_enc_big)
-    with pytest.raises(NotImplementedError):
+    msg = "inverse_transform is not implemented for this transformer."
+    with pytest.raises(NotImplementedError, match=re.escape(msg)):
         enc.inverse_transform(df_enc_big)
 
 
