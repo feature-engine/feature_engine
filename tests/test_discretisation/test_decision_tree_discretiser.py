@@ -5,7 +5,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.discretisation import DecisionTreeDiscretiser
-from tests.backend_helpers import make_series, to_dict
+from tests.backend_helpers import make_series, frame_to_dict
 
 _rng = np.random.RandomState(42)
 DATA_TWO_VARS = {
@@ -122,7 +122,7 @@ def test_classification_predictions(make_df, data_normal_dist):
     assert transformer.n_features_in_ == 1
     # transform params
     assert isinstance(Xt, make_df)
-    unique_vals = sorted(set(to_dict(Xt)["var"]))
+    unique_vals = sorted(set(frame_to_dict(Xt)["var"]))
     assert all(x for x in np.round(unique_vals, 2) if x not in X_t)
     assert np.round(transformer.scores_dict_["var"], 3) == np.round(
         0.717391304347826, 3
@@ -149,7 +149,7 @@ def test_target_as_list_or_array(make_df, data_normal_dist, to_target):
 
     assert transformer.binner_dict_ == from_series.binner_dict_
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == to_dict(from_series.transform(X))
+    assert frame_to_dict(Xt) == frame_to_dict(from_series.transform(X))
 
 
 @pytest.mark.parametrize(
@@ -176,7 +176,7 @@ def test_classification_rounds_predictions(make_df, data_normal_dist, params):
     Xt = transformer.fit_transform(X, y)
 
     assert isinstance(Xt, make_df)
-    assert sorted(set(to_dict(Xt)["var"])) == sorted(params[1])
+    assert sorted(set(frame_to_dict(Xt)["var"])) == sorted(params[1])
 
 
 def test_classification_bin_number(make_df, data_normal_dist):
@@ -205,7 +205,7 @@ def test_classification_bin_number(make_df, data_normal_dist):
         0.717391304347826, 3
     )
     assert isinstance(Xt, make_df)
-    assert sorted(set(to_dict(Xt)["var"])) == bins
+    assert sorted(set(frame_to_dict(Xt)["var"])) == bins
 
 
 def test_classification_boundaries(make_df, data_normal_dist):
@@ -243,7 +243,7 @@ def test_classification_boundaries(make_df, data_normal_dist):
         0.717391304347826, 3
     )
     assert isinstance(Xt, make_df)
-    assert sorted(set(to_dict(Xt)["var"])) == bins
+    assert sorted(set(frame_to_dict(Xt)["var"])) == bins
 
 
 def test_regression(make_df, data_normal_dist):
@@ -291,7 +291,7 @@ def test_regression(make_df, data_normal_dist):
     )
     # transform params
     assert isinstance(Xt, make_df)
-    unique_vals = sorted(set(to_dict(Xt)["var"]))
+    unique_vals = sorted(set(frame_to_dict(Xt)["var"]))
     assert all(x for x in np.round(unique_vals, 2) if x not in X_t)
 
 
@@ -338,7 +338,7 @@ def test_regression_rounds_predictions(make_df, data_normal_dist, params):
     Xt = transformer.fit_transform(X, y)
 
     assert isinstance(Xt, make_df)
-    assert sorted(set(to_dict(Xt)["var"])) == sorted(params[1])
+    assert sorted(set(frame_to_dict(Xt)["var"])) == sorted(params[1])
 
 
 # transform
@@ -378,4 +378,4 @@ def test_n_jobs_parallel_matches_sequential(make_df):
     Xt_par = tr_par.transform(X)
 
     assert isinstance(Xt_par, make_df)
-    assert to_dict(Xt_par) == to_dict(Xt_seq)
+    assert frame_to_dict(Xt_par) == frame_to_dict(Xt_seq)
