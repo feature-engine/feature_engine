@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from feature_engine.discretisation import ArbitraryDiscretiser
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 BINS = [0, 20, 40, 60, np.inf]
 
@@ -38,14 +38,14 @@ def test_arbitrary_discretiser(make_df, data_california):
     assert transformer.binner_dict_ == user_dict
     # transform params
     assert isinstance(X, make_df)
-    assert to_dict(X)["HouseAge"] == expected_codes
+    assert frame_to_dict(X)["HouseAge"] == expected_codes
 
     transformer = ArbitraryDiscretiser(
         binning_dict=user_dict, return_object=False, return_boundaries=True
     )
     X = transformer.fit_transform(data)
     assert isinstance(X, make_df)
-    assert to_dict(X)["HouseAge"] == expected_labels
+    assert frame_to_dict(X)["HouseAge"] == expected_labels
 
 
 def test_error_if_input_df_contains_na_in_transform(make_df):
