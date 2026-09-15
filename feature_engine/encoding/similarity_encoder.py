@@ -219,7 +219,11 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             raise ValueError(
                 f"top_categories takes only integers. Got {top_categories!r} instead."
             )
-        if missing_values not in ("raise", "impute", "ignore"):
+        if not isinstance(missing_values, str) or missing_values not in (
+            "raise",
+            "impute",
+            "ignore",
+        ):
             raise ValueError(
                 "missing_values should be one of 'raise', 'impute' or 'ignore'."
                 f" Got {missing_values!r} instead."
@@ -278,26 +282,15 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         else:
             cols_to_iterate = variables_
 
-        # cast(nw.String) preserves nulls as null on both backends (unlike
-        # pandas' own astype(str), which stringifies NaN to "nan"), so
-        # "impute" can fill_null("") directly and "ignore" can drop_nulls()
-        # before casting, with no leftover "nan"/"<NA>" text sentinels to
-        # special-case downstream.
+        # cast(nw.String) keeps nulls as nulls, unlike pandas' astype(str)
         for var in cols_to_iterate:
             col = nw_X.get_column(var)
             if self.missing_values == "impute":
                 col = col.cast(nw.String).fill_null("")
             elif self.missing_values == "ignore":
                 col = col.drop_nulls().cast(nw.String)
-            elif self.missing_values == "raise":
-                col = col.cast(nw.String)
             else:
-                # missing_values can be set directly (e.g. via set_params or
-                # attribute assignment) bypassing the __init__ check above.
-                raise ValueError(
-                    "Unrecognized value for missing_values. It should be 'raise', "
-                    f"'ignore' or 'impute'. Got {self.missing_values} instead."
-                )
+                col = col.cast(nw.String)
 
             # sort=True mirrors pandas' own value_counts() default order
             # (descending by count, ties broken by first appearance), so
@@ -336,19 +329,8 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         if len(self.variables_) == 0:
             return nw_X.to_native()
 
-        # String similarity (difflib.SequenceMatcher) has no vectorised
-        # narwhals/backend equivalent, so it is computed in numpy: the
-        # similarity matrix is built once per unique value (not per row)
-        # via broadcasting, then broadcast back to all rows with
-        # np.unique's inverse index - cheaper than a per-row Python-level
-        # dict lookup and it is backend agnostic, so a single code path
-        # covers both pandas and polars. Benchmarked at 10k-100k rows x
-        # 1-10 columns x 5-50 categories: the difflib computation itself
-        # dominates wall time by 1-3 orders of magnitude, so a
-        # pandas-specific fast path for reassembling the output columns
-        # (as used in DecisionTreeFeatures) would save at most ~10ms out of
-        # a transform that is already tens of ms to seconds - not worth the
-        # code duplication here.
+        # difflib has no vectorised equivalent, so similarities are computed in numpy
+        # once per unique value, then mapped back to the rows
         new_series = []
         for var in self.variables_:
             col = nw_X.get_column(var)

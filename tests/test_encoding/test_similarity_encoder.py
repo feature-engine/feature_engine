@@ -16,6 +16,64 @@ MSG_NA = (
 )
 
 
+# init parameters
+@pytest.mark.parametrize("top_cat", ["hello", 0.5, [1]])
+def test_error_if_top_categories_not_integer(top_cat):
+    msg = f"top_categories takes only integers. Got {top_cat!r} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        StringSimilarityEncoder(top_categories=top_cat)
+
+
+@pytest.mark.parametrize(
+    "missing_values",
+    ["error", "propagate", "Raise", ["raise"], ("impute",), 1, 0.1, False, None],
+)
+def test_error_if_missing_values_not_allowed(missing_values):
+    msg = (
+        "missing_values should be one of 'raise', 'impute' or 'ignore'. "
+        f"Got {missing_values!r} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        StringSimilarityEncoder(missing_values=missing_values)
+
+
+@pytest.mark.parametrize("keywords", ["hello", 0.5, [1]])
+def test_keywords_bad_type(keywords):
+    msg = f"keywords should be a dictionary or None. Got {keywords!r} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        StringSimilarityEncoder(keywords=keywords)
+
+
+@pytest.mark.parametrize("item", ["hello", 0.5, 1])
+def test_keywords_bad_items(item):
+    keywords = {"var_A": item}
+    msg = f"The items in keywords should be lists. Got {keywords.values()!r} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        StringSimilarityEncoder(keywords=keywords)
+
+
+@pytest.mark.parametrize(
+    "top_categories, keywords, missing_values, ignore_format",
+    [
+        (None, None, "impute", False),
+        (2, {"var_A": ["XYZ"]}, "raise", True),
+        (10, {"var_A": ["X"], "var_B": ["Y", "Z"]}, "ignore", False),
+    ],
+)
+def test_init_param_assignment(top_categories, keywords, missing_values, ignore_format):
+    encoder = StringSimilarityEncoder(
+        top_categories=top_categories,
+        keywords=keywords,
+        missing_values=missing_values,
+        ignore_format=ignore_format,
+    )
+    assert encoder.top_categories == top_categories
+    assert encoder.keywords == keywords
+    assert encoder.missing_values == missing_values
+    assert encoder.ignore_format is ignore_format
+
+
+# fit and transform
 @pytest.mark.parametrize(
     "strings", [("hola", "chau"), ("hi there", "hi here"), (100, 1000)]
 )
@@ -30,9 +88,6 @@ def test_encode_top_categories(make_df, data_enc_top):
     encoder = StringSimilarityEncoder(top_categories=4)
     X = encoder.fit_transform(make_df(data_enc_top))
 
-    # test init params
-    assert encoder.top_categories == 4
-    # test fit attr
     transf = {
         "var_A_D": 9,
         "var_A_B": 11,
@@ -62,30 +117,6 @@ def test_encode_top_categories(make_df, data_enc_top):
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_B" not in result
     assert "var_B_F" not in result
-
-
-@pytest.mark.parametrize("top_cat", ["hello", 0.5, [1]])
-def test_error_if_top_categories_not_integer(top_cat):
-    with pytest.raises(ValueError):
-        StringSimilarityEncoder(top_categories=top_cat)
-
-
-@pytest.mark.parametrize(
-    "handle_missing", ["error", "propagate", ["raise"], 1, 0.1, False]
-)
-def test_error_if_handle_missing_invalid(handle_missing):
-    with pytest.raises(ValueError):
-        StringSimilarityEncoder(missing_values=handle_missing)
-
-
-@pytest.mark.parametrize("missing_vals", ["other", False, 1])
-def test_error_if_missing_values_not_recognized_in_fit(
-    missing_vals, make_df, data_enc
-):
-    enc = StringSimilarityEncoder()
-    enc.missing_values = missing_vals
-    with pytest.raises(ValueError):
-        enc.fit(make_df(data_enc))
 
 
 def test_nan_behaviour_error_fit(make_df, data_enc_big_na):
@@ -165,7 +196,8 @@ def test_string_dtype_with_literal_nan_strings():
 def test_inverse_transform_error(make_df, data_enc_big):
     encoder = StringSimilarityEncoder()
     X = encoder.fit_transform(make_df(data_enc_big))
-    with pytest.raises(NotImplementedError):
+    msg = "inverse_transform is not implemented for this transformer."
+    with pytest.raises(NotImplementedError, match=re.escape(msg)):
         encoder.inverse_transform(X)
 
 
@@ -212,10 +244,12 @@ def test_get_feature_names_out(make_df, data_enc_big):
     assert tr.get_feature_names_out(input_features=None) == out
     assert tr.get_feature_names_out(input_features=input_features) == out
 
-    with pytest.raises(ValueError):
+    msg = "input_features must be a list or an array. Got {input_features} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         tr.get_feature_names_out("var_A")
 
-    with pytest.raises(ValueError):
+    msg = "input_features is not equal to feature_names_in_"
+    with pytest.raises(ValueError, match=re.escape(msg)):
         tr.get_feature_names_out(["var_A", "hola"])
 
 
@@ -260,22 +294,11 @@ def test_get_feature_names_out_na(make_df, data_enc_big_na):
     assert tr.get_feature_names_out(input_features=input_features) == out
 
 
-@pytest.mark.parametrize("keywords", ["hello", 0.5, [1]])
-def test_keywords_bad_type(keywords):
-    with pytest.raises(ValueError):
-        StringSimilarityEncoder(keywords=keywords)
-
-
-@pytest.mark.parametrize("item", ["hello", 0.5, 1])
-def test_keywords_bad_items(item):
-    with pytest.raises(ValueError):
-        StringSimilarityEncoder(keywords={"var_A": item})
-
-
 @pytest.mark.parametrize("key", ["hello", 0.5, 1])
 def test_keywords_bad_keys(key, make_df, data_enc_big):
     encoder = StringSimilarityEncoder(keywords={key: ["A"]})
-    with pytest.raises(ValueError):
+    msg = "There are variables in keywords that are not present in the dataset."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         encoder.fit(make_df(data_enc_big))
 
 
@@ -283,9 +306,6 @@ def test_encode_partial_keywords(make_df, data_enc_top):
     encoder = StringSimilarityEncoder(top_categories=2, keywords={"var_A": ["XYZ"]})
     X = encoder.fit_transform(make_df(data_enc_top))
 
-    # test init params
-    assert encoder.top_categories == 2
-    # test fit attr
     transf = {
         "var_A_XYZ": 0,
         "var_B_A": 11,
