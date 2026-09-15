@@ -1,17 +1,41 @@
+import re
+
 import pytest
 
 from feature_engine.imputation import DropMissingData
-from tests.backend_helpers import make_series, null_count, frame_to_dict
+from tests.backend_helpers import frame_to_dict, make_series, null_count
 
 
+# init parameters
+@pytest.mark.parametrize("missing_only", ["missing_only", 1, None])
+def test_error_when_missing_only_not_bool(missing_only):
+    msg = f"missing_only takes values True or False. Got {missing_only} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropMissingData(missing_only=missing_only)
+
+
+@pytest.mark.parametrize("threshold", [1.01, -0.01, 0, "0.5"])
+def test_error_when_threshold_not_between_0_and_1(threshold):
+    msg = f"threshold must be a value between 0 < x <= 1. Got {threshold} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropMissingData(threshold=threshold)
+
+
+@pytest.mark.parametrize(
+    "missing_only, threshold",
+    [(True, None), (False, None), (True, 0.5), (False, 1)],
+)
+def test_init_param_assignment(missing_only, threshold):
+    imputer = DropMissingData(missing_only=missing_only, threshold=threshold)
+    assert imputer.missing_only is missing_only
+    assert imputer.threshold == threshold
+
+
+# fit and transform
 def test_detect_variables_with_na(make_df, data_na_dob):
     # test case 1: automatically detect variables with missing data
     imputer = DropMissingData(missing_only=True, variables=None)
     X_transformed = imputer.fit_transform(make_df(data_na_dob))
-    # init params
-    assert imputer.missing_only is True
-    assert imputer.threshold is None
-    assert imputer.variables is None
     # fit params
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
     assert imputer.n_features_in_ == 6
@@ -59,7 +83,6 @@ def test_detect_variables_with_na_in_variables_entered_by_user(make_df, data_na_
         missing_only=True, variables=["City", "Studies", "Age", "dob"]
     )
     X_transformed = imputer.fit_transform(make_df(data_na_dob))
-    assert imputer.variables == ["City", "Studies", "Age", "dob"]
     # dob never has NA in the train set, so it's dropped from variables_
     assert imputer.variables_ == ["City", "Studies", "Age"]
     assert isinstance(X_transformed, make_df)
@@ -109,11 +132,6 @@ def test_transform_and_return_na_data_partition_input(make_df, data_na_dob):
         assert kept_age.isdisjoint(dropped_age)
 
 
-def test_error_when_missing_only_not_bool():
-    with pytest.raises(ValueError):
-        DropMissingData(missing_only="missing_only")
-
-
 def test_threshold(make_df, data_na_dob):
     df_na = make_df(data_na_dob)
 
@@ -146,17 +164,6 @@ def test_threshold(make_df, data_na_dob):
     imputer = DropMissingData(threshold=0.50, missing_only=False)
     X = imputer.fit_transform(df_na)
     assert frame_to_dict(X)["Age"] == [20, 21, 19, 23, 40, 41, 37]
-
-
-def test_threshold_value_error():
-    with pytest.raises(ValueError):
-        DropMissingData(threshold=1.01)
-
-    with pytest.raises(ValueError):
-        DropMissingData(threshold=-0.01)
-
-    with pytest.raises(ValueError):
-        DropMissingData(threshold=0)
 
 
 def test_threshold_with_variables(make_df, data_na_dob):
