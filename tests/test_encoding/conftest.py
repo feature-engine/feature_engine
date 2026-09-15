@@ -1,7 +1,7 @@
 """Data shared by the encoder tests.
 
 Each fixture returns a fresh dict, so tests can build the dataframe on the
-backend under test with ``make_df(data)``. Missing values are written as None,
+backend under test with `make_df(data)`. Missing values are written as None,
 which both pandas and polars read as missing.
 """
 

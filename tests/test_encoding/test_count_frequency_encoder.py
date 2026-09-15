@@ -6,7 +6,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import CountEncoder, CountFrequencyEncoder
-from tests.backend_helpers import null_count, to_dict
+from tests.backend_helpers import null_count, frame_to_dict
 
 DATA_VARTYPES = {
     "Name": ["tom", "nick", "krish", "jack"],
@@ -63,7 +63,7 @@ def test_encode_1_variable_with_counts(make_df, data_enc):
     assert encoder.n_features_in_ == 3
     # transform params
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var_A": [6] * 6 + [10] * 10 + [4] * 4,
         "var_B": data_enc["var_B"],
         "target": data_enc["target"],
@@ -87,7 +87,7 @@ def test_automatically_select_variables_encode_with_frequency(make_df, data_enc)
     assert encoder.n_features_in_ == 3
     # transform params
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var_A": [0.3] * 6 + [0.5] * 10 + [0.2] * 4,
         "var_B": [0.5] * 10 + [0.3] * 6 + [0.2] * 4,
         "target": data_enc["target"],
@@ -107,7 +107,7 @@ def test_encoding_when_nan_in_fit_df(make_df, data_enc):
 
     # transform params
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"var_A": [0.3, None], "var_B": [0.5, None], "target": [1, 0]}
+    assert frame_to_dict(X) == {"var_A": [0.3, None], "var_B": [0.5, None], "target": [1, 0]}
 
 
 @pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])
@@ -221,7 +221,7 @@ def test_zero_encoding_for_new_categories(make_df):
     assert null_count(result, "col2") == 0
 
     # check that the counts are correct for both new and old
-    assert to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
+    assert frame_to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
 
 
 def test_zero_encoding_for_unseen_categories_if_unseen_is_encode(make_df):
@@ -242,7 +242,7 @@ def test_zero_encoding_for_unseen_categories_if_unseen_is_encode(make_df):
     assert null_count(result, "col2") == 0
 
     # check that the counts are correct
-    assert to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
+    assert frame_to_dict(result) == {"col1": [3, 0, 1, 3, 1], "col2": [2, 2, 1, 2, 0]}
 
     # with frequency
     encoder = CountEncoder(encoding_method="frequency", unseen="encode").fit(df_fit)
@@ -254,7 +254,7 @@ def test_zero_encoding_for_unseen_categories_if_unseen_is_encode(make_df):
     assert null_count(result, "col2") == 0
 
     # check that the frequencies are correct
-    assert to_dict(result) == {
+    assert frame_to_dict(result) == {
         "col1": [0.6, 0, 0.2, 0.6, 0.2],
         "col2": [0.4, 0.4, 0.2, 0.4, 0],
     }
@@ -276,7 +276,7 @@ def test_nan_encoding_for_new_categories_if_unseen_is_ignore(make_df):
     assert null_count(result, "col2") == 1
 
     # check that the counts are correct for both new and old
-    assert to_dict(result) == {
+    assert frame_to_dict(result) == {
         "col1": [3, None, 1, 3, 1],
         "col2": [2, 2, 1, 2, None],
     }
@@ -296,7 +296,7 @@ def test_ignore_variable_format_with_frequency(make_df):
     assert encoder.n_features_in_ == 5
     # transform params
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "Name": [0.25, 0.25, 0.25, 0.25],
         "City": [0.25, 0.25, 0.25, 0.25],
         "Age": [0.25, 0.25, 0.25, 0.25],
@@ -358,7 +358,7 @@ def test_inverse_transform_when_no_unseen(make_df):
     dft = enc.transform(df)
     X = enc.inverse_transform(dft)
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"words": words}
+    assert frame_to_dict(X) == {"words": words}
 
 
 def test_inverse_transform_when_ignore_unseen(make_df):
@@ -369,7 +369,7 @@ def test_inverse_transform_when_ignore_unseen(make_df):
     dft = enc.transform(df2)
     X = enc.inverse_transform(dft)
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
+    assert frame_to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
 def test_inverse_transform_when_encode_unseen(make_df):
@@ -380,7 +380,7 @@ def test_inverse_transform_when_encode_unseen(make_df):
     dft = enc.transform(df2)
     X = enc.inverse_transform(dft)
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
+    assert frame_to_dict(X) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
 def test_inverse_transform_raises_non_fitted_error(make_df):
@@ -415,4 +415,4 @@ def test_count_frequency_encoder_is_deprecated(make_df):
     X_new = enc_new.fit_transform(X)
     assert isinstance(X_old, make_df)
     assert isinstance(X_new, make_df)
-    assert to_dict(X_old) == to_dict(X_new) == {"var_A": [6] * 6 + [2] * 2 + [2] * 2}
+    assert frame_to_dict(X_old) == frame_to_dict(X_new) == {"var_A": [6] * 6 + [2] * 2 + [2] * 2}
