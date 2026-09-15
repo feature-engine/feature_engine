@@ -6,7 +6,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import DecisionTreeEncoder
-from tests.backend_helpers import make_series, to_dict
+from tests.backend_helpers import make_series, frame_to_dict
 
 # Tree: var_A <= 1.5 -> 0.25 else 0.5
 # Tree: var_B <= 0.5 -> 0.2 else 0.4
@@ -22,7 +22,8 @@ ENCODED_REGRESSION = {
 
 def _rounded(X, decimals=6):
     return {
-        col: [round(v, decimals) for v in values] for col, values in to_dict(X).items()
+        col: [round(v, decimals) for v in values]
+        for col, values in frame_to_dict(X).items()
     }
 
 
@@ -147,7 +148,7 @@ def test_classification(make_df, data_enc):
     Xt = encoder.transform(X)
 
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == ENCODED
+    assert frame_to_dict(Xt) == ENCODED
 
 
 @pytest.mark.parametrize("to_target", [list, np.array])
@@ -161,7 +162,7 @@ def test_target_as_list_or_array(make_df, data_enc, to_target):
     Xt = encoder.transform(X)
 
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == ENCODED
+    assert frame_to_dict(Xt) == ENCODED
 
 
 def test_regression(make_df, data_enc):
@@ -219,7 +220,7 @@ def test_classification_ignore_format(make_df, data_enc_numeric):
     Xt = encoder.transform(X)
 
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == ENCODED
+    assert frame_to_dict(Xt) == ENCODED
 
 
 def test_regression_ignore_format(make_df, data_enc_numeric):
@@ -304,7 +305,7 @@ def test_unseen_is_encode(make_df, data_enc):
     Xt = encoder.transform(X_unseen_input)
 
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var_A": [0.25, -1, -1], "var_B": [0.4, -1, -1]}
+    assert frame_to_dict(Xt) == {"var_A": [0.25, -1, -1], "var_B": [0.4, -1, -1]}
 
 
 def test_unseen_is_ignore(make_df, data_enc):
@@ -323,7 +324,10 @@ def test_unseen_is_ignore(make_df, data_enc):
     Xt = encoder.transform(X_unseen_input)
 
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var_A": [0.25, None, None], "var_B": [0.4, None, None]}
+    assert frame_to_dict(Xt) == {
+        "var_A": [0.25, None, None],
+        "var_B": [0.4, None, None],
+    }
 
 
 def test_fit_errors_if_new_cat_values_and_unseen_is_raise_param(make_df, data_enc):
@@ -356,7 +360,7 @@ def test_inverse_transform_when_no_unseen(make_df):
     dft = enc.transform(X)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": words}
+    assert frame_to_dict(Xi) == {"words": words}
 
 
 def test_inverse_transform_when_ignore_unseen(make_df):
@@ -369,7 +373,9 @@ def test_inverse_transform_when_ignore_unseen(make_df):
     dft = enc.transform(df1)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": ["dog", "dog", "dog", "cat", "cat", "cat", None]}
+    assert frame_to_dict(Xi) == {
+        "words": ["dog", "dog", "dog", "cat", "cat", "cat", None]
+    }
 
 
 def test_inverse_transform_when_encode_unseen(make_df):
@@ -382,7 +388,9 @@ def test_inverse_transform_when_encode_unseen(make_df):
     dft = enc.transform(df1)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": ["dog", "dog", "dog", "cat", "cat", "cat", None]}
+    assert frame_to_dict(Xi) == {
+        "words": ["dog", "dog", "dog", "cat", "cat", "cat", None]
+    }
 
 
 def test_inverse_transform_raises_non_fitted_error(make_df):
