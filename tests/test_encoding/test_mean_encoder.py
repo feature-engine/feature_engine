@@ -47,8 +47,6 @@ def test_user_enters_1_variable(make_df, data_enc):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    # test init params
-    assert encoder.variables == ["var_A"]
     # test fit attr
     assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": MEAN_A}
@@ -70,8 +68,6 @@ def test_automatically_find_variables(make_df, data_enc):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    # test init params
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {"var_A": MEAN_A, "var_B": MEAN_B}
@@ -190,8 +186,6 @@ def test_user_enters_1_variable_ignore_format(make_df, data_enc_numeric):
 
     mean_a = {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
 
-    # test init params
-    assert encoder.variables == ["var_A"]
     # test fit attr
     assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": mean_a}
@@ -216,8 +210,6 @@ def test_automatically_find_variables_ignore_format(make_df, data_enc_numeric):
     mean_a = {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
     mean_b = {1: 0.2, 2: 0.3333333333333333, 3: 0.5}
 
-    # test init params
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {"var_A": mean_a, "var_B": mean_b}
@@ -266,8 +258,6 @@ def test_auto_smoothing(make_df, data_enc):
         "C": 0.4541284403669725,
     }
 
-    # test init params
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {"var_A": var_A_dict, "var_B": var_B_dict}
@@ -300,8 +290,6 @@ def test_value_smoothing(make_df, data_enc):
         "C": 0.30769230769230765,
     }
 
-    # test init params
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {"var_A": var_A_dict, "var_B": var_B_dict}

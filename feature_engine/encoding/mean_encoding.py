@@ -235,18 +235,18 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             )
         nw_Xy = nw_X.with_columns(y_nw)
 
+        y_prior = y_nw.mean()
+
+        if self.unseen == "encode":
+            self._unseen = y_prior
+
+        if self.smoothing == "auto":
+            y_var = y_nw.var(ddof=0)
+
         # pandas is faster than narwhals.
         if nwd.is_pandas_dataframe(X):
             # pandas series with the index of X
             y = nw_Xy[target_name].to_native()
-            y_prior = y.mean()
-
-            if self.unseen == "encode":
-                self._unseen = y_prior
-
-            if self.smoothing == "auto":
-                y_var = y.var(ddof=0)
-
             for var in variables_:
                 if self.smoothing == "auto":
                     damping = y.groupby(X[var]).var(ddof=0) / y_var
@@ -260,36 +260,22 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                     + (1.0 - _lambda) * y_prior
                 ).to_dict()
         else:
-            y_prior = y_nw.mean()
-
-            if self.unseen == "encode":
-                self._unseen = y_prior
-
-            if self.smoothing == "auto":
-                y_var = y_nw.var(ddof=0)
-
             for var in variables_:
-                aggs = [
+                stats = nw_Xy.group_by(var, drop_null_keys=True).agg(
                     nw.col(target_name).mean().alias("__mean__"),
                     nw.col(target_name).len().alias("__count__"),
-                ]
+                    nw.col(target_name).var(ddof=0).alias("__var__"),
+                )
                 if self.smoothing == "auto":
-                    aggs.append(nw.col(target_name).var(ddof=0).alias("__var__"))
-                grouped = nw_Xy.group_by(var, drop_null_keys=True).agg(*aggs)
-                stats = grouped.to_dict(as_series=False)
-
-                mapping = {}
-                for i, cat in enumerate(stats[var]):
-                    n_i = stats["__count__"][i]
-                    if self.smoothing == "auto":
-                        damping = stats["__var__"][i] / y_var
-                    else:
-                        damping = self.smoothing
-                    _lambda = n_i / (n_i + damping)
-                    mapping[cat] = (
-                        _lambda * stats["__mean__"][i] + (1.0 - _lambda) * y_prior
-                    )
-                self.encoder_dict_[var] = mapping
+                    damping = nw.col("__var__") / y_var
+                else:
+                    damping = self.smoothing
+                _lambda = nw.col("__count__") / (nw.col("__count__") + damping)
+                encoding = _lambda * nw.col("__mean__") + (1.0 - _lambda) * y_prior
+                stats = stats.select(var, encoding.alias("__encoding__"))
+                self.encoder_dict_[var] = dict(
+                    zip(stats[var].to_list(), stats["__encoding__"].to_list())
+                )
 
         # assign underscore parameters at the end in case code above fails
         self.variables_ = variables_
