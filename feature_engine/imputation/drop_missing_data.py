@@ -256,15 +256,15 @@ class DropMissingData(BaseImputer, TransformXyMixin):
             # dropna(subset=[]) keeps every row: there are no variables to
             # evaluate missingness on, so nothing can ever be "missing".
             if keep is True:
-                return X
-            if nwd.is_pandas_dataframe(X):
-                return X.iloc[:0]
+                return X.to_native()
             return X.head(0).to_native()
 
         # Benchmarked: a numpy-backed mask beats both pandas' own axis=1
         # isnull()/notna().sum() (a known-slow reduction) and the narwhals
-        # path below, so pandas keeps this dedicated fast path.
-        if nwd.is_pandas_dataframe(X):
+        # path below, so pandas keeps this dedicated fast path. X is the
+        # narwhals frame returned by check_X, so branch on its implementation.
+        if X.implementation.is_pandas():
+            X = X.to_native()
             if self.threshold is not None:
                 non_null_count = X[self.variables_].notna().to_numpy().sum(axis=1)
                 mask = non_null_count >= len(self.variables_) * self.threshold

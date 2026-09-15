@@ -173,16 +173,23 @@ class EndTailImputer(BaseImputer):
         return_empty: bool = False,
     ) -> None:
 
-        if imputation_method not in ["gaussian", "iqr", "max"]:
+        if not isinstance(imputation_method, str) or imputation_method not in [
+            "gaussian",
+            "iqr",
+            "max",
+        ]:
             raise ValueError(
-                "imputation_method takes only values 'gaussian', 'iqr' or 'max'"
+                "imputation_method takes only values 'gaussian', 'iqr' or 'max'. "
+                f"Got {imputation_method} instead."
             )
 
-        if tail not in ["right", "left"]:
-            raise ValueError("tail takes only values 'right' or 'left'")
+        if not isinstance(tail, str) or tail not in ["right", "left"]:
+            raise ValueError(
+                f"tail takes only values 'right' or 'left'. Got {tail} instead."
+            )
 
-        if fold <= 0:
-            raise ValueError("fold takes only positive numbers")
+        if not isinstance(fold, (int, float)) or isinstance(fold, bool) or fold <= 0:
+            raise ValueError(f"fold takes only positive numbers. Got {fold} instead.")
 
         self.imputation_method = imputation_method
         self.tail = tail

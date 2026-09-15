@@ -148,13 +148,26 @@ class CategoricalImputer(BaseImputer):
         return_object: bool = False,
         ignore_format: bool = False,
     ) -> None:
-        if imputation_method not in ["missing", "frequent"]:
+        if not isinstance(imputation_method, str) or imputation_method not in [
+            "missing",
+            "frequent",
+        ]:
             raise ValueError(
-                "imputation_method takes only values 'missing' or 'frequent'"
+                "imputation_method takes only values 'missing' or 'frequent'. "
+                f"Got {imputation_method} instead."
             )
 
         if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
+            raise ValueError(
+                "ignore_format takes only booleans True and False. "
+                f"Got {ignore_format} instead."
+            )
+
+        if not isinstance(return_object, bool):
+            raise ValueError(
+                "return_object takes only booleans True and False. "
+                f"Got {return_object} instead."
+            )
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value

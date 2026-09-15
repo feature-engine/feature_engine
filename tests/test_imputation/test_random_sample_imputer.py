@@ -1,119 +1,116 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import narwhals as nw
+import re
+
+import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
 
 from feature_engine.imputation import RandomSampleImputer
-from feature_engine.imputation.random_sample import _define_seed
-
-DATA = {
-    "Name": ["tom", "nick", "krish", None, "peter", None, "fred", "sam"],
-    "City": [
-        "London",
-        "Manchester",
-        None,
-        None,
-        "London",
-        "London",
-        "Bristol",
-        "Manchester",
-    ],
-    "Studies": [
-        "Bachelor",
-        "Bachelor",
-        None,
-        None,
-        "Bachelor",
-        "PhD",
-        "None",
-        "Masters",
-    ],
-    "Age": [20, 21, 19, None, 23, 40, 41, 37],
-    "Marks": [0.9, 0.8, 0.7, None, 0.3, None, 0.8, 0.6],
-}
+from feature_engine.imputation.random_sample import _hash_seeds
+from tests.backend_helpers import frame_to_dict, null_count
 
 
-def _null_count(X, col):
-    return nw.from_native(X, eager_only=True)[col].null_count()
+# init parameters
+@pytest.mark.parametrize(
+    "seed", ["arbitrary", "both", 1, None, ("general",), ["observation"]]
+)
+def test_error_if_seed_not_permitted_value(seed):
+    msg = f"seed takes only values 'general' or 'observation'. Got {seed} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RandomSampleImputer(seed=seed)
 
 
-def _values(X, col):
-    return nw.from_native(X, eager_only=True)[col].to_list()
-
-
-def _pool(X, col):
-    # values available for the imputer to sample from, in the copy of the
-    # training data it stores at fit()
-    return set(nw.from_native(X, eager_only=True)[col].drop_nulls().to_list())
-
-
-def _is_missing(v):
-    return v is None or (isinstance(v, float) and v != v)
-
-
-def _same_values(a, b):
-    # element-wise equality that treats None and float NaN as equal missing
-    # markers, since pandas' NaN and polars'/narwhals' None represent the
-    # same "missing" concept but compare unequal with plain `==`.
-    return len(a) == len(b) and all(
-        (_is_missing(x) and _is_missing(y)) or x == y for x, y in zip(a, b)
+@pytest.mark.parametrize("random_state", ["arbitrary", 0.5, ["Age"]])
+def test_error_if_random_state_not_integer_when_seed_is_general(random_state):
+    msg = (
+        "if seed == 'general' then random_state must take an integer. "
+        f"Got {random_state} instead."
     )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RandomSampleImputer(seed="general", random_state=random_state)
 
 
-def test_define_seed(df_vartypes):
-    # _define_seed uses pandas' .loc label-based row access, so it is only
-    # ever called from the pandas branch of transform() - it is inherently
-    # pandas-only, unlike the rest of the transformer.
-    assert _define_seed(df_vartypes, 0, ["Age", "Marks"], how="add") == 21
-    assert _define_seed(df_vartypes, 0, ["Age", "Marks"], how="multiply") == 18
-    assert _define_seed(df_vartypes, 2, ["Age", "Marks"], how="add") == 20
-    assert _define_seed(df_vartypes, 2, ["Age", "Marks"], how="multiply") == 13
-    assert _define_seed(df_vartypes, 1, ["Age"], how="add") == 21
-    assert _define_seed(df_vartypes, 3, ["Marks"], how="multiply") == 1
+@pytest.mark.parametrize("random_state", [None, [], ""])
+def test_error_if_random_state_is_empty_when_seed_is_observation(random_state):
+    msg = (
+        "if seed == 'observation' the random state must take the name of one "
+        "or more variables which will be used to seed the imputer. "
+        f"Got {random_state} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RandomSampleImputer(seed="observation", random_state=random_state)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_general_seed_plus_automatically_select_variables(make_df):
-    df_na = make_df(DATA)
+@pytest.mark.parametrize(
+    "random_state, seed",
+    [
+        (None, "general"),
+        (5, "general"),
+        ("Age", "observation"),
+        (["Age", "Marks"], "observation"),
+    ],
+)
+def test_init_param_assignment(random_state, seed):
+    imputer = RandomSampleImputer(random_state=random_state, seed=seed)
+    assert imputer.random_state == random_state
+    assert imputer.seed == seed
+
+
+# fit and transform
+def test_hash_seeds():
+    values = np.array(
+        [
+            [25, 0.7],
+            [25.0, 0.7],
+            [0.0, 0.7],
+            [np.nan, 0.7],
+            [-0.0, 0.7],
+            [-30.0, 1e20],
+        ]
+    )
+    seeds = _hash_seeds(values)
+
+    # same values, same seed: ints and floats are equal, nan and -0.0 count as 0
+    assert seeds[0] == seeds[1]
+    assert seeds[2] == seeds[3] == seeds[4]
+    assert seeds[0] != seeds[2]
+    # negative and large values give valid numpy seeds
+    assert all(0 <= seed < 2**32 for seed in seeds)
+    # the seed must not change between sessions or releases
+    assert _hash_seeds(np.array([[25.0, 0.7]]))[0] == 2067629302
+
+
+def test_general_seed_plus_automatically_select_variables(make_df, data_na):
+    df_na = make_df(data_na)
     imputer = RandomSampleImputer(variables=None, random_state=5, seed="general")
     X_transformed = imputer.fit_transform(df_na)
-
-    # test init params
-    assert imputer.variables is None
-    assert imputer.random_state == 5
-    assert imputer.seed == "general"
 
     # test fit attrs
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
     assert imputer.n_features_in_ == 5
-    for col in imputer.variables_:
-        assert _same_values(_values(imputer.X_, col), _values(df_na, col))
+    assert frame_to_dict(imputer.X_) == frame_to_dict(df_na)
 
-    # no missing data left in any imputed variable
+    # no missing data left in any imputed variable, and every value used to
+    # fill NA came from the training data itself
+    assert isinstance(X_transformed, make_df)
+    result = frame_to_dict(X_transformed)
     for col in imputer.variables_:
-        assert _null_count(X_transformed, col) == 0
-        # every value used to fill NA came from the training data itself
-        assert set(_values(X_transformed, col)) <= _pool(df_na, col)
+        assert null_count(X_transformed, col) == 0
+        assert set(result[col]) <= {v for v in data_na[col] if v is not None}
 
-    # pandas' and narwhals/polars' sample() use different RNGs, so a fixed
-    # seed does not draw the same values across backends - only same seed +
-    # same backend is a reproducibility guarantee. Verify that guarantee.
+    # pandas and polars draw different values for the same seed, so we only check
+    # that the same seed on the same backend gives the same result.
     imputer2 = RandomSampleImputer(variables=None, random_state=5, seed="general")
     X_transformed2 = imputer2.fit_transform(df_na)
-    for col in imputer.variables_:
-        assert _values(X_transformed, col) == _values(X_transformed2, col)
+    assert frame_to_dict(X_transformed) == frame_to_dict(X_transformed2)
 
 
 def test_pandas_general_seed_reproduces_historic_values(df_na):
-    # Regression guard for the pandas fast-path specifically: transform()'s
-    # pandas branch is untouched code (still pandas' own .sample()/.loc), so
-    # for a fixed seed it must keep drawing the exact same values it drew
-    # before this narwhals migration. These literal values are inherently
-    # pandas-RNG-specific (see class docstring) and cannot be reproduced by
-    # any other backend, so this check is legitimately pandas-only.
+    # pandas only: with a fixed seed, pandas must return the same values as before
+    # the narwhals migration. polars uses a different random number generator.
     imputer = RandomSampleImputer(variables=None, random_state=5, seed="general")
     X_transformed = imputer.fit_transform(df_na)
 
@@ -148,128 +145,158 @@ def test_pandas_general_seed_reproduces_historic_values(df_na):
     pd.testing.assert_frame_equal(X_transformed, ref, check_dtype=False)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_seed_per_observation_and_multiple_variables_in_random_state(make_df):
-    # Note: the variables used as seed should not have missing data, this I fill
-    data = dict(DATA)
-    data["Marks"] = [v if v is not None else 1 for v in data["Marks"]]
-    data["Age"] = [v if v is not None else 1 for v in data["Age"]]
+def _data_without_na_in(data, columns):
+    # the variables used as seed should not have missing data
+    data = dict(data)
+    for col in columns:
+        data[col] = [v if v is not None else 1 for v in data[col]]
+    return data
+
+
+@pytest.mark.parametrize("random_state", [["Marks", "Age"], "Age"])
+def test_seed_per_observation(make_df, data_na, random_state):
+    seed_vars = [random_state] if isinstance(random_state, str) else random_state
+    data = _data_without_na_in(data_na, seed_vars)
     df_na = make_df(data)
 
     imputer = RandomSampleImputer(
-        variables=["City", "Studies"], random_state=["Marks", "Age"], seed="observation"
+        variables=["City", "Studies"],
+        random_state=random_state,
+        seed="observation",
     )
     X_transformed = imputer.fit_transform(df_na)
 
-    assert imputer.variables == ["City", "Studies"]
-    assert imputer.random_state == ["Marks", "Age"]
-    assert imputer.seed == "observation"
+    # fit() turns a single seeding variable name into a list
+    assert imputer.random_state == seed_vars
+    assert isinstance(X_transformed, make_df)
+    result = frame_to_dict(X_transformed)
     for col in ["City", "Studies"]:
-        assert _same_values(_values(imputer.X_, col), _values(df_na, col))
-        assert _null_count(X_transformed, col) == 0
-        assert set(_values(X_transformed, col)) <= _pool(df_na, col)
+        assert frame_to_dict(imputer.X_)[col] == data[col]
+        assert null_count(X_transformed, col) == 0
+        assert set(result[col]) <= {v for v in data[col] if v is not None}
     # variables not selected for imputation are untouched
-    assert _same_values(_values(X_transformed, "Age"), _values(df_na, "Age"))
+    assert result["Age"] == data["Age"]
 
     # same seed, same backend -> same result
     imputer2 = RandomSampleImputer(
-        variables=["City", "Studies"], random_state=["Marks", "Age"], seed="observation"
-    )
-    X_transformed2 = imputer2.fit_transform(df_na)
-    for col in ["City", "Studies"]:
-        assert _values(X_transformed, col) == _values(X_transformed2, col)
-
-
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_seed_per_observation_plus_product_of_seeding_variables(make_df):
-    data = dict(DATA)
-    data["Marks"] = [v if v is not None else 1 for v in data["Marks"]]
-    data["Age"] = [v if v is not None else 1 for v in data["Age"]]
-    df_na = make_df(data)
-
-    imputer = RandomSampleImputer(
         variables=["City", "Studies"],
-        random_state=["Marks", "Age"],
+        random_state=random_state,
         seed="observation",
-        seeding_method="multiply",
-    )
-    X_transformed = imputer.fit_transform(df_na)
-
-    assert imputer.variables == ["City", "Studies"]
-    assert imputer.random_state == ["Marks", "Age"]
-    assert imputer.seed == "observation"
-    for col in ["City", "Studies"]:
-        assert _same_values(_values(imputer.X_, col), _values(df_na, col))
-        assert _null_count(X_transformed, col) == 0
-        assert set(_values(X_transformed, col)) <= _pool(df_na, col)
-
-    imputer2 = RandomSampleImputer(
-        variables=["City", "Studies"],
-        random_state=["Marks", "Age"],
-        seed="observation",
-        seeding_method="multiply",
     )
     X_transformed2 = imputer2.fit_transform(df_na)
-    for col in ["City", "Studies"]:
-        assert _values(X_transformed, col) == _values(X_transformed2, col)
+    assert frame_to_dict(X_transformed) == frame_to_dict(X_transformed2)
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_seed_per_observation_with_only_1_variable_as_seed(make_df):
-    data = dict(DATA)
-    data["Age"] = [v if v is not None else 1 for v in data["Age"]]
-    df_na = make_df(data)
+DATA_SEED_TRAIN = {
+    "City": ["London", "Manchester", "Bristol", "Leeds", "York", "Bath", "Hull"],
+    "Age": [20.0, 21.0, 19.0, 23.0, 40.0, 41.0, 37.0],
+    "Marks": [0.9, 0.8, 0.7, 0.3, 0.6, 0.8, 0.5],
+}
+# rows 0 and 3 have identical seeding values and City missing
+DATA_SEED_TEST = {
+    "City": [None, "Leeds", None, None, None],
+    "Age": [25.0, 30.0, 40.0, 25.0, 33.0],
+    "Marks": [0.7, 0.4, 0.6, 0.7, 0.2],
+}
 
+
+def test_seed_per_observation_imputes_identical_rows_equally(make_df):
     imputer = RandomSampleImputer(
-        variables=["City", "Studies"], random_state="Age", seed="observation"
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
     )
-    X_transformed = imputer.fit_transform(df_na)
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X_transformed = imputer.transform(make_df(DATA_SEED_TEST))
 
-    assert imputer.random_state == ["Age"]
-    for col in ["City", "Studies"]:
-        assert _same_values(_values(imputer.X_, col), _values(df_na, col))
-        assert _null_count(X_transformed, col) == 0
-        assert set(_values(X_transformed, col)) <= _pool(df_na, col)
+    city = frame_to_dict(X_transformed)["City"]
+    assert city[0] == city[3]
 
-    imputer2 = RandomSampleImputer(
-        variables=["City", "Studies"], random_state="Age", seed="observation"
+
+def test_seed_per_observation_does_not_depend_on_row_position(make_df):
+    imputer = RandomSampleImputer(
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
     )
-    X_transformed2 = imputer2.fit_transform(df_na)
-    for col in ["City", "Studies"]:
-        assert _values(X_transformed, col) == _values(X_transformed2, col)
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X = make_df(DATA_SEED_TEST)
+    expected = frame_to_dict(imputer.transform(X))["City"]
+
+    # same rows in reverse order
+    X_reversed = make_df({k: v[::-1] for k, v in DATA_SEED_TEST.items()})
+    reversed_city = frame_to_dict(imputer.transform(X_reversed))["City"]
+    assert reversed_city == expected[::-1]
+
+    # each row imputed on its own
+    for i in range(len(expected)):
+        row_city = frame_to_dict(imputer.transform(X[i:i + 1]))["City"]
+        assert row_city == [expected[i]]
 
 
-def test_error_if_seed_not_permitted_value():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seed="arbitrary")
+def test_seed_per_observation_with_negative_and_large_seeding_values(make_df):
+    imputer = RandomSampleImputer(
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X = make_df(
+        {
+            "City": [None, None, "Leeds"],
+            "Age": [-30.0, 1e20, 20.0],
+            "Marks": [0.1, 1e20, 0.9],
+        }
+    )
+    X_transformed = imputer.transform(X)
+
+    assert isinstance(X_transformed, make_df)
+    assert null_count(X_transformed, "City") == 0
+    assert set(frame_to_dict(X_transformed)["City"]) <= set(DATA_SEED_TRAIN["City"])
 
 
-def test_error_if_seeding_method_not_permitted_value():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seeding_method="arbitrary")
+def test_seed_per_observation_uses_values_before_imputation_with_missing_as_zero(
+    make_df,
+):
+    # Age is imputed and also seeds City: row 0 (Age missing) must seed like
+    # row 1 (Age 0), not with its imputed Age.
+    imputer = RandomSampleImputer(
+        variables=["Age", "City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X = make_df(
+        {
+            "City": [None, None, "Leeds"],
+            "Age": [None, 0.0, 30.0],
+            "Marks": [0.7, 0.7, 0.4],
+        }
+    )
+    X_transformed = imputer.transform(X)
+
+    result = frame_to_dict(X_transformed)
+    assert null_count(X_transformed, "Age") == 0
+    assert result["City"][0] == result["City"][1]
 
 
-def test_error_if_random_state_takes_not_permitted_value():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seed="general", random_state="arbitrary")
+def test_seed_per_observation_with_duplicated_index():
+    # pandas only: polars has no index
+    imputer = RandomSampleImputer(
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(pd.DataFrame(DATA_SEED_TRAIN))
+    X = pd.DataFrame(DATA_SEED_TEST)
+    expected = frame_to_dict(imputer.transform(X))["City"]
+
+    X.index = [0, 0, 1, 1, 2]
+    assert frame_to_dict(imputer.transform(X))["City"] == expected
 
 
-def test_error_if_random_state_is_none_when_seed_is_observation():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seed="observation", random_state=None)
+def test_error_if_random_state_variables_not_in_dataframe(make_df, data_na):
+    imputer = RandomSampleImputer(seed="observation", random_state="arbitrary")
+    msg = (
+        "There are variables assigned as random state which are not part "
+        "of the training dataframe. Got arbitrary instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        imputer.fit(make_df(data_na))
 
 
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_error_if_random_state_is_string(make_df):
-    df_na = make_df(DATA)
-    with pytest.raises(ValueError):
-        imputer = RandomSampleImputer(seed="observation", random_state="arbitrary")
-        imputer.fit(df_na)
-
-
-@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-def test_variables_cast_as_category(make_df):
-    df_na = make_df(DATA)
+def test_variables_cast_as_category(make_df, data_na):
+    df_na = make_df(data_na)
     if make_df is pd.DataFrame:
         df_na["City"] = df_na["City"].astype("category")
     else:
@@ -280,5 +307,7 @@ def test_variables_cast_as_category(make_df):
 
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
     assert imputer.n_features_in_ == 5
-    assert _null_count(X_transformed, "City") == 0
-    assert set(_values(X_transformed, "City")) <= _pool(df_na, "City")
+    assert isinstance(X_transformed, make_df)
+    assert null_count(X_transformed, "City") == 0
+    city_pool = {v for v in data_na["City"] if v is not None}
+    assert set(frame_to_dict(X_transformed)["City"]) <= city_pool

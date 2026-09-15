@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import hashlib
 from typing import List, Optional, Union
 
 import narwhals.dependencies as nwd
@@ -32,21 +33,27 @@ from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
 
 
-# for RandomSampleImputer
-def _define_seed(
-    X: IntoDataFrame,
-    index: int,
-    seed_variables: Union[str, int, List[Union[str, int]]],
-    how: str = "add",
-) -> int:
-    # Pandas-only: relies on .loc label-based row access, so it is only
-    # called from the pandas branch of transform(), where X is already
-    # confirmed to be a pandas dataframe.
-    if how == "add":
-        internal_seed = int(np.round(X.loc[index, seed_variables].sum(), 0))
-    elif how == "multiply":
-        internal_seed = int(np.round(X.loc[index, seed_variables].product(), 0))
-    return internal_seed
+def _hash_seeds(values) -> np.ndarray:
+    """Return one seed per row, in [0, 2**32), derived from the row's values.
+
+    Rows with the same values get the same seed, regardless of their position.
+    Values are compared as floats (25 and 25.0 are equal) and missing values
+    count as 0. hashlib, unlike hash(), gives the same seed in every session.
+    """
+    values = np.asarray(values, dtype="float64")
+    values = values.reshape(len(values), -1)
+    # + 0.0 turns -0.0 into 0.0, so both give the same bytes
+    values = np.where(np.isnan(values), 0.0, values) + 0.0
+    values = np.ascontiguousarray(values, dtype="<f8")
+    return np.array(
+        [
+            int.from_bytes(
+                hashlib.blake2b(row.tobytes(), digest_size=4).digest(), "little"
+            )
+            for row in values
+        ],
+        dtype=np.int64,
+    )
 
 
 @Substitution(
@@ -93,14 +100,11 @@ class RandomSampleImputer(BaseImputer):
         **'general'**: one seed will be used to impute the entire dataframe. This is
         equivalent to setting the seed in pandas.sample(random_state).
 
-        **'observation'**: the seed will be set for each observation using the values
+        **'observation'**: the seed will be set for each observation from the values
         of the variables indicated in the random_state for that particular
-        observation.
-
-    seeding_method: str, default='add'
-        If more than one variable is indicated to seed the random sampling per
-        observation, you can choose to combine those values as an addition or a
-        multiplication. Can take the values 'add' or 'multiply'.
+        observation. Observations with the same values in those variables receive
+        the same imputation, regardless of their position in the dataframe.
+        Missing values in those variables are treated as 0.
 
     Attributes
     ----------
@@ -172,25 +176,26 @@ class RandomSampleImputer(BaseImputer):
         return_empty: bool = False,
         random_state: Union[None, int, str, List[Union[str, int]]] = None,
         seed: str = "general",
-        seeding_method: str = "add",
     ) -> None:
 
-        if seed not in ["general", "observation"]:
-            raise ValueError("seed takes only values 'general' or 'observation'")
-
-        if seeding_method not in ["add", "multiply"]:
-            raise ValueError("seeding_method takes only values 'add' or 'multiply'")
+        if not isinstance(seed, str) or seed not in ["general", "observation"]:
+            raise ValueError(
+                "seed takes only values 'general' or 'observation'. "
+                f"Got {seed} instead."
+            )
 
         if seed == "general" and random_state:
             if not isinstance(random_state, int):
                 raise ValueError(
-                    "if seed == 'general' then random_state must take an integer"
+                    "if seed == 'general' then random_state must take an integer. "
+                    f"Got {random_state} instead."
                 )
 
         if seed == "observation" and not random_state:
             raise ValueError(
                 "if seed == 'observation' the random state must take the name of one "
-                "or more variables which will be used to seed the imputer"
+                "or more variables which will be used to seed the imputer. "
+                f"Got {random_state} instead."
             )
 
         self.variables = _check_variables_input_value(variables)
@@ -200,7 +205,6 @@ class RandomSampleImputer(BaseImputer):
 
         self.random_state = random_state
         self.seed = seed
-        self.seeding_method = seeding_method
 
     def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
@@ -244,7 +248,7 @@ class RandomSampleImputer(BaseImputer):
             ):
                 raise ValueError(
                     "There are variables assigned as random state which are not part "
-                    "of the training dataframe."
+                    f"of the training dataframe. Got {self.random_state} instead."
                 )
             self.random_state = random_state
 
@@ -308,26 +312,21 @@ class RandomSampleImputer(BaseImputer):
 
         # random sampling observation per observation
         elif self.seed == "observation" and self.random_state:
+            # seeds come from the values before any variable is imputed; rows are
+            # addressed by position, so duplicated index labels don't matter
+            seeds = _hash_seeds(X[self.random_state].to_numpy())
             for feature in self.variables_:
-                if X[feature].isnull().sum() > 0:
-
-                    # loop over each observation with missing data
-                    for i in X[X[feature].isnull()].index:
-                        # find the seed using additional variables
-                        internal_seed = _define_seed(
-                            X, i, self.random_state, how=self.seeding_method
-                        )
-
-                        # extract 1 value at random
-                        random_sample = (
-                            self.X_[feature]
-                            .dropna()
-                            .sample(1, replace=True, random_state=internal_seed)
-                        )
-                        random_sample = random_sample.values[0]
-
-                        # replace the missing data point
-                        X.loc[i, feature] = random_sample
+                is_null = X[feature].isnull().to_numpy()
+                if is_null.any():
+                    pool = self.X_[feature].dropna()
+                    positions = np.flatnonzero(is_null)
+                    random_values = [
+                        pool.sample(
+                            1, replace=True, random_state=int(seeds[pos])
+                        ).iloc[0]
+                        for pos in positions
+                    ]
+                    X.iloc[positions, X.columns.get_loc(feature)] = random_values
         return X
 
     def _transform_narwhals(self, X):
@@ -351,15 +350,8 @@ class RandomSampleImputer(BaseImputer):
                     X = X.with_columns(col.scatter(positions, random_sample))
 
         elif self.seed == "observation" and self.random_state:
-            # Vectorized stand-in for pandas' .loc-based per-row seed lookup:
-            # narwhals dataframes are positional (no row labels), so the seed
-            # for every row is computed up-front with numpy instead of in a
-            # per-row .loc lookup.
-            seed_values = X.select(self.random_state).to_numpy()
-            if self.seeding_method == "add":
-                internal_seeds = np.round(seed_values.sum(axis=1), 0).astype(int)
-            else:
-                internal_seeds = np.round(seed_values.prod(axis=1), 0).astype(int)
+            # seeds come from the values before any variable is imputed
+            internal_seeds = _hash_seeds(X.select(self.random_state).to_numpy())
 
             for feature in self.variables_:
                 col = X[feature]

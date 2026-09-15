@@ -142,7 +142,10 @@ class MissingIndicator(BaseImputer):
     ) -> None:
 
         if not isinstance(missing_only, bool):
-            raise ValueError("missing_only takes values True or False")
+            raise ValueError(
+                "missing_only takes values True or False. "
+                f"Got {missing_only} instead."
+            )
 
         self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
