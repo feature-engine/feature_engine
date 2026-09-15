@@ -30,7 +30,11 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.encoding._helper_functions import (
+    TARGET_NAME,
+    add_target_to_X,
+    check_parameter_unseen,
+)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -225,16 +229,8 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         self.encoder_dict_ = {}
 
-        # pair y with X by position, so list, array and series targets all work
-        target_name = "__feature_engine_mean_target__"
-        if nwd.is_into_series(y):
-            y_nw = nw.from_native(y, series_only=True).alias(target_name)
-        else:
-            y_nw = nw.new_series(
-                name=target_name, values=y, backend=nw_X.implementation
-            )
-        nw_Xy = nw_X.with_columns(y_nw)
-
+        nw_Xy = add_target_to_X(nw_X, y)
+        y_nw = nw_Xy[TARGET_NAME]
         y_prior = y_nw.mean()
 
         if self.unseen == "encode":
@@ -246,7 +242,7 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         # pandas is faster than narwhals.
         if nwd.is_pandas_dataframe(X):
             # pandas series with the index of X
-            y = nw_Xy[target_name].to_native()
+            y = y_nw.to_native()
             for var in variables_:
                 if self.smoothing == "auto":
                     damping = y.groupby(X[var]).var(ddof=0) / y_var
@@ -262,9 +258,9 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         else:
             for var in variables_:
                 stats = nw_Xy.group_by(var, drop_null_keys=True).agg(
-                    nw.col(target_name).mean().alias("__mean__"),
-                    nw.col(target_name).len().alias("__count__"),
-                    nw.col(target_name).var(ddof=0).alias("__var__"),
+                    nw.col(TARGET_NAME).mean().alias("__mean__"),
+                    nw.col(TARGET_NAME).len().alias("__count__"),
+                    nw.col(TARGET_NAME).var(ddof=0).alias("__var__"),
                 )
                 if self.smoothing == "auto":
                     damping = nw.col("__var__") / y_var

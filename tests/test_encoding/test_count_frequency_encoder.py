@@ -18,13 +18,16 @@ DATA_VARTYPES = {
 
 
 # init parameters
-@pytest.mark.parametrize("enc_method", ["arbitrary", False, 1])
+@pytest.mark.parametrize(
+    "enc_method",
+    ["arbitrary", "Count", "", False, 1, None, ["count"], ("frequency",)],
+)
 def test_error_if_encoding_method_not_permitted_value(enc_method):
     msg = (
         "encoding_method takes only values 'count' and 'frequency'. "
         f"Got {enc_method} instead."
     )
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(ValueError, match=re.escape(msg)):
         CountEncoder(encoding_method=enc_method)
 
 
@@ -337,18 +340,27 @@ def test_inverse_transform_when_encode_unseen(make_df):
 def test_inverse_transform_raises_non_fitted_error(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     enc = CountEncoder()
+    msg = (
+        "This CountEncoder instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
+    msg_na = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1)
 
     df1_na = make_df({"words": ["dog", "dog", "cat", "cat", "cat", None]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape(msg_na)):
         enc.fit(df1_na)
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1_na)
 
 
