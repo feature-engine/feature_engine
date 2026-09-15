@@ -164,7 +164,7 @@ class GetFeatureNamesOutMixin:
             else:
                 raise ValueError(
                     "input_features must be a list or an array. "
-                    "Got {input_features} instead."
+                    f"Got {input_features} instead."
                 )
 
         feature_names = self.feature_names_in_

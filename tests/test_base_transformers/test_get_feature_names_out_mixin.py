@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -155,10 +157,12 @@ def test_raise_error_when_input_feature_non_permitted():
     with pytest.raises(ValueError, match="feature_names_in_"):
         transformer.get_feature_names_out(input_features=np.array(["Name", "Age"]))
 
-    with pytest.raises(ValueError, match="list or an array"):
+    msg = "input_features must be a list or an array. Got var1 instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.get_feature_names_out(input_features="var1")
 
-    with pytest.raises(ValueError, match="list or an array"):
+    msg = "input_features must be a list or an array. Got True instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.get_feature_names_out(input_features=True)
 
 
