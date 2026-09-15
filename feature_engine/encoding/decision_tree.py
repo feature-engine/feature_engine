@@ -4,7 +4,6 @@
 from typing import Dict, List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from joblib import Parallel, delayed
 from narwhals.typing import IntoDataFrame, IntoSeries
@@ -31,7 +30,11 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
-from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.encoding._helper_functions import (
+    TARGET_NAME,
+    add_target_to_X,
+    check_parameter_unseen,
+)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -263,7 +266,10 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         n_jobs: Optional[int] = None,
     ) -> None:
 
-        if encoding_method not in ["ordered", "arbitrary"]:
+        if not isinstance(encoding_method, str) or encoding_method not in [
+            "ordered",
+            "arbitrary",
+        ]:
             raise ValueError(
                 "`encoding_method` takes only values 'ordered' and 'arbitrary'."
                 f" Got {encoding_method} instead."
@@ -337,24 +343,11 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             self._get_feature_names_in(X)
             return self
 
-        # only needed for "ordered": pairs the target with X once so every
-        # variable's group_by below can reuse it, instead of rebuilding it
-        # per variable.
-        nw_Xy = None
-        target_name = "__feature_engine_decision_tree_target__"
-        if self.encoding_method == "ordered":
-            if nwd.is_into_series(y):
-                y_nw = nw.from_native(y, series_only=True).alias(target_name)
-            else:
-                y_nw = nw.new_series(
-                    name=target_name, values=y, backend=nw_X.implementation
-                )
-            nw_Xy = nw_X.with_columns(y_nw)
+        # the target is only needed to order the categories
+        nw_Xy = add_target_to_X(nw_X, y) if self.encoding_method == "ordered" else None
 
         mappings = Parallel(n_jobs=self.n_jobs, prefer="threads")(
-            delayed(self._fit_one_variable)(
-                nw_X, nw_Xy, var, y, target_name, param_grid
-            )
+            delayed(self._fit_one_variable)(nw_X, nw_Xy, var, y, param_grid)
             for var in variables_
         )
 
@@ -387,20 +380,18 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         return X
 
     def _fit_one_variable(
-        self, nw_X, nw_Xy, var, y: IntoSeries, target_name: str, param_grid: Dict
+        self, nw_X, nw_Xy, var, y: IntoSeries, param_grid: Dict
     ) -> Dict:
         """Learn the category-to-prediction mapping for one variable: encode its
         categories to ordinal integers, fit a decision tree on those integers, and
         predict on each unique category to get its final mapped value."""
         if self.encoding_method == "ordered":
-            # sort by (mean, category): group_by's own order isn't guaranteed
-            # across backends, and this tie-break on the category itself
-            # reproduces pandas' groupby(sort=True) + stable sort_values
-            # behavior for categories with equal target means.
+            # sort by mean, then category, so ties get the same order
+            # in every backend
             categories = (
                 nw_Xy.group_by(var, drop_null_keys=True)
-                .agg(nw.col(target_name).mean())
-                .sort([target_name, var])
+                .agg(nw.col(TARGET_NAME).mean())
+                .sort([TARGET_NAME, var])
                 .get_column(var)
                 .to_list()
             )
