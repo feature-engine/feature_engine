@@ -6,7 +6,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import OrdinalEncoder
-from tests.backend_helpers import make_series, to_dict
+from tests.backend_helpers import make_series, frame_to_dict
 
 MSG_NA = (
     "Some of the variables in the dataset contain NaN. Check and "
@@ -33,7 +33,7 @@ def test_ordered_encoding_1_variable(make_df, data_enc):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [1] * 6 + [0] * 10 + [2] * 4,
         "var_B": data_enc["var_B"],
     }
@@ -51,7 +51,7 @@ def test_ordered_encoding_with_target_as_list_or_array(make_df, data_enc, to_tar
 
     assert encoder.encoder_dict_ == {"var_A": {"A": 1, "B": 0, "C": 2}}
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [1] * 6 + [0] * 10 + [2] * 4,
         "var_B": data_enc["var_B"],
     }
@@ -74,7 +74,7 @@ def test_arbitrary_encoding_automatically_find_variables(make_df, data_enc):
     assert encoder.n_features_in_ == 3
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [0] * 6 + [1] * 10 + [2] * 4,
         "var_B": [0] * 10 + [1] * 6 + [2] * 4,
         "target": data_enc["target"],
@@ -95,13 +95,13 @@ def test_encoding_when_nan_in_fit_df(make_df, data_enc):
     encoder.fit(X)
     Xt = encoder.transform(X_new)
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var_A": [0, None], "var_B": [0, None]}
+    assert frame_to_dict(Xt) == {"var_A": [0, None], "var_B": [0, None]}
 
     encoder = OrdinalEncoder(encoding_method="ordered", missing_values="ignore")
     encoder.fit(X, y)
     Xt = encoder.transform(X_new)
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var_A": [1, None], "var_B": [0, None]}
+    assert frame_to_dict(Xt) == {"var_A": [1, None], "var_B": [0, None]}
 
 
 @pytest.mark.parametrize("enc_method", ["other", False, 1])
@@ -182,7 +182,7 @@ def test_ordered_encoding_1_variable_ignore_format(make_df, data_enc_numeric):
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [1] * 6 + [0] * 10 + [2] * 4,
         "var_B": data_enc_numeric["var_B"],
     }
@@ -210,7 +210,7 @@ def test_arbitrary_encoding_automatically_find_variables_ignore_format(
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": [0] * 6 + [1] * 10 + [2] * 4,
         "var_B": [0] * 10 + [1] * 6 + [2] * 4,
     }
@@ -249,7 +249,7 @@ def test_inverse_transform_when_no_unseen(make_df):
     dft = enc.transform(df)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": words}
+    assert frame_to_dict(Xi) == {"words": words}
 
 
 def test_inverse_transform_when_ignore_unseen(make_df):
@@ -260,7 +260,7 @@ def test_inverse_transform_when_ignore_unseen(make_df):
     dft = enc.transform(df2)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
+    assert frame_to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
 def test_inverse_transform_when_encode_unseen(make_df):
@@ -271,7 +271,7 @@ def test_inverse_transform_when_encode_unseen(make_df):
     dft = enc.transform(df2)
     Xi = enc.inverse_transform(dft)
     assert isinstance(Xi, make_df)
-    assert to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
+    assert frame_to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
 def test_inverse_transform_raises_non_fitted_error(make_df):
@@ -299,4 +299,4 @@ def test_encoding_new_categories(make_df, data_enc):
     encoder.fit(X)
     Xt = encoder.transform(df_unseen)
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {"var_A": [-1], "var_B": [-1]}
+    assert frame_to_dict(Xt) == {"var_A": [-1], "var_B": [-1]}
