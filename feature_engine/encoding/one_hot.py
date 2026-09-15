@@ -232,7 +232,9 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             else:
                 category_ls = col.unique(maintain_order=True).to_list()
                 # return k-1 vs k dummies
-                encoder_dict_[var] = category_ls[:-1] if self.drop_last is True else category_ls
+                encoder_dict_[var] = (
+                    category_ls[:-1] if self.drop_last is True else category_ls
+                )
 
         self.variables_binary_ = [
             var for var in variables_ if nw_X.get_column(var).n_unique() == 2
@@ -279,9 +281,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             desired = [
                 f"{feature}_{category}" for category in self.encoder_dict_[feature]
             ]
-            dummies = (
-                nw_X.get_column(feature).alias(tmp_name).to_dummies(separator="_")
-            )
+            dummies = nw_X.get_column(feature).alias(tmp_name).to_dummies(separator="_")
             dummies = dummies.rename(
                 {c: f"{feature}{c[len(tmp_name):]}" for c in dummies.columns}
             )
