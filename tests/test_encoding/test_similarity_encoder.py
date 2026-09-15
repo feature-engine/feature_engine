@@ -7,7 +7,7 @@ import pytest
 
 from feature_engine.encoding import StringSimilarityEncoder
 from feature_engine.encoding.similarity_encoder import _gpm_fast
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 MSG_NA = (
     "Some of the variables in the dataset contain NaN. Check and "
@@ -58,7 +58,7 @@ def test_encode_top_categories(make_df, data_enc_top):
     }
     # test transform output
     assert isinstance(X, make_df)
-    result = to_dict(X)
+    result = frame_to_dict(X)
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_B" not in result
     assert "var_B_F" not in result
@@ -304,7 +304,7 @@ def test_encode_partial_keywords(make_df, data_enc_top):
     }
     # test transform output
     assert isinstance(X, make_df)
-    result = to_dict(X)
+    result = frame_to_dict(X)
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_B" not in result
     assert "var_B_F" not in result
@@ -333,7 +333,7 @@ def test_encode_complete_keywords(make_df, data_enc_top):
     }
     # test transform output
     assert isinstance(X, make_df)
-    result = to_dict(X)
+    result = frame_to_dict(X)
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_B" not in result
     assert "var_B_F" not in result
