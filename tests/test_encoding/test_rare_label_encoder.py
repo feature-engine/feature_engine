@@ -6,7 +6,7 @@ import polars as pl
 import pytest
 
 from feature_engine.encoding import RareLabelEncoder
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 MSG_NA = (
     "Some of the variables in the dataset contain NaN. Check and "
@@ -46,7 +46,7 @@ def test_defo_params_plus_automatically_find_variables(make_df, data_enc_big):
     assert encoder.encoder_dict_ == FREQUENT_CATEGORIES
     # test transform output
     assert isinstance(X, make_df)
-    assert to_dict(X) == ENC_BIG_RARE
+    assert frame_to_dict(X) == ENC_BIG_RARE
 
 
 def test_when_varnames_are_numbers(data_enc_big):
@@ -97,7 +97,7 @@ def test_correctly_ignores_nan_in_transform(make_df, data_enc_big):
     )
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var_A": ["A", None, "Rare"],
         "var_B": ["A", None, "Rare"],
         "var_C": ["C", None, "Rare"],
@@ -135,7 +135,7 @@ def test_correctly_ignores_nan_in_fit(make_df, data_enc_big):
     )
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var_A": ["A", None, "Rare", "G"],
         "var_B": ["A", None, "Rare", "G"],
         "var_C": ["C", None, "Rare", "Rare"],
@@ -211,7 +211,7 @@ def test_user_provides_grouping_label_name_and_variable_list(make_df, data_enc_b
     assert encoder.n_features_in_ == 3
     # test transform output
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var_A": ["A"] * 6
         + ["B"] * 10
         + ["Other"] * 4
@@ -290,7 +290,7 @@ def test_max_n_categories(make_df, data_enc_big):
     X = rare_encoder.fit_transform(make_df(data_enc_big))
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var_A": ["A"] * 6
         + ["B"] * 10
         + ["Rare"] * 4
@@ -347,7 +347,7 @@ def test_max_n_categories_with_numeric_var_polars(data_enc_numeric):
     X = rare_encoder.fit_transform(df_enc_numeric.select(["var_A", "var_B"]))
 
     assert isinstance(X, pl.DataFrame)
-    assert to_dict(X) == {
+    assert frame_to_dict(X) == {
         "var_A": ["1"] * 6 + ["2"] * 10 + ["Rare"] * 4,
         "var_B": ["1"] * 10 + ["2"] * 6 + ["Rare"] * 4,
     }
