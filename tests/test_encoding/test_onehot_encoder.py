@@ -5,7 +5,7 @@ import pytest
 from sklearn.pipeline import Pipeline
 
 from feature_engine.encoding import OneHotEncoder
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 DATA_ENC_BINARY = {
     "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
@@ -36,7 +36,7 @@ def test_concat_with_non_ordered_index(make_df, index_):
     }
     assert isinstance(dft, make_df)
     assert list(dft.columns) == list(expected)
-    assert to_dict(dft) == expected
+    assert frame_to_dict(dft) == expected
 
 
 def test_encode_categories_in_k_binary_plus_select_vars_automatically(
@@ -70,7 +70,7 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(
     }
     # test transform output
     assert isinstance(X, make_df)
-    result = to_dict(X)
+    result = frame_to_dict(X)
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_A" not in result
 
@@ -105,7 +105,7 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(
     }
     # test transform output
     assert isinstance(X, make_df)
-    result = to_dict(X)
+    result = frame_to_dict(X)
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_B" not in result
     assert "var_B_G" not in result
@@ -137,7 +137,7 @@ def test_encode_top_categories(make_df, data_enc_top):
     }
     # test transform output
     assert isinstance(X, make_df)
-    result = to_dict(X)
+    result = frame_to_dict(X)
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_B" not in result
     assert "var_B_F" not in result
@@ -206,7 +206,7 @@ def test_encode_numerical_variables(make_df, data_enc_numeric):
     assert encoder.encoder_dict_ == {"var_A": [1, 2, 3], "var_B": [1, 2, 3]}
     # test transform output
     assert isinstance(X, make_df)
-    assert to_dict(X) == transf
+    assert frame_to_dict(X) == transf
 
 
 def test_variables_cast_as_category(df_enc_numeric):
@@ -273,7 +273,7 @@ def test_encode_into_k_dummy_plus_drop_binary(make_df):
     # test transform output
     assert isinstance(X, make_df)
     assert list(X.columns) == list(transf)
-    assert to_dict(X) == transf
+    assert frame_to_dict(X) == transf
 
 
 def test_encode_into_kminus1_dummyy_plus_drop_binary(make_df):
@@ -305,7 +305,7 @@ def test_encode_into_kminus1_dummyy_plus_drop_binary(make_df):
     # test transform output
     assert isinstance(X, make_df)
     assert list(X.columns) == list(transf)
-    assert to_dict(X) == transf
+    assert frame_to_dict(X) == transf
 
 
 def test_encode_into_top_categories_plus_drop_binary(make_df):
@@ -337,7 +337,7 @@ def test_encode_into_top_categories_plus_drop_binary(make_df):
     # test transform output
     assert isinstance(X, make_df)
     assert list(X.columns) == list(transf)
-    assert to_dict(X) == transf
+    assert frame_to_dict(X) == transf
 
     # top_categories = 2
     encoder = OneHotEncoder(
@@ -368,7 +368,7 @@ def test_encode_into_top_categories_plus_drop_binary(make_df):
     # test transform output
     assert isinstance(X, make_df)
     assert list(X.columns) == list(transf)
-    assert to_dict(X) == transf
+    assert frame_to_dict(X) == transf
 
 
 def test_get_feature_names_out(make_df):
