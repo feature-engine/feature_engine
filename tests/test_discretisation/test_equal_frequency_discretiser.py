@@ -7,7 +7,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.discretisation import EqualFrequencyDiscretiser
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 MSG_NA = (
     "Some of the variables in the dataset contain NaN. Check and "
@@ -41,7 +41,7 @@ def test_automatically_find_variables_and_return_as_numeric(
     assert transformer.binner_dict_["var"] == bins
     # test transform output
     assert isinstance(X, make_df)
-    values = to_dict(X)["var"]
+    values = frame_to_dict(X)["var"]
     assert set(values) == set(range(10))
     # in equal frequency discretisation, all intervals get same proportion of values
     assert len(set(Counter(values).values())) == 1
