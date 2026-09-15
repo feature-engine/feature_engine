@@ -16,6 +16,53 @@ DATA_ENC_BINARY = {
 }
 
 
+# init parameters
+@pytest.mark.parametrize("top_cat", ["empanada", [1], 0.5, -1])
+def test_error_if_top_categories_not_integer(top_cat):
+    msg = f"top_categories takes only positive integers. Got {top_cat} instead"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        OneHotEncoder(top_categories=top_cat)
+
+
+@pytest.mark.parametrize("drop_last", ["empanada", [1], 0.5, -1, 1, None])
+def test_error_if_drop_last_not_bool(drop_last):
+    msg = f"drop_last takes only True or False. Got {drop_last} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        OneHotEncoder(drop_last=drop_last)
+
+
+@pytest.mark.parametrize("drop_binary", ["hello", ["auto"], -1, 100, 0.5, None])
+def test_error_if_drop_last_binary_not_bool(drop_binary):
+    msg = f"drop_last_binary takes only True or False. Got {drop_binary} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        OneHotEncoder(drop_last_binary=drop_binary)
+
+
+@pytest.mark.parametrize(
+    "top_categories, drop_last, drop_last_binary, ignore_format",
+    [
+        (None, False, False, False),
+        (1, True, False, True),
+        (10, False, True, False),
+        (0, True, True, True),
+    ],
+)
+def test_init_param_assignment(
+    top_categories, drop_last, drop_last_binary, ignore_format
+):
+    encoder = OneHotEncoder(
+        top_categories=top_categories,
+        drop_last=drop_last,
+        drop_last_binary=drop_last_binary,
+        ignore_format=ignore_format,
+    )
+    assert encoder.top_categories == top_categories
+    assert encoder.drop_last is drop_last
+    assert encoder.drop_last_binary is drop_last_binary
+    assert encoder.ignore_format is ignore_format
+
+
+# fit and transform
 @pytest.mark.parametrize("index_", [[1, 2, 3], [3, 2, 1], [4, 9, 2]])
 def test_concat_with_non_ordered_index(make_df, index_):
     data = {"varA": ["a", "b", "c"], "varB": ["d", "d", "a"]}
@@ -47,10 +94,6 @@ def test_encode_categories_in_k_binary_plus_select_vars_automatically(
     encoder = OneHotEncoder(top_categories=None, variables=None, drop_last=False)
     X = encoder.fit_transform(make_df(data_enc_big))
 
-    # test init params
-    assert encoder.top_categories is None
-    assert encoder.variables is None
-    assert encoder.drop_last is False
     # test fit attr
     transf = {
         "var_A_A": 6, "var_A_B": 10, "var_A_C": 4, "var_A_D": 10, "var_A_E": 2,
@@ -85,10 +128,6 @@ def test_encode_categories_in_k_minus_1_binary_plus_list_of_variables(
     )
     X = encoder.fit_transform(make_df(data_enc_big))
 
-    # test init params
-    assert encoder.top_categories is None
-    assert encoder.variables == ["var_A", "var_B"]
-    assert encoder.drop_last is True
     # test fit attr
     transf = {
         "var_A_A": 6, "var_A_B": 10, "var_A_C": 4, "var_A_D": 10, "var_A_E": 2,
@@ -117,9 +156,6 @@ def test_encode_top_categories(make_df, data_enc_top):
     encoder = OneHotEncoder(top_categories=4, variables=None, drop_last=False)
     X = encoder.fit_transform(make_df(data_enc_top))
 
-    # test init params
-    assert encoder.top_categories == 4
-    # test fit attr
     transf = {
         "var_A_D": 9, "var_A_B": 11, "var_A_A": 5, "var_A_G": 7,
         "var_B_A": 11, "var_B_D": 9, "var_B_G": 5, "var_B_B": 7,
@@ -141,25 +177,6 @@ def test_encode_top_categories(make_df, data_enc_top):
     assert {col: sum(result[col]) for col in transf} == transf
     assert "var_B" not in result
     assert "var_B_F" not in result
-
-
-# init params
-@pytest.mark.parametrize("top_cat", ["empanada", [1], 0.5, -1])
-def test_error_if_top_categories_not_integer(top_cat):
-    with pytest.raises(ValueError):
-        OneHotEncoder(top_categories=top_cat)
-
-
-@pytest.mark.parametrize("drop_last", ["empanada", [1], 0.5, -1, 1])
-def test_error_if_drop_last_not_bool(drop_last):
-    with pytest.raises(ValueError):
-        OneHotEncoder(drop_last=drop_last)
-
-
-@pytest.mark.parametrize("drop_binary", ["hello", ["auto"], -1, 100, 0.5])
-def test_raises_error_when_not_allowed_smoothing_param_in_init(drop_binary):
-    with pytest.raises(ValueError):
-        OneHotEncoder(drop_last_binary=drop_binary)
 
 
 def test_raises_error_if_df_contains_na(make_df, data_enc_big, data_enc_big_na):
@@ -419,10 +436,12 @@ def test_get_feature_names_out(make_df):
     assert tr.get_feature_names_out(input_features=None) == feat_out
     assert tr.get_feature_names_out(input_features=input_features) == feat_out
 
-    with pytest.raises(ValueError):
+    msg = "input_features must be a list or an array. Got {input_features} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         tr.get_feature_names_out("var_A")
 
-    with pytest.raises(ValueError):
+    msg = "input_features is not equal to feature_names_in_"
+    with pytest.raises(ValueError, match=re.escape(msg)):
         tr.get_feature_names_out(["var_A", "hola"])
 
 
@@ -447,5 +466,6 @@ def test_get_feature_names_out_from_pipeline(make_df):
 def test_inverse_transform_raises_not_implemented_error(make_df):
     df = make_df(DATA_ENC_BINARY)
     enc = OneHotEncoder().fit(df)
-    with pytest.raises(NotImplementedError):
+    msg = "inverse_transform is not implemented for this transformer."
+    with pytest.raises(NotImplementedError, match=re.escape(msg)):
         enc.inverse_transform(df)

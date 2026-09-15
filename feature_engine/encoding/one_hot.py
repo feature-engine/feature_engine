@@ -278,11 +278,8 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         _check_contains_na(X, self.variables_)
 
         dummy_frames = []
-        # a placeholder Series name, swapped back out below by a fixed-length
-        # prefix slice (never by parsing the category suffix): to_dummies()
-        # only prefixes with the Series name when it's truthy, so a falsy
-        # real name (e.g. an int column literally named 0) would otherwise
-        # silently drop the prefix and make every dummy column look "missing".
+        # to_dummies() skips the prefix for falsy names (e.g. a column called 0), so
+        # use a placeholder name and swap in the real one by slicing its length
         tmp_name = "__ohe_tmp__"
         for feature in self.variables_:
             desired = [
@@ -294,13 +291,8 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             dummies = dummies.rename(
                 {c: f"{feature}{c[len(tmp_name):]}" for c in dummies.columns}
             )
-            # categories learned in fit() but absent from, or unseen categories
-            # present in, this particular transform batch: to_dummies() only
-            # creates columns for values it actually finds, so any learned
-            # category missing here is filled with an all-0 column, and
-            # selecting just `desired` drops any column for a category that
-            # wasn't learned (unseen categories are encoded as 0 across the
-            # board, matching the pre-narwhals behaviour).
+            # add all-0 columns for learned categories missing in X, and drop the
+            # columns of unseen categories, so these are encoded as 0
             missing = [c for c in desired if c not in dummies.columns]
             if len(missing) > 0:
                 dummies = dummies.with_columns(
