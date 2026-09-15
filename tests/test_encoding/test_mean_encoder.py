@@ -8,8 +8,8 @@ from sklearn.exceptions import NotFittedError
 from feature_engine.encoding import MeanEncoder
 from tests.backend_helpers import make_series, frame_to_dict
 
-MEAN_A = {"A": 0.3333333333333333, "B": 0.2, "C": 0.5}
-MEAN_B = {"A": 0.2, "B": 0.3333333333333333, "C": 0.5}
+ENC_DICT_VAR_A = {"A": 0.3333333333333333, "B": 0.2, "C": 0.5}
+ENC_DICT_VAR_B = {"A": 0.2, "B": 0.3333333333333333, "C": 0.5}
 
 
 # test init params
@@ -49,12 +49,12 @@ def test_user_enters_1_variable(make_df, data_enc):
 
     # test fit attr
     assert encoder.variables_ == ["var_A"]
-    assert encoder.encoder_dict_ == {"var_A": MEAN_A}
+    assert encoder.encoder_dict_ == {"var_A": ENC_DICT_VAR_A}
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
     assert frame_to_dict(Xt) == {
-        "var_A": [MEAN_A[v] for v in data_enc["var_A"]],
+        "var_A": [ENC_DICT_VAR_A[v] for v in data_enc["var_A"]],
         "var_B": data_enc["var_B"],
     }
 
@@ -70,13 +70,13 @@ def test_automatically_find_variables(make_df, data_enc):
 
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
-    assert encoder.encoder_dict_ == {"var_A": MEAN_A, "var_B": MEAN_B}
+    assert encoder.encoder_dict_ == {"var_A": ENC_DICT_VAR_A, "var_B": ENC_DICT_VAR_B}
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
     assert frame_to_dict(Xt) == {
-        "var_A": [MEAN_A[v] for v in data_enc["var_A"]],
-        "var_B": [MEAN_B[v] for v in data_enc["var_B"]],
+        "var_A": [ENC_DICT_VAR_A[v] for v in data_enc["var_A"]],
+        "var_B": [ENC_DICT_VAR_B[v] for v in data_enc["var_B"]],
     }
 
 
@@ -90,11 +90,11 @@ def test_target_as_list_or_array(make_df, data_enc, to_target):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    assert encoder.encoder_dict_ == {"var_A": MEAN_A, "var_B": MEAN_B}
+    assert encoder.encoder_dict_ == {"var_A": ENC_DICT_VAR_A, "var_B": ENC_DICT_VAR_B}
     assert isinstance(Xt, make_df)
     assert frame_to_dict(Xt) == {
-        "var_A": [MEAN_A[v] for v in data_enc["var_A"]],
-        "var_B": [MEAN_B[v] for v in data_enc["var_B"]],
+        "var_A": [ENC_DICT_VAR_A[v] for v in data_enc["var_A"]],
+        "var_B": [ENC_DICT_VAR_B[v] for v in data_enc["var_B"]],
     }
 
 
@@ -119,7 +119,7 @@ def test_encoding_when_nan_in_fit_df(make_df, data_enc):
     }
 
 
-def test_warning_if_transform_df_contains_categories_not_present_in_fit_df(
+def test_raises_if_transform_df_contains_categories_not_present_in_fit_df(
     make_df, data_enc, data_enc_rare
 ):
     # test case 4: when dataset to be transformed contains categories not present
@@ -184,16 +184,16 @@ def test_user_enters_1_variable_ignore_format(make_df, data_enc_numeric):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    mean_a = {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
+    enc_dict_var_a = {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
 
     # test fit attr
     assert encoder.variables_ == ["var_A"]
-    assert encoder.encoder_dict_ == {"var_A": mean_a}
+    assert encoder.encoder_dict_ == {"var_A": enc_dict_var_a}
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
     assert frame_to_dict(Xt) == {
-        "var_A": [mean_a[v] for v in data_enc_numeric["var_A"]],
+        "var_A": [enc_dict_var_a[v] for v in data_enc_numeric["var_A"]],
         "var_B": data_enc_numeric["var_B"],
     }
 
@@ -207,24 +207,23 @@ def test_automatically_find_variables_ignore_format(make_df, data_enc_numeric):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    mean_a = {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
-    mean_b = {1: 0.2, 2: 0.3333333333333333, 3: 0.5}
+    enc_dict_var_a = {1: 0.3333333333333333, 2: 0.2, 3: 0.5}
+    enc_dict_var_b = {1: 0.2, 2: 0.3333333333333333, 3: 0.5}
 
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
-    assert encoder.encoder_dict_ == {"var_A": mean_a, "var_B": mean_b}
+    assert encoder.encoder_dict_ == {"var_A": enc_dict_var_a, "var_B": enc_dict_var_b}
     assert encoder.n_features_in_ == 2
     # test transform output
     assert isinstance(Xt, make_df)
     assert frame_to_dict(Xt) == {
-        "var_A": [mean_a[v] for v in data_enc_numeric["var_A"]],
-        "var_B": [mean_b[v] for v in data_enc_numeric["var_B"]],
+        "var_A": [enc_dict_var_a[v] for v in data_enc_numeric["var_A"]],
+        "var_B": [enc_dict_var_b[v] for v in data_enc_numeric["var_B"]],
     }
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
-    # pandas-only: exercises pandas Categorical dtype, which polars has no
-    # direct equivalent for.
+    # pandas-only.
     df = df_enc_category_dtypes.copy()
     encoder = MeanEncoder(variables=["var_A"])
     encoder.fit(df[["var_A", "var_B"]], df["target"])
