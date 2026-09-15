@@ -7,7 +7,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.discretisation import GeometricWidthDiscretiser
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 MSG_NA = (
     "Some of the variables in the dataset contain NaN. Check and "
@@ -72,7 +72,7 @@ def test_fit_and_transform_methods(make_df, data_normal_dist):
     # must match regardless of which backend the input dataframe uses.
     expected = pd.cut(pd.Series(arr), bins=bins, precision=7).cat.codes.tolist()
     assert isinstance(X, make_df)
-    assert to_dict(X)["var"] == expected
+    assert frame_to_dict(X)["var"] == expected
 
 
 def test_automatically_find_variables_and_return_as_object(make_df, data_normal_dist):
