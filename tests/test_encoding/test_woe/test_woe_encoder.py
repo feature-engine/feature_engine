@@ -7,7 +7,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import WoEEncoder
-from tests.backend_helpers import make_series, to_dict
+from tests.backend_helpers import make_series, frame_to_dict
 
 WOE_A = {
     "A": 0.15415067982725836,
@@ -46,7 +46,7 @@ def test_automatically_select_variables(make_df, data_enc):
 
     assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": pytest.approx(VAR_A),
         "var_B": pytest.approx(VAR_B),
     }
@@ -64,7 +64,7 @@ def test_target_as_list_or_array(make_df, data_enc, to_target):
 
     assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": pytest.approx(VAR_A),
         "var_B": pytest.approx(VAR_B),
     }
@@ -80,7 +80,7 @@ def test_user_passes_variables(make_df, data_enc):
 
     assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": pytest.approx(VAR_A),
         "var_B": pytest.approx(VAR_B),
         "target": data_enc["target"],
@@ -107,7 +107,7 @@ def test_when_target_class_not_0_1(make_df, data_enc, target):
 
     assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": pytest.approx(VAR_A),
         "var_B": pytest.approx(VAR_B),
         "target": target,
@@ -305,7 +305,7 @@ def test_on_numerical_variables(make_df, data_enc_numeric):
     assert encoder.n_features_in_ == 2
     # transform params
     assert isinstance(Xt, make_df)
-    assert to_dict(Xt) == {
+    assert frame_to_dict(Xt) == {
         "var_A": pytest.approx(VAR_A),
         "var_B": pytest.approx(VAR_B),
     }
