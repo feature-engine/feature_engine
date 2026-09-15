@@ -230,7 +230,7 @@ class SelectByInformationValue(BaseSelector, WoE):
 
         self.information_values_ = {}
         for var in self.variables_:
-            woe = self._calculate_woe(X, y, var)
+            woe, _ = self._calculate_woe(X, y, var)
             iv = self._calculate_iv(
                 woe["__pos__"].to_numpy(),
                 woe["__neg__"].to_numpy(),

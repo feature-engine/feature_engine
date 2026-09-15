@@ -67,12 +67,12 @@ class WoE:
         X: IntoDataFrame,
         y: IntoSeries,
         variable: Union[str, int],
-        fill_value: Union[float, None] = None,
     ):
         """
         Return a narwhals dataframe with one row per category of the variable and the
         columns __category__, __pos__ and __neg__, the fraction of positive and
-        negative cases, and __woe__, the weight of evidence.
+        negative cases, and __woe__, the weight of evidence. Also return whether any
+        category has no positive or no negative cases.
         """
         # narwhals expressions need string column names, pandas allows integers
         col = nw.from_native(X, eager_only=True).get_column(variable)
@@ -80,37 +80,26 @@ class WoE:
         total_pos = nw_Xy[TARGET_NAME].sum()
         total_neg = len(nw_Xy) - total_pos
 
-        stats = (
+        counts = (
             nw_Xy.group_by("__category__", drop_null_keys=True)
             .agg(nw.col(TARGET_NAME).sum().alias("__pos__"), nw.len().alias("__n__"))
             .sort("__category__")
-            .select(
-                "__category__",
-                (nw.col("__pos__") / total_pos).alias("__pos__"),
-                ((nw.col("__n__") - nw.col("__pos__")) / total_neg).alias("__neg__"),
-            )
+            .with_columns((nw.col("__n__") - nw.col("__pos__")).alias("__neg__"))
         )
-
         pos, neg = nw.col("__pos__"), nw.col("__neg__")
-        if fill_value is None:
-            has_zero = bool(stats.select(((pos == 0) | (neg == 0)).any()).item())
-            if has_zero is True:
-                raise ValueError(
-                    "The proportion of one of the classes for a category in "
-                    "variable {} is zero, and log of zero is not defined".format(
-                        variable
-                    )
-                )
-        else:
-            pos = nw.when(pos == 0).then(fill_value).otherwise(pos)
-            neg = nw.when(neg == 0).then(fill_value).otherwise(neg)
+        has_zero_counts = bool(counts.select(((pos == 0) | (neg == 0)).any()).item())
 
-        return stats.select(
+        # the WoE is not defined for zero counts, so they are replaced by 0.5
+        pos = nw.when(pos == 0).then(0.5).otherwise(pos) / total_pos
+        neg = nw.when(neg == 0).then(0.5).otherwise(neg) / total_neg
+
+        woe = counts.select(
             "__category__",
             pos.alias("__pos__"),
             neg.alias("__neg__"),
             (pos / neg).log().alias("__woe__"),
         )
+        return woe, has_zero_counts
 
 
 @Substitution(
@@ -148,10 +137,10 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
 
     **Note**
 
-    The log(0) is not defined and the division by 0 is not defined. Thus, if any of the
-    terms in the WoE equation are 0 for a given category, the encoder will return an
-    error. If this happens, try grouping less frequent categories. Alternatively,
-    you can now add a fill_value (see parameter below).
+    The WoE is not defined for categories with no positive or no negative cases. For
+    those categories, the encoder replaces the zero count by 0.5, and lists the
+    variables in `variables_with_zero_counts_`. Grouping infrequent categories before
+    the encoding reduces how often this happens.
 
     More details in the :ref:`User Guide <woe_encoder>`.
 
@@ -165,16 +154,14 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
 
     {unseen}
 
-    fill_value: int, float, default=None
-        When the numerator or denominator of the WoE calculation are zero, the WoE
-        calculation is not possible. If `fill_value` is None (recommended), an error
-        will be raised in those cases. Alternatively, fill_value will be used in place
-        of denominators or numerators that equal zero.
-
     Attributes
     ----------
     encoder_dict_:
         Dictionary with the WoE per variable.
+
+    variables_with_zero_counts_:
+        List of variables with categories that have no positive or no negative cases.
+        For those categories, 0.5 replaces the zero count to calculate the WoE.
 
     {variables_}
 
@@ -257,17 +244,11 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         return_empty: bool = False,
         ignore_format: bool = False,
         unseen: str = "ignore",
-        fill_value: Union[int, float, None] = None,
     ) -> None:
 
         super().__init__(variables, return_empty, ignore_format)
         check_parameter_unseen(unseen, ["ignore", "raise"])
-        if fill_value is not None and not isinstance(fill_value, (int, float)):
-            raise ValueError(
-                f"fill_value takes None, integer or float. Got {fill_value} instead."
-            )
         self.unseen = unseen
-        self.fill_value = fill_value
 
     def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
@@ -287,32 +268,18 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         _check_contains_na(X, variables_)
 
         encoder_dict_ = {}
-        vars_that_fail = []
+        variables_with_zero_counts_ = []
 
         for var in variables_:
-            try:
-                woe = self._calculate_woe(X, y, var, self.fill_value)
-            except ValueError:
-                vars_that_fail.append(var)
-                continue
+            woe, has_zero_counts = self._calculate_woe(X, y, var)
             encoder_dict_[var] = dict(
                 zip(woe["__category__"].to_list(), woe["__woe__"].to_list())
             )
-
-        if len(vars_that_fail) > 0:
-            vars_that_fail_str = (
-                ", ".join(str(var) for var in vars_that_fail)
-                if len(vars_that_fail) > 1
-                else vars_that_fail[0]
-            )
-
-            raise ValueError(
-                "During the WoE calculation, some of the categories in the "
-                "following features contained 0 in the denominator or numerator, "
-                f"and hence the WoE can't be calculated: {vars_that_fail_str}."
-            )
+            if has_zero_counts is True:
+                variables_with_zero_counts_.append(var)
 
         self.encoder_dict_ = encoder_dict_
+        self.variables_with_zero_counts_ = variables_with_zero_counts_
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
@@ -340,9 +307,6 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         tags_dict = _return_tags()
         tags_dict["variables"] = "categorical"
         tags_dict["requires_y"] = True
-        # sklearn tests pass continuous arrays, which give zero denominators and
-        # make this transformer raise, so they are skipped
-        tags_dict["_skip_test"] = True
         return tags_dict
 
     def __sklearn_tags__(self):

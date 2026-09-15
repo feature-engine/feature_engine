@@ -28,22 +28,7 @@ MSG_NA = (
 )
 
 
-def _msg_zero_division(features):
-    return (
-        "During the WoE calculation, some of the categories in the "
-        "following features contained 0 in the denominator or numerator, "
-        f"and hence the WoE can't be calculated: {features}."
-    )
-
-
 # init parameters
-@pytest.mark.parametrize("fill_value", ["hola", [10], (1,)])
-def test_error_if_fill_value_not_allowed(fill_value):
-    msg = f"fill_value takes None, integer or float. Got {fill_value} instead."
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        WoEEncoder(fill_value=fill_value)
-
-
 @pytest.mark.parametrize(
     "unseen", ["empanada", "encode", False, 1, None, ("raise", "ignore"), ["ignore"]]
 )
@@ -54,21 +39,13 @@ def test_error_if_unseen_not_permitted_value(unseen):
 
 
 @pytest.mark.parametrize(
-    "ignore_format, unseen, fill_value",
-    [
-        (False, "ignore", None),
-        (True, "raise", 0.5),
-        (False, "raise", 10),
-        (True, "ignore", 0),
-    ],
+    "ignore_format, unseen",
+    [(False, "ignore"), (True, "raise"), (False, "raise"), (True, "ignore")],
 )
-def test_init_param_assignment(ignore_format, unseen, fill_value):
-    encoder = WoEEncoder(
-        ignore_format=ignore_format, unseen=unseen, fill_value=fill_value
-    )
+def test_init_param_assignment(ignore_format, unseen):
+    encoder = WoEEncoder(ignore_format=ignore_format, unseen=unseen)
     assert encoder.ignore_format is ignore_format
     assert encoder.unseen == unseen
-    assert encoder.fill_value == fill_value
 
 
 # fit and transform
@@ -81,6 +58,7 @@ def test_automatically_select_variables(make_df, data_enc):
     Xt = encoder.transform(X)
 
     assert encoder.encoder_dict_ == {"var_A": WOE_A, "var_B": WOE_B}
+    assert encoder.variables_with_zero_counts_ == []
     assert isinstance(Xt, make_df)
     assert frame_to_dict(Xt) == {
         "var_A": pytest.approx(VAR_A),
@@ -192,103 +170,57 @@ def test_error_if_target_not_binary(make_df):
         encoder.fit(X, y)
 
 
-def test_error_if_denominator_probability_is_zero_1_var(make_df):
-    data = {
-        "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-        "target": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-    }
-    encoder = WoEEncoder(variables=None)
-    with pytest.raises(ValueError, match=re.escape(_msg_zero_division("var_A"))):
-        encoder.fit(
-            make_df(data)[["var_A", "var_B"]], make_series(make_df, data["target"])
-        )
-
-    data = {
-        "var_A": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-        "var_B": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-        "target": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-    }
-    encoder = WoEEncoder(variables=None)
-    with pytest.raises(ValueError, match=re.escape(_msg_zero_division("var_B"))):
-        encoder.fit(
-            make_df(data)[["var_A", "var_B"]], make_series(make_df, data["target"])
-        )
-
-
-def test_error_if_denominator_probability_is_zero_2_vars(make_df):
-    data = {
-        "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-        "var_C": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-        "target": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-    }
-    encoder = WoEEncoder(variables=None)
-    msg = _msg_zero_division("var_A, var_C")
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        encoder.fit(make_df(data), make_series(make_df, data["target"]))
-
-
-def test_error_if_numerator_probability_is_zero(make_df):
-    data = {
-        "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
-        "var_C": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
-        "target": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-    }
-    X = make_df(data)
-    y = make_series(make_df, data["target"])
-    encoder = WoEEncoder(variables=None)
-
-    msg = _msg_zero_division("var_A, var_C")
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        encoder.fit(X, y)
-
-    msg = _msg_zero_division("var_A")
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        encoder.fit(X[["var_A", "var_B"]], y)
-
-
-def test_fill_value(make_df):
+def test_zero_counts_are_replaced_by_half(make_df):
+    # in var_A, C has no negative cases and D no positive cases
     data = {
         "var_A": ["A"] * 9 + ["B"] * 6 + ["C"] * 3 + ["D"] * 2,
         "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
         "target": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0],
     }
-    X = make_df(data)
+    X = make_df(data)[["var_A", "var_B"]]
     y = make_series(make_df, data["target"])
 
-    encoder = WoEEncoder(variables=None, fill_value=1)
-    encoder.fit(X, y)
-    woe_exp_a = {
-        "A": -0.6337237600891445,
-        "B": -0.07410797215372196,
-        "C": -0.8472978603872037,
-        "D": 1.8718021769015913,
-    }
-    woe_exp_b = {
-        "A": -0.7672551527136673,
-        "B": 0.6190392084062234,
-        "C": 0.6190392084062234,
-    }
-    woe_exp = {"var_A": woe_exp_a, "var_B": woe_exp_b}
+    encoder = WoEEncoder().fit(X, y)
+    Xt = encoder.transform(X)
 
-    for var in ["var_A", "var_B"]:
-        for k, i in woe_exp[var].items():
-            assert math.isclose(encoder.encoder_dict_[var][k], woe_exp[var][k])
-
-    encoder = WoEEncoder(variables=None, fill_value=10)
-    encoder.fit(X, y)
-    woe_exp_a = {
-        "A": -0.6337237600891445,
-        "B": -0.07410797215372196,
-        "C": -3.1498829533812494,
-        "D": 4.174387269895637,
+    # 7 positive and 13 negative cases
+    woe_a = {
+        "A": math.log((2 / 7) / (7 / 13)),
+        "B": math.log((2 / 7) / (4 / 13)),
+        "C": math.log((3 / 7) / (0.5 / 13)),
+        "D": math.log((0.5 / 7) / (2 / 13)),
     }
-    woe_exp = {"var_A": woe_exp_a, "var_B": woe_exp_b}
-    for var in ["var_A", "var_B"]:
-        for k, i in woe_exp[var].items():
-            assert math.isclose(encoder.encoder_dict_[var][k], woe_exp[var][k])
+    woe_b = {
+        "A": math.log((2 / 7) / (8 / 13)),
+        "B": math.log((3 / 7) / (3 / 13)),
+        "C": math.log((2 / 7) / (2 / 13)),
+    }
+    assert encoder.encoder_dict_ == {
+        "var_A": pytest.approx(woe_a),
+        "var_B": pytest.approx(woe_b),
+    }
+    assert encoder.variables_with_zero_counts_ == ["var_A"]
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_A": pytest.approx([woe_a[v] for v in data["var_A"]]),
+        "var_B": pytest.approx([woe_b[v] for v in data["var_B"]]),
+    }
+
+
+def test_variables_with_zero_counts(make_df):
+    # category A of var_A and var_C has no negative cases
+    data = {
+        "var_A": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
+        "var_B": ["A"] * 10 + ["B"] * 6 + ["C"] * 4,
+        "var_C": ["A"] * 6 + ["B"] * 10 + ["C"] * 4,
+        "target": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+    }
+    X = make_df(data)[["var_A", "var_B", "var_C"]]
+    y = make_series(make_df, data["target"])
+
+    encoder = WoEEncoder().fit(X, y)
+
+    assert encoder.variables_with_zero_counts_ == ["var_A", "var_C"]
 
 
 def test_error_if_contains_na_in_fit(make_df, data_enc_na):
