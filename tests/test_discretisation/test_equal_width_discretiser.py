@@ -7,7 +7,7 @@ import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.discretisation import EqualWidthDiscretiser
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 MSG_NA = (
     "Some of the variables in the dataset contain NaN. Check and "
@@ -44,7 +44,7 @@ def test_automatically_find_variables_and_return_as_numeric(
     assert np.allclose(transformer.binner_dict_["var"], bins)
     # transform params: same bin codes on both backends
     assert isinstance(X, make_df)
-    assert to_dict(X)["var"] == expected_codes
+    assert frame_to_dict(X)["var"] == expected_codes
 
 
 def test_automatically_find_variables_and_return_as_object(make_df, data_normal_dist):
@@ -67,7 +67,7 @@ def test_constant_variable_produces_single_bin(make_df):
     assert transformer.binner_dict_["var"][0] == float("-inf")
     assert transformer.binner_dict_["var"][-1] == float("inf")
     assert isinstance(X, make_df)
-    assert to_dict(X)["var"] == expected_codes
+    assert frame_to_dict(X)["var"] == expected_codes
 
 
 def test_error_when_bins_not_number():
