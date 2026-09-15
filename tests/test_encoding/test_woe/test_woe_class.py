@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -25,8 +27,11 @@ def test_woe_error():
     }
     df = pd.DataFrame(df)
     woe_class = WoE()
-
-    with pytest.raises(ValueError):
+    msg = (
+        "The proportion of one of the classes for a category in variable var_A "
+        "is zero, and log of zero is not defined"
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         woe_class._calculate_woe(df, df["target"], "var_A")
 
 

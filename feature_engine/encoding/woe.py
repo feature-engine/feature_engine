@@ -28,7 +28,11 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
-from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.encoding._helper_functions import (
+    TARGET_NAME,
+    add_target_to_X,
+    check_parameter_unseen,
+)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -42,28 +46,8 @@ class WoE:
         Check that X is dataframe, and y a binary series with values 0 and 1.
         """
         nw_X, y = check_X_y(X, y)
-
-        if nwd.is_into_series(y):
-            y_nw = nw.from_native(y, series_only=True)
-        else:
-            # y is a numpy array here (e.g. list/array-like y input, which
-            # sklearn's check_X_y machinery converts to numpy via
-            # column_or_1d) - it has no .nunique()/.groupby(), so wrap it
-            # against X's backend to get one consistent narwhals Series.
-            y_nw = nw.new_series(
-                name="target",
-                values=y,
-                backend=nw_X.implementation,
-            )
-            if nwd.is_pandas_dataframe(X):
-                # new_series() gives pandas a fresh default RangeIndex, but
-                # _calculate_woe()'s y.groupby(X[var]) aligns the two
-                # Series by index - a mismatch against X's own index
-                # silently drops every row instead of raising, leaving
-                # encoder_dict_ empty. Line it up with X's index.
-                native_y = y_nw.to_native()
-                native_y.index = X.index
-                y_nw = nw.from_native(native_y, series_only=True)
+        # with pandas, y takes the index of X
+        y_nw = add_target_to_X(nw_X, y)[TARGET_NAME]
 
         # check that y is binary
         if y_nw.n_unique() != 2:
@@ -286,14 +270,8 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         encoder_dict_ = {}
         vars_that_fail = []
 
-        # _calculate_woe() keeps its pandas-native two-groupby implementation
-        # (it's directly unit-tested for that exact pandas-Series-with-
-        # category-index return contract); polars and other narwhals
-        # backends compute the same ratio-then-log logic with a single
-        # group_by() instead - it derives the negative-class count as the
-        # complement of the positive-class count per category, so only one
-        # groupby is needed instead of two (benchmarked competitive with,
-        # and often faster than, pandas-native at 50k-100k rows).
+        # pandas uses _calculate_woe(); other backends count the negative class
+        # as total minus positive, so they need one group_by instead of two
         if nwd.is_pandas_dataframe(X):
             for var in variables_:
                 try:
@@ -302,19 +280,16 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
                 except ValueError:
                     vars_that_fail.append(var)
         else:
-            nw_X = nw.from_native(X, eager_only=True)
-            y_nw = nw.from_native(y, series_only=True)
-            target_name = "__feature_engine_woe_target__"
-            nw_Xy = nw_X.with_columns(y_nw.alias(target_name))
+            nw_Xy = add_target_to_X(nw.from_native(X, eager_only=True), y)
 
-            total_pos = y_nw.sum()
-            total_neg = len(y_nw) - total_pos
+            total_pos = nw_Xy[TARGET_NAME].sum()
+            total_neg = len(nw_Xy) - total_pos
 
             for var in variables_:
                 grouped = (
                     nw_Xy.group_by(var, drop_null_keys=True)
                     .agg(
-                        nw.col(target_name).sum().alias("__pos_n__"),
+                        nw.col(TARGET_NAME).sum().alias("__pos_n__"),
                         nw.len().alias("__n__"),
                     )
                     .sort(var)
@@ -377,12 +352,8 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
         tags_dict = _return_tags()
         tags_dict["variables"] = "categorical"
         tags_dict["requires_y"] = True
-        # in the current format, the tests are performed using continuous np.arrays
-        # this means that when we encode some of the values, the denominator is 0
-        # and this the transformer raises an error, and the test fails.
-        # For this reason, most sklearn tests will fail. And it has nothing to
-        # do with the class not being compatible, it is just that the inputs passed
-        # are not suitable
+        # sklearn tests pass continuous arrays, which give zero denominators and
+        # make this transformer raise, so they are skipped
         tags_dict["_skip_test"] = True
         return tags_dict
 

@@ -36,6 +36,42 @@ def _msg_zero_division(features):
     )
 
 
+# init parameters
+@pytest.mark.parametrize("fill_value", ["hola", [10], (1,)])
+def test_error_if_fill_value_not_allowed(fill_value):
+    msg = f"fill_value takes None, integer or float. Got {fill_value} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WoEEncoder(fill_value=fill_value)
+
+
+@pytest.mark.parametrize(
+    "unseen", ["empanada", "encode", False, 1, None, ("raise", "ignore"), ["ignore"]]
+)
+def test_error_if_unseen_not_permitted_value(unseen):
+    msg = f"Parameter `unseen` takes only values ignore, raise. Got {unseen} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WoEEncoder(unseen=unseen)
+
+
+@pytest.mark.parametrize(
+    "ignore_format, unseen, fill_value",
+    [
+        (False, "ignore", None),
+        (True, "raise", 0.5),
+        (False, "raise", 10),
+        (True, "ignore", 0),
+    ],
+)
+def test_init_param_assignment(ignore_format, unseen, fill_value):
+    encoder = WoEEncoder(
+        ignore_format=ignore_format, unseen=unseen, fill_value=fill_value
+    )
+    assert encoder.ignore_format is ignore_format
+    assert encoder.unseen == unseen
+    assert encoder.fill_value == fill_value
+
+
+# fit and transform
 def test_automatically_select_variables(make_df, data_enc):
     X = make_df(data_enc)[["var_A", "var_B"]]
     y = make_series(make_df, data_enc["target"])
@@ -148,7 +184,11 @@ def test_error_if_target_not_binary(make_df):
     y = make_series(make_df, data["target"])
 
     encoder = WoEEncoder(variables=None)
-    with pytest.raises(ValueError):
+    msg = (
+        "This encoder is designed for binary classification. The target "
+        "used has more than 2 unique values."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         encoder.fit(X, y)
 
 
@@ -251,18 +291,6 @@ def test_fill_value(make_df):
             assert math.isclose(encoder.encoder_dict_[var][k], woe_exp[var][k])
 
 
-@pytest.mark.parametrize("fill_value", ["hola", [10]])
-def test_error_if_fill_value_not_allowed(fill_value):
-    with pytest.raises(ValueError):
-        WoEEncoder(fill_value=fill_value)
-
-
-@pytest.mark.parametrize("fill_value", [0, 1, 10, 0.5, 0.002, None])
-def test_assigns_fill_value_at_init(fill_value):
-    encoder = WoEEncoder(fill_value=fill_value)
-    assert encoder.fill_value == fill_value
-
-
 def test_error_if_contains_na_in_fit(make_df, data_enc_na):
     # test case 9: when dataset contains na, fit method
     X = make_df(data_enc_na)[["var_A", "var_B"]]
@@ -294,8 +322,6 @@ def test_on_numerical_variables(make_df, data_enc_numeric):
     encoder.fit(X, y)
     Xt = encoder.transform(X)
 
-    # init params
-    assert encoder.variables is None
     # fit params
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
@@ -326,28 +352,24 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes.name == "float64"
 
 
-@pytest.mark.parametrize(
-    "errors", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
-)
-def test_error_if_rare_labels_not_permitted_value(errors):
-    with pytest.raises(ValueError):
-        WoEEncoder(unseen=errors)
-
-
 def test_inverse_transform_raises_non_fitted_error(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     y = make_series(make_df, [0, 1, 0, 1, 1, 0])
     enc = WoEEncoder()
+    msg = (
+        "This WoEEncoder instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1)
 
     df1_na = make_df({"words": ["dog", "dog", "cat", "cat", "cat", None]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
         enc.fit(df1_na, y)
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1_na)
