@@ -96,7 +96,10 @@ class CategoricalInitMixinNA:
         ignore_format: bool = False,
     ) -> None:
 
-        if missing_values not in ["raise", "ignore"]:
+        if not isinstance(missing_values, str) or missing_values not in [
+            "raise",
+            "ignore",
+        ]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'. "
                 f"Got {missing_values} instead."

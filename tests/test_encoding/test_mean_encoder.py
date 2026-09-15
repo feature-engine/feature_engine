@@ -12,29 +12,45 @@ ENC_DICT_VAR_A = {"A": 0.3333333333333333, "B": 0.2, "C": 0.5}
 ENC_DICT_VAR_B = {"A": 0.2, "B": 0.3333333333333333, "C": 0.5}
 
 
-# test init params
-@pytest.mark.parametrize("params", [("raise", True, "auto"), ("ignore", False, 1)])
-def test_init_param_assignment(params):
-    MeanEncoder(
-        missing_values=params[0],
-        ignore_format=params[1],
-        unseen=params[0],
-        smoothing=params[2],
-    )
-
-
+# init parameters
 @pytest.mark.parametrize(
-    "errors", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
+    "unseen", ["empanada", False, 1, None, ("raise", "ignore"), ["ignore"]]
 )
-def test_error_if_unseen_gets_not_permitted_value(errors):
-    with pytest.raises(ValueError):
-        MeanEncoder(unseen=errors)
+def test_error_if_unseen_gets_not_permitted_value(unseen):
+    msg = (
+        "Parameter `unseen` takes only values ignore, raise, encode. "
+        f"Got {unseen} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        MeanEncoder(unseen=unseen)
 
 
 @pytest.mark.parametrize("smoothing", ["hello", ["auto"], -1])
 def test_raises_error_when_not_allowed_smoothing_param_in_init(smoothing):
-    with pytest.raises(ValueError):
+    msg = f"smoothing must be greater than 0 or 'auto'. Got {smoothing} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         MeanEncoder(smoothing=smoothing)
+
+
+@pytest.mark.parametrize(
+    "missing_values, ignore_format, unseen, smoothing",
+    [
+        ("raise", True, "ignore", "auto"),
+        ("ignore", False, "encode", 1),
+        ("raise", False, "raise", 0.5),
+    ],
+)
+def test_init_param_assignment(missing_values, ignore_format, unseen, smoothing):
+    encoder = MeanEncoder(
+        missing_values=missing_values,
+        ignore_format=ignore_format,
+        unseen=unseen,
+        smoothing=smoothing,
+    )
+    assert encoder.missing_values == missing_values
+    assert encoder.ignore_format is ignore_format
+    assert encoder.unseen == unseen
+    assert encoder.smoothing == smoothing
 
 
 # fit and transform
@@ -358,16 +374,25 @@ def test_inverse_transform_raises_non_fitted_error(make_df):
     df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     y = make_series(make_df, [1, 0, 1, 0, 1, 0])
     enc = MeanEncoder()
+    msg = (
+        "This MeanEncoder instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
+    msg_na = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1)
 
     df1_na = make_df({"words": ["dog", "dog", "cat", "cat", "cat", None]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape(msg_na)):
         enc.fit(df1_na, y)
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1_na)

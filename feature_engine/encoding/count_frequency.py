@@ -189,7 +189,10 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         unseen: str = "ignore",
     ) -> None:
 
-        if encoding_method not in ["count", "frequency"]:
+        if not isinstance(encoding_method, str) or encoding_method not in [
+            "count",
+            "frequency",
+        ]:
             raise ValueError(
                 "encoding_method takes only values 'count' and 'frequency'. "
                 f"Got {encoding_method} instead."
