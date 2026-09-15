@@ -150,8 +150,7 @@ def test_get_feature_names_out_from_pipeline(make_df, data_na_dob, indicator_cls
 
 @pytest.mark.parametrize("indicator_cls", INDICATORS)
 def test_no_performance_warning_with_many_variables(indicator_cls):
-    # pandas-only: exercises the pandas fast path's PerformanceWarning
-    # behaviour specifically, not a cross-backend value comparison.
+    # pandas-only.
     n_cols = 101
 
     df = pd.DataFrame(

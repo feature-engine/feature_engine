@@ -3,31 +3,24 @@
 
 import re
 
+import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
 
 from feature_engine.imputation import RandomSampleImputer
-from feature_engine.imputation.random_sample import _define_seed
+from feature_engine.imputation.random_sample import _hash_seeds
 from tests.backend_helpers import frame_to_dict, null_count
 
 
 # init parameters
-@pytest.mark.parametrize("seed", ["arbitrary", "both", 1])
+@pytest.mark.parametrize(
+    "seed", ["arbitrary", "both", 1, None, ("general",), ["observation"]]
+)
 def test_error_if_seed_not_permitted_value(seed):
     msg = f"seed takes only values 'general' or 'observation'. Got {seed} instead."
     with pytest.raises(ValueError, match=re.escape(msg)):
         RandomSampleImputer(seed=seed)
-
-
-@pytest.mark.parametrize("seeding_method", ["arbitrary", "sum", 1])
-def test_error_if_seeding_method_not_permitted_value(seeding_method):
-    msg = (
-        "seeding_method takes only values 'add' or 'multiply'. "
-        f"Got {seeding_method} instead."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        RandomSampleImputer(seeding_method=seeding_method)
 
 
 @pytest.mark.parametrize("random_state", ["arbitrary", 0.5, ["Age"]])
@@ -52,34 +45,42 @@ def test_error_if_random_state_is_empty_when_seed_is_observation(random_state):
 
 
 @pytest.mark.parametrize(
-    "random_state, seed, seeding_method",
+    "random_state, seed",
     [
-        (None, "general", "add"),
-        (5, "general", "multiply"),
-        ("Age", "observation", "add"),
-        (["Age", "Marks"], "observation", "multiply"),
+        (None, "general"),
+        (5, "general"),
+        ("Age", "observation"),
+        (["Age", "Marks"], "observation"),
     ],
 )
-def test_init_param_assignment(random_state, seed, seeding_method):
-    imputer = RandomSampleImputer(
-        random_state=random_state, seed=seed, seeding_method=seeding_method
-    )
+def test_init_param_assignment(random_state, seed):
+    imputer = RandomSampleImputer(random_state=random_state, seed=seed)
     assert imputer.random_state == random_state
     assert imputer.seed == seed
-    assert imputer.seeding_method == seeding_method
 
 
 # fit and transform
-def test_define_seed(df_vartypes):
-    # _define_seed uses pandas' .loc label-based row access, so it is only
-    # ever called from the pandas branch of transform() - it is inherently
-    # pandas-only, unlike the rest of the transformer.
-    assert _define_seed(df_vartypes, 0, ["Age", "Marks"], how="add") == 21
-    assert _define_seed(df_vartypes, 0, ["Age", "Marks"], how="multiply") == 18
-    assert _define_seed(df_vartypes, 2, ["Age", "Marks"], how="add") == 20
-    assert _define_seed(df_vartypes, 2, ["Age", "Marks"], how="multiply") == 13
-    assert _define_seed(df_vartypes, 1, ["Age"], how="add") == 21
-    assert _define_seed(df_vartypes, 3, ["Marks"], how="multiply") == 1
+def test_hash_seeds():
+    values = np.array(
+        [
+            [25, 0.7],
+            [25.0, 0.7],
+            [0.0, 0.7],
+            [np.nan, 0.7],
+            [-0.0, 0.7],
+            [-30.0, 1e20],
+        ]
+    )
+    seeds = _hash_seeds(values)
+
+    # same values, same seed: ints and floats are equal, nan and -0.0 count as 0
+    assert seeds[0] == seeds[1]
+    assert seeds[2] == seeds[3] == seeds[4]
+    assert seeds[0] != seeds[2]
+    # negative and large values give valid numpy seeds
+    assert all(0 <= seed < 2**32 for seed in seeds)
+    # the seed must not change between sessions or releases
+    assert _hash_seeds(np.array([[25.0, 0.7]]))[0] == 2067629302
 
 
 def test_general_seed_plus_automatically_select_variables(make_df, data_na):
@@ -100,21 +101,16 @@ def test_general_seed_plus_automatically_select_variables(make_df, data_na):
         assert null_count(X_transformed, col) == 0
         assert set(result[col]) <= {v for v in data_na[col] if v is not None}
 
-    # pandas' and narwhals/polars' sample() use different RNGs, so a fixed
-    # seed does not draw the same values across backends - only same seed +
-    # same backend is a reproducibility guarantee. Verify that guarantee.
+    # pandas and polars draw different values for the same seed, so we only check
+    # that the same seed on the same backend gives the same result.
     imputer2 = RandomSampleImputer(variables=None, random_state=5, seed="general")
     X_transformed2 = imputer2.fit_transform(df_na)
     assert frame_to_dict(X_transformed) == frame_to_dict(X_transformed2)
 
 
 def test_pandas_general_seed_reproduces_historic_values(df_na):
-    # Regression guard for the pandas fast-path specifically: transform()'s
-    # pandas branch is untouched code (still pandas' own .sample()/.loc), so
-    # for a fixed seed it must keep drawing the exact same values it drew
-    # before this narwhals migration. These literal values are inherently
-    # pandas-RNG-specific (see class docstring) and cannot be reproduced by
-    # any other backend, so this check is legitimately pandas-only.
+    # pandas only: with a fixed seed, pandas must return the same values as before
+    # the narwhals migration. polars uses a different random number generator.
     imputer = RandomSampleImputer(variables=None, random_state=5, seed="general")
     X_transformed = imputer.fit_transform(df_na)
 
@@ -157,11 +153,8 @@ def _data_without_na_in(data, columns):
     return data
 
 
-@pytest.mark.parametrize(
-    "random_state,seeding_method",
-    [(["Marks", "Age"], "add"), (["Marks", "Age"], "multiply"), ("Age", "add")],
-)
-def test_seed_per_observation(make_df, data_na, random_state, seeding_method):
+@pytest.mark.parametrize("random_state", [["Marks", "Age"], "Age"])
+def test_seed_per_observation(make_df, data_na, random_state):
     seed_vars = [random_state] if isinstance(random_state, str) else random_state
     data = _data_without_na_in(data_na, seed_vars)
     df_na = make_df(data)
@@ -170,7 +163,6 @@ def test_seed_per_observation(make_df, data_na, random_state, seeding_method):
         variables=["City", "Studies"],
         random_state=random_state,
         seed="observation",
-        seeding_method=seeding_method,
     )
     X_transformed = imputer.fit_transform(df_na)
 
@@ -190,10 +182,107 @@ def test_seed_per_observation(make_df, data_na, random_state, seeding_method):
         variables=["City", "Studies"],
         random_state=random_state,
         seed="observation",
-        seeding_method=seeding_method,
     )
     X_transformed2 = imputer2.fit_transform(df_na)
     assert frame_to_dict(X_transformed) == frame_to_dict(X_transformed2)
+
+
+DATA_SEED_TRAIN = {
+    "City": ["London", "Manchester", "Bristol", "Leeds", "York", "Bath", "Hull"],
+    "Age": [20.0, 21.0, 19.0, 23.0, 40.0, 41.0, 37.0],
+    "Marks": [0.9, 0.8, 0.7, 0.3, 0.6, 0.8, 0.5],
+}
+# rows 0 and 3 have identical seeding values and City missing
+DATA_SEED_TEST = {
+    "City": [None, "Leeds", None, None, None],
+    "Age": [25.0, 30.0, 40.0, 25.0, 33.0],
+    "Marks": [0.7, 0.4, 0.6, 0.7, 0.2],
+}
+
+
+def test_seed_per_observation_imputes_identical_rows_equally(make_df):
+    imputer = RandomSampleImputer(
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X_transformed = imputer.transform(make_df(DATA_SEED_TEST))
+
+    city = frame_to_dict(X_transformed)["City"]
+    assert city[0] == city[3]
+
+
+def test_seed_per_observation_does_not_depend_on_row_position(make_df):
+    imputer = RandomSampleImputer(
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X = make_df(DATA_SEED_TEST)
+    expected = frame_to_dict(imputer.transform(X))["City"]
+
+    # same rows in reverse order
+    X_reversed = make_df({k: v[::-1] for k, v in DATA_SEED_TEST.items()})
+    reversed_city = frame_to_dict(imputer.transform(X_reversed))["City"]
+    assert reversed_city == expected[::-1]
+
+    # each row imputed on its own
+    for i in range(len(expected)):
+        row_city = frame_to_dict(imputer.transform(X[i:i + 1]))["City"]
+        assert row_city == [expected[i]]
+
+
+def test_seed_per_observation_with_negative_and_large_seeding_values(make_df):
+    imputer = RandomSampleImputer(
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X = make_df(
+        {
+            "City": [None, None, "Leeds"],
+            "Age": [-30.0, 1e20, 20.0],
+            "Marks": [0.1, 1e20, 0.9],
+        }
+    )
+    X_transformed = imputer.transform(X)
+
+    assert isinstance(X_transformed, make_df)
+    assert null_count(X_transformed, "City") == 0
+    assert set(frame_to_dict(X_transformed)["City"]) <= set(DATA_SEED_TRAIN["City"])
+
+
+def test_seed_per_observation_uses_values_before_imputation_with_missing_as_zero(
+    make_df,
+):
+    # Age is imputed and also seeds City: row 0 (Age missing) must seed like
+    # row 1 (Age 0), not with its imputed Age.
+    imputer = RandomSampleImputer(
+        variables=["Age", "City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X = make_df(
+        {
+            "City": [None, None, "Leeds"],
+            "Age": [None, 0.0, 30.0],
+            "Marks": [0.7, 0.7, 0.4],
+        }
+    )
+    X_transformed = imputer.transform(X)
+
+    result = frame_to_dict(X_transformed)
+    assert null_count(X_transformed, "Age") == 0
+    assert result["City"][0] == result["City"][1]
+
+
+def test_seed_per_observation_with_duplicated_index():
+    # pandas only: polars has no index
+    imputer = RandomSampleImputer(
+        variables=["City"], random_state=["Age", "Marks"], seed="observation"
+    )
+    imputer.fit(pd.DataFrame(DATA_SEED_TRAIN))
+    X = pd.DataFrame(DATA_SEED_TEST)
+    expected = frame_to_dict(imputer.transform(X))["City"]
+
+    X.index = [0, 0, 1, 1, 2]
+    assert frame_to_dict(imputer.transform(X))["City"] == expected
 
 
 def test_error_if_random_state_variables_not_in_dataframe(make_df, data_na):
