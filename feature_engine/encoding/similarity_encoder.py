@@ -1,8 +1,9 @@
 from difflib import SequenceMatcher
 from typing import List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
@@ -183,6 +184,26 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     1   2  0.666667  1.000000   0.444444    0.4
     2   3  0.444444  0.444444   1.000000    0.0
     3   4  0.000000  0.400000   0.000000    1.0
+
+    With polars
+
+    >>> import polars as pl
+    >>> from feature_engine.encoding import StringSimilarityEncoder
+    >>> X = pl.DataFrame(dict(x1 = [1,2,3,4], x2 = ["dog", "dig", "dagger", "hi"]))
+    >>> sse = StringSimilarityEncoder()
+    >>> sse.fit(X)
+    >>> sse.transform(X)
+    shape: (4, 5)
+    ┌─────┬──────────┬──────────┬───────────┬───────┐
+    │ x1  ┆ x2_dog   ┆ x2_dig   ┆ x2_dagger ┆ x2_hi │
+    │ --- ┆ ---      ┆ ---      ┆ ---       ┆ ---   │
+    │ i64 ┆ f64      ┆ f64      ┆ f64       ┆ f64   │
+    ╞═════╪══════════╪══════════╪═══════════╪═══════╡
+    │ 1   ┆ 1.0      ┆ 0.666667 ┆ 0.444444  ┆ 0.0   │
+    │ 2   ┆ 0.666667 ┆ 1.0      ┆ 0.444444  ┆ 0.4   │
+    │ 3   ┆ 0.444444 ┆ 0.444444 ┆ 1.0       ┆ 0.0   │
+    │ 4   ┆ 0.0      ┆ 0.4      ┆ 0.0       ┆ 1.0   │
+    └─────┴──────────┴──────────┴───────────┴───────┘
     """
 
     def __init__(
@@ -198,7 +219,11 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             raise ValueError(
                 f"top_categories takes only integers. Got {top_categories!r} instead."
             )
-        if missing_values not in ("raise", "impute", "ignore"):
+        if not isinstance(missing_values, str) or missing_values not in (
+            "raise",
+            "impute",
+            "ignore",
+        ):
             raise ValueError(
                 "missing_values should be one of 'raise', 'impute' or 'ignore'."
                 f" Got {missing_values!r} instead."
@@ -217,7 +242,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         self.missing_values = missing_values
         self.keywords = keywords
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learns the unique categories per variable. If top_categories is indicated,
         it will learn the most popular categories. Alternatively, it learns all
@@ -226,15 +251,15 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         Parameters
         ----------
 
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
             Can be the entire dataframe, not just the variables to encode.
 
-        y: pandas series, default=None
+        y: Series, default=None
             Target. It is not needed in this encoder. You can pass y or None.
         """
 
-        X = check_X(X)
+        nw_X = check_X(X)
         variables_ = self._check_or_select_variables(X)
 
         if self.keywords and not all(
@@ -257,107 +282,93 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         else:
             cols_to_iterate = variables_
 
-        if self.missing_values == "raise":
-            for var in cols_to_iterate:
-                self.encoder_dict_[var] = (
-                    X[var]
-                    .astype(str)
-                    .value_counts()
-                    .head(self.top_categories)
-                    .index.tolist()
-                )
-        elif self.missing_values == "impute":
-            for var in cols_to_iterate:
-                series = X[var]
-                self.encoder_dict_[var] = (
-                    series.astype(str)
-                    .mask(series.isna(), "")
-                    .value_counts()
-                    .head(self.top_categories)
-                    .index.tolist()
-                )
-        elif self.missing_values == "ignore":
-            for var in cols_to_iterate:
-                self.encoder_dict_[var] = (
-                    X[var]
-                    .dropna()
-                    .astype(str)
-                    .value_counts(dropna=True)
-                    .head(self.top_categories)
-                    .index.tolist()
-                )
-        else:
-            raise ValueError(
-                "Unrecognized value for missing_values. It should be 'raise', 'ignore' "
-                f"or 'impute'. Got {self.missing_values} instead."
-            )
+        # cast(nw.String) keeps nulls as nulls, unlike pandas' astype(str)
+        for var in cols_to_iterate:
+            col = nw_X.get_column(var)
+            if self.missing_values == "impute":
+                col = col.cast(nw.String).fill_null("")
+            elif self.missing_values == "ignore":
+                col = col.drop_nulls().cast(nw.String)
+            else:
+                col = col.cast(nw.String)
+
+            # sort=True mirrors pandas' own value_counts() default order
+            # (descending by count, ties broken by first appearance), so
+            # encoder_dict_ keeps the same category order as before.
+            counts = col.value_counts(sort=True)
+            categories = counts.get_column(counts.columns[0]).to_list()
+            self.encoder_dict_[var] = categories[: self.top_categories]
 
         # assign underscore parameters at the end in case code above fails
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Replaces the categorical variables with the similarity variables.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe.
+        X_new: dataframe.
             The transformed dataframe. The shape of the dataframe will be different from
             the original as it includes the similarity variables in place of the
             original categorical ones.
         """
 
         check_is_fitted(self)
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
         if len(self.variables_) == 0:
-            return X
+            return nw_X.to_native()
 
-        new_values = []
+        # difflib has no vectorised equivalent, so similarities are computed in numpy
+        # once per unique value, then mapped back to the rows
+        new_series = []
         for var in self.variables_:
+            col = nw_X.get_column(var)
+            categories = self.encoder_dict_[var]
+
+            null_mask = None
             if self.missing_values == "impute":
-                series = X[var]
-                series = series.astype(str).mask(series.isna(), "")
+                str_col = col.cast(nw.String).fill_null("")
             else:
-                series = X[var].astype(str)
+                str_col = col.cast(nw.String)
+                if self.missing_values == "ignore":
+                    null_mask = np.array(col.is_null().to_list())
 
-            categories = series.unique()
-            column_encoder_dict = {
-                x: _gpm_fast_vec(x, self.encoder_dict_[var]) for x in categories
-            }
-            # Ensure map result is always an array of the correct size.
-            # Missing values in categories or unknown categories will map to NaN.
-            default_nan = np.full(len(self.encoder_dict_[var]), np.nan)
-            if "nan" not in column_encoder_dict:
-                column_encoder_dict["nan"] = default_nan
-            if "<NA>" not in column_encoder_dict:
-                column_encoder_dict["<NA>"] = default_nan
+            values = np.asarray(str_col.to_list(), dtype=object)
+            if null_mask is not None:
+                # placeholder value for null rows: overwritten with NaN
+                # below, the string itself is never used.
+                values = np.where(null_mask, "", values)
 
-            encoded_series = series.map(column_encoder_dict)
+            unique_vals, inverse = np.unique(values, return_inverse=True)
+            cats_arr = np.asarray(categories, dtype=object)
+            sim_matrix = _gpm_fast_vec(
+                unique_vals.reshape(-1, 1), cats_arr.reshape(1, -1)
+            )
+            encoded = sim_matrix[inverse]
 
-            # Robust stacking: replace any float NaNs (from unknown values) with arrays
-            encoded_list = [
-                v if isinstance(v, (list, np.ndarray)) else default_nan
-                for v in encoded_series
-            ]
-            encoded = np.vstack(encoded_list)
-            if self.missing_values == "ignore":
-                encoded[X[var].isna(), :] = np.nan
-            new_values.append(encoded)
+            if null_mask is not None:
+                encoded[null_mask, :] = np.nan
 
-        new_features = self._get_new_features_name()
-        X.loc[:, new_features] = np.hstack(new_values)
+            for j, category in enumerate(categories):
+                name = f"{var}_nan" if category == "" else f"{var}_{category}"
+                new_series.append(
+                    nw.new_series(name, encoded[:, j], backend=nw_X.implementation)
+                )
 
-        return X.drop(self.variables_, axis=1)
+        nw_X = nw_X.with_columns(*new_series).drop(self.variables_)
+
+        return nw_X.to_native()
 
     def _get_new_features_name(self) -> List[str]:
         """Return names of the created features."""
@@ -378,7 +389,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
         return feature_names
 
-    def inverse_transform(self, X: pd.DataFrame):
+    def inverse_transform(self, X: IntoDataFrame):
         """inverse_transform is not implemented for this transformer."""
         raise NotImplementedError(
             "inverse_transform is not implemented for this transformer."

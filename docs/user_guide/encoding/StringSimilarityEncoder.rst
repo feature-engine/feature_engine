@@ -299,6 +299,37 @@ Below, we see the resulting dataframe:
     393             0.0               0.437500        0.666667        0.666667
 
 
+With polars
+-----------
+
+:class:`StringSimilarityEncoder()` works the same way with polars dataframes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import StringSimilarityEncoder
+
+    df = pl.DataFrame({"words": ["dog", "dig", "cat"]})
+
+    encoder = StringSimilarityEncoder()
+    dft = encoder.fit_transform(df)
+    dft
+
+We see the same similarity values as with the pandas dataframe:
+
+.. code:: text
+
+    shape: (3, 3)
+    ┌───────────┬───────────┬───────────┐
+    │ words_dog ┆ words_dig ┆ words_cat │
+    │ ---       ┆ ---       ┆ ---       │
+    │ f64       ┆ f64       ┆ f64       │
+    ╞═══════════╪═══════════╪═══════════╡
+    │ 1.0       ┆ 0.666667  ┆ 0.0       │
+    │ 0.666667  ┆ 1.0       ┆ 0.0       │
+    │ 0.0       ┆ 0.0       ┆ 1.0       │
+    └───────────┴───────────┴───────────┘
+
 Additional resources
 --------------------
 
