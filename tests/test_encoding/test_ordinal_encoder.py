@@ -1,45 +1,112 @@
+import re
+
+import numpy as np
 import pandas as pd
 import pytest
-from numpy import nan
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.encoding import OrdinalEncoder
+from tests.backend_helpers import make_series, frame_to_dict
+
+MSG_NA = (
+    "Some of the variables in the dataset contain NaN. Check and "
+    "remove those before using this transformer or set the parameter "
+    "`missing_values='ignore'` when initialising this transformer."
+)
 
 
-def test_ordered_encoding_1_variable(df_enc):
+# init parameters
+@pytest.mark.parametrize(
+    "enc_method",
+    ["other", "Ordered", "", False, 1, 0.5, None, ["ordered"], ("arbitrary",)],
+)
+def test_error_if_encoding_method_not_allowed(enc_method):
+    msg = (
+        "encoding_method takes only values 'ordered' and 'arbitrary'. "
+        f"Got {enc_method} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        OrdinalEncoder(encoding_method=enc_method)
+
+
+@pytest.mark.parametrize(
+    "unseen", ["empanada", False, 1, None, ("raise", "ignore"), ["ignore"]]
+)
+def test_error_if_unseen_not_permitted_value(unseen):
+    msg = (
+        "Parameter `unseen` takes only values ignore, raise, encode. "
+        f"Got {unseen} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        OrdinalEncoder(unseen=unseen)
+
+
+@pytest.mark.parametrize(
+    "encoding_method, missing_values, ignore_format, unseen",
+    [
+        ("ordered", "raise", False, "ignore"),
+        ("arbitrary", "ignore", True, "raise"),
+        ("ordered", "ignore", True, "encode"),
+    ],
+)
+def test_init_param_assignment(encoding_method, missing_values, ignore_format, unseen):
+    encoder = OrdinalEncoder(
+        encoding_method=encoding_method,
+        missing_values=missing_values,
+        ignore_format=ignore_format,
+        unseen=unseen,
+    )
+    assert encoder.encoding_method == encoding_method
+    assert encoder.missing_values == missing_values
+    assert encoder.ignore_format is ignore_format
+    assert encoder.unseen == unseen
+
+
+# fit and transform
+def test_ordered_encoding_1_variable(make_df, data_enc):
     # test case 1: 1 variable, ordered encoding
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc["target"])
+
     encoder = OrdinalEncoder(encoding_method="ordered", variables=["var_A"])
-    encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-    X = encoder.transform(df_enc[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
-    # expected output
-    transf_df = df_enc.copy()
-    transf_df["var_A"] = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2]
-
-    # test init params
-    assert encoder.encoding_method == "ordered"
-    assert encoder.variables == ["var_A"]
     # test fit attr
     assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": {"A": 1, "B": 0, "C": 2}}
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_A": [1] * 6 + [0] * 10 + [2] * 4,
+        "var_B": data_enc["var_B"],
+    }
 
 
-def test_arbitrary_encoding_automatically_find_variables(df_enc):
+@pytest.mark.parametrize("to_target", [list, np.array])
+def test_ordered_encoding_with_target_as_list_or_array(make_df, data_enc, to_target):
+    # a list or numpy array target takes a different code path than a Series
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    y = to_target(data_enc["target"])
+
+    encoder = OrdinalEncoder(encoding_method="ordered", variables=["var_A"])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
+
+    assert encoder.encoder_dict_ == {"var_A": {"A": 1, "B": 0, "C": 2}}
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_A": [1] * 6 + [0] * 10 + [2] * 4,
+        "var_B": data_enc["var_B"],
+    }
+
+
+def test_arbitrary_encoding_automatically_find_variables(make_df, data_enc):
     # test case 2: automatically select variables, unordered encoding
     encoder = OrdinalEncoder(encoding_method="arbitrary", variables=None)
-    X = encoder.fit_transform(df_enc)
+    Xt = encoder.fit_transform(make_df(data_enc))
 
-    # expected output
-    transf_df = df_enc.copy()
-    transf_df["var_A"] = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
-    transf_df["var_B"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
-
-    # test init params
-    assert encoder.encoding_method == "arbitrary"
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
@@ -48,179 +115,115 @@ def test_arbitrary_encoding_automatically_find_variables(df_enc):
     }
     assert encoder.n_features_in_ == 3
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_A": [0] * 6 + [1] * 10 + [2] * 4,
+        "var_B": [0] * 10 + [1] * 6 + [2] * 4,
+        "target": data_enc["target"],
+    }
 
 
-def test_encoding_when_nan_in_fit_df(df_enc):
-    df = df_enc.copy()
-    df.loc[len(df)] = [nan, nan, 0]
+def test_encoding_when_nan_in_fit_df(make_df, data_enc):
+    data = {
+        "var_A": data_enc["var_A"] + [None],
+        "var_B": data_enc["var_B"] + [None],
+        "target": data_enc["target"] + [0],
+    }
+    X = make_df(data)[["var_A", "var_B"]]
+    y = make_series(make_df, data["target"])
+    X_new = make_df({"var_A": ["A", None], "var_B": ["A", None]})
 
     encoder = OrdinalEncoder(encoding_method="arbitrary", missing_values="ignore")
-    encoder.fit(df[["var_A", "var_B"]])
-
-    X = encoder.transform(
-        pd.DataFrame(
-            {
-                "var_A": ["A", nan],
-                "var_B": ["A", nan],
-            }
-        )
-    )
-
-    # transform params
-    pd.testing.assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "var_A": [0, nan],
-                "var_B": [0, nan],
-            }
-        ),
-        check_dtype=False,
-    )
+    encoder.fit(X)
+    Xt = encoder.transform(X_new)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"var_A": [0, None], "var_B": [0, None]}
 
     encoder = OrdinalEncoder(encoding_method="ordered", missing_values="ignore")
-    encoder.fit(df[["var_A", "var_B"]], df["target"])
-
-    X = encoder.transform(
-        pd.DataFrame(
-            {
-                "var_A": ["A", nan],
-                "var_B": ["A", nan],
-            }
-        )
-    )
-
-    # transform params
-    pd.testing.assert_frame_equal(
-        X,
-        pd.DataFrame(
-            {
-                "var_A": [1, nan],
-                "var_B": [0, nan],
-            }
-        ),
-        check_dtype=False,
-    )
+    encoder.fit(X, y)
+    Xt = encoder.transform(X_new)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"var_A": [1, None], "var_B": [0, None]}
 
 
-@pytest.mark.parametrize("enc_method", ["other", False, 1])
-def test_error_if_encoding_method_not_allowed(enc_method):
-    with pytest.raises(ValueError):
-        OrdinalEncoder(encoding_method=enc_method)
-
-
-@pytest.mark.parametrize("enc_method", ["other", False, 1])
-def test_error_if_encoding_method_not_recognized_in_fit(enc_method, df_enc):
-    enc = OrdinalEncoder()
-    enc.encoding_method = enc_method
-    with pytest.raises(ValueError):
-        enc.fit(df_enc)
-
-
-def test_error_if_ordinal_encoding_and_no_y_passed(df_enc):
+def test_error_if_ordinal_encoding_and_no_y_passed(make_df, data_enc):
     # test case 3: raises error if target is  not passed
-    with pytest.raises(ValueError):
-        encoder = OrdinalEncoder(encoding_method="ordered")
-        encoder.fit(df_enc)
+    encoder = OrdinalEncoder(encoding_method="ordered")
+    msg = "requires y to be passed, but the target y is None"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        encoder.fit(make_df(data_enc))
 
 
 def test_error_if_input_df_contains_categories_not_present_in_training_df(
-    df_enc, df_enc_rare
+    make_df, data_enc, data_enc_rare
 ):
     # test case 4: when dataset to be transformed contains categories not present
     # in training dataset
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc["target"])
+    X_rare = make_df(data_enc_rare)[["var_A", "var_B"]]
     msg = "During the encoding, NaN values were introduced in the feature(s) var_A."
 
-    # check for warning when rare_labels equals 'ignore'
-    with pytest.warns(UserWarning) as record:
-        encoder = OrdinalEncoder(unseen="ignore")
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_enc_rare[["var_A", "var_B"]])
+    # check for warning when unseen equals 'ignore'
+    encoder = OrdinalEncoder(unseen="ignore")
+    encoder.fit(X, y)
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        encoder.transform(X_rare)
 
-    # check that at least one warning was raised (Pandas 3 may emit additional
-    # deprecation warnings)
-    assert len(record) >= 1
-    # check that the message matches
-    assert any(r.message.args[0] == msg for r in record)
-
-    # check for error when rare_labels equals 'raise'
-    with pytest.raises(ValueError) as record:
-        encoder = OrdinalEncoder(unseen="raise")
-        encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
-        encoder.transform(df_enc_rare[["var_A", "var_B"]])
-
-    # check that the error message matches
-    assert str(record.value) == msg
+    # check for error when unseen equals 'raise'
+    encoder = OrdinalEncoder(unseen="raise")
+    encoder.fit(X, y)
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        encoder.transform(X_rare)
 
 
-def test_fit_raises_error_if_df_contains_na(df_enc_na):
+def test_fit_raises_error_if_df_contains_na(make_df, data_enc_na):
     # test case 4: when dataset contains na, fit method
     encoder = OrdinalEncoder(encoding_method="arbitrary")
-    with pytest.raises(ValueError) as record:
-        encoder.fit(df_enc_na)
-
-    msg = (
-        "Some of the variables in the dataset contain NaN. Check and "
-        "remove those before using this transformer or set the parameter "
-        "`missing_values='ignore'` when initialising this transformer."
-    )
-    assert str(record.value) == msg
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        encoder.fit(make_df(data_enc_na))
 
 
-def test_transform_raises_error_if_df_contains_na(df_enc, df_enc_na):
+def test_transform_raises_error_if_df_contains_na(make_df, data_enc, data_enc_na):
     # test case 4: when dataset contains na, transform method
     encoder = OrdinalEncoder(encoding_method="arbitrary")
-    encoder.fit(df_enc)
-    with pytest.raises(ValueError) as record:
-        encoder.transform(df_enc_na)
-
-    msg = (
-        "Some of the variables in the dataset contain NaN. Check and "
-        "remove those before using this transformer or set the parameter "
-        "`missing_values='ignore'` when initialising this transformer."
-    )
-    assert str(record.value) == msg
+    encoder.fit(make_df(data_enc))
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        encoder.transform(make_df(data_enc_na))
 
 
-def test_ordered_encoding_1_variable_ignore_format(df_enc_numeric):
+def test_ordered_encoding_1_variable_ignore_format(make_df, data_enc_numeric):
+    X = make_df(data_enc_numeric)[["var_A", "var_B"]]
+    y = make_series(make_df, data_enc_numeric["target"])
 
     encoder = OrdinalEncoder(
         encoding_method="ordered", variables=["var_A"], ignore_format=True
     )
-    encoder.fit(df_enc_numeric[["var_A", "var_B"]], df_enc_numeric["target"])
-    X = encoder.transform(df_enc_numeric[["var_A", "var_B"]])
+    encoder.fit(X, y)
+    Xt = encoder.transform(X)
 
-    # expected output
-    transf_df = df_enc_numeric.copy()
-    transf_df["var_A"] = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2]
-
-    # test init params
-    assert encoder.encoding_method == "ordered"
-    assert encoder.variables == ["var_A"]
     # test fit attr
     assert encoder.variables_ == ["var_A"]
     assert encoder.encoder_dict_ == {"var_A": {1: 1, 2: 0, 3: 2}}
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_A": [1] * 6 + [0] * 10 + [2] * 4,
+        "var_B": data_enc_numeric["var_B"],
+    }
 
 
-def test_arbitrary_encoding_automatically_find_variables_ignore_format(df_enc_numeric):
+def test_arbitrary_encoding_automatically_find_variables_ignore_format(
+    make_df, data_enc_numeric
+):
+    X = make_df(data_enc_numeric)[["var_A", "var_B"]]
 
     encoder = OrdinalEncoder(
         encoding_method="arbitrary", variables=None, ignore_format=True
     )
-    X = encoder.fit_transform(df_enc_numeric[["var_A", "var_B"]])
+    Xt = encoder.fit_transform(X)
 
-    # expected output
-    transf_df = df_enc_numeric[["var_A", "var_B"]].copy()
-    transf_df["var_A"] = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
-    transf_df["var_B"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
-
-    # test init params
-    assert encoder.encoding_method == "arbitrary"
-    assert encoder.variables is None
     # test fit attr
     assert encoder.variables_ == ["var_A", "var_B"]
     assert encoder.encoder_dict_ == {
@@ -229,10 +232,15 @@ def test_arbitrary_encoding_automatically_find_variables_ignore_format(df_enc_nu
     }
     assert encoder.n_features_in_ == 2
     # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_A": [0] * 6 + [1] * 10 + [2] * 4,
+        "var_B": [0] * 10 + [1] * 6 + [2] * 4,
+    }
 
 
 def test_variables_cast_as_category(df_enc_category_dtypes):
+    # pandas-only.
     df = df_enc_category_dtypes.copy()
     encoder = OrdinalEncoder(encoding_method="ordered", variables=["var_A"])
     encoder.fit(df[["var_A", "var_B"]], df["target"])
@@ -240,70 +248,73 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
 
     # expected output
     transf_df = df.copy()
-    transf_df["var_A"] = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2]
+    transf_df["var_A"] = [1] * 6 + [0] * 10 + [2] * 4
 
     # test transform output
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]], check_dtype=False)
     assert X["var_A"].dtypes.name == "int64"
 
 
-@pytest.mark.parametrize(
-    "unseen", ["empanada", False, 1, ("raise", "ignore"), ["ignore"]]
-)
-def test_error_if_unseen_not_permitted_value(unseen):
-    with pytest.raises(ValueError):
-        OrdinalEncoder(unseen=unseen)
-
-
-def test_inverse_transform_when_no_unseen():
-    df = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+def test_inverse_transform_when_no_unseen(make_df):
+    words = ["dog", "dog", "cat", "cat", "cat", "bird"]
+    df = make_df({"words": words})
     enc = OrdinalEncoder(encoding_method="arbitrary")
     enc.fit(df)
     dft = enc.transform(df)
-    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df)
+    Xi = enc.inverse_transform(dft)
+    assert isinstance(Xi, make_df)
+    assert frame_to_dict(Xi) == {"words": words}
 
 
-def test_inverse_transform_when_ignore_unseen():
-    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
-    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
-    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
+def test_inverse_transform_when_ignore_unseen(make_df):
+    df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
     enc = OrdinalEncoder(encoding_method="arbitrary", unseen="ignore")
     enc.fit(df1)
     dft = enc.transform(df2)
-    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+    Xi = enc.inverse_transform(dft)
+    assert isinstance(Xi, make_df)
+    assert frame_to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
-def test_inverse_transform_when_encode_unseen():
-    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
-    df2 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
-    df3 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", nan]})
+def test_inverse_transform_when_encode_unseen(make_df):
+    df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+    df2 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "frog"]})
     enc = OrdinalEncoder(encoding_method="arbitrary", unseen="encode")
     enc.fit(df1)
     dft = enc.transform(df2)
-    pd.testing.assert_frame_equal(enc.inverse_transform(dft), df3)
+    Xi = enc.inverse_transform(dft)
+    assert isinstance(Xi, make_df)
+    assert frame_to_dict(Xi) == {"words": ["dog", "dog", "cat", "cat", "cat", None]}
 
 
-def test_inverse_transform_raises_non_fitted_error():
-    df1 = pd.DataFrame({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
+def test_inverse_transform_raises_non_fitted_error(make_df):
+    df1 = make_df({"words": ["dog", "dog", "cat", "cat", "cat", "bird"]})
     enc = OrdinalEncoder(encoding_method="arbitrary")
+    msg = (
+        "This OrdinalEncoder instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1)
 
-    df1.loc[len(df1) - 1] = nan
+    df1_na = make_df({"words": ["dog", "dog", "cat", "cat", "cat", None]})
 
-    with pytest.raises(ValueError):
-        enc.fit(df1)
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        enc.fit(df1_na)
 
     # Test when fit is not called prior to transform.
-    with pytest.raises(NotFittedError):
-        enc.inverse_transform(df1)
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
+        enc.inverse_transform(df1_na)
 
 
-def test_encoding_new_categories(df_enc):
-    df_unseen = pd.DataFrame({"var_A": ["D"], "var_B": ["D"]})
+def test_encoding_new_categories(make_df, data_enc):
+    X = make_df(data_enc)[["var_A", "var_B"]]
+    df_unseen = make_df({"var_A": ["D"], "var_B": ["D"]})
     encoder = OrdinalEncoder(encoding_method="arbitrary", unseen="encode")
-    encoder.fit(df_enc[["var_A", "var_B"]])
-    df_transformed = encoder.transform(df_unseen)
-    assert (df_transformed == -1).all(axis=None)
+    encoder.fit(X)
+    Xt = encoder.transform(df_unseen)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"var_A": [-1], "var_B": [-1]}
