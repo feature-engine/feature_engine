@@ -82,9 +82,9 @@ and easy to miss without an actual comparison.
 
 - `pytest.raises(ExceptionType, match=msg)`, never
   `with pytest.raises() as record: ... assert str(record.value) == msg`.
-- Dataframe-agnostic means one test, both backends: parametrize each
-  behavior over `@pytest.mark.parametrize("make_df", [pd.DataFrame,
-  pl.DataFrame])` and assert the same input produces the same output
+- Dataframe-agnostic means one test, both backends: request the `make_df`
+  fixture from `tests/conftest.py`, which runs the test with `pd.DataFrame`
+  and `pl.DataFrame`, and assert the same input produces the same output
   values on both. Never write a separate pandas-only test and a
   separate polars-only test for the same behavior — that duplicates
   the test and hides the point of being dataframe-agnostic, which is
