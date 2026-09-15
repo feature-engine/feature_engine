@@ -9,7 +9,10 @@ from tests.backend_helpers import frame_to_dict, null_count
 
 
 # init parameters
-@pytest.mark.parametrize("imputation_method", ["arbitrary", "mean", 1])
+@pytest.mark.parametrize(
+    "imputation_method",
+    ["arbitrary", "mean", 1, None, ("missing",), ["frequent"]],
+)
 def test_error_when_imputation_method_not_frequent_or_missing(imputation_method):
     msg = (
         "imputation_method takes only values 'missing' or 'frequent'. "

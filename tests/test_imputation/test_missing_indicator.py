@@ -1,3 +1,4 @@
+import re
 import warnings
 
 import numpy as np
@@ -11,6 +12,23 @@ from tests.backend_helpers import frame_to_dict
 INDICATORS = [MissingIndicator, AddMissingIndicator]
 
 
+# init parameters
+@pytest.mark.parametrize("indicator_cls", INDICATORS)
+@pytest.mark.parametrize("missing_only", ["missing_only", 1, None])
+def test_error_when_missing_only_not_bool(indicator_cls, missing_only):
+    msg = f"missing_only takes values True or False. Got {missing_only} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        indicator_cls(missing_only=missing_only)
+
+
+@pytest.mark.parametrize("indicator_cls", INDICATORS)
+@pytest.mark.parametrize("missing_only", [True, False])
+def test_init_param_assignment(indicator_cls, missing_only):
+    imputer = indicator_cls(missing_only=missing_only)
+    assert imputer.missing_only is missing_only
+
+
+# fit and transform
 @pytest.mark.parametrize("indicator_cls", INDICATORS)
 def test_detect_variables_with_missing_data_when_variables_is_none(
     make_df, data_na_dob, indicator_cls
@@ -18,10 +36,6 @@ def test_detect_variables_with_missing_data_when_variables_is_none(
     # test case 1: automatically detect variables with missing data
     imputer = indicator_cls(missing_only=True, variables=None)
     X_transformed = imputer.fit_transform(make_df(data_na_dob))
-
-    # init params
-    assert imputer.missing_only is True
-    assert imputer.variables is None
 
     # fit params
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
@@ -80,7 +94,6 @@ def test_detect_variables_with_missing_data_in_variables_entered_by_user(
     )
     X_transformed = imputer.fit_transform(make_df(data_na_dob))
 
-    assert imputer.variables == ["City", "Studies", "Age", "dob"]
     assert imputer.variables_ == ["City", "Studies", "Age"]
     assert isinstance(X_transformed, make_df)
     assert X_transformed.shape == (8, 9)
@@ -88,12 +101,6 @@ def test_detect_variables_with_missing_data_in_variables_entered_by_user(
     assert "City_na" in result
     assert "dob_na" not in result
     assert sum(result["City_na"]) == 2
-
-
-@pytest.mark.parametrize("indicator_cls", INDICATORS)
-def test_error_when_missing_only_not_bool(indicator_cls):
-    with pytest.raises(ValueError):
-        indicator_cls(missing_only="missing_only")
 
 
 @pytest.mark.parametrize("indicator_cls", INDICATORS)

@@ -136,8 +136,14 @@ class MeanImputer(BaseImputer):
         return_empty: bool = False,
     ) -> None:
 
-        if imputation_method not in ["median", "mean"]:
-            raise ValueError("imputation_method takes only values 'median' or 'mean'")
+        if not isinstance(imputation_method, str) or imputation_method not in [
+            "median",
+            "mean",
+        ]:
+            raise ValueError(
+                "imputation_method takes only values 'median' or 'mean'. "
+                f"Got {imputation_method} instead."
+            )
 
         self.imputation_method = imputation_method
         self.variables = _check_variables_input_value(variables)

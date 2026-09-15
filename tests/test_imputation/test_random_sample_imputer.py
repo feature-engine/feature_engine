@@ -1,15 +1,75 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import re
+
 import pandas as pd
 import polars as pl
 import pytest
 
 from feature_engine.imputation import RandomSampleImputer
 from feature_engine.imputation.random_sample import _define_seed
-from tests.backend_helpers import null_count, frame_to_dict
+from tests.backend_helpers import frame_to_dict, null_count
 
 
+# init parameters
+@pytest.mark.parametrize("seed", ["arbitrary", "both", 1])
+def test_error_if_seed_not_permitted_value(seed):
+    msg = f"seed takes only values 'general' or 'observation'. Got {seed} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RandomSampleImputer(seed=seed)
+
+
+@pytest.mark.parametrize("seeding_method", ["arbitrary", "sum", 1])
+def test_error_if_seeding_method_not_permitted_value(seeding_method):
+    msg = (
+        "seeding_method takes only values 'add' or 'multiply'. "
+        f"Got {seeding_method} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RandomSampleImputer(seeding_method=seeding_method)
+
+
+@pytest.mark.parametrize("random_state", ["arbitrary", 0.5, ["Age"]])
+def test_error_if_random_state_not_integer_when_seed_is_general(random_state):
+    msg = (
+        "if seed == 'general' then random_state must take an integer. "
+        f"Got {random_state} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RandomSampleImputer(seed="general", random_state=random_state)
+
+
+@pytest.mark.parametrize("random_state", [None, [], ""])
+def test_error_if_random_state_is_empty_when_seed_is_observation(random_state):
+    msg = (
+        "if seed == 'observation' the random state must take the name of one "
+        "or more variables which will be used to seed the imputer. "
+        f"Got {random_state} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        RandomSampleImputer(seed="observation", random_state=random_state)
+
+
+@pytest.mark.parametrize(
+    "random_state, seed, seeding_method",
+    [
+        (None, "general", "add"),
+        (5, "general", "multiply"),
+        ("Age", "observation", "add"),
+        (["Age", "Marks"], "observation", "multiply"),
+    ],
+)
+def test_init_param_assignment(random_state, seed, seeding_method):
+    imputer = RandomSampleImputer(
+        random_state=random_state, seed=seed, seeding_method=seeding_method
+    )
+    assert imputer.random_state == random_state
+    assert imputer.seed == seed
+    assert imputer.seeding_method == seeding_method
+
+
+# fit and transform
 def test_define_seed(df_vartypes):
     # _define_seed uses pandas' .loc label-based row access, so it is only
     # ever called from the pandas branch of transform() - it is inherently
@@ -26,11 +86,6 @@ def test_general_seed_plus_automatically_select_variables(make_df, data_na):
     df_na = make_df(data_na)
     imputer = RandomSampleImputer(variables=None, random_state=5, seed="general")
     X_transformed = imputer.fit_transform(df_na)
-
-    # test init params
-    assert imputer.variables is None
-    assert imputer.random_state == 5
-    assert imputer.seed == "general"
 
     # test fit attrs
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
@@ -119,9 +174,8 @@ def test_seed_per_observation(make_df, data_na, random_state, seeding_method):
     )
     X_transformed = imputer.fit_transform(df_na)
 
-    assert imputer.variables == ["City", "Studies"]
+    # fit() turns a single seeding variable name into a list
     assert imputer.random_state == seed_vars
-    assert imputer.seed == "observation"
     assert isinstance(X_transformed, make_df)
     result = frame_to_dict(X_transformed)
     for col in ["City", "Studies"]:
@@ -142,29 +196,13 @@ def test_seed_per_observation(make_df, data_na, random_state, seeding_method):
     assert frame_to_dict(X_transformed) == frame_to_dict(X_transformed2)
 
 
-def test_error_if_seed_not_permitted_value():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seed="arbitrary")
-
-
-def test_error_if_seeding_method_not_permitted_value():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seeding_method="arbitrary")
-
-
-def test_error_if_random_state_takes_not_permitted_value():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seed="general", random_state="arbitrary")
-
-
-def test_error_if_random_state_is_none_when_seed_is_observation():
-    with pytest.raises(ValueError):
-        RandomSampleImputer(seed="observation", random_state=None)
-
-
-def test_error_if_random_state_is_string(make_df, data_na):
+def test_error_if_random_state_variables_not_in_dataframe(make_df, data_na):
     imputer = RandomSampleImputer(seed="observation", random_state="arbitrary")
-    with pytest.raises(ValueError):
+    msg = (
+        "There are variables assigned as random state which are not part "
+        "of the training dataframe. Got arbitrary instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         imputer.fit(make_df(data_na))
 
 

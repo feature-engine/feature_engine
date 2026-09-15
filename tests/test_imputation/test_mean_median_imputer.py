@@ -3,7 +3,7 @@ import re
 import pytest
 
 from feature_engine.imputation import MeanImputer, MeanMedianImputer
-from tests.backend_helpers import null_count, frame_to_dict
+from tests.backend_helpers import frame_to_dict, null_count
 
 DEPRECATION_WARNING = (
     "MeanMedianImputer was deprecated in favour of MeanImputer in version "
@@ -27,20 +27,31 @@ def make_imputer(imputer_class, **kwargs):
     return imputer_class(**kwargs)
 
 
-def test_mean_median_imputer_raises_future_warning():
-    with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
-        MeanMedianImputer()
+# init parameters
+@pytest.mark.parametrize(
+    "imputation_method", ["arbitrary", "mode", 1, None, ("mean",), ["median"]]
+)
+def test_error_with_wrong_imputation_method(imputer_class, imputation_method):
+    msg = (
+        "imputation_method takes only values 'median' or 'mean'. "
+        f"Got {imputation_method} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        make_imputer(imputer_class, imputation_method=imputation_method)
 
 
+@pytest.mark.parametrize("imputation_method", ["mean", "median"])
+def test_init_param_assignment(imputer_class, imputation_method):
+    imputer = make_imputer(imputer_class, imputation_method=imputation_method)
+    assert imputer.imputation_method == imputation_method
+
+
+# fit and transform
 def test_mean_imputation_and_automatically_select_variables(
     make_df, data_na, imputer_class
 ):
     imputer = make_imputer(imputer_class, imputation_method="mean", variables=None)
     X_transformed = imputer.fit_transform(make_df(data_na))
-
-    # test init params
-    assert imputer.imputation_method == "mean"
-    assert imputer.variables is None
 
     # test fit attributes
     assert imputer.variables_ == ["Age", "Marks"]
@@ -75,10 +86,6 @@ def test_median_imputation_when_user_enters_single_variables(
     )
     X_transformed = imputer.fit_transform(make_df(data_na))
 
-    # test init params
-    assert imputer.imputation_method == "median"
-    assert imputer.variables == ["Age"]
-
     # test fit attributes
     assert imputer.n_features_in_ == 5
     assert imputer.imputer_dict_ == {"Age": 23.0}
@@ -89,6 +96,6 @@ def test_median_imputation_when_user_enters_single_variables(
     assert frame_to_dict(X_transformed)["Age"] == [20, 21, 19, 23.0, 23, 40, 41, 37]
 
 
-def test_error_with_wrong_imputation_method(imputer_class):
-    with pytest.raises(ValueError):
-        make_imputer(imputer_class, imputation_method="arbitrary")
+def test_mean_median_imputer_raises_future_warning():
+    with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
+        MeanMedianImputer()

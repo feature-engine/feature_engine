@@ -176,21 +176,29 @@ class RandomSampleImputer(BaseImputer):
     ) -> None:
 
         if seed not in ["general", "observation"]:
-            raise ValueError("seed takes only values 'general' or 'observation'")
+            raise ValueError(
+                "seed takes only values 'general' or 'observation'. "
+                f"Got {seed} instead."
+            )
 
         if seeding_method not in ["add", "multiply"]:
-            raise ValueError("seeding_method takes only values 'add' or 'multiply'")
+            raise ValueError(
+                "seeding_method takes only values 'add' or 'multiply'. "
+                f"Got {seeding_method} instead."
+            )
 
         if seed == "general" and random_state:
             if not isinstance(random_state, int):
                 raise ValueError(
-                    "if seed == 'general' then random_state must take an integer"
+                    "if seed == 'general' then random_state must take an integer. "
+                    f"Got {random_state} instead."
                 )
 
         if seed == "observation" and not random_state:
             raise ValueError(
                 "if seed == 'observation' the random state must take the name of one "
-                "or more variables which will be used to seed the imputer"
+                "or more variables which will be used to seed the imputer. "
+                f"Got {random_state} instead."
             )
 
         self.variables = _check_variables_input_value(variables)
@@ -244,7 +252,7 @@ class RandomSampleImputer(BaseImputer):
             ):
                 raise ValueError(
                     "There are variables assigned as random state which are not part "
-                    "of the training dataframe."
+                    f"of the training dataframe. Got {self.random_state} instead."
                 )
             self.random_state = random_state
 

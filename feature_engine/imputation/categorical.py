@@ -148,7 +148,10 @@ class CategoricalImputer(BaseImputer):
         return_object: bool = False,
         ignore_format: bool = False,
     ) -> None:
-        if imputation_method not in ["missing", "frequent"]:
+        if not isinstance(imputation_method, str) or imputation_method not in [
+            "missing",
+            "frequent",
+        ]:
             raise ValueError(
                 "imputation_method takes only values 'missing' or 'frequent'. "
                 f"Got {imputation_method} instead."
