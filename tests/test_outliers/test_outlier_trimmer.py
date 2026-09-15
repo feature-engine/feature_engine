@@ -4,7 +4,7 @@
 import pytest
 
 from feature_engine.outliers import OutlierTrimmer
-from tests.backend_helpers import make_series, to_dict
+from tests.backend_helpers import make_series, frame_to_dict
 
 # var_a and var_b each push a different row past their own bounds (row 0 fails
 # both, row 1 fails only var_b, row 4 fails only var_a) - exercises that the
@@ -21,7 +21,7 @@ def test_gaussian_right_tail_capping_when_fold_is_1(make_df, data_normal_dist):
     expected = [v for v in data_normal_dist["var"] if v <= cap]
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"var": pytest.approx(expected)}
+    assert frame_to_dict(X) == {"var": pytest.approx(expected)}
     assert X.shape[0] == 83
 
 
@@ -35,7 +35,7 @@ def test_gaussian_both_tails_capping_with_fold_2(make_df, data_normal_dist):
     expected = [v for v in data_normal_dist["var"] if lower <= v <= upper]
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"var": pytest.approx(expected)}
+    assert frame_to_dict(X) == {"var": pytest.approx(expected)}
     assert X.shape[0] == 96
 
 
@@ -48,7 +48,7 @@ def test_iqr_left_tail_capping_with_fold_2(make_df, data_normal_dist):
     expected = [v for v in data_normal_dist["var"] if v >= lower]
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"var": pytest.approx(expected)}
+    assert frame_to_dict(X) == {"var": pytest.approx(expected)}
     assert X.shape[0] == 98
 
 
@@ -61,7 +61,7 @@ def test_mad_right_tail_capping_with_fold_1(make_df, data_normal_dist):
     expected = [v for v in data_normal_dist["var"] if v <= cap]
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"var": pytest.approx(expected)}
+    assert frame_to_dict(X) == {"var": pytest.approx(expected)}
     assert X.shape[0] == 83
 
 
@@ -88,7 +88,7 @@ def test_multiple_variables_combine_bounds_with_and(make_df):
     X = transformer.fit_transform(make_df(DATA_TWO_VARS))
 
     assert isinstance(X, make_df)
-    assert to_dict(X) == {"var_a": [3, 4], "var_b": [7, 8]}
+    assert frame_to_dict(X) == {"var_a": [3, 4], "var_b": [7, 8]}
 
 
 def test_transform_x_y(make_df, data_normal_dist):
@@ -101,7 +101,7 @@ def test_transform_x_y(make_df, data_normal_dist):
     Xt, yt = transformer.transform_x_y(df, y)
     assert isinstance(Xt, make_df)
     assert isinstance(yt, type(y))
-    assert to_dict(Xt) == to_dict(X)
+    assert frame_to_dict(Xt) == frame_to_dict(X)
     assert Xt.shape[0] == len(yt)
     assert Xt.shape[0] != len(data_normal_dist["var"])
 
