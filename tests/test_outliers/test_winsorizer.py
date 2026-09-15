@@ -4,7 +4,7 @@ import re
 import pytest
 
 from feature_engine.outliers import Winsoriser, Winsorizer
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 DEPRECATION_WARNING = (
     "Winsorizer was deprecated in favour of Winsoriser in version 2.0.0 and will "
@@ -63,7 +63,7 @@ def test_gaussian_capping_right_tail_with_fold_1(
     assert transformer.n_features_in_ == 1
     # test transform outputs
     assert isinstance(X_out, make_df)
-    assert math.isclose(max(to_dict(X_out)["var"]), 0.1067690260251065)
+    assert math.isclose(max(frame_to_dict(X_out)["var"]), 0.1067690260251065)
 
 
 def test_gaussian_capping_both_tails_with_fold_2(
@@ -80,7 +80,7 @@ def test_gaussian_capping_both_tails_with_fold_2(
     assert math.isclose(transformer.left_tail_caps_["var"], -0.1955956473898675)
     # test transform output
     assert isinstance(X_out, make_df)
-    values = to_dict(X_out)["var"]
+    values = frame_to_dict(X_out)["var"]
     assert math.isclose(max(values), 0.2075572504967645)
     assert math.isclose(min(values), -0.1955956473898675)
 
@@ -99,7 +99,7 @@ def test_iqr_capping_both_tails_with_fold_1(
     assert math.isclose(transformer.left_tail_caps_["var"], -0.20247907173293223)
     # test transform output
     assert isinstance(X_out, make_df)
-    values = to_dict(X_out)["var"]
+    values = frame_to_dict(X_out)["var"]
     assert math.isclose(max(values), 0.21180113880445128)
     assert math.isclose(min(values), -0.20247907173293223)
 
@@ -118,7 +118,7 @@ def test_iqr_capping_left_tail_with_fold_2(
     assert math.isclose(transformer.left_tail_caps_["var"], -0.17486039103044)
     # test transform output
     assert isinstance(X_out, make_df)
-    assert math.isclose(min(to_dict(X_out)["var"]), -0.17486039103044)
+    assert math.isclose(min(frame_to_dict(X_out)["var"]), -0.17486039103044)
 
 
 def test_quantile_capping_both_tails_with_fold_10_percent(
@@ -135,7 +135,7 @@ def test_quantile_capping_both_tails_with_fold_10_percent(
     assert math.isclose(transformer.left_tail_caps_["var"], -0.12366227743232801)
     # test transform output
     assert isinstance(X_out, make_df)
-    values = to_dict(X_out)["var"]
+    values = frame_to_dict(X_out)["var"]
     assert math.isclose(max(values), 0.14712481122898166)
     assert math.isclose(min(values), -0.12366227743232801)
 
@@ -154,7 +154,7 @@ def test_quantile_capping_right_tail_with_fold_15_percent(
     assert transformer.left_tail_caps_ == {}
     # test transform output
     assert isinstance(X_out, make_df)
-    assert math.isclose(max(to_dict(X_out)["var"]), 0.11823196128033647)
+    assert math.isclose(max(frame_to_dict(X_out)["var"]), 0.11823196128033647)
 
 
 @pytest.mark.parametrize(
@@ -190,7 +190,7 @@ def test_mad_capping_right_tail_with_fold_1(
     assert transformer.n_features_in_ == 1
     # test transform outputs
     assert isinstance(X_out, make_df)
-    assert math.isclose(max(to_dict(X_out)["var"]), 0.10995521088494983)
+    assert math.isclose(max(frame_to_dict(X_out)["var"]), 0.10995521088494983)
 
 
 def test_mad_capping_both_tails_with_fold_2(
@@ -207,7 +207,7 @@ def test_mad_capping_both_tails_with_fold_2(
     assert math.isclose(transformer.left_tail_caps_["var"], -0.1916815859385002)
     # test transform output
     assert isinstance(X_out, make_df)
-    values = to_dict(X_out)["var"]
+    values = frame_to_dict(X_out)["var"]
     assert math.isclose(max(values), 0.21050080982609987)
     assert math.isclose(min(values), -0.1916815859385002)
 
@@ -226,7 +226,7 @@ def test_indicators_are_added(make_df, data_normal_dist, transformer_class):
     X_out = transformer.fit_transform(X)
     assert isinstance(X_out, make_df)
     assert X_out.shape[1] == 3 * n_cols
-    result = to_dict(X_out)
+    result = frame_to_dict(X_out)
     for col in list(X_out.columns)[n_cols:]:
         assert sum(result[col]) > 0
 
@@ -240,7 +240,7 @@ def test_indicators_are_added(make_df, data_normal_dist, transformer_class):
     X_out = transformer.fit_transform(X)
     assert isinstance(X_out, make_df)
     assert X_out.shape[1] == 2 * n_cols
-    result = to_dict(X_out)
+    result = frame_to_dict(X_out)
     for col in list(X_out.columns)[n_cols:]:
         assert sum(result[col]) > 0
 
@@ -254,7 +254,7 @@ def test_indicators_are_added(make_df, data_normal_dist, transformer_class):
     X_out = transformer.fit_transform(X)
     assert isinstance(X_out, make_df)
     assert X_out.shape[1] == 2 * n_cols
-    result = to_dict(X_out)
+    result = frame_to_dict(X_out)
     for col in list(X_out.columns)[n_cols:]:
         assert sum(result[col]) > 0
 
@@ -298,15 +298,15 @@ def test_indicators_are_correct(make_df, transformer_class):
     )
     X_out = transformer.fit_transform(X)
     assert isinstance(X_out, make_df)
-    assert to_dict(X_out)["col_left"] == expected_left
+    assert frame_to_dict(X_out)["col_left"] == expected_left
 
     transformer.set_params(tail="right")
     X_out = transformer.fit_transform(X)
-    assert to_dict(X_out)["col_right"] == expected_right
+    assert frame_to_dict(X_out)["col_right"] == expected_right
 
     transformer.set_params(tail="both")
     X_out = transformer.fit_transform(X)
-    result = to_dict(X_out)
+    result = frame_to_dict(X_out)
     assert result["col_left"] == expected_left
     assert result["col_right"] == expected_right
     assert list(X_out.columns) == ["col", "col_left", "col_right"]
@@ -331,7 +331,7 @@ def test_transformer_ignores_na_in_df(make_df, data_na, transformer_class):
     assert transformer.n_features_in_ == 5
     # test transform output
     assert isinstance(X_out, make_df)
-    result = to_dict(X_out)
+    result = frame_to_dict(X_out)
     age = [v for v in result["Age"] if v is not None]
     marks = [v for v in result["Marks"] if v is not None]
     assert math.isclose(max(age), 38.04494616731882)
