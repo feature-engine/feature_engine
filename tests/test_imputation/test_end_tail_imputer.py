@@ -1,10 +1,51 @@
+import re
+
 import numpy as np
 import pytest
 
 from feature_engine.imputation import EndTailImputer
-from tests.backend_helpers import null_count, frame_to_dict
+from tests.backend_helpers import frame_to_dict, null_count
 
 
+# init parameters
+@pytest.mark.parametrize(
+    "imputation_method", ["arbitrary", "mean", 1, ("iqr",), ["iqr"]]
+)
+def test_error_when_imputation_method_is_not_permitted(imputation_method):
+    msg = (
+        "imputation_method takes only values 'gaussian', 'iqr' or 'max'. "
+        f"Got {imputation_method} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        EndTailImputer(imputation_method=imputation_method)
+
+
+@pytest.mark.parametrize("tail", ["arbitrary", "both", 1, ("right",), ["right"]])
+def test_error_when_tail_is_not_permitted(tail):
+    msg = f"tail takes only values 'right' or 'left'. Got {tail} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        EndTailImputer(tail=tail)
+
+
+@pytest.mark.parametrize("fold", [-1, 0, -0.5, "3", None, [3], True])
+def test_error_when_fold_is_not_positive_number(fold):
+    msg = f"fold takes only positive numbers. Got {fold} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        EndTailImputer(fold=fold)
+
+
+@pytest.mark.parametrize(
+    "imputation_method, tail, fold",
+    [("gaussian", "right", 3), ("iqr", "left", 1.5), ("max", "right", 2)],
+)
+def test_init_param_assignment(imputation_method, tail, fold):
+    imputer = EndTailImputer(imputation_method=imputation_method, tail=tail, fold=fold)
+    assert imputer.imputation_method == imputation_method
+    assert imputer.tail == tail
+    assert imputer.fold == fold
+
+
+# fit and transform
 def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(
     make_df, data_na
 ):
@@ -13,11 +54,6 @@ def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(
     )
     X_transformed = imputer.fit_transform(make_df(data_na))
 
-    # test init params
-    assert imputer.imputation_method == "gaussian"
-    assert imputer.tail == "right"
-    assert imputer.fold == 3
-    assert imputer.variables is None
     # test fit attr
     assert imputer.variables_ == ["Age", "Marks"]
     assert imputer.n_features_in_ == 5
@@ -82,18 +118,3 @@ def test_user_enters_variables_and_iqr_imputation_on_left_tail(make_df, data_na)
     assert np.round(imputer.imputer_dict_["Marks"], 3) == np.round(
         0.36249999999999993, 3
     )
-
-
-def test_error_when_imputation_method_is_not_permitted():
-    with pytest.raises(ValueError, match="imputation_method takes only values"):
-        EndTailImputer(imputation_method="arbitrary")
-
-
-def test_error_when_tail_is_string():
-    with pytest.raises(ValueError, match="tail takes only values"):
-        EndTailImputer(tail="arbitrary")
-
-
-def test_error_when_fold_is_1():
-    with pytest.raises(ValueError, match="fold takes only positive numbers"):
-        EndTailImputer(fold=-1)
