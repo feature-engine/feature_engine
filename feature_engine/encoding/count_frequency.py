@@ -220,11 +220,6 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
-        if self.encoding_method not in ["count", "frequency"]:
-            raise ValueError(
-                "Unrecognized value for encoding_method. It should be 'count' or "
-                f"'frequency'. Got {self.encoding_method} instead."
-            )
         normalize = self.encoding_method == "frequency"
 
         self.encoder_dict_ = {}
