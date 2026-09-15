@@ -6,7 +6,7 @@ import pytest
 from sklearn.pipeline import Pipeline
 
 from feature_engine.imputation import AddMissingIndicator, MissingIndicator
-from tests.backend_helpers import to_dict
+from tests.backend_helpers import frame_to_dict
 
 INDICATORS = [MissingIndicator, AddMissingIndicator]
 
@@ -30,7 +30,7 @@ def test_detect_variables_with_missing_data_when_variables_is_none(
     # transform outputs
     assert isinstance(X_transformed, make_df)
     assert X_transformed.shape == (8, 11)
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert "Name_na" in result
     assert sum(result["Name_na"]) == 2
 
@@ -52,7 +52,7 @@ def test_add_indicators_to_all_variables_when_variables_is_none(
     ]
     assert isinstance(X_transformed, make_df)
     assert X_transformed.shape == (8, 12)
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert "dob_na" in result
     assert sum(result["dob_na"]) == 0
 
@@ -65,7 +65,7 @@ def test_add_indicators_to_one_variable(make_df, data_na_dob, indicator_cls):
     assert imputer.variables_ == ["Name"]
     assert isinstance(X_transformed, make_df)
     assert X_transformed.shape == (8, 7)
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert "Name_na" in result
     assert sum(result["Name_na"]) == 2
 
@@ -84,7 +84,7 @@ def test_detect_variables_with_missing_data_in_variables_entered_by_user(
     assert imputer.variables_ == ["City", "Studies", "Age"]
     assert isinstance(X_transformed, make_df)
     assert X_transformed.shape == (8, 9)
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert "City_na" in result
     assert "dob_na" not in result
     assert sum(result["City_na"]) == 2

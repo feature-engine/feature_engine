@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from feature_engine.imputation import EndTailImputer
-from tests.backend_helpers import null_count, to_dict
+from tests.backend_helpers import null_count, frame_to_dict
 
 
 def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(
@@ -36,7 +36,7 @@ def test_automatically_find_variables_and_gaussian_imputation_on_right_tail(
     expected["Marks"] = pytest.approx(
         [0.9, 0.8, 0.7, 1.3244261503263175, 0.3, 1.3244261503263175, 0.8, 0.6]
     )
-    assert to_dict(X_transformed) == expected
+    assert frame_to_dict(X_transformed) == expected
 
 
 def test_user_enters_variables_and_iqr_imputation_on_right_tail(make_df, data_na):
@@ -53,7 +53,7 @@ def test_user_enters_variables_and_iqr_imputation_on_right_tail(make_df, data_na
     expected = dict(data_na)
     expected["Age"] = pytest.approx([20, 21, 19, 65.5, 23, 40, 41, 37])
     expected["Marks"] = pytest.approx([0.9, 0.8, 0.7, 1.0625, 0.3, 1.0625, 0.8, 0.6])
-    assert to_dict(X_transformed) == expected
+    assert frame_to_dict(X_transformed) == expected
 
 
 def test_user_enters_variables_and_max_value_imputation(make_df, data_na):

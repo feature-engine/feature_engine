@@ -1,7 +1,7 @@
 import pytest
 
 from feature_engine.imputation import ArbitraryImputer, ArbitraryNumberImputer
-from tests.backend_helpers import null_count, to_dict
+from tests.backend_helpers import null_count, frame_to_dict
 
 
 def test_impute_with_99_and_automatically_select_variables(make_df, data_na):
@@ -24,7 +24,7 @@ def test_impute_with_99_and_automatically_select_variables(make_df, data_na):
     assert null_count(X_transformed, "Name") > 0
     assert null_count(X_transformed, "City") > 0
 
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert result["Age"] == [20, 21, 19, 99, 23, 40, 41, 37]
     assert result["Marks"] == [0.9, 0.8, 0.7, 99, 0.3, 99, 0.8, 0.6]
 
@@ -44,7 +44,7 @@ def test_impute_with_1_and_single_variable_entered_by_user(make_df, data_na):
 
     assert isinstance(X_transformed, make_df)
     assert null_count(X_transformed, "Age") == 0
-    assert to_dict(X_transformed)["Age"] == [20, 21, 19, -1, 23, 40, 41, 37]
+    assert frame_to_dict(X_transformed)["Age"] == [20, 21, 19, -1, 23, 40, 41, 37]
 
 
 def test_error_when_arbitrary_number_is_string():
@@ -66,7 +66,7 @@ def test_dictionary_of_imputation_values(make_df, data_na):
     assert null_count(X_transformed, "Name") > 0
     assert null_count(X_transformed, "City") > 0
 
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert result["Age"] == [20, 21, 19, -42, 23, 40, 41, 37]
     assert result["Marks"] == [0.9, 0.8, 0.7, -999, 0.3, -999, 0.8, 0.6]
 

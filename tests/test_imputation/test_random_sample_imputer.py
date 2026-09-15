@@ -7,7 +7,7 @@ import pytest
 
 from feature_engine.imputation import RandomSampleImputer
 from feature_engine.imputation.random_sample import _define_seed
-from tests.backend_helpers import null_count, to_dict
+from tests.backend_helpers import null_count, frame_to_dict
 
 
 def test_define_seed(df_vartypes):
@@ -35,12 +35,12 @@ def test_general_seed_plus_automatically_select_variables(make_df, data_na):
     # test fit attrs
     assert imputer.variables_ == ["Name", "City", "Studies", "Age", "Marks"]
     assert imputer.n_features_in_ == 5
-    assert to_dict(imputer.X_) == to_dict(df_na)
+    assert frame_to_dict(imputer.X_) == frame_to_dict(df_na)
 
     # no missing data left in any imputed variable, and every value used to
     # fill NA came from the training data itself
     assert isinstance(X_transformed, make_df)
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     for col in imputer.variables_:
         assert null_count(X_transformed, col) == 0
         assert set(result[col]) <= {v for v in data_na[col] if v is not None}
@@ -50,7 +50,7 @@ def test_general_seed_plus_automatically_select_variables(make_df, data_na):
     # same backend is a reproducibility guarantee. Verify that guarantee.
     imputer2 = RandomSampleImputer(variables=None, random_state=5, seed="general")
     X_transformed2 = imputer2.fit_transform(df_na)
-    assert to_dict(X_transformed) == to_dict(X_transformed2)
+    assert frame_to_dict(X_transformed) == frame_to_dict(X_transformed2)
 
 
 def test_pandas_general_seed_reproduces_historic_values(df_na):
@@ -123,9 +123,9 @@ def test_seed_per_observation(make_df, data_na, random_state, seeding_method):
     assert imputer.random_state == seed_vars
     assert imputer.seed == "observation"
     assert isinstance(X_transformed, make_df)
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     for col in ["City", "Studies"]:
-        assert to_dict(imputer.X_)[col] == data[col]
+        assert frame_to_dict(imputer.X_)[col] == data[col]
         assert null_count(X_transformed, col) == 0
         assert set(result[col]) <= {v for v in data[col] if v is not None}
     # variables not selected for imputation are untouched
@@ -139,7 +139,7 @@ def test_seed_per_observation(make_df, data_na, random_state, seeding_method):
         seeding_method=seeding_method,
     )
     X_transformed2 = imputer2.fit_transform(df_na)
-    assert to_dict(X_transformed) == to_dict(X_transformed2)
+    assert frame_to_dict(X_transformed) == frame_to_dict(X_transformed2)
 
 
 def test_error_if_seed_not_permitted_value():
@@ -183,4 +183,4 @@ def test_variables_cast_as_category(make_df, data_na):
     assert isinstance(X_transformed, make_df)
     assert null_count(X_transformed, "City") == 0
     city_pool = {v for v in data_na["City"] if v is not None}
-    assert set(to_dict(X_transformed)["City"]) <= city_pool
+    assert set(frame_to_dict(X_transformed)["City"]) <= city_pool

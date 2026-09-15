@@ -3,7 +3,7 @@ import re
 import pytest
 
 from feature_engine.imputation import MeanImputer, MeanMedianImputer
-from tests.backend_helpers import null_count, to_dict
+from tests.backend_helpers import null_count, frame_to_dict
 
 DEPRECATION_WARNING = (
     "MeanMedianImputer was deprecated in favour of MeanImputer in version "
@@ -58,7 +58,7 @@ def test_mean_imputation_and_automatically_select_variables(
     assert null_count(X_transformed, "Marks") == 0
     assert null_count(X_transformed, "Name") > 0
     assert null_count(X_transformed, "City") > 0
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert result["Age"] == pytest.approx(
         [20, 21, 19, 28.714285714285715, 23, 40, 41, 37]
     )
@@ -86,7 +86,7 @@ def test_median_imputation_when_user_enters_single_variables(
     # test transform output
     assert isinstance(X_transformed, make_df)
     assert null_count(X_transformed, "Age") == 0
-    assert to_dict(X_transformed)["Age"] == [20, 21, 19, 23.0, 23, 40, 41, 37]
+    assert frame_to_dict(X_transformed)["Age"] == [20, 21, 19, 23.0, 23, 40, 41, 37]
 
 
 def test_error_with_wrong_imputation_method(imputer_class):

@@ -5,7 +5,7 @@ import polars as pl
 import pytest
 
 from feature_engine.imputation import CategoricalImputer
-from tests.backend_helpers import null_count, to_dict
+from tests.backend_helpers import null_count, frame_to_dict
 
 
 def test_impute_with_string_missing_and_automatically_find_variables(
@@ -36,7 +36,7 @@ def test_impute_with_string_missing_and_automatically_find_variables(
     assert null_count(X_transformed, "Studies") == 0
     assert null_count(X_transformed, "Age") > 0
     assert null_count(X_transformed, "Marks") > 0
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert result["Name"] == [
         "tom", "nick", "krish", "Missing", "peter", "Missing", "fred", "sam",
     ]
@@ -77,7 +77,7 @@ def test_user_defined_string_and_automatically_find_variables(make_df, data_na):
     assert null_count(X_transformed, "Studies") == 0
     assert null_count(X_transformed, "Age") > 0
     assert null_count(X_transformed, "Marks") > 0
-    assert to_dict(X_transformed)["City"] == [
+    assert frame_to_dict(X_transformed)["City"] == [
         "London", "Manchester", "Unknown", "Unknown", "London", "London",
         "Bristol", "Manchester",
     ]
@@ -97,7 +97,7 @@ def test_mode_imputation_and_single_variable(make_df, data_na):
     assert null_count(X_transformed, "City") == 0
     assert null_count(X_transformed, "Age") > 0
     assert null_count(X_transformed, "Marks") > 0
-    assert to_dict(X_transformed)["City"] == [
+    assert frame_to_dict(X_transformed)["City"] == [
         "London", "Manchester", "London", "London", "London", "London",
         "Bristol", "Manchester",
     ]
@@ -112,7 +112,7 @@ def test_mode_imputation_with_multiple_variables(make_df, data_na):
     # test fit attr and transform output
     assert imputer.imputer_dict_ == {"Studies": "Bachelor", "City": "London"}
     assert isinstance(X_transformed, make_df)
-    result = to_dict(X_transformed)
+    result = frame_to_dict(X_transformed)
     assert result["Studies"] == [
         "Bachelor", "Bachelor", "Bachelor", "Bachelor", "Bachelor", "PhD",
         "None", "Masters",
@@ -203,7 +203,7 @@ def test_uses_smallest_mode_when_variable_has_multiple_modes(make_df, data_na):
     assert imputer.imputer_dict_ == {"Name": "fred"}
     X_transformed = imputer.transform(df_na)
     assert isinstance(X_transformed, make_df)
-    assert to_dict(X_transformed)["Name"] == [
+    assert frame_to_dict(X_transformed)["Name"] == [
         "tom",
         "nick",
         "krish",
@@ -340,7 +340,7 @@ def test_polars_categorical_dtype_widens_on_missing_fill(data_na):
 
     assert X_transformed.schema["City"] == pl.Categorical
     assert null_count(X_transformed, "City") == 0
-    assert to_dict(X_transformed)["City"] == [
+    assert frame_to_dict(X_transformed)["City"] == [
         "London", "Manchester", "Missing", "Missing", "London", "London",
         "Bristol", "Manchester",
     ]
