@@ -31,7 +31,11 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X, check_X_y
-from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.encoding._helper_functions import (
+    TARGET_NAME,
+    add_target_to_X,
+    check_parameter_unseen,
+)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -213,15 +217,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         if self.encoding_method == "ordered":
             nw_X, y = check_X_y(X, y)
-            # pair y with X by position, so list, array and series targets all work
-            target_name = "__feature_engine_ordinal_target__"
-            if nwd.is_into_series(y):
-                y_nw = nw.from_native(y, series_only=True).alias(target_name)
-            else:
-                y_nw = nw.new_series(
-                    name=target_name, values=y, backend=nw_X.implementation
-                )
-            nw_Xy = nw_X.with_columns(y_nw)
+            nw_Xy = add_target_to_X(nw_X, y)
         else:
             nw_X = check_X(X)
 
@@ -234,7 +230,7 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         if nwd.is_pandas_dataframe(X):
             if self.encoding_method == "ordered":
                 # pandas series with the index of X
-                y_pd = nw_Xy[target_name].to_native()
+                y_pd = nw_Xy[TARGET_NAME].to_native()
             for var in variables_:
                 if self.encoding_method == "ordered":
                     t = y_pd.groupby(X[var], observed=False).mean().sort_values().index
@@ -250,8 +246,8 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                     # in every backend
                     t = (
                         nw_Xy.group_by(var, drop_null_keys=True)
-                        .agg(nw.col(target_name).mean())
-                        .sort([target_name, var])
+                        .agg(nw.col(TARGET_NAME).mean())
+                        .sort([TARGET_NAME, var])
                         .get_column(var)
                         .to_list()
                     )
