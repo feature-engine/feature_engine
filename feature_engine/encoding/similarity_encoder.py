@@ -274,10 +274,10 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         if self.missing_values == "raise":
             _check_contains_na(X, variables_, error_msg="optional")
 
-        self.encoder_dict_ = {}
+        encoder_dict_ = {}
 
         if self.keywords:
-            self.encoder_dict_.update(self.keywords)
+            encoder_dict_.update(self.keywords)
             cols_to_iterate = [x for x in variables_ if x not in self.keywords]
         else:
             cols_to_iterate = variables_
@@ -297,10 +297,11 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             # encoder_dict_ keeps the same category order as before.
             counts = col.value_counts(sort=True)
             categories = counts.get_column(counts.columns[0]).to_list()
-            self.encoder_dict_[var] = categories[: self.top_categories]
+            encoder_dict_[var] = categories[: self.top_categories]
 
         # assign underscore parameters at the end in case code above fails
         self.variables_ = variables_
+        self.encoder_dict_ = encoder_dict_
         self._get_feature_names_in(X)
         return self
 
