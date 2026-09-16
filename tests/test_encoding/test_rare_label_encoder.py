@@ -93,7 +93,6 @@ def test_init_param_assignment(
 
 # fit and transform
 def test_defo_params_plus_automatically_find_variables(make_df, data_enc_big):
-    # test case 1: defo params, automatically select variables
     encoder = RareLabelEncoder(
         tol=0.06, n_categories=5, variables=None, replace_with="Rare"
     )
@@ -109,7 +108,7 @@ def test_defo_params_plus_automatically_find_variables(make_df, data_enc_big):
 
 
 def test_when_varnames_are_numbers(data_enc_big):
-    # integer column names are pandas-only, polars has no such concept
+    # integer column names are pandas-only
     input_df = pd.DataFrame(data_enc_big)
     input_df.columns = [1, 2, 3]
 
@@ -164,7 +163,7 @@ def test_correctly_ignores_nan_in_transform(make_df, data_enc_big):
 
 
 def test_correctly_ignores_nan_in_fit(make_df, data_enc_big):
-    data = dict(data_enc_big)
+    data = data_enc_big
     data["var_C"] = [None if v == "G" else v for v in data["var_C"]]
 
     encoder = RareLabelEncoder(
@@ -202,9 +201,7 @@ def test_correctly_ignores_nan_in_fit(make_df, data_enc_big):
 
 
 def test_correctly_ignores_nan_in_fit_when_var_is_numerical(data_enc_big):
-    # pandas .astype("O") mixed-dtype workaround for a numeric variable with
-    # a string replace_with is a pandas-only quirk (polars casts to string
-    # instead - see test_max_n_categories_with_numeric_var_polars).
+    # pandas only
     df = pd.DataFrame(data_enc_big)
     df["var_C"] = [
         1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -238,9 +235,8 @@ def test_correctly_ignores_nan_in_fit_when_var_is_numerical(data_enc_big):
         }
     )
 
-    # expected (var_C mixes floats and strings after transform, so its
-    # missing value must be an actual float nan, not a bare None, to match
-    # pandas' own dtype inference for the same mix)
+    # var_C mixes floats and strings after transform, so its
+    # missing value must be an actual nan
     tt = pd.DataFrame(
         {
             "var_A": ["A", None, "Rare", "G"],
@@ -254,7 +250,6 @@ def test_correctly_ignores_nan_in_fit_when_var_is_numerical(data_enc_big):
 
 
 def test_user_provides_grouping_label_name_and_variable_list(make_df, data_enc_big):
-    # test case 2: user provides alternative grouping value and variable list
     encoder = RareLabelEncoder(
         tol=0.15, n_categories=5, variables=["var_A", "var_B"], replace_with="Other"
     )
@@ -285,7 +280,6 @@ def test_user_provides_grouping_label_name_and_variable_list(make_df, data_enc_b
 def test_warning_if_variable_cardinality_less_than_n_categories(
     make_df, data_enc_big
 ):
-    # test case 3: when the variable has low cardinality
     msg = (
         "The number of unique categories for variable var_A is less than that "
         "indicated in n_categories. Thus, all categories will be "
@@ -297,7 +291,6 @@ def test_warning_if_variable_cardinality_less_than_n_categories(
 
 
 def test_fit_raises_error_if_df_contains_na(make_df, data_enc_big_na):
-    # test case 4: when dataset contains na, fit method
     encoder = RareLabelEncoder(n_categories=4)
     with pytest.raises(ValueError, match=re.escape(MSG_NA)):
         encoder.fit(make_df(data_enc_big_na))
@@ -306,7 +299,6 @@ def test_fit_raises_error_if_df_contains_na(make_df, data_enc_big_na):
 def test_transform_raises_error_if_df_contains_na(
     make_df, data_enc_big, data_enc_big_na
 ):
-    # test case 5: when dataset contains na, transform method
     encoder = RareLabelEncoder(n_categories=4)
     encoder.fit(make_df(data_enc_big))
     with pytest.raises(ValueError, match=re.escape(MSG_NA)):
@@ -314,7 +306,6 @@ def test_transform_raises_error_if_df_contains_na(
 
 
 def test_max_n_categories(make_df, data_enc_big):
-    # test case 6: user provides the maximum number of categories they want
     rare_encoder = RareLabelEncoder(tol=0.10, max_n_categories=4, n_categories=5)
     X = rare_encoder.fit_transform(make_df(data_enc_big))
 
@@ -342,9 +333,7 @@ def test_max_n_categories(make_df, data_enc_big):
 
 
 def test_max_n_categories_with_numeric_var(data_enc_numeric):
-    # pandas .astype("O") mixed-dtype workaround for a numeric variable with
-    # a string replace_with is a pandas-only quirk (see the polars variant
-    # below, which casts to string instead of keeping mixed dtypes).
+    # pandas only
     df_enc_numeric = pd.DataFrame(data_enc_numeric)
     rare_encoder = RareLabelEncoder(
         tol=0.10, max_n_categories=2, n_categories=1, ignore_format=True
