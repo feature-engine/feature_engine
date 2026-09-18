@@ -233,16 +233,16 @@ class BaseTargetMeanEstimator(BaseEstimator):
 
     def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-         Replace original values by the average of the target mean value per bin or
-         category in each one of the variables.
+        Replace original values by the average of the target mean value per bin or
+        category in each one of the variables.
 
-         Parameters
-         ----------
-         X : pandas dataframe of shape = [n_samples, n_features]
-             The input samples.
+        Parameters
+        ----------
+        X : pandas dataframe of shape = [n_samples, n_features]
+            The input samples.
 
-         Return
-         -------
+        Returns
+        -------
         X_new: pandas dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
@@ -279,7 +279,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
-        Return
+        Returns
         -------
         y_pred: numpy array of shape = (n_samples, )
             The mean target value per observation.
