@@ -284,8 +284,7 @@ class MathFeatures(BaseCreation):
         new_variable_names = self._get_new_features_name()
 
         func = self.func
-        is_pandas = nwd.is_pandas_dataframe(X)
-        if is_pandas is True and _pandas_version() < 3:
+        if nwd.is_pandas_dataframe(X) is True and _pandas_version() < 3:
             if isinstance(func, list):
                 func = [_FUNC_TO_STRING_ALIAS.get(fun, fun) for fun in func]
             else:
@@ -295,7 +294,7 @@ class MathFeatures(BaseCreation):
         reducers = [_get_numpy_reducer(fun) for fun in functions]
 
         nw_X = nw.from_native(X, eager_only=True)
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             values = X[self.variables].to_numpy()
         else:
             values = nw_X.select(self.variables).to_numpy()
@@ -318,7 +317,7 @@ class MathFeatures(BaseCreation):
             if self.drop_original is True:
                 nw_X = nw_X.drop(self.variables)
             X = nw_X.to_native()
-        elif is_pandas is True:
+        elif nwd.is_pandas_dataframe(X) is True:
             result = X[self.variables].agg(func, axis=1)
             if len(new_variable_names) == 1:
                 X[new_variable_names[0]] = result

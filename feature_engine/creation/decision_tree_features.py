@@ -342,7 +342,6 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             how_to_combine=self.features_to_combine, variables=variables_
         )
 
-        is_pandas = nwd.is_pandas_dataframe(X)
         nw_X = nw.from_native(X, eager_only=True)
 
         X_subs = []
@@ -351,7 +350,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             if isinstance(features, (str, int)):
                 X_sub = nw_X.get_column(features).to_frame().to_native()
             # multi feature models
-            elif is_pandas is True:
+            elif nwd.is_pandas_dataframe(X) is True:
                 X_sub = X[features]
             else:
                 X_sub = nw_X.select(features).to_native()
@@ -364,7 +363,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.variables_ = variables_
         self.input_features_ = input_features
         self.estimators_ = estimators_
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             self.feature_names_in_ = list(X.columns)
         else:
             self.feature_names_in_ = nw_X.columns
@@ -399,10 +398,8 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
-        is_pandas = nwd.is_pandas_dataframe(X)
-
         # reorder variables to match train set
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             X = X[self.feature_names_in_]
         else:
             X = (
@@ -415,7 +412,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         def get_x_sub(features):
             if isinstance(features, (str, int)):
                 return nw_X.get_column(features).to_frame().to_native()
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X) is True:
                 return X[features]
             return nw_X.select(features).to_native()
 
@@ -438,14 +435,14 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             else:
                 preds = estimator.predict(X_sub)
 
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X) is True:
                 new_columns[col_name] = preds
             else:
                 new_series.append(
                     nw.new_series(col_name, preds, backend=nw_X.implementation)
                 )
 
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             # assign() still inserts columns one at a time internally, so it
             # doesn't avoid fragmentation with many feature combinations;
             # building one DataFrame and joining it does (single insertion).
