@@ -263,7 +263,6 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         """
 
         check_X(X)
-        is_pandas = nwd.is_pandas_dataframe(X)
 
         # Coordinate variables
         variables: List[Union[str, int]] = [
@@ -274,7 +273,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         ]
 
         # Check all coordinate columns exist
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             columns = set(X.columns)
         else:
             columns = set(nw.from_native(X, eager_only=True).columns)
@@ -292,13 +291,13 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         # Validate coordinate ranges if enabled
         if self.validate_ranges is True:
-            self._validate_coordinate_ranges(X, is_pandas)
+            self._validate_coordinate_ranges(X)
 
         # save coordinate variables
         self.variables_ = variables
 
         # save input features
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             self.feature_names_in_ = list(X.columns)
         else:
             self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
@@ -308,9 +307,9 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         return self
 
-    def _validate_coordinate_ranges(self, X: IntoDataFrame, is_pandas: bool) -> None:
+    def _validate_coordinate_ranges(self, X: IntoDataFrame) -> None:
         """Raise if any latitude/longitude value falls outside its valid range."""
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             for lat_col in [self.lat1, self.lat2]:
                 if (X[lat_col].abs() > 90).any():
                     raise ValueError(
@@ -360,10 +359,8 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         # Check for missing values
         _check_contains_na(X, self.variables_)
 
-        is_pandas = nwd.is_pandas_dataframe(X) is True
-
         # reorder variables to match train set, and extract coordinate arrays
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             X = X[self.feature_names_in_]
             lat1 = X[self.lat1].to_numpy()
             lon1 = X[self.lon1].to_numpy()
@@ -384,7 +381,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         else:  # manhattan
             distances = self._manhattan_distance(lat1, lon1, lat2, lon2)
 
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             X[self.output_col] = distances
             if self.drop_original is True:
                 X = X.drop(columns=self.variables_)
