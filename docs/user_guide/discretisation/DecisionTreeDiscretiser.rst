@@ -521,10 +521,9 @@ can be parallelized across variables with the `n_jobs` parameter:
     8  4.533333  4.133333  4.133333
     9  6.000000  6.950000  6.700000
 
-`n_jobs` sets how many trees are trained at the same time. By default (`None`), the trees are
-trained one after the other; `n_jobs=-1` uses all available processors. Training in parallel
-helps when there are many variables or a large `param_grid`; with only a few variables, it may
-not be faster. The results are the same whatever the value of `n_jobs`.
+`n_jobs` is the number of jobs to run in parallel. `fit` is parallelized over the variables,
+training one decision tree per variable. `None` means 1 unless in a `joblib.parallel_backend`
+context. `-1` means using all processors.
 
 Additional considerations
 -------------------------

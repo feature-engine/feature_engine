@@ -119,13 +119,9 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         the random_state to an integer.
 
     n_jobs: int, default=None
-        The number of jobs to run in parallel when training the decision trees
-        across variables. Trees are fit using threads rather than processes,
-        since fitting a decision tree releases the GIL for the bulk of its
-        computation, which avoids the overhead of copying the entire dataframe
-        to separate worker processes. `None` means 1, i.e. sequential training
-        (this transformer's original behaviour); `-1` means using all available
-        processors.
+        The number of jobs to run in parallel. `fit` is parallelized over the variables,
+        training one decision tree per variable. `None` means 1 unless in a
+        `joblib.parallel_backend` context. `-1` means using all processors.
 
     Attributes
     ----------
