@@ -275,7 +275,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         n_jobs: Optional[int] = None,
     ) -> None:
 
-        if bin_output not in ["prediction", "bin_number", "boundaries"]:
+        if not isinstance(bin_output, str) or bin_output not in [
+            "prediction",
+            "bin_number",
+            "boundaries",
+        ]:
             raise ValueError(
                 "bin_output takes values  'prediction', 'bin_number' or 'boundaries'. "
                 f"Got {bin_output} instead."

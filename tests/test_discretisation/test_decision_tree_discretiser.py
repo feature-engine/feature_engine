@@ -28,20 +28,48 @@ def _continuous_target():
 # init parameters
 @pytest.mark.parametrize(
     "params",
-    [("prediction", 3, True), ("bin_number", 10, False), ("boundaries", 1, False)],
+    [
+        {
+            "bin_output": "prediction",
+            "precision": 3,
+            "cv": 3,
+            "scoring": "neg_mean_squared_error",
+            "param_grid": None,
+            "regression": True,
+            "random_state": None,
+            "n_jobs": None,
+        },
+        {
+            "bin_output": "bin_number",
+            "precision": None,
+            "cv": 5,
+            "scoring": "roc_auc",
+            "param_grid": {"max_depth": [1, 2]},
+            "regression": False,
+            "random_state": 0,
+            "n_jobs": -1,
+        },
+        {
+            "bin_output": "boundaries",
+            "precision": 1,
+            "cv": 2,
+            "scoring": "accuracy",
+            "param_grid": {"max_depth": [3]},
+            "regression": False,
+            "random_state": 42,
+            "n_jobs": 2,
+        },
+    ],
 )
 def test_init_param_assignment(params):
-    dsc = DecisionTreeDiscretiser(
-        bin_output=params[0],
-        precision=params[1],
-        regression=params[2],
-    )
-    assert dsc.bin_output == params[0]
-    assert dsc.precision == params[1]
-    assert dsc.regression == params[2]
+    transformer = DecisionTreeDiscretiser(**params)
+    for param, value in params.items():
+        assert getattr(transformer, param) == value
 
 
-@pytest.mark.parametrize("bin_output_", ["arbitrary", False, 1])
+@pytest.mark.parametrize(
+    "bin_output_", ["arbitrary", "Prediction", "", False, 1, None, ["prediction"]]
+)
 def test_error_if_binoutput_not_permitted_value(bin_output_):
     msg = (
         "bin_output takes values  'prediction', 'bin_number' or 'boundaries'. "
@@ -80,7 +108,8 @@ def test_error_if_regression_is_not_bool(regression_):
 # fit
 def test_error_if_y_not_passed(make_df, data_normal_dist):
     encoder = DecisionTreeDiscretiser()
-    with pytest.raises(TypeError):
+    msg = "DecisionTreeDiscretiser.fit() missing 1 required positional argument: 'y'"
+    with pytest.raises(TypeError, match=re.escape(msg)):
         encoder.fit(make_df(data_normal_dist))
 
 
@@ -112,11 +141,6 @@ def test_classification_predictions(make_df, data_normal_dist):
     Xt = transformer.fit_transform(X, y)
     X_t = [1.0, 0.71, 0.93, 0.0]
 
-    # init params
-    assert transformer.cv == 3
-    assert transformer.variables is None
-    assert transformer.scoring == "roc_auc"
-    assert transformer.regression is False
     # fit params
     assert transformer.variables_ == ["var"]
     assert transformer.n_features_in_ == 1
@@ -278,11 +302,6 @@ def test_regression(make_df, data_normal_dist):
         -0.12,
     ]
 
-    # init params
-    assert transformer.cv == 3
-    assert transformer.variables is None
-    assert transformer.scoring == "neg_mean_squared_error"
-    assert transformer.regression is True
     # fit params
     assert transformer.variables_ == ["var"]
     assert transformer.n_features_in_ == 1
@@ -344,7 +363,11 @@ def test_regression_rounds_predictions(make_df, data_normal_dist, params):
 # transform
 def test_non_fitted_error(make_df, data_normal_dist):
     transformer = DecisionTreeDiscretiser()
-    with pytest.raises(NotFittedError):
+    msg = (
+        "This DecisionTreeDiscretiser instance is not fitted yet. Call 'fit' "
+        "with appropriate arguments before using this estimator."
+    )
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         transformer.transform(make_df(data_normal_dist))
 
 
@@ -353,14 +376,16 @@ def test_error_when_regression_is_false_and_target_is_continuous(make_df):
     np.random.seed(42)
     y = make_series(make_df, np.random.normal(0, 3, 20).tolist())
     transformer = DecisionTreeDiscretiser(regression=False)
-    with pytest.raises(ValueError):
+    msg = (
+        "Unknown label type: continuous. Maybe you are trying to fit a classifier, "
+        "which expects discrete classes on a regression target with continuous values."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.fit(X, y)
 
 
 def test_n_jobs_parallel_matches_sequential(make_df):
-    # core correctness check for n_jobs: parallelizing tree training across
-    # variables must produce identical trees, and therefore identical
-    # predictions, to sequential training (n_jobs=None).
+    # parallel tree training must give the same trees and predictions as sequential
     X = make_df(DATA_TWO_VARS)
     np.random.seed(0)
     y = make_series(make_df, np.random.normal(0, 1, 20).tolist())
