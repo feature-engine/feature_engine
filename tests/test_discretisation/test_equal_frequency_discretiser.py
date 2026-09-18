@@ -15,6 +15,40 @@ MSG_NA = (
 )
 
 
+# init parameters
+@pytest.mark.parametrize("q", ["other", 1.5, None, [10]])
+def test_error_when_q_not_number(q):
+    msg = f"q must be an integer. Got {q} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        EqualFrequencyDiscretiser(q=q)
+
+
+@pytest.mark.parametrize("return_object", ["other", 1, None])
+def test_error_if_return_object_not_bool(return_object):
+    msg = f"return_object must be True or False. Got {return_object} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        EqualFrequencyDiscretiser(return_object=return_object)
+
+
+@pytest.mark.parametrize(
+    "q, return_object, return_boundaries, precision",
+    [(10, False, False, 3), (5, True, False, 1), (2, False, True, 7)],
+)
+def test_init_param_assignment(q, return_object, return_boundaries, precision):
+    transformer = EqualFrequencyDiscretiser(
+        q=q,
+        return_object=return_object,
+        return_boundaries=return_boundaries,
+        precision=precision,
+    )
+    assert transformer.q == q
+    assert transformer.return_object is return_object
+    assert transformer.return_boundaries is return_boundaries
+    assert transformer.precision == precision
+
+
+# fit and transform
+
 def test_automatically_find_variables_and_return_as_numeric(
     make_df, data_normal_dist
 ):
@@ -31,10 +65,6 @@ def test_automatically_find_variables_and_return_as_numeric(
     bins[0] = float("-inf")
     bins[len(bins) - 1] = float("inf")
 
-    # test init params
-    assert transformer.q == 10
-    assert transformer.variables is None
-    assert transformer.return_object is False
     # test fit attr
     assert transformer.variables_ == ["var"]
     assert transformer.n_features_in_ == 1
@@ -53,16 +83,6 @@ def test_automatically_find_variables_and_return_as_object(make_df, data_normal_
     X = transformer.fit_transform(make_df(data_normal_dist))
     assert isinstance(X, make_df)
     assert nw.from_native(X, eager_only=True).schema["var"] == nw.Object
-
-
-def test_error_when_q_not_number():
-    with pytest.raises(ValueError):
-        EqualFrequencyDiscretiser(q="other")
-
-
-def test_error_if_return_object_not_bool():
-    with pytest.raises(ValueError):
-        EqualFrequencyDiscretiser(return_object="other")
 
 
 def test_error_if_input_df_contains_na_in_fit(make_df, data_na):
@@ -85,5 +105,9 @@ def test_error_if_input_df_contains_na_in_transform(make_df, data_vartypes, data
 
 def test_non_fitted_error(make_df, data_vartypes):
     transformer = EqualFrequencyDiscretiser()
-    with pytest.raises(NotFittedError):
+    msg = (
+        "This EqualFrequencyDiscretiser instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         transformer.transform(make_df(data_vartypes))
