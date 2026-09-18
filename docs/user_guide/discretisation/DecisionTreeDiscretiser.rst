@@ -521,12 +521,10 @@ can be parallelized across variables with the `n_jobs` parameter:
     8  4.533333  4.133333  4.133333
     9  6.000000  6.950000  6.700000
 
-`n_jobs` defaults to `None`, which trains the trees sequentially, matching this transformer's
-original behaviour. Setting it trains multiple trees at the same time using threads, which only
-pays off once there are enough variables or a large enough `param_grid` to outweigh the overhead
-of dispatching work to threads — with just a handful of variables, sequential training is faster.
-The resulting trees and predictions are identical regardless of `n_jobs`; only training speed
-changes.
+`n_jobs` sets how many trees are trained at the same time. By default (`None`), the trees are
+trained one after the other; `n_jobs=-1` uses all available processors. Training in parallel
+helps when there are many variables or a large `param_grid`; with only a few variables, it may
+not be faster. The results are the same whatever the value of `n_jobs`.
 
 Additional considerations
 -------------------------
