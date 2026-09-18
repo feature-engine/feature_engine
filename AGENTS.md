@@ -76,11 +76,10 @@ object that's already an instance of that module's class.
   explicit — leave them as-is, this rule isn't about those.
 - The explicit `is True`/`is False` comparison is for flow control
   (`if`/`while` conditions) only — don't tack it onto a variable
-  assignment. When a function already returns a strict bool (e.g.
-  `nwd.is_pandas_dataframe(X)`), assign it directly:
-  `is_pandas = nwd.is_pandas_dataframe(X)`, not
-  `is_pandas = nwd.is_pandas_dataframe(X) is True`. The `if`/`while` site
-  that later consumes `is_pandas` still spells out `if is_pandas is True:`.
+  assignment.
+- Call boolean checks such as `nwd.is_pandas_dataframe(X)` directly in the
+  condition, `if nwd.is_pandas_dataframe(X) is True:`, instead of storing the
+  result in a variable (`is_pandas = ...`) and testing that later.
 
 ## Comments
 
