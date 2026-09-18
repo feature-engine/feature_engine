@@ -1,14 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 import narwhals as nw
 import numpy as np
-from joblib import Parallel, delayed
 from narwhals.typing import IntoDataFrame, IntoSeries
-from sklearn.model_selection import GridSearchCV
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
 from feature_engine._docstrings.fit_attributes import (
@@ -30,15 +28,13 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
-from feature_engine.encoding._helper_functions import (
-    TARGET_NAME,
-    add_target_to_X,
-    check_parameter_unseen,
-)
+from feature_engine.discretisation import DecisionTreeDiscretiser
+from feature_engine.encoding._helper_functions import check_parameter_unseen
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
 )
+from feature_engine.encoding.ordinal import OrdinalEncoder
 from feature_engine.tags import _return_tags
 
 _unseen_docstring = (
@@ -339,18 +335,43 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             self._get_feature_names_in(X)
             return self
 
-        # the target is only needed to order the categories
-        nw_Xy = add_target_to_X(nw_X, y) if self.encoding_method == "ordered" else None
-
-        mappings = Parallel(n_jobs=self.n_jobs, prefer="threads")(
-            delayed(self._fit_one_variable)(nw_X, nw_Xy, var, y, param_grid)
-            for var in variables_
+        encoder = OrdinalEncoder(
+            encoding_method=self.encoding_method,
+            variables=variables_,
+            missing_values="raise",
+            ignore_format=self.ignore_format,
         )
+        tree = DecisionTreeDiscretiser(
+            variables=variables_,
+            cv=self.cv,
+            scoring=self.scoring,
+            param_grid=param_grid,
+            regression=self.regression,
+            random_state=self.random_state,
+            n_jobs=self.n_jobs,
+        )
+        Xt = Pipeline([("encoder", encoder), ("tree", tree)]).fit_transform(X, y)
+        nw_Xt = nw.from_native(Xt, eager_only=True)
+
+        # map each category to the prediction of its tree
+        encoder_dict_ = {}
+        for var in variables_:
+            pairs = (
+                nw_X.get_column(var)
+                .alias("__category__")
+                .to_frame()
+                .with_columns(nw_Xt.get_column(var).alias("__prediction__"))
+                .unique()
+            )
+            preds = pairs["__prediction__"].to_numpy()
+            if self.precision is not None:
+                preds = np.round(preds, self.precision)
+            encoder_dict_[var] = dict(zip(pairs["__category__"].to_list(), preds))
 
         if self.unseen == "encode":
             self._unseen = self.fill_value
 
-        self.encoder_dict_ = dict(zip(variables_, mappings))
+        self.encoder_dict_ = encoder_dict_
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
@@ -374,61 +395,6 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         X = self._encode(nw_X)
 
         return X
-
-    def _fit_one_variable(
-        self, nw_X, nw_Xy, var, y: IntoSeries, param_grid: Dict
-    ) -> Dict:
-        """Learn the category-to-prediction mapping for one variable: encode its
-        categories to ordinal integers, fit a decision tree on those integers, and
-        predict on each unique category to get its final mapped value."""
-        if self.encoding_method == "ordered":
-            # sort by mean, then category, so ties get the same order
-            # in every backend
-            categories = (
-                nw_Xy.group_by(var, drop_null_keys=True)
-                .agg(nw.col(TARGET_NAME).mean())
-                .sort([TARGET_NAME, var])
-                .get_column(var)
-                .to_list()
-            )
-        else:
-            categories = nw_X.get_column(var).unique(maintain_order=True).to_list()
-
-        ordinal_map = {k: i for i, k in enumerate(categories, 0)}
-
-        X_sub = nw_X.get_column(var).replace_strict(ordinal_map).to_frame().to_native()
-        estimator = self._fit_one_tree(X_sub, y, param_grid)
-
-        # predict directly on the (few) unique ordinal codes instead of the
-        # full column: the tree's prediction for a category depends only on
-        # its ordinal code, so this gives identical results far cheaper.
-        X_pred = nw.new_series(
-            var, list(range(len(categories))), backend=nw_X.implementation
-        ).to_frame().to_native()
-
-        if self.regression is True:
-            preds = estimator.predict(X_pred)
-        else:
-            preds = estimator.predict_proba(X_pred)[:, 1]
-
-        if self.precision is not None:
-            preds = np.round(preds, self.precision)
-
-        return dict(zip(categories, preds))
-
-    def _fit_one_tree(self, X_sub: IntoDataFrame, y: IntoSeries, param_grid: Dict):
-        """Instantiate and fit one decision tree on one variable's ordinal-encoded
-        values."""
-        if self.regression is True:
-            model = DecisionTreeRegressor(random_state=self.random_state)
-        else:
-            model = DecisionTreeClassifier(random_state=self.random_state)
-
-        tree_model = GridSearchCV(
-            model, cv=self.cv, scoring=self.scoring, param_grid=param_grid
-        )
-        tree_model.fit(X_sub, y)
-        return tree_model
 
     def _assign_param_grid(self):
         if self.param_grid:
