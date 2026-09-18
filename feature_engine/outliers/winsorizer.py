@@ -225,8 +225,7 @@ class Winsoriser(WinsorizerBase):
             # with_columns equivalent on pandas input (the loss grows with
             # column count), so pandas keeps its own fast path here, same
             # split as MissingIndicator's indicator-building step.
-            is_pandas = nwd.is_pandas_dataframe(X_out)
-            if is_pandas is True:
+            if nwd.is_pandas_dataframe(X_out) is True:
                 pd = nw.from_native(X_out, eager_only=True).__native_namespace__()
                 X_orig_filtered = X[self.variables_]
                 X_out_filtered = X_out[self.variables_]
