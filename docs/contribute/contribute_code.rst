@@ -308,6 +308,26 @@ Sweet, isn't it?
 With the above procedure you can also "click" on your individual test script and run only
 those tests.
 
+Run the shared estimator checks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every transformer should run both scikit-learn's ``check_estimator`` checks and
+Feature-engine's shared checks. The module-level tests named
+``test_check_estimator_*.py`` show how each group of transformers is configured.
+When adding a transformer, add an instance to the ``_estimators`` list in the
+corresponding module-level test.
+
+Feature-engine's checks cover behavior shared by its transformers, such as variable
+selection, feature names, accepted input, and fitted-state errors. They are grouped by
+behavior in ``tests/estimator_checks/`` and are run through
+``check_feature_engine_estimator``. If new behavior should apply to several
+transformers, add a check to the relevant file in that directory and call it from
+``tests/estimator_checks/estimator_checks.py``.
+
+Run the relevant module after changing a transformer or a shared check, for example::
+
+    $ pytest tests/test_encoding/test_check_estimator_encoders.py
+
 Code coverage
 ~~~~~~~~~~~~~
 
