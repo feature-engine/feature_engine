@@ -37,6 +37,7 @@ input.
    DecisionTreeEncoder
    RareLabelEncoder
    StringSimilarityEncoder
+   StringListBinarizer
 
 Other categorical encoding libraries
 ------------------------------------
