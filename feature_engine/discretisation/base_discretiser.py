@@ -72,7 +72,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
             new_columns = [
                 nw.new_series(
                     feature,
-                    _bin_labels(
+                    self._bin_labels(
                         nw_X.get_column(feature).to_numpy(),
                         self.binner_dict_[feature],
                         self.precision,
@@ -89,7 +89,7 @@ class BaseDiscretiser(BaseNumericalTransformer):
             new_columns = [
                 nw.new_series(
                     feature,
-                    _bin_codes(
+                    self._bin_codes(
                         nw_X.get_column(feature).to_numpy(),
                         self.binner_dict_[feature],
                         self.return_object,
@@ -104,74 +104,68 @@ class BaseDiscretiser(BaseNumericalTransformer):
 
         return X
 
+    def _digitize(self, values: np.ndarray, bins_arr: np.ndarray):
+        """0-based bin index per value, right-closed intervals with the lowest edge
+        included - mirrors pandas.cut(bins=bins, include_lowest=True), which is
+        itself built on this same bins.searchsorted() call. Values outside the
+        bin range, and NaNs, are flagged via na_mask rather than given a code.
+        """
+        ids = np.asarray(np.searchsorted(bins_arr, values, side="left"))
+        ids[values == bins_arr[0]] = 1
+        na_mask: np.ndarray = np.isnan(values) | (ids == len(bins_arr)) | (ids == 0)
+        return ids - 1, na_mask
 
-def _digitize(values: np.ndarray, bins_arr: np.ndarray):
-    """0-based bin index per value, right-closed intervals with the lowest edge
-    included - mirrors pandas.cut(bins=bins, include_lowest=True), which is
-    itself built on this same bins.searchsorted() call. Values outside the
-    bin range, and NaNs, are flagged via na_mask rather than given a code.
-    """
-    ids = np.asarray(np.searchsorted(bins_arr, values, side="left"))
-    ids[values == bins_arr[0]] = 1
-    na_mask: np.ndarray = np.isnan(values) | (ids == len(bins_arr)) | (ids == 0)
-    return ids - 1, na_mask
+    def _bin_codes(self, values: np.ndarray, bins: List[float], return_object: bool):
+        bins_arr: np.ndarray = np.asarray(bins, dtype=float)
+        codes, na_mask = self._digitize(values, bins_arr)
 
+        # match pandas.cut(labels=False): int codes, upcast to float only when a
+        # NaN placeholder is actually needed.
+        if na_mask.any():
+            codes = codes.astype(np.float64)
+            codes[na_mask] = np.nan
+        if return_object is True:
+            codes = codes.astype(object)
 
-def _bin_codes(values: np.ndarray, bins: List[float], return_object: bool):
-    bins_arr: np.ndarray = np.asarray(bins, dtype=float)
-    codes, na_mask = _digitize(values, bins_arr)
+        return codes
 
-    # match pandas.cut(labels=False): int codes, upcast to float only when a
-    # NaN placeholder is actually needed.
-    if na_mask.any():
-        codes = codes.astype(np.float64)
-        codes[na_mask] = np.nan
-    if return_object is True:
-        codes = codes.astype(object)
+    def _bin_labels(self, values: np.ndarray, bins: List[float], precision: int):
+        bins_arr: np.ndarray = np.asarray(bins, dtype=float)
+        codes, na_mask = self._digitize(values, bins_arr)
 
-    return codes
+        labels = np.asarray(self._format_bin_labels(bins_arr, precision), dtype=object)
+        out: np.ndarray = np.empty(len(values), dtype=object)
+        out[~na_mask] = labels[codes[~na_mask]]
+        out[na_mask] = None
 
+        return out
 
-def _bin_labels(values: np.ndarray, bins: List[float], precision: int):
-    bins_arr: np.ndarray = np.asarray(bins, dtype=float)
-    codes, na_mask = _digitize(values, bins_arr)
+    def _format_bin_labels(self, bins_arr: np.ndarray, precision: int) -> List[str]:
+        """"(lower, upper]" text per bin, replicating pandas.cut's own label
+        formatting: widen precision until break values are unique, then shrink
+        the lowest edge so include_lowest values still read as inside the first
+        interval.
+        """
+        precision = self._infer_precision(precision, bins_arr)
+        breaks = [self._round_frac(b, precision) for b in bins_arr]
+        breaks[0] = breaks[0] - 10 ** (-precision)
+        return [f"({breaks[i]}, {breaks[i + 1]}]" for i in range(len(breaks) - 1)]
 
-    labels = np.asarray(_format_bin_labels(bins_arr, precision), dtype=object)
-    out: np.ndarray = np.empty(len(values), dtype=object)
-    out[~na_mask] = labels[codes[~na_mask]]
-    out[na_mask] = None
+    def _round_frac(self, x: float, precision: int) -> float:
+        if not np.isfinite(x) or x == 0:
+            return float(x)
+        frac, whole = np.modf(x)
+        if whole == 0:
+            digits = -int(np.floor(np.log10(abs(frac)))) - 1 + precision
+        else:
+            digits = precision
+        return float(np.around(x, digits))
 
-    return out
-
-
-def _format_bin_labels(bins_arr: np.ndarray, precision: int) -> List[str]:
-    """"(lower, upper]" text per bin, replicating pandas.cut's own label
-    formatting: widen precision until break values are unique, then shrink
-    the lowest edge so include_lowest values still read as inside the first
-    interval.
-    """
-    precision = _infer_precision(precision, bins_arr)
-    breaks = [_round_frac(b, precision) for b in bins_arr]
-    breaks[0] = breaks[0] - 10 ** (-precision)
-    return [f"({breaks[i]}, {breaks[i + 1]}]" for i in range(len(breaks) - 1)]
-
-
-def _round_frac(x: float, precision: int) -> float:
-    if not np.isfinite(x) or x == 0:
-        return float(x)
-    frac, whole = np.modf(x)
-    if whole == 0:
-        digits = -int(np.floor(np.log10(abs(frac)))) - 1 + precision
-    else:
-        digits = precision
-    return float(np.around(x, digits))
-
-
-def _infer_precision(base_precision: int, bins_arr: np.ndarray) -> int:
-    # widen precision until every rounded break is unique - otherwise two
-    # adjacent bins could render with identical label text.
-    for precision in range(base_precision, 20):
-        levels = [_round_frac(b, precision) for b in bins_arr]
-        if len(set(levels)) == len(bins_arr):
-            return precision
-    return base_precision
+    def _infer_precision(self, base_precision: int, bins_arr: np.ndarray) -> int:
+        # widen precision until every rounded break is unique - otherwise two
+        # adjacent bins could render with identical label text.
+        for precision in range(base_precision, 20):
+            levels = [self._round_frac(b, precision) for b in bins_arr]
+            if len(set(levels)) == len(bins_arr):
+                return precision
+        return base_precision
