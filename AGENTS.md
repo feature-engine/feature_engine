@@ -122,6 +122,11 @@ branches) before trusting a rewrite — logic mistakes here are easy to make
 and easy to miss without an actual comparison. Compare like with like: time
 the same work (for example the whole `fit()`) before and after.
 
+Benchmark a range of data sizes, but base the decision mainly on the sizes
+each backend is typically used with: 10k to 500k rows for pandas, and 500k
+rows and more for polars. Smaller and larger sizes are worth measuring, but
+they weigh less in the decision.
+
 ## Tests
 
 Every transformer test file has the same structure, so they are easy to
