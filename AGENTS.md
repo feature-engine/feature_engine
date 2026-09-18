@@ -114,6 +114,11 @@ corresponding `docs/user_guide/<module>/<ClassName>.rst` with a short
 worked example showing the new functionality. When behaviour changes, check
 that the outputs shown in the user guide examples are still correct.
 
+User guides and other user-facing documentation are written for users:
+assume readers don't know the source code, and certainly not narwhals. Explain
+what a feature does and when to use it, in plain terms, without implementation
+details or references to how the code used to behave.
+
 ## Verify before applying
 
 Benchmark before claiming a speedup, and diff old-vs-new output across
