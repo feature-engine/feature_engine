@@ -282,6 +282,20 @@ def test_variables_cast_as_category(df_enc_category_dtypes):
     assert X["var_A"].dtypes == float
 
 
+def test_integer_column_names(data_enc):
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: data_enc["var_A"], 1: data_enc["var_B"]})
+    y = pd.Series(data_enc["target"])
+
+    encoder = DecisionTreeEncoder(regression=False).fit(X, y)
+    expected = DecisionTreeEncoder(regression=False).fit(X.rename(columns=str), y)
+
+    assert encoder.encoder_dict_ == {
+        0: expected.encoder_dict_["0"],
+        1: expected.encoder_dict_["1"],
+    }
+
+
 def test_error_when_regression_is_true_and_target_is_binary(make_df, data_enc):
     X = make_df(data_enc)[["var_A", "var_B"]]
     y = make_series(make_df, data_enc["target"])
