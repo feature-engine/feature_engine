@@ -4,6 +4,7 @@
 from typing import List, Optional, Union
 
 import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
@@ -187,9 +188,12 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         binner_dict_ = {}
 
         if len(variables_) > 0:
-            # one narwhals call for every variable at once, instead of a
-            # get_column() round-trip per variable.
-            arr = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+            # one call for all variables; pandas is faster than narwhals here
+            if nwd.is_pandas_dataframe(X) is True:
+                arr = X[variables_].to_numpy()
+            else:
+                nw_X = nw.from_native(X, eager_only=True)
+                arr = nw_X.select(nw.col(variables_)).to_numpy()
             mins = arr.min(axis=0)
             maxs = arr.max(axis=0)
             for var, mn, mx in zip(variables_, mins, maxs):

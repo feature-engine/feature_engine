@@ -1,6 +1,7 @@
 import re
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
@@ -368,6 +369,20 @@ def test_regression_rounds_predictions(make_df, data_normal_dist, params):
 
     assert isinstance(Xt, make_df)
     assert sorted(set(frame_to_dict(Xt)["var"])) == sorted(params[1])
+
+
+@pytest.mark.parametrize("bin_output", ["prediction", "bin_number", "boundaries"])
+def test_integer_column_names(bin_output):
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: DATA_TWO_VARS["var_A"], 1: DATA_TWO_VARS["var_B"]})
+    y = pd.Series(TARGET_TWO_VARS)
+    params = dict(bin_output=bin_output, precision=3, regression=False, random_state=0)
+
+    Xt = DecisionTreeDiscretiser(**params).fit_transform(X, y)
+    expected = DecisionTreeDiscretiser(**params).fit_transform(X.rename(columns=str), y)
+
+    assert list(Xt.columns) == [0, 1]
+    assert Xt.to_numpy().tolist() == expected.to_numpy().tolist()
 
 
 def test_non_fitted_error(make_df, data_normal_dist):

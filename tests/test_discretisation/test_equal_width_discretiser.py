@@ -115,6 +115,20 @@ def test_error_if_input_df_contains_na_in_transform(make_df, data_vartypes, data
         transformer.transform(transform_data)
 
 
+def test_integer_column_names(data_normal_dist):
+    # integer column names are pandas-only
+    values = data_normal_dist["var"]
+    X = pd.DataFrame({0: values, 1: [2 * v for v in values]})
+
+    transformer = EqualWidthDiscretiser(bins=10)
+    Xt = transformer.fit_transform(X)
+    expected = EqualWidthDiscretiser(bins=10).fit_transform(X.rename(columns=str))
+
+    assert list(transformer.binner_dict_) == [0, 1]
+    assert list(Xt.columns) == [0, 1]
+    assert Xt.to_numpy().tolist() == expected.to_numpy().tolist()
+
+
 def test_non_fitted_error(make_df, data_vartypes):
     transformer = EqualWidthDiscretiser()
     msg = (
