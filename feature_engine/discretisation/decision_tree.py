@@ -33,58 +33,6 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.tags import _return_tags
 
 
-def _round_bin_edge(x: float, precision: int) -> float:
-    """Round a bin edge the way pandas.cut historically formatted Interval labels:
-    -inf/inf/0 pass through unrounded, and numbers with magnitude < 1 get extra
-    decimals so that `precision` significant digits survive past the leading
-    zeros (e.g. -0.0942 at precision=3 keeps 4 decimals, not 3, since
-    round(-0.0942, 3) == -0.094 would only keep 2 significant digits).
-    """
-    if not np.isfinite(x) or x == 0:
-        return x
-    frac, whole = np.modf(x)
-    if whole == 0:
-        digits = -int(np.floor(np.log10(abs(frac)))) - 1 + precision
-    else:
-        digits = precision
-    return round(x, digits)
-
-
-def _infer_bin_precision(thresholds: List[float], precision: int) -> int:
-    """Find the smallest precision >= `precision` at which every rounded
-    threshold is still distinct, mirroring pandas.cut's behaviour of bumping
-    precision (for every edge, not just the colliding pair) when the requested
-    precision would make two adjacent bin edges collide."""
-    for prec in range(precision, 20):
-        rounded = [_round_bin_edge(t, prec) for t in thresholds]
-        if len(set(rounded)) == len(thresholds):
-            return prec
-    return precision
-
-
-def _format_bin_edge(x: float, precision: int) -> str:
-    if x == -np.inf:
-        return "-inf"
-    if x == np.inf:
-        return "inf"
-    return str(_round_bin_edge(x, precision))
-
-
-def _bin_labels(thresholds: List[float], precision: int) -> List[str]:
-    """Build the `(left, right]` interval label for every bin delimited by
-    `thresholds`, which starts with -inf and ends with inf."""
-    precision = _infer_bin_precision(thresholds, precision)
-    edges = [_format_bin_edge(t, precision) for t in thresholds]
-    return [f"({edges[i]}, {edges[i + 1]}]" for i in range(len(edges) - 1)]
-
-
-def _bin_index(values: np.ndarray, thresholds: List[float]) -> np.ndarray:
-    """Map each value to the 0-indexed bin delimited by `thresholds` (which
-    starts with -inf and ends with inf), bins being closed on the right.
-    """
-    return np.digitize(values, thresholds[1:-1], right=True)
-
-
 @Substitution(
     variables=_variables_numerical_docstring,
     variables_=_variables_attribute_docstring,
@@ -423,16 +371,16 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             assert self.precision is not None
             for feature in self.variables_:
                 thresholds = self.binner_dict_[feature]
-                labels = _bin_labels(thresholds, self.precision)
+                labels = self._bin_labels(thresholds, self.precision)
                 values = nw_X.get_column(feature).to_numpy()
-                bin_idx = _bin_index(values, thresholds)
+                bin_idx = self._bin_index(values, thresholds)
                 new_columns[feature] = np.array(labels)[bin_idx]
 
         else:
             for feature in self.variables_:
                 thresholds = self.binner_dict_[feature]
                 values = nw_X.get_column(feature).to_numpy()
-                new_columns[feature] = _bin_index(values, thresholds)
+                new_columns[feature] = self._bin_index(values, thresholds)
 
         if is_pandas is True:
             X = X.assign(**new_columns)
@@ -467,3 +415,50 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         return tags
+
+    def _round_bin_edge(self, x: float, precision: int) -> float:
+        """Round a bin edge the way pandas.cut historically formatted Interval labels:
+        -inf/inf/0 pass through unrounded, and numbers with magnitude < 1 get extra
+        decimals so that `precision` significant digits survive past the leading
+        zeros (e.g. -0.0942 at precision=3 keeps 4 decimals, not 3, since
+        round(-0.0942, 3) == -0.094 would only keep 2 significant digits).
+        """
+        if not np.isfinite(x) or x == 0:
+            return x
+        frac, whole = np.modf(x)
+        if whole == 0:
+            digits = -int(np.floor(np.log10(abs(frac)))) - 1 + precision
+        else:
+            digits = precision
+        return round(x, digits)
+
+    def _infer_bin_precision(self, thresholds: List[float], precision: int) -> int:
+        """Find the smallest precision >= `precision` at which every rounded
+        threshold is still distinct, mirroring pandas.cut's behaviour of bumping
+        precision (for every edge, not just the colliding pair) when the requested
+        precision would make two adjacent bin edges collide."""
+        for prec in range(precision, 20):
+            rounded = [self._round_bin_edge(t, prec) for t in thresholds]
+            if len(set(rounded)) == len(thresholds):
+                return prec
+        return precision
+
+    def _format_bin_edge(self, x: float, precision: int) -> str:
+        if x == -np.inf:
+            return "-inf"
+        if x == np.inf:
+            return "inf"
+        return str(self._round_bin_edge(x, precision))
+
+    def _bin_labels(self, thresholds: List[float], precision: int) -> List[str]:
+        """Build the `(left, right]` interval label for every bin delimited by
+        `thresholds`, which starts with -inf and ends with inf."""
+        precision = self._infer_bin_precision(thresholds, precision)
+        edges = [self._format_bin_edge(t, precision) for t in thresholds]
+        return [f"({edges[i]}, {edges[i + 1]}]" for i in range(len(edges) - 1)]
+
+    def _bin_index(self, values: np.ndarray, thresholds: List[float]) -> np.ndarray:
+        """Map each value to the 0-indexed bin delimited by `thresholds` (which
+        starts with -inf and ends with inf), bins being closed on the right.
+        """
+        return np.digitize(values, thresholds[1:-1], right=True)
