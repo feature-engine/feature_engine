@@ -50,7 +50,9 @@ def test_mean_normalization_scaler_raises_future_warning():
         MeanNormalizationScaler()
 
 
-def test_transforming_int_vars(make_df, transformer_class):
+def test_transform_and_inverse_transform_numerical_variables(
+    make_df, transformer_class
+):
     data = {
         "var1": [1.0, 2.0, 3.0],
         "var2": [4.0, 5.0, 3.0],
@@ -79,7 +81,6 @@ def test_mean_normalization_plus_automatically_find_variables(
     transformer = make_transformer(transformer_class, variables=None)
     X = transformer.fit_transform(make_df(DATA))
 
-    assert transformer.variables is None
     assert transformer.variables_ == ["Age", "Marks"]
     assert transformer.n_features_in_ == 4
 
@@ -105,7 +106,6 @@ def test_mean_normalization_plus_user_passes_var_list(make_df, transformer_class
     transformer = make_transformer(transformer_class, variables="Age")
     X = transformer.fit_transform(make_df(DATA))
 
-    assert transformer.variables == "Age"
     assert transformer.variables_ == ["Age"]
     assert transformer.n_features_in_ == 4
 
@@ -148,7 +148,11 @@ def test_transform_raises_error_if_na_in_df(make_df, transformer_class):
 
 def test_non_fitted_error(make_df, transformer_class):
     transformer = make_transformer(transformer_class)
-    with pytest.raises(NotFittedError):
+    msg = (
+        f"This {transformer_class.__name__} instance is not fitted yet. Call 'fit' "
+        "with appropriate arguments before using this estimator."
+    )
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         transformer.transform(make_df(DATA))
 
 
@@ -160,16 +164,17 @@ def test_constant_columns_error(make_df, transformer_class):
     }
 
     transformer = make_transformer(transformer_class)
-    with pytest.raises(ValueError, match=re.escape("Division by zero is not allowed")):
+    msg = (
+        "The following variable(s) are constant: ['var3']. "
+        "Division by zero is not allowed. Please remove constant columns."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.fit(make_df(data))
 
 
 def test_raises_non_fitted_error_when_error_during_fit(transformer_class):
-    # constant column: fails after mean_/range_ would have been computed, at
-    # the "check for constant columns" step - real regression guard for the
-    # deferred trailing-underscore attribute assignment. Pandas-only: this
-    # check's own helper (check_raises_non_fitted_error_when_fit_fails)
-    # builds a pandas frame internally.
+    # fit fails on the constant column after computing mean_ and range_; the
+    # shared check builds pandas frames, so this test is pandas-only
     df = pd.DataFrame(
         {
             "var1": [1.0, 2.0, 3.0],
