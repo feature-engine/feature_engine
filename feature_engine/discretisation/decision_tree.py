@@ -340,7 +340,6 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-        is_pandas = nwd.is_pandas_dataframe(X)
         nw_X = nw.from_native(X, eager_only=True)
 
         # build every replacement column before touching X, so pandas gets a
@@ -378,7 +377,7 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 values = nw_X.get_column(feature).to_numpy()
                 new_columns[feature] = self._bin_index(values, thresholds)
 
-        if is_pandas is True:
+        if nwd.is_pandas_dataframe(X) is True:
             X = X.assign(**new_columns)
         else:
             new_series = [
