@@ -4,7 +4,6 @@
 from typing import Dict, List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from joblib import Parallel, delayed
 from narwhals.typing import IntoDataFrame, IntoSeries
@@ -374,14 +373,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
                 values = nw_X.get_column(feature).to_numpy()
                 new_columns[feature] = self._bin_index(values, thresholds)
 
-        if nwd.is_pandas_dataframe(X) is True:
-            X = X.assign(**new_columns)
-        else:
-            new_series = [
-                nw.new_series(name, values, backend=nw_X.implementation)
-                for name, values in new_columns.items()
-            ]
-            X = nw_X.with_columns(*new_series).to_native()
+        new_series = [
+            nw.new_series(name, values, backend=nw_X.implementation)
+            for name, values in new_columns.items()
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
 

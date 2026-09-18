@@ -189,7 +189,8 @@ class EqualWidthDiscretiser(BaseDiscretiser):
         if len(variables_) > 0:
             # one narwhals call for every variable at once, instead of a
             # get_column() round-trip per variable.
-            arr = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+            nw_X = nw.from_native(X, eager_only=True)
+            arr = nw_X.select(nw.col(variables_)).to_numpy()
             mins = arr.min(axis=0)
             maxs = arr.max(axis=0)
             for var, mn, mx in zip(variables_, mins, maxs):
