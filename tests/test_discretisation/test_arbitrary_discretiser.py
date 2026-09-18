@@ -9,7 +9,58 @@ from tests.backend_helpers import frame_to_dict
 
 BINS = [0, 20, 40, 60, np.inf]
 
+MSG_NA = (
+    "Some of the variables in the dataset contain NaN. Check and "
+    "remove those before using this transformer."
+)
 
+
+# init parameters
+@pytest.mark.parametrize("binning_dict", ["HOLA", 1, False, None, [0, 10, 20]])
+def test_error_if_binning_dict_not_dict_type(binning_dict):
+    msg = (
+        "binning_dict must be a dictionary with the interval limits per "
+        f"variable. Got {binning_dict} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        ArbitraryDiscretiser(binning_dict=binning_dict)
+
+
+@pytest.mark.parametrize(
+    "errors", ["medialuna", "Ignore", "", 1, None, ["ignore"], ("raise",)]
+)
+def test_error_if_errors_not_permitted_value(errors):
+    msg = f"errors only takes values 'ignore' and 'raise'. Got {errors} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        ArbitraryDiscretiser(binning_dict={"Age": BINS}, errors=errors)
+
+
+@pytest.mark.parametrize(
+    "binning_dict, return_object, return_boundaries, precision, errors",
+    [
+        ({"HouseAge": BINS}, False, False, 3, "ignore"),
+        ({"HouseAge": BINS, "MedInc": [0, 5, np.inf]}, True, False, 1, "raise"),
+        ({"Age": [0, 10, np.inf]}, False, True, 10, "raise"),
+    ],
+)
+def test_init_param_assignment(
+    binning_dict, return_object, return_boundaries, precision, errors
+):
+    transformer = ArbitraryDiscretiser(
+        binning_dict=binning_dict,
+        return_object=return_object,
+        return_boundaries=return_boundaries,
+        precision=precision,
+        errors=errors,
+    )
+    assert transformer.binning_dict == binning_dict
+    assert transformer.return_object is return_object
+    assert transformer.return_boundaries is return_boundaries
+    assert transformer.precision == precision
+    assert transformer.errors == errors
+
+
+# fit and transform
 def test_arbitrary_discretiser(make_df, data_california):
     user_dict = {"HouseAge": BINS}
 
@@ -30,9 +81,6 @@ def test_arbitrary_discretiser(make_df, data_california):
     )
     X = transformer.fit_transform(data)
 
-    # init params
-    assert transformer.return_object is False
-    assert transformer.return_boundaries is False
     # fit params
     assert transformer.variables_ == ["HouseAge"]
     assert transformer.binner_dict_ == user_dict
@@ -56,15 +104,13 @@ def test_error_if_input_df_contains_na_in_transform(make_df):
 
     transformer = ArbitraryDiscretiser(binning_dict=age_dict)
     transformer.fit(data)
-    with pytest.raises(ValueError, match="Some of the variables in the dataset"):
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
         transformer.transform(data_na)
 
 
 @pytest.mark.parametrize("return_object", [False, True])
 def test_error_when_nan_introduced_during_transform(make_df, return_object):
-    # test warning/error when NA are introduced during the discretisation,
-    # i.e. when a value in the data to transform falls outside the bin edges
-    # fitted on the training data.
+    # values outside the bin edges learned in fit become NaN, which warns or raises
     train = make_df({"var_a": [-4.0, -1.0, 1.0, 4.0], "var_b": [1.0, 2.0, 3.0, 4.0]})
     test = make_df({"var_a": [-4.0, -1.0, 1.0, 4.0], "var_b": [10.0, 20.0, 30.0, 40.0]})
 
@@ -90,19 +136,3 @@ def test_error_when_nan_introduced_during_transform(make_df, return_object):
     transformer.fit(train)
     with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.transform(test)
-
-
-def test_error_if_not_permitted_value_is_errors():
-    age_dict = {"Age": [0, 10, 20, 30, np.inf]}
-    with pytest.raises(ValueError, match="errors only takes values"):
-        ArbitraryDiscretiser(binning_dict=age_dict, errors="medialuna")
-
-
-@pytest.mark.parametrize("binning_dict", ["HOLA", 1, False])
-def test_error_if_binning_dict_not_dict_type(binning_dict):
-    msg = (
-        "binning_dict must be a dictionary with the interval limits per "
-        f"variable. Got {binning_dict} instead."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        ArbitraryDiscretiser(binning_dict=binning_dict)

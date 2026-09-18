@@ -150,7 +150,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
                 f"variable. Got {binning_dict} instead."
             )
 
-        if errors not in ["ignore", "raise"]:
+        if not isinstance(errors, str) or errors not in ["ignore", "raise"]:
             raise ValueError(
                 "errors only takes values 'ignore' and 'raise'. "
                 f"Got {errors} instead."

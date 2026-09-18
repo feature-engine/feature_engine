@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,36 +10,46 @@ from tests.backend_helpers import frame_to_dict
 BINS = [0, 20, 40, 60, np.inf]
 
 
-# test init params
-@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 2])
+# init parameters
+@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 2, None])
 def test_raises_error_when_return_object_not_bool(param):
-    with pytest.raises(ValueError):
+    msg = f"return_object must be True or False. Got {param} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         BaseDiscretiser(return_object=param)
 
 
-@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 2])
+@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 2, None])
 def test_raises_error_when_return_boundaries_not_bool(param):
-    with pytest.raises(ValueError):
+    msg = f"return_boundaries must be True or False. Got {param} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         BaseDiscretiser(return_boundaries=param)
 
 
-@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 0, -1])
+@pytest.mark.parametrize(
+    "param", [0.1, "hola", (True, False), {"a": True}, 0, -1, None]
+)
 def test_raises_error_when_precision_not_int(param):
-    with pytest.raises(ValueError):
+    msg = f"precision must be a positive integer. Got {param} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         BaseDiscretiser(precision=param)
 
 
-@pytest.mark.parametrize("params", [(False, 1), (True, 10)])
-def test_correct_param_assignment_at_init(params):
-    param1, param2 = params
-    t = BaseDiscretiser(
-        return_object=param1, return_boundaries=param1, precision=param2
+@pytest.mark.parametrize(
+    "return_object, return_boundaries, precision",
+    [(False, False, 1), (True, False, 10), (False, True, 3)],
+)
+def test_init_param_assignment(return_object, return_boundaries, precision):
+    transformer = BaseDiscretiser(
+        return_object=return_object,
+        return_boundaries=return_boundaries,
+        precision=precision,
     )
-    assert t.return_object is param1
-    assert t.return_boundaries is param1
-    assert t.precision == param2
+    assert transformer.return_object is return_object
+    assert transformer.return_boundaries is return_boundaries
+    assert transformer.precision == precision
 
 
+# fit and transform
 class MockClassFit(BaseDiscretiser):
     def fit(self, X):
         # bins are hard-coded rather than learnt, so this mock works unchanged
