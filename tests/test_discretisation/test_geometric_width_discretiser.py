@@ -15,33 +15,37 @@ MSG_NA = (
 )
 
 
-# test init params
+# init parameters
 @pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 2])
 def test_raises_error_when_return_object_not_bool(param):
-    with pytest.raises(ValueError):
+    msg = f"return_object must be True or False. Got {param} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         GeometricWidthDiscretiser(return_object=param)
 
 
 @pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 2])
 def test_raises_error_when_return_boundaries_not_bool(param):
-    with pytest.raises(ValueError):
+    msg = f"return_boundaries must be True or False. Got {param} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         GeometricWidthDiscretiser(return_boundaries=param)
 
 
 @pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, 0, -1])
 def test_raises_error_when_precision_not_int(param):
-    with pytest.raises(ValueError):
+    msg = f"precision must be a positive integer. Got {param} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         GeometricWidthDiscretiser(precision=param)
 
 
-@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}])
+@pytest.mark.parametrize("param", [0.1, "hola", (True, False), {"a": True}, None])
 def test_raises_error_when_bins_not_int(param):
-    with pytest.raises(ValueError):
+    msg = f"bins must be an integer. Got {param} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         GeometricWidthDiscretiser(bins=param)
 
 
 @pytest.mark.parametrize("params", [(False, 1), (True, 10)])
-def test_correct_param_assignment_at_init(params):
+def test_init_param_assignment(params):
     param1, param2 = params
     t = GeometricWidthDiscretiser(
         return_object=param1, return_boundaries=param1, precision=param2, bins=param2
@@ -52,6 +56,7 @@ def test_correct_param_assignment_at_init(params):
     assert t.bins == param2
 
 
+# fit and transform
 def test_fit_and_transform_methods(make_df, data_normal_dist):
     transformer = GeometricWidthDiscretiser(
         bins=10, variables=None, return_object=False
@@ -102,5 +107,9 @@ def test_error_if_input_df_contains_na_in_transform(make_df):
 def test_non_fitted_error(make_df):
     df = make_df({"Age": [20.0, 21.0, 19.0, 23.0]})
     transformer = GeometricWidthDiscretiser()
-    with pytest.raises(NotFittedError):
+    msg = (
+        "This GeometricWidthDiscretiser instance is not fitted yet. Call 'fit' "
+        "with appropriate arguments before using this estimator."
+    )
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
         transformer.transform(df)
