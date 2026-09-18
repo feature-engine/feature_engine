@@ -342,11 +342,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         nw_X = nw.from_native(X, eager_only=True)
 
-        # build every replacement column before touching X, so pandas gets a
-        # single non-mutating `.assign()` and polars a single `.with_columns()`
-        # instead of one column swap per variable (avoids fragmentation and,
-        # since check_X no longer copies pandas input, avoids mutating the
-        # dataframe the caller passed in).
+        # add all new columns in one step, instead of one per variable, and leave
+        # the user's dataframe unchanged
         new_columns: Dict[str, np.ndarray] = {}
 
         if self.bin_output == "prediction":
