@@ -27,6 +27,41 @@ def _continuous_target():
 
 # init parameters
 @pytest.mark.parametrize(
+    "bin_output_", ["arbitrary", "Prediction", "", False, 1, None, ["prediction"]]
+)
+def test_error_if_binoutput_not_permitted_value(bin_output_):
+    msg = (
+        "bin_output takes values  'prediction', 'bin_number' or 'boundaries'. "
+        f"Got {bin_output_} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DecisionTreeDiscretiser(bin_output=bin_output_)
+
+
+@pytest.mark.parametrize("precision_", ["arbitrary", -1, 0.3])
+def test_error_if_precision_not_permitted_value(precision_):
+    msg = "precision must be None or a positive integer. " f"Got {precision_} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DecisionTreeDiscretiser(precision=precision_)
+
+
+def test_precision_errors_if_none_when_bin_output_is_boundaries():
+    msg = (
+        "When `bin_output == 'boundaries', `precision` cannot be None. "
+        "Change precision's value to a positive integer."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DecisionTreeDiscretiser(precision=None, bin_output="boundaries")
+
+
+@pytest.mark.parametrize("regression_", ["arbitrary", -1, 0.3, 1, None])
+def test_error_if_regression_is_not_bool(regression_):
+    msg = "regression can only take True or False. " f"Got {regression_} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DecisionTreeDiscretiser(regression=regression_)
+
+
+@pytest.mark.parametrize(
     "params",
     [
         {
@@ -67,45 +102,7 @@ def test_init_param_assignment(params):
         assert getattr(transformer, param) == value
 
 
-@pytest.mark.parametrize(
-    "bin_output_", ["arbitrary", "Prediction", "", False, 1, None, ["prediction"]]
-)
-def test_error_if_binoutput_not_permitted_value(bin_output_):
-    msg = (
-        "bin_output takes values  'prediction', 'bin_number' or 'boundaries'. "
-        f"Got {bin_output_} instead."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        DecisionTreeDiscretiser(bin_output=bin_output_)
-
-
-@pytest.mark.parametrize("precision_", ["arbitrary", -1, 0.3])
-def test_error_if_precision_not_permitted_value(precision_):
-    msg = "precision must be None or a positive integer. " f"Got {precision_} instead."
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        DecisionTreeDiscretiser(precision=precision_)
-
-
-def test_precision_errors_if_none_when_bin_output_is_boundaries():
-    msg = (
-        "When `bin_output == 'boundaries', `precision` cannot be None. "
-        "Change precision's value to a positive integer."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        DecisionTreeDiscretiser(precision=None, bin_output="boundaries")
-
-    dsc = DecisionTreeDiscretiser(precision=None, bin_output="bin_number")
-    assert dsc.precision is None
-
-
-@pytest.mark.parametrize("regression_", ["arbitrary", -1, 0.3])
-def test_error_if_regression_is_not_bool(regression_):
-    msg = "regression can only take True or False. " f"Got {regression_} instead."
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        DecisionTreeDiscretiser(regression=regression_)
-
-
-# fit
+# fit and transform
 def test_error_if_y_not_passed(make_df, data_normal_dist):
     encoder = DecisionTreeDiscretiser()
     msg = "DecisionTreeDiscretiser.fit() missing 1 required positional argument: 'y'"
@@ -122,6 +119,19 @@ def test_error_when_regression_is_true_and_target_is_binary(make_df):
         "or set regression to False."
     )
     transformer = DecisionTreeDiscretiser(regression=True)
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.fit(X, y)
+
+
+def test_error_when_regression_is_false_and_target_is_continuous(make_df):
+    X = make_df(DATA_TWO_VARS)
+    np.random.seed(42)
+    y = make_series(make_df, np.random.normal(0, 3, 20).tolist())
+    transformer = DecisionTreeDiscretiser(regression=False)
+    msg = (
+        "Unknown label type: continuous. Maybe you are trying to fit a classifier, "
+        "which expects discrete classes on a regression target with continuous values."
+    )
     with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.fit(X, y)
 
@@ -360,7 +370,6 @@ def test_regression_rounds_predictions(make_df, data_normal_dist, params):
     assert sorted(set(frame_to_dict(Xt)["var"])) == sorted(params[1])
 
 
-# transform
 def test_non_fitted_error(make_df, data_normal_dist):
     transformer = DecisionTreeDiscretiser()
     msg = (
@@ -369,19 +378,6 @@ def test_non_fitted_error(make_df, data_normal_dist):
     )
     with pytest.raises(NotFittedError, match=re.escape(msg)):
         transformer.transform(make_df(data_normal_dist))
-
-
-def test_error_when_regression_is_false_and_target_is_continuous(make_df):
-    X = make_df(DATA_TWO_VARS)
-    np.random.seed(42)
-    y = make_series(make_df, np.random.normal(0, 3, 20).tolist())
-    transformer = DecisionTreeDiscretiser(regression=False)
-    msg = (
-        "Unknown label type: continuous. Maybe you are trying to fit a classifier, "
-        "which expects discrete classes on a regression target with continuous values."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        transformer.fit(X, y)
 
 
 def test_n_jobs_parallel_matches_sequential(make_df):
