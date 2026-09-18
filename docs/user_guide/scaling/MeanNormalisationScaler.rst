@@ -137,11 +137,56 @@ In the following data, we see the scaled variables returned to their original re
 
 .. code:: python
 
-        Name        City  Age  Height  Marks                 dob
-    0    tom      London   20    1.80    0.9 2020-02-24 00:00:00
-    1   nick  Manchester   21    1.77    0.8 2020-02-24 00:01:00
-    2  krish   Liverpool   19    1.90    0.7 2020-02-24 00:02:00
-    3   jack     Bristol   18    2.00    0.6 2020-02-24 00:03:00
+        Name        City   Age  Height  Marks                 dob
+    0    tom      London  20.0    1.80    0.9 2020-02-24 00:00:00
+    1   nick  Manchester  21.0    1.77    0.8 2020-02-24 00:01:00
+    2  krish   Liverpool  19.0    1.90    0.7 2020-02-24 00:02:00
+    3   jack     Bristol  18.0    2.00    0.6 2020-02-24 00:03:00
+
+Note that **Age** comes back as a float, not the original integer: multiplying and
+adding floats (the range and mean) always produces a float in both pandas and
+polars, so the inverse transformation cannot restore the original integer dtype.
+
+With polars
+-----------
+
+:class:`MeanNormalisationScaler()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.scaling import MeanNormalisationScaler
+
+    df = pl.DataFrame(
+        {
+            "Name": ["tom", "nick", "krish", "jack"],
+            "City": ["London", "Manchester", "Liverpool", "Bristol"],
+            "Age": [20, 21, 19, 18],
+            "Height": [1.80, 1.77, 1.90, 2.00],
+            "Marks": [0.9, 0.8, 0.7, 0.6],
+        }
+    )
+
+    scaler = MeanNormalisationScaler(variables=["Age", "Marks", "Height"])
+    scaler.fit(df)
+
+    print(scaler.transform(df))
+
+The resulting values match those found with pandas:
+
+.. code:: text
+
+    shape: (4, 5)
+    ┌───────┬────────────┬───────────┬───────────┬───────────┐
+    │ Name  ┆ City       ┆ Age       ┆ Height    ┆ Marks     │
+    │ ---   ┆ ---        ┆ ---       ┆ ---       ┆ ---       │
+    │ str   ┆ str        ┆ f64       ┆ f64       ┆ f64       │
+    ╞═══════╪════════════╪═══════════╪═══════════╪═══════════╡
+    │ tom   ┆ London     ┆ 0.166667  ┆ -0.293478 ┆ 0.5       │
+    │ nick  ┆ Manchester ┆ 0.5       ┆ -0.423913 ┆ 0.166667  │
+    │ krish ┆ Liverpool  ┆ -0.166667 ┆ 0.141304  ┆ -0.166667 │
+    │ jack  ┆ Bristol    ┆ -0.5      ┆ 0.576087  ┆ -0.5      │
+    └───────┴────────────┴───────────┴───────────┴───────────┘
 
 
 Additional resources
