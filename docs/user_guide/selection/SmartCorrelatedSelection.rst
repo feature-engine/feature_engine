@@ -594,7 +594,7 @@ And returns a polars dataframe:
 
     print(Xt.head())
 
-.. code:: python
+.. code:: text
 
     shape: (5, 8)
     ┌──────────┬──────────┬───────────┬───────────┬───────────┬───────────┬───────────┬───────────┐
