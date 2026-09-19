@@ -649,7 +649,7 @@ Windows of 2 and 4 rows cover 30 and 60 minutes of data:
 We see the window features on the right of the dataframe. The first rows, which don't
 have enough past data to fill the window, contain null values:
 
-.. code:: python
+.. code:: text
 
     shape: (8, 6)
     ┌──────────────┬─────────────┬─────────────────┬─────────────────┬────────────────┬────────────────┐
