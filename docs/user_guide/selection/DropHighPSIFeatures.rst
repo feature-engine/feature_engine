@@ -6,7 +6,7 @@ DropHighPSIFeatures
 ===================
 
 The :class:`DropHighPSIFeatures()` finds and removes features with changes in their
-distribution, i.e. "unstable values", from a pandas dataframe.
+distribution, i.e. "unstable values", from a pandas or polars dataframe.
 The stability of the distribution is computed using the **Population Stability
 Index (PSI)** and all features having a PSI value above a given threshold are removed.
 
@@ -207,6 +207,13 @@ reference in the `split_col` parameter. If you don't, the split will be done bas
 values of the dataframe index. This might be a good option if the index contains meaningful
 values or if splitting just based on `split_frac`.
 
+Polars dataframes don't have an index. If you don't indicate a column in `split_col`,
+:class:`DropHighPSIFeatures()` uses the position of the rows instead, from 0 for the
+first row to the number of rows minus 1 for the last one. This way, the first rows go
+to the basis data set and the last rows to the test set. If the rows are in time order,
+this compares the older observations with the most recent ones. The positions are also
+what the `cut_off` refers to: with `cut_off=99`, the first 100 rows go to the basis set.
+
 
 Python implementation
 ----------------------
@@ -255,7 +262,7 @@ with a shift in its distribution (*var_3* in this case):
     X = pd.DataFrame(X, columns=colnames)
 
     # Add a column with a shift.
-    X['var_3'][250:] = X['var_3'][250:] + 1
+    X.loc[250:, 'var_3'] = X.loc[250:, 'var_3'] + 1
 
 The default approach in :class:`DropHighPSIFeatures()` is to split the
 input dataframe `X` in two equally sized data sets. You can adjust the proportions by changing
@@ -295,7 +302,7 @@ by the `transform` method.
     {'var_0': 0.07405459925568803,
     'var_1': 0.09124093185820083,
     'var_2': 0.16985790067687764,
-    'var_3': 1.342485289730313,
+    'var_3': 0.8324552340063687,
     'var_4': 0.0743442762545251,
     'var_5': 0.06809060587241555}
 
@@ -940,6 +947,78 @@ Below we can compare both plots. We see that the distribution of *income* shifts
 noticeably between groups, whereas the distribution of *var_4* remains stable:
 
 .. image:: ../../images/PSI_distribution_case5.png
+
+
+With polars
+-----------
+
+:class:`DropHighPSIFeatures()` works in the same way with polars dataframes, and returns
+a polars dataframe. Let's repeat Case 1 with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from sklearn.datasets import make_classification
+    from feature_engine.selection import DropHighPSIFeatures
+
+    X, y = make_classification(n_samples=500, n_features=6, random_state=0)
+
+    # Add a shift to the last 250 values of var_3.
+    X[250:, 3] = X[250:, 3] + 1
+    X = pl.DataFrame(X, schema=["var_" + str(i) for i in range(6)])
+
+    transformer = DropHighPSIFeatures(split_frac=0.6)
+    X_transformed = transformer.fit_transform(X)
+
+    print(transformer.psi_values_)
+
+We obtain the same PSI values as with pandas:
+
+.. code:: python
+
+    {'var_0': 0.07405459925568803,
+    'var_1': 0.09124093185820083,
+    'var_2': 0.16985790067687764,
+    'var_3': 0.8324552340063687,
+    'var_4': 0.0743442762545251,
+    'var_5': 0.06809060587241555}
+
+As the polars dataframe has no index, the data was split by the position of the rows.
+The cut-off is the same as in Case 1:
+
+.. code:: python
+
+    print(transformer.cut_off_)
+
+.. code:: python
+
+    299.4
+
+This means that the first 300 rows, with positions 0 to 299, form the basis data set.
+The transformed data is a polars dataframe without *var_3*:
+
+.. code:: python
+
+    print(X_transformed.head())
+
+.. code:: text
+
+    shape: (5, 5)
+    ┌───────────┬───────────┬───────────┬───────────┬───────────┐
+    │ var_0     ┆ var_1     ┆ var_2     ┆ var_4     ┆ var_5     │
+    │ ---       ┆ ---       ┆ ---       ┆ ---       ┆ ---       │
+    │ f64       ┆ f64       ┆ f64       ┆ f64       ┆ f64       │
+    ╞═══════════╪═══════════╪═══════════╪═══════════╪═══════════╡
+    │ 0.476031  ┆ 0.494526  ┆ -0.565498 ┆ -1.596759 ┆ -0.283645 │
+    │ -0.375222 ┆ -2.332233 ┆ 0.732424  ┆ -1.623769 ┆ 0.276038  │
+    │ -0.561579 ┆ 0.719409  ┆ 1.608522  ┆ -0.702902 ┆ -0.224755 │
+    │ 0.22584   ┆ -0.720572 ┆ 0.960557  ┆ -0.721353 ┆ 0.059809  │
+    │ -0.446836 ┆ -0.66195  ┆ -0.061743 ┆ 1.390007  ┆ 0.293002  │
+    └───────────┴───────────┴───────────┴───────────┴───────────┘
+
+To split a polars dataframe by date, pass the name of the date column in `split_col`,
+as in Case 3. If the column holds datetimes, pass a datetime as `cut_off`, for example
+`datetime(1789, 7, 14)`, instead of a date.
 
 
 Additional resources

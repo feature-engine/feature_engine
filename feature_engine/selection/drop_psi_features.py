@@ -1,10 +1,12 @@
 import datetime
-from typing import Dict, List, Union
+import numbers
+from typing import Dict, List, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
 import scipy.stats as stats
-from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -26,10 +28,6 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     check_X,
-)
-from feature_engine.discretisation import (
-    EqualFrequencyDiscretiser,
-    EqualWidthDiscretiser,
 )
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
@@ -103,7 +101,8 @@ class DropHighPSIFeatures(BaseSelector):
 
     First, you can indicate which variable should be used to guide the data split. This
     variable can be of any data type. If you do not enter a variable name,
-    DropHighPSIFeatures() will use the dataframe index.
+    DropHighPSIFeatures() will use the index of a pandas dataframe, or the row order of
+    dataframes that don't have an index, like polars dataframes.
 
     Next, you need to specify how that variable (or the index) should be used to split
     the data. You can specify a proportion of observations to be put in each data set,
@@ -131,10 +130,12 @@ class DropHighPSIFeatures(BaseSelector):
     ----------
     split_col: string or int, default=None.
         The variable that will be used to split the dataset into the basis and test
-        sets. If None, the dataframe index will be used. `split_col` can be a numerical,
-        categorical or datetime variable. If `split_col` is a categorical variable, and
-        the splitting criteria is given by `split_frac`, it will be assumed that the
-        labels of the variable are sorted alphabetically.
+        sets. If None, the index of a pandas dataframe will be used. Dataframes without
+        an index, like polars dataframes, are split by the position of the rows,
+        from 0 to n_samples - 1, so the first rows go to the basis set. `split_col` can
+        be a numerical, categorical or datetime variable. If `split_col` is a
+        categorical variable, and the splitting criteria is given by `split_frac`, it
+        will be assumed that the labels of the variable are sorted alphabetically.
 
     split_frac: float, default=0.5.
         The proportion of observations in each of the basis and test dataframes. If
@@ -243,7 +244,8 @@ class DropHighPSIFeatures(BaseSelector):
 
     cut_off_:
         Value used to split the dataframe into basis and test.
-        This value is computed when not given as parameter.
+        This value is computed when not given as parameter. When `split_col` is None
+        and the dataframe has no index, it refers to the position of the rows.
 
     {feature_names_in_}
 
@@ -295,6 +297,27 @@ class DropHighPSIFeatures(BaseSelector):
     8    9
     9    0
     10  32
+    11  87
+    12   6
+    13  32
+    14  11
+    15  44
+    16   8
+    17   7
+    18   9
+    19   0
+
+    With a polars dataframe, which has no index, the rows are split by their
+    position:
+
+    >>> import polars as pl
+    >>> X = pl.DataFrame(dict(
+    >>>         x1 = [1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    >>>         x2 = [32,87,6,32,11,44,8,7,9,0,32,87,6,32,11,44,8,7,9,0],
+    >>>         ))
+    >>> psi = DropHighPSIFeatures()
+    >>> psi.fit_transform(X).columns
+    ['x2']
     """
 
     def __init__(
@@ -320,17 +343,16 @@ class DropHighPSIFeatures(BaseSelector):
                 f"{split_col} instead."
             )
 
-        # split_frac and cut_off can't be None at the same time
-        if not split_frac and not cut_off:
+        if split_frac is None and cut_off is None:
             raise ValueError(
-                f"cut_off and split_frac cannot be both set to None "
+                f"cut_off and split_frac cannot be both set to None. "
                 f"The current values are {split_frac, cut_off}. Please "
                 f"specify a value for at least one of these parameters."
             )
 
-        # check split_frac only if it will be used.
-        if split_frac and not cut_off:
-            if not (0 < split_frac < 1):
+        # split_frac is only used when cut_off is None.
+        if cut_off is None:
+            if not isinstance(split_frac, (float, int)) or not 0 < split_frac < 1:
                 raise ValueError(
                     f"split_frac must be a float between 0 and 1. Got {split_frac} "
                     f"instead."
@@ -344,17 +366,21 @@ class DropHighPSIFeatures(BaseSelector):
         if not isinstance(switch, bool):
             raise ValueError(f"switch must be a boolean. Got {switch} instead.")
 
-        if (isinstance(threshold, str) and (threshold != "auto")) or (
-            isinstance(threshold, (float, int)) and threshold < 0
+        if not (
+            (isinstance(threshold, str) and threshold == "auto")
+            or (isinstance(threshold, numbers.Real) and threshold >= 0)
         ):
             raise ValueError(
                 f"threshold must be greater than 0 or 'auto'. Got {threshold} instead."
             )
 
         if not isinstance(bins, int) or bins <= 1:
-            raise ValueError(f"bins must be an integer >= 1. Got {bins} instead.")
+            raise ValueError(f"bins must be an integer >= 2. Got {bins} instead.")
 
-        if strategy not in ["equal_width", "equal_frequency"]:
+        if not isinstance(strategy, str) or strategy not in [
+            "equal_width",
+            "equal_frequency",
+        ]:
             raise ValueError(
                 "strategy takes only values equal_width or equal_frequency. Got "
                 f"{strategy} instead."
@@ -366,7 +392,10 @@ class DropHighPSIFeatures(BaseSelector):
                 f"instead."
             )
 
-        if missing_values not in ["raise", "ignore"]:
+        if not isinstance(missing_values, str) or missing_values not in [
+            "raise",
+            "ignore",
+        ]:
             raise ValueError(
                 f"missing_values takes only values 'raise' or 'ignore'. Got "
                 f"{missing_values} instead."
@@ -403,138 +432,108 @@ class DropHighPSIFeatures(BaseSelector):
         self.missing_values = missing_values
         self.p_value = p_value
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Find features with high PSI values.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X : dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas series. Default = None
+        y : Series. Default = None
             y is not needed in this transformer. You can pass y or None.
         """
-        # check input dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
-        # select variables to evaluate
         cat_variables_, num_variables_ = self._select_variables(X)
 
-        # check that split column is in the dataframe and remove from variable lists
+        # the split column is removed from the variables selected automatically
         cat_variables_, num_variables_ = self._check_split_column(
-            X, cat_variables_, num_variables_
+            nw_X, cat_variables_, num_variables_
         )
 
         if self.missing_values == "raise":
-            # check if dataset contains na or inf
             _check_contains_na(X, num_variables_ + cat_variables_)
-            _check_contains_inf(X, num_variables_)
+        # the intervals can't be computed with inf values, even if NaN are ignored
+        _check_contains_inf(X, num_variables_)
 
-        # Split the dataframe into basis and test.
-        basis_df, test_df = self._split_dataframe(X)
+        is_basis = self._basis_mask(X, nw_X)
+        n_basis = int(is_basis.sum())
+        n_test = is_basis.shape[0] - n_basis
 
-        # Check the shape of the returned dataframes for PSI calculations.
-        # The number of observations must be at least equal to the
-        # number of bins.
-        if min(basis_df.shape[0], test_df.shape[0]) < self.bins:
+        if min(n_basis, n_test) < self.bins:
             raise ValueError(
                 "The number of rows in the basis and test datasets that will be used "
                 f"in the PSI calculations must be at least larger than {self.bins}. "
-                "After splitting the original dataset based on the given cut_off or"
-                f"split_frac we have {basis_df.shape[0]} samples in the basis set, "
-                f"and {test_df.shape[0]} samples in the test set. "
+                "After splitting the original dataset based on the given cut_off or "
+                f"split_frac we have {n_basis} samples in the basis set, "
+                f"and {n_test} samples in the test set. "
                 "Please adjust the value of the cut_off or split_frac."
             )
 
-        # Switch basis and test dataframes if required.
-        if self.switch:
-            test_df, basis_df = basis_df, test_df
+        if self.switch is True:
+            is_basis = ~is_basis
+            n_basis, n_test = n_test, n_basis
 
-        # Set up parameters for numerical features
-        if len(num_variables_) > 0:
+        if self.threshold == "auto":
+            threshold_num = self._calculate_auto_threshold(n_basis, n_test, self.bins)
+        else:
+            threshold_num = self.threshold
 
-            # Set up the discretizer for numerical features
-            if self.strategy == "equal_width":
-                bucketer = EqualWidthDiscretiser(bins=self.bins)
-            else:
-                bucketer = EqualFrequencyDiscretiser(q=self.bins)
-
-            # Set up the threshold for numerical features
-            if self.threshold == "auto":
-                threshold_num = self._calculate_auto_threshold(
-                    basis_df.shape[0],
-                    test_df.shape[0],
-                    self.bins,
-                )
-            else:
-                threshold_num = self.threshold
-
-        # Set up the generic threshold for categorical features if used
-        if len(cat_variables_) > 0:
-            if self.threshold != "auto":
-                threshold_cat = self.threshold
-
-        # Compute the PSI by looping over the features
         self.psi_values_: Dict = {}
         self.features_to_drop_ = []
 
-        # Compute PSI for numerical features
         for feature in num_variables_:
-            # Discretize feature
-            basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
-            test_discrete = bucketer.transform(test_df[[feature]].dropna())
+            # pandas is faster than narwhals.
+            if nwd.is_pandas_dataframe(X) is True:
+                values = X[feature].to_numpy()
+            else:
+                values = nw_X.get_column(feature).to_numpy()
+            basis = values[is_basis]
+            test = values[~is_basis]
+            if self.missing_values == "ignore":
+                basis = basis[~np.isnan(basis)]
+                test = test[~np.isnan(test)]
+                self._check_observations(feature, basis, test)
 
-            # Determine percentage of observations per bin
-            basis_distrib, test_distrib = self._observation_frequency_per_bin(
-                basis_discrete, test_discrete
+            # the intervals are learned from the basis set only
+            limits = self._interval_limits(basis)
+            n_intervals = len(limits) + 1
+            basis_counts = np.bincount(
+                np.searchsorted(limits, basis, side="left"), minlength=n_intervals
             )
-
-            # Calculate the PSI value
-            self.psi_values_[feature] = np.sum(
-                (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
+            test_counts = np.bincount(
+                np.searchsorted(limits, test, side="left"), minlength=n_intervals
             )
+            self.psi_values_[feature] = self._psi(basis_counts, test_counts)
 
-            # Assess if feature should be dropped
             if self.psi_values_[feature] > threshold_num:
                 self.features_to_drop_.append(feature)
 
-        # Compute the PSI for categorical features
         for feature in cat_variables_:
-            basis_discrete = basis_df[[feature]]
-            test_discrete = test_df[[feature]]
-
-            # Determine percentage of observations per bin
-            basis_distrib, test_distrib = self._observation_frequency_per_bin(
-                basis_discrete, test_discrete
+            basis_counts, test_counts = self._category_counts(
+                X, nw_X, feature, is_basis
             )
+            self.psi_values_[feature] = self._psi(basis_counts, test_counts)
 
-            # Calculate the PSI value
-            self.psi_values_[feature] = np.sum(
-                (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
-            )
-
-            # Determine the appropriate threshold for the categorical feature
             if self.threshold == "auto":
-                n_bins_cat = X[feature].nunique()
+                n_categories = np.count_nonzero(basis_counts + test_counts)
                 threshold_cat = self._calculate_auto_threshold(
-                    basis_df.shape[0],
-                    test_df.shape[0],
-                    n_bins_cat,
+                    n_basis, n_test, n_categories
                 )
+            else:
+                threshold_cat = self.threshold
 
-            # Assess if feature should be dropped
             if self.psi_values_[feature] > threshold_cat:
                 self.features_to_drop_.append(feature)
 
-        # store analyzed variables
         self.variables_ = num_variables_ + cat_variables_
-        # save input features
         self._get_feature_names_in(X)
 
         return self
 
-    def _select_variables(self, X: pd.DataFrame):
+    def _select_variables(self, X: IntoDataFrame):
         """Based on the user input to the `variables` attribute in init, find the
         numerical and categorical variables for which the PSI should be calculated.
 
@@ -568,7 +567,7 @@ class DropHighPSIFeatures(BaseSelector):
 
     def _check_split_column(
         self,
-        X: pd.DataFrame,
+        nw_X: nw.DataFrame,
         cat_variables: List[Union[str, int]],
         num_variables: List[Union[str, int]],
     ):
@@ -578,12 +577,9 @@ class DropHighPSIFeatures(BaseSelector):
         It will get added if the variables are selected automatically.
         """
         if self.split_col is not None:
-            # check that split_col is in the dataframe.
-            if self.split_col not in X.columns:
+            if self.split_col not in nw_X.columns:
                 raise ValueError(f"{self.split_col} is not in the dataframe.")
 
-            # Remove the split_col from variables lists. Happens when variables are
-            # selected automatically by the transformer.
             if self.variables is None or self.variables == "all":
                 if self.split_col in num_variables:
                     num_variables.remove(self.split_col)
@@ -592,117 +588,171 @@ class DropHighPSIFeatures(BaseSelector):
 
         return cat_variables, num_variables
 
-    def _observation_frequency_per_bin(self, basis, test):
-        """
-        Obtain the fraction of observations per interval.
-
-        Parameters
-        ----------
-        basis : pd.DataFrame.
-            The basis Pandas DataFrame with discretised (i.e., binned) values.
-
-        test: pd.DataFrame.
-            The test Pandas DataFrame with discretised (i.e., binned) values.
-
-        Returns
-        -------
-        distribution.basis: pd.Series.
-            Basis Pandas Series with percentage of observations per bin.
-
-        distribution.meas: pd.Series.
-            Test Pandas Series with percentage of observations per bin.
-        """
-        # Compute the feature distribution for basis and test
-        basis_distrib = basis.value_counts(normalize=True)
-        test_distrib = test.value_counts(normalize=True)
-
-        # Align the two distributions by merging the buckets (bins). This ensures
-        # the number of bins is the same for the two distributions (in case of
-        # empty buckets).
-        distributions = (
-            pd.DataFrame(basis_distrib)
-            .merge(
-                pd.DataFrame(test_distrib),
-                right_index=True,
-                left_index=True,
-                how="outer",
-            )
-            .fillna(self.min_pct_empty_bins)
-            .replace(to_replace=0, value=self.min_pct_empty_bins)
-        )
-        distributions.columns = ["basis", "test"]
-
-        return distributions.basis, distributions.test
-
-    def _split_dataframe(self, X: pd.DataFrame):
-        """
-        Split dataframe according to a cut-off value and return two dataframes: the
-        basis dataframe contains all observations <= cut_off and the test dataframe the
-        observations > cut_off.
-
-        If cut-off is a list, then the basis dataframe will contain all observations
-        which values are within the list, and the test dataframe all remaining
-        observations.
-
-        The cut-off value is associated to a specific column.
-
-        Parameters
-        ----------
-        X : pandas dataframe
-
-        Returns
-        -------
-        basis_df: pd.DataFrame
-            pandas dataframe with observations which value <= cut_off
-
-        test_df: pd.DataFrame
-            pandas dataframe with observations which value > cut_off
-        """
-
-        # Identify the values according to which the split must be done.
-        if self.split_col is None:
-            reference = pd.Series(X.index)
-        else:
-            reference = X[self.split_col]
-
-        # Raise an error if there are missing values in the reference column.
-        if reference.isna().any():
+    def _check_observations(self, feature, basis: np.ndarray, test: np.ndarray):
+        """Check that the basis and test sets have values of the feature, which can
+        be missing when NaN are ignored."""
+        if len(basis) == 0 or len(test) == 0:
             raise ValueError(
-                f"There are {reference.isna().sum()} missing values in the reference"
+                f"The variable {feature} has only missing values in the basis or in "
+                "the test set, so its PSI can't be computed. Got "
+                f"{len(basis)} values in the basis set and {len(test)} values in the "
+                "test set."
+            )
+
+    def _interval_limits(self, values: np.ndarray) -> np.ndarray:
+        """Inner limits of the intervals, the same ones EqualFrequencyDiscretiser
+        and EqualWidthDiscretiser find. The first and last intervals are open, so
+        values outside the basis range go to them."""
+        if self.strategy == "equal_frequency":
+            quantiles = np.linspace(0, 1, self.bins + 1)
+            # round up quantiles that are not exact in base 2, as pandas.qcut does
+            np.putmask(
+                quantiles,
+                self.bins * quantiles != np.arange(self.bins + 1),
+                np.nextafter(quantiles, 1),
+            )
+            limits = np.unique(np.quantile(values, quantiles, method="linear"))
+        else:
+            low, high = np.min(values), np.max(values)
+            # widen a constant range by 0.1%, as pandas.cut does
+            if low == high:
+                low = low - 0.001 * abs(low) if low != 0 else -0.001
+                high = high + 0.001 * abs(high) if high != 0 else 0.001
+            limits = np.unique(np.linspace(low, high, self.bins + 1))
+        return limits[1:-1]
+
+    def _category_counts(
+        self, X: IntoDataFrame, nw_X: nw.DataFrame, feature, is_basis: np.ndarray
+    ):
+        """Number of observations per category in the basis and test sets, with
+        the categories sorted. Missing values are not counted."""
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            codes, categories = X[feature].factorize(sort=True)
+            is_value = codes >= 0
+            basis_counts = np.bincount(
+                codes[is_basis & is_value], minlength=len(categories)
+            )
+            test_counts = np.bincount(
+                codes[~is_basis & is_value], minlength=len(categories)
+            )
+        else:
+            counts = (
+                nw_X.select(nw.col(feature))
+                .with_columns(
+                    nw.new_series(
+                        "__basis__",
+                        is_basis,
+                        backend=nw.get_native_namespace(nw_X),
+                    )
+                )
+                .drop_nulls()
+                .group_by(feature)
+                .agg(nw.col("__basis__").sum(), nw.len().alias("__count__"))
+                .sort(feature)
+            )
+            basis_counts = counts.get_column("__basis__").to_numpy()
+            test_counts = counts.get_column("__count__").to_numpy() - basis_counts
+        return basis_counts, test_counts
+
+    def _psi(self, basis_counts: np.ndarray, test_counts: np.ndarray) -> float:
+        """PSI from the number of observations per interval or category."""
+        # intervals or categories that are empty in both sets don't add to the PSI
+        observed = (basis_counts > 0) | (test_counts > 0)
+        basis = basis_counts[observed] / basis_counts.sum()
+        test = test_counts[observed] / test_counts.sum()
+        basis[basis == 0] = self.min_pct_empty_bins
+        test[test == 0] = self.min_pct_empty_bins
+        # min_pct_empty_bins=0 gives an inf PSI with empty intervals, without warnings
+        with np.errstate(divide="ignore"):
+            return np.sum((test - basis) * np.log(test / basis))
+
+    def _basis_mask(self, X: IntoDataFrame, nw_X: nw.DataFrame) -> np.ndarray:
+        """
+        Find the observations of the basis dataset.
+
+        The basis dataset contains the observations whose value in `split_col` (or
+        in the index, or the row position when the dataframe has no index) is <=
+        cut_off, or is in cut_off when it is a list. The test dataset contains the
+        remaining observations.
+
+        Parameters
+        ----------
+        X : dataframe
+
+        nw_X : narwhals dataframe
+            X in narwhals format.
+
+        Returns
+        -------
+        is_basis: numpy array
+            Boolean array that is True for the observations of the basis dataset.
+        """
+        # pandas is faster than narwhals, and has an index.
+        if nwd.is_pandas_dataframe(X) is True:
+            if self.split_col is None:
+                reference = X.index.to_series()
+            else:
+                reference = X[self.split_col]
+            n_missing = reference.isna().sum()
+        else:
+            if self.split_col is None:
+                # without an index, the row order is the reference
+                reference = nw.new_series(
+                    "__row__",
+                    np.arange(nw_X.shape[0]),
+                    backend=nw.get_native_namespace(nw_X),
+                )
+            else:
+                reference = nw_X.get_column(self.split_col)
+            n_missing = reference.null_count()
+            if reference.dtype.is_float() is True:
+                n_missing += reference.is_nan().sum()
+
+        if n_missing > 0:
+            raise ValueError(
+                f"There are {n_missing} missing values in the reference "
                 "variable. Missing data are not allowed in the variable used to "
                 "split the dataframe."
             )
 
-        # If cut_off is not pre-defined, compute it.
-        if not self.cut_off:
-            self.cut_off_ = self._get_cut_off_value(reference)
+        if self.cut_off is None:
+            self.cut_off_ = self._get_cut_off_value(X, reference)
         else:
             self.cut_off_ = self.cut_off
 
-        # Split the original dataframe
         if isinstance(self.cut_off_, list):
             cut_off = self.cut_off_
-            # isin with values castable to datetime (strings, dates) is
-            # deprecated in pandas; cast them to the reference dtype first.
-            if is_datetime64_any_dtype(reference):
-                cut_off = pd.to_datetime(cut_off)
-            is_within_cut_off = np.array(reference.isin(cut_off))
-
+            if nwd.is_pandas_dataframe(X) is True:
+                # isin with dates or strings is deprecated with datetime columns.
+                if reference.dtype.kind == "M":
+                    cut_off = np.array(cut_off, dtype="datetime64[ns]")
+                is_basis = reference.isin(cut_off)
+            else:
+                # polars can't compare dates with datetimes.
+                if reference.dtype == nw.Datetime:
+                    cut_off = (
+                        nw.new_series(
+                            "__cut_off__",
+                            cut_off,
+                            backend=nw.get_native_namespace(nw_X),
+                        )
+                        .cast(reference.dtype)
+                        .to_list()
+                    )
+                is_basis = reference.is_in(cut_off)
         else:
-            is_within_cut_off = np.array(reference <= self.cut_off_)
+            is_basis = reference <= self.cut_off_
 
-        basis_df = X[is_within_cut_off]
-        test_df = X[~is_within_cut_off]
+        return is_basis.to_numpy()
 
-        return basis_df, test_df
-
-    def _get_cut_off_value(self, split_column):
+    def _get_cut_off_value(self, X: IntoDataFrame, split_column):
         """
         Find the cut-off value to split the dataframe. It is implemented when the user
         does not enter a cut_off value as a parameter. It is calculated based on
         split_frac.
 
-        Finds the value in a pandas series at which we find the split_frac percentage
+        Finds the value in a series at which we find the split_frac percentage
         of observations.
 
         If the reference column is numerical, the cut-off value is determined using
@@ -717,33 +767,44 @@ class DropHighPSIFeatures(BaseSelector):
 
         Parameters
         ----------
-        split_column: pd.Series.
-            Series for which the nth quantile will be computed.
+        X: dataframe
+            The dataframe to split.
+
+        split_column: pandas or narwhals series.
+            Series for which the nth quantile will be computed: a pandas series if X
+            is a pandas dataframe, or a narwhals series otherwise.
 
         Returns
         -------
         cut_off: (float, int, str, object).
             value for the cut-off.
         """
+        if nwd.is_pandas_dataframe(X) is True:
+            if self.split_distinct is True:
+                split_column = split_column.drop_duplicates()
 
-        # In case split_distinct is used, extract series with unique values
-        if self.split_distinct:
-            split_column = pd.Series(split_column.unique())
-
-        # If the value is numerical, use numpy functionality
-        if is_numeric_dtype(split_column):
-            cut_off = np.quantile(split_column, self.split_frac)
-
-        # Otherwise use value_counts combined with cumsum
+            if split_column.dtype.kind in "biufc":
+                cut_off = np.quantile(split_column, self.split_frac)
+            else:
+                cumulative = (
+                    split_column.value_counts(normalize=True).sort_index().cumsum()
+                )
+                # the value whose cumulative fraction is the closest to split_frac
+                position = np.argmin(np.abs(cumulative.to_numpy() - self.split_frac))
+                cut_off = cumulative.index.to_numpy()[position]
         else:
-            reference = pd.DataFrame(
-                split_column.value_counts(normalize=True).sort_index().cumsum()
-            )
+            if self.split_distinct is True:
+                split_column = split_column.unique()
 
-            # Get the index (i.e. value) with the quantile that is the closest
-            # to the split_frac defined at initialization.
-            distance = abs(reference - self.split_frac)
-            cut_off = (distance.idxmin()).values[0]
+            if split_column.dtype.is_numeric() is True:
+                cut_off = np.quantile(split_column.to_numpy(), self.split_frac)
+            else:
+                proportions = split_column.value_counts(
+                    name="__proportion__", normalize=True
+                ).sort(split_column.name)
+                cumulative = proportions.get_column("__proportion__").cum_sum()
+                position = np.argmin(np.abs(cumulative.to_numpy() - self.split_frac))
+                cut_off = proportions.get_column(split_column.name).item(int(position))
 
         return cut_off
 
