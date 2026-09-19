@@ -1,5 +1,7 @@
+from typing import List, Union
+
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import RegressorMixin
 from sklearn.utils.multiclass import type_of_target
 
@@ -15,7 +17,8 @@ class TargetMeanRegressor(RegressorMixin, BaseTargetMeanEstimator):
     bin for each variable. The final estimation is the average of the target mean
     values across variables.
 
-    The TargetMeanRegressor() takes both numerical and categorical variables as input.
+    The TargetMeanRegressor() works with pandas and polars dataframes, and takes both
+    numerical and categorical variables as input.
     For numerical variables, the values are first sorted into bins of equal-width or
     equal-frequency. Then, the mean target value is estimated for each bin. If the
     variables are categorical, the mean target value is estimated for each category.
@@ -36,7 +39,7 @@ class TargetMeanRegressor(RegressorMixin, BaseTargetMeanEstimator):
         the values will be sorted.
 
     strategy: str, default='equal_width'
-        Whether the bins should of equal width ('equal_width') or equal frequency
+        Whether the bins should be of equal width ('equal_width') or equal frequency
         ('equal_frequency').
 
     Attributes
@@ -83,18 +86,32 @@ class TargetMeanRegressor(RegressorMixin, BaseTargetMeanEstimator):
     .. [1] Miller, et al. "Predicting customer behaviour: The University of Melbourne’s
         KDD Cup report". JMLR Workshop and Conference Proceeding. KDD 2009
         http://proceedings.mlr.press/v7/miller09/miller09.pdf
+
+    Examples
+    --------
+
+    >>> import polars as pl
+    >>> from feature_engine._prediction.target_mean_regressor import TargetMeanRegressor
+    >>> X = pl.DataFrame(dict(x1=[1, 2, 3, 4, 5, 6], x2=["a", "a", "b", "b", "b", "a"]))
+    >>> y = pl.Series([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    >>> tmr = TargetMeanRegressor(bins=2)
+    >>> tmr.fit(X, y)
+    >>> tmr.predict(X)
+    array([2.5, 2.5, 3. , 4.5, 4.5, 4. ])
+    >>> tmr.score(X, y)
+    0.6
     """
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: Union[IntoSeries, np.ndarray, List]):
         """
         Learn the mean target value per category or bin.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y : pandas series of shape = [n_samples,]
+        y: Series, numpy array or list of shape = [n_samples,]
             The target variable.
         """
 
@@ -106,13 +123,13 @@ class TargetMeanRegressor(RegressorMixin, BaseTargetMeanEstimator):
 
         return super().fit(X, y)
 
-    def predict(self, X: pd.DataFrame) -> np.ndarray:
+    def predict(self, X: IntoDataFrame) -> np.ndarray:
         """
         Predict using the average of the target mean value across variables.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, ]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
