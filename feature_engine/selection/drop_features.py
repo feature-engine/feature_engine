@@ -1,6 +1,6 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selector import BaseSelector
@@ -68,6 +68,27 @@ class DropFeatures(BaseSelector):
     1   2  False
     2   3  False
     3   4   True
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.selection import DropFeatures
+    >>> X = pl.DataFrame(dict(x1 = [1,2,3,4],
+    >>>                         x2 = ["a", "a", "b", "c"],
+    >>>                         x3 = [True, False, False, True]))
+    >>> df = DropFeatures(features_to_drop=["x2"])
+    >>> df.fit_transform(X)
+    shape: (4, 2)
+    ┌─────┬───────┐
+    │ x1  ┆ x3    │
+    │ --- ┆ ---   │
+    │ i64 ┆ bool  │
+    ╞═════╪═══════╡
+    │ 1   ┆ true  │
+    │ 2   ┆ false │
+    │ 3   ┆ false │
+    │ 4   ┆ true  │
+    └─────┴───────┘
     """
 
     def __init__(self, features_to_drop: List[Union[str, int]]):
@@ -79,30 +100,28 @@ class DropFeatures(BaseSelector):
 
         self.features_to_drop = features_to_drop
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
-            The input dataframe
-        y : pandas Series, default = None
+        X : dataframe of shape = [n_samples, n_features]
+            The input dataframe.
+        y : Series, default = None
             y is not needed for this transformer. You can pass y or None.
         """
-        # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         self.features_to_drop_ = check_all_variables(X, variables=self.features_to_drop)
 
-        # check user is not removing all columns in the dataframe
-        if len(self.features_to_drop_) == len(X.columns):
+        # a set, so that repeated names don't count as extra columns.
+        if len(set(self.features_to_drop_)) == X.shape[1]:
             raise ValueError(
                 "The resulting dataframe will have no columns after dropping all "
                 "existing variables"
             )
 
-        # save input features
         self._get_feature_names_in(X)
 
         return self
