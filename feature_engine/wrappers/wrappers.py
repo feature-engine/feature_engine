@@ -325,9 +325,8 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
         if len(self.variables_) == 0:
             return self
 
-        # set explicitly, so a global scikit-learn output config can't change the
-        # container that transform() expects. FunctionTransformer warns with
-        # "pandas" when its function returns an array.
+        # set explicitly, so a global sklearn output config can't change the container
+        # transform() expects. FunctionTransformer warns if its function returns arrays.
         if (
             nwd.is_pandas_dataframe(X) is True
             and self.transformer_.__class__.__name__ != "FunctionTransformer"
