@@ -71,8 +71,8 @@ Next, we load the Titanic dataset and separate it into a training set and a test
     )
 
 Now, we set up the :class:`DropConstantFeatures()` to remove features that show the same
-value in more than 70% of the observations. We do this through the parameter `tol`. The
-default value for this parameter is zero, in which case it will remove constant features.
+value in 70% or more of the observations. We do this through the parameter `tol`. The
+default value for this parameter is 1, in which case it will remove constant features.
 
 .. code:: python
 
@@ -93,7 +93,7 @@ The variables to drop are stored in the attribute `features_to_drop_`:
 
     transformer.features_to_drop_
 
-These are the 4 features that show the same value in more than 70% of the rows:
+These are the 4 features that show the same value in 70% or more of the rows:
 
 .. code:: python
 
@@ -115,7 +115,7 @@ We obtain the following proportions:
     C          0.195415
     Q          0.090611
     Missing    0.002183
-    Name: embarked, dtype: float64
+    Name: proportion, dtype: float64
 
 
 Based on the previous results, 71% of the passengers embarked in S.
@@ -138,7 +138,7 @@ We obtain the following proportions:
     5    0.003275
     6    0.002183
     9    0.001092
-    Name: parch, dtype: float64
+    Name: proportion, dtype: float64
 
 Based on the previous results, 77% of the passengers had 0 parent or child. Because of this,
 these features were deemed quasi-constant and will be removed in the next step.
@@ -214,6 +214,68 @@ We obtain a boolean vector with `True` for the features that will be retained, a
 This and other feature selection methods may not necessarily avoid overfitting, but they
 contribute to simplifying our machine learning pipelines and creating more interpretable
 machine learning models.
+
+Missing values
+--------------
+
+By default, :class:`DropConstantFeatures()` raises an error if the variables contain
+missing values. With `missing_values="include"`, missing values are counted as one more
+value of the variable. With `missing_values="ignore"`, missing values are not counted as a
+value, but the proportion of the most frequent value is still calculated over all the rows.
+In addition, with `tol=1` and `missing_values="ignore"`, variables that show a single value
+besides the missing data are dropped.
+
+With polars
+-----------
+
+:class:`DropConstantFeatures()` also works with polars dataframes, and returns a polars
+dataframe. Both null and NaN are treated as missing values:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.selection import DropConstantFeatures
+
+    X = pl.DataFrame({
+        "city": ["London", "London", "London", "London", "Paris"],
+        "rooms": [3, 2, None, 4, 3],
+        "garden": [True, True, True, True, True],
+        "floor": [1.0, 1.0, None, None, 1.0],
+    })
+
+    dcf = DropConstantFeatures(tol=0.8, missing_values="ignore")
+    Xt = dcf.fit_transform(X)
+
+    print(dcf.features_to_drop_)
+
+The variables `city` and `garden` show the same value in 80% or more of the rows. The
+variable `floor` shows the value 1.0 in 3 of 5 rows, 60%, because the missing values count
+towards the total number of rows:
+
+.. code:: python
+
+    ['city', 'garden']
+
+The transformed dataframe is a polars dataframe:
+
+.. code:: python
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌───────┬───────┐
+    │ rooms ┆ floor │
+    │ ---   ┆ ---   │
+    │ i64   ┆ f64   │
+    ╞═══════╪═══════╡
+    │ 3     ┆ 1.0   │
+    │ 2     ┆ 1.0   │
+    │ null  ┆ null  │
+    │ 4     ┆ null  │
+    │ 3     ┆ 1.0   │
+    └───────┴───────┘
 
 Additional resources
 --------------------
