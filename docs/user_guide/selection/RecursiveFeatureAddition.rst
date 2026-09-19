@@ -345,7 +345,7 @@ Now, we select features as we did with pandas:
 
 The same 4 features are retained:
 
-.. code:: python
+.. code:: text
 
     shape: (5, 4)
     ┌───────────┬───────────┬───────────┬───────────┐
