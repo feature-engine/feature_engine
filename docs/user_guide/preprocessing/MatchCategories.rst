@@ -257,7 +257,7 @@ Now we transform the test set:
 The variable `city` is now an 'Enum', and the unseen category 'Rome' became a missing
 value:
 
-.. code:: python
+.. code:: text
 
     shape: (4, 2)
     ┌────────┬───────┐
@@ -309,7 +309,7 @@ missing value:
 
     match_categories.transform(test)
 
-.. code:: python
+.. code:: text
 
     shape: (4, 2)
     ┌────────┬───────┐
