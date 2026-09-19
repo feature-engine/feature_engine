@@ -80,21 +80,33 @@ def test_init_param_assignment(max_capping_dict, min_capping_dict, missing_value
 
 # fit and transform
 @pytest.mark.parametrize(
-    "max_capping_dict, min_capping_dict",
-    [({"var": 0.1}, None), (None, {"var": -0.15}), ({"var": 0.1}, {"var": -0.15})],
+    "max_capping_dict, min_capping_dict, right_tail_caps, left_tail_caps",
+    [
+        ({"var": 0.1}, None, {"var": 0.1}, {}),
+        (None, {"var": -0.15}, {}, {"var": -0.15}),
+        ({"var": 0.1}, {"var": -0.15}, {"var": 0.1}, {"var": -0.15}),
+    ],
 )
-def test_capping(make_df, data_normal_dist, max_capping_dict, min_capping_dict):
+def test_capping(
+    make_df,
+    data_normal_dist,
+    max_capping_dict,
+    min_capping_dict,
+    right_tail_caps,
+    left_tail_caps,
+):
     transformer = ArbitraryOutlierCapper(
         max_capping_dict=max_capping_dict, min_capping_dict=min_capping_dict
     )
     Xt = transformer.fit_transform(make_df(data_normal_dist))
 
-    upper = np.inf if max_capping_dict is None else max_capping_dict["var"]
-    lower = -np.inf if min_capping_dict is None else min_capping_dict["var"]
-    expected = [min(max(v, lower), upper) for v in data_normal_dist["var"]]
+    # a tail without a limit is not capped
+    upper = right_tail_caps.get("var", np.inf)
+    lower = left_tail_caps.get("var", -np.inf)
+    expected = np.clip(data_normal_dist["var"], lower, upper).tolist()
 
-    assert transformer.right_tail_caps_ == (max_capping_dict or {})
-    assert transformer.left_tail_caps_ == (min_capping_dict or {})
+    assert transformer.right_tail_caps_ == right_tail_caps
+    assert transformer.left_tail_caps_ == left_tail_caps
     assert transformer.variables_ == ["var"]
     assert transformer.feature_names_in_ == ["var"]
     assert transformer.n_features_in_ == 1
