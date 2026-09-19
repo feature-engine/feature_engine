@@ -82,7 +82,7 @@ class TransformXyMixin:
 class FitFromDictMixin:
     def _fit_from_dict(
         self, X: IntoDataFrame, user_dict_: Dict
-    ) -> Tuple[IntoDataFrame, List[Union[str, int]]]:
+    ) -> Tuple[nw.DataFrame, List[Union[str, int]]]:
         """
         Checks that input is a dataframe, checks that variables in the dictionary
         entered by the user are of type numerical. Does not assign any
@@ -107,24 +107,18 @@ class FitFromDictMixin:
 
         Returns
         -------
-        X : dataframe
-            The same dataframe entered as parameter
+        nw_X : narwhals dataframe
+            The dataframe entered as parameter, as a narwhals dataframe.
 
         variables_ : List
             The variables in the dictionary.
         """
-        # check input dataframe
-        check_X(X)
-
-        # find or check for numerical variables
-        variables = list(user_dict_.keys())
-        variables_ = check_numerical_variables(X, variables)
-
-        # check if dataset contains na or inf
+        nw_X = check_X(X)
+        variables_ = check_numerical_variables(X, list(user_dict_.keys()))
         _check_contains_na(X, variables_)
         _check_contains_inf(X, variables_)
 
-        return X, variables_
+        return nw_X, variables_
 
 
 class GetFeatureNamesOutMixin:

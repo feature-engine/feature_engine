@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from sklearn.base import clone
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 
@@ -115,3 +116,15 @@ def test_raises_non_fitted_error_when_error_during_fit(estimator):
         X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
 
     check_raises_non_fitted_error_when_fit_fails(estimator, X)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_integer_column_names(estimator):
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: [0.1, 0.3, 0.5, 0.9], 1: [0.2, 0.4, 0.6, 0.8]})
+    transformer = clone(estimator)
+    Xt = transformer.fit_transform(X)
+    expected = clone(estimator).fit_transform(X.rename(columns=str))
+
+    pd.testing.assert_frame_equal(Xt, expected.set_axis([0, 1], axis=1))
+    pd.testing.assert_frame_equal(transformer.inverse_transform(Xt), X)

@@ -181,8 +181,7 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             y is not needed in this encoder. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
         # fit
         binner_dict_ = {}
@@ -192,7 +191,6 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             if nwd.is_pandas_dataframe(X) is True:
                 arr = X[variables_].to_numpy()
             else:
-                nw_X = nw.from_native(X, eager_only=True)
                 arr = nw_X.select(nw.col(variables_)).to_numpy()
             mins = arr.min(axis=0)
             maxs = arr.max(axis=0)

@@ -196,8 +196,7 @@ class ArcSinhTransformer(BaseNumericalTransformer):
             The fitted transformer.
         """
 
-        # check input dataframe and find/check numerical variables
-        X, variables_ = self._fit_setup(X)
+        _, variables_ = self._fit_setup(X)
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
@@ -219,12 +218,10 @@ class ArcSinhTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # Apply arcsinh transformation: arcsinh((x - loc) / scale)
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
         result = np.arcsinh((values - self.loc) / self.scale)
         new_series = [
             nw.new_series(var, result[:, i], backend=nw_X.implementation)
@@ -249,12 +246,10 @@ class ArcSinhTransformer(BaseNumericalTransformer):
             The dataframe with the inverse transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # Inverse transform: x = sinh(y) * scale + loc
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
         result = np.sinh(values) * self.scale + self.loc
         new_series = [
             nw.new_series(var, result[:, i], backend=nw_X.implementation)

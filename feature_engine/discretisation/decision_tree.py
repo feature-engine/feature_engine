@@ -283,15 +283,13 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         else:
             check_classification_targets(y)
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
         if self.param_grid:
             param_grid = self.param_grid
         else:
             param_grid = {"max_depth": [1, 2, 3, 4]}
 
-        nw_X = nw.from_native(X, eager_only=True)
         X_subs = [nw_X.get_column(var).to_frame().to_native() for var in variables_]
 
         fitted = Parallel(n_jobs=self.n_jobs, prefer="threads")(
@@ -336,14 +334,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         X_new: dataframe of shape = [n_samples, n_features]
             The dataframe with transformed variables.
         """
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
+        nw_X = self._check_transform_input_and_state(X)
 
         # add all new columns in one step, instead of one per variable, and leave
         # the user's dataframe unchanged
-        new_columns: Dict[str, np.ndarray] = {}
+        new_columns: Dict[Union[str, int], np.ndarray] = {}
 
         if self.bin_output == "prediction":
             for feature in self.variables_:

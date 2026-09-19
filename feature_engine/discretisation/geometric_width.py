@@ -1,6 +1,5 @@
 from typing import List, Optional, Union
 
-import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
@@ -174,11 +173,9 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
             y is not needed in this encoder. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
         # fit
-        nw_X = nw.from_native(X, eager_only=True)
         binner_dict_ = {}
 
         for var in variables_:

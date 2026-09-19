@@ -157,11 +157,10 @@ class ArcsinTransformer(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
         # check if the variables are in the correct range
-        values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+        values = nw_X.select(nw.col(variables_)).to_numpy()
         if np.any((values < 0) | (values > 1)):
             raise ValueError(
                 "Some variables contain values outside the possible range 0-1. "
@@ -188,11 +187,8 @@ class ArcsinTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy()
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy()
 
         # check if the variables are in the correct range
         if np.any((values < 0) | (values > 1)):
@@ -226,7 +222,7 @@ class ArcsinTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
         nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy()
+        values = nw_X.select(nw.col(self.variables_)).to_numpy()
 
         # inverse_transform
         result = np.sin(values) ** 2

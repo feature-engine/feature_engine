@@ -172,11 +172,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(variables_).to_numpy().astype(float)
+        nw_X, variables_ = self._fit_setup(X)
+        values = nw_X.select(nw.col(variables_)).to_numpy().astype(float)
 
         lambda_dict_ = {}
         # lambda search is per-column and not vectorizable across columns,
@@ -205,11 +202,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
 
         # check contains zero or negative values
         if (values <= 0).any():
@@ -241,11 +235,8 @@ class BoxCoxTransformer(BaseNumericalTransformer):
             The dataframe with the original variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
 
         # inverse transform
         lmbdas = np.array([self.lambda_dict_[var] for var in self.variables_])

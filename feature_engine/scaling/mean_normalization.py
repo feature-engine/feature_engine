@@ -154,8 +154,7 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
         if len(variables_) == 0:
             # return_empty=True can leave variables_ empty; narwhals' select([])
@@ -163,7 +162,7 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
             mean_: dict = {}
             range_: dict = {}
         else:
-            values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+            values = nw_X.select(nw.col(variables_)).to_numpy()
             mean_arr = values.mean(axis=0)
             range_arr = values.max(axis=0) - values.min(axis=0)
             # .tolist() converts numpy scalars to plain Python int/float,
@@ -201,11 +200,9 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # transformation
-        nw_X = nw.from_native(X, eager_only=True)
         new_series = [
             nw.new_series(
                 var,
@@ -233,11 +230,9 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # inverse transform
-        nw_X = nw.from_native(X, eager_only=True)
         new_series = [
             nw.new_series(
                 var,

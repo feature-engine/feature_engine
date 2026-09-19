@@ -174,8 +174,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         y: None
             y is not needed in this transformer. You can pass y or None.
         """
-        # check input dataframe
-        X, variables_ = super()._fit_from_dict(X, self.binning_dict)
+        _, variables_ = super()._fit_from_dict(X, self.binning_dict)
 
         self.variables_ = variables_
         # for consistency with the rest of the discretisers, we add this attribute

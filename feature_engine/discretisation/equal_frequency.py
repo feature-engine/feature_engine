@@ -3,7 +3,6 @@
 
 from typing import List, Optional, Union
 
-import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
@@ -171,10 +170,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
             y is not needed in this encoder. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
+        nw_X, variables_ = self._fit_setup(X)
         quantiles = np.linspace(0, 1, self.q + 1)
         # pandas.qcut nudges each quantile that isn't exactly representable in
         # base 2 up via nextafter, to round up rather than to nearest (verified
