@@ -1,6 +1,7 @@
 # Authors: Soledad Galli <solegalli@gprotonmail.com>
 # License: BSD 3 clause
 
+import numpy as np
 import pytest
 
 from feature_engine.outliers import OutlierTrimmer
@@ -116,8 +117,12 @@ def test_auto_fold_default_value(strings, expected, make_df, data_normal_dist):
     assert transformer.fold_ == expected
 
 
-def test_low_variation(make_df, data_normal_dist):
-    X = make_df({"var": [v // 10 for v in data_normal_dist["var"]]})
-    transformer = OutlierTrimmer(capping_method="mad")
-    with pytest.raises(ValueError, match="have low variation for method 'mad'"):
-        transformer.fit(X)
+def test_variables_without_variation_are_left_untouched(make_df, data_normal_dist):
+    data = {"var": [v // 10 for v in data_normal_dist["var"]]}
+    transformer = OutlierTrimmer(capping_method="mad", tail="both")
+    Xt = transformer.fit_transform(make_df(data))
+
+    assert transformer.right_tail_caps_ == {"var": np.inf}
+    assert transformer.left_tail_caps_ == {"var": -np.inf}
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == data

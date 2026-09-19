@@ -125,6 +125,13 @@ and percentile methods stay closer to where the observations actually lie:
     they are true outliers or faithful data points. That requires further examination
     and domain knowledge.
 
+.. note::
+
+    If all or most of the values of a variable are the same, the method may return a
+    spread of 0 (for example, an IQR of 0 when over half of the values are 0). The
+    variable then has no outliers, so :class:`OutlierTrimmer()` sets its limits to infinity
+    in `right_tail_caps_` and `left_tail_caps_`, and leaves it untouched.
+
 Let’s move on to removing outliers in Python.
 
 Removing outliers in Python
