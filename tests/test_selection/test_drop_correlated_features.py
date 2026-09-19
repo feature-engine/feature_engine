@@ -1,19 +1,32 @@
+import re
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import make_classification
 
 from feature_engine.selection import DropCorrelatedFeatures
-from tests.estimator_checks.init_params_allowed_values_checks import (
-    check_error_param_confirm_variables,
-    check_error_param_missing_values,
-)
+from tests.backend_helpers import frame_to_dict
+
+# with pearson, only a and c are correlated above 0.8. b is a monotonic, non-linear
+# function of a, so the rank methods also find it; kendall doesn't find c.
+DATA = {
+    "a": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+    "b": [2.7, 7.4, 20.1, 54.6, 148.4, 403.4, 1096.6, 2981.0, 8103.1, 22026.5],
+    "c": [2.0, 1.0, 4.0, 3.0, 6.0, 5.0, 8.0, 7.0, 10.0, 9.0],
+    "e": [5.0, 1.0, 9.0, 2.0, 8.0, 3.0, 10.0, 4.0, 7.0, 6.0],
+}
+
+
+def pearson(x, y):
+    return np.corrcoef(x, y)[0, 1]
 
 
 @pytest.fixture(scope="module")
-def df_correlated_single():
-    # create array with 4 correlated features and 2 independent ones
-    X, y = make_classification(
+def data_correlated_single():
+    """6 variables: var_1 is highly correlated with var_2 and less with var_4."""
+    X, _ = make_classification(
         n_samples=1000,
         n_features=6,
         n_redundant=2,
@@ -22,199 +35,294 @@ def df_correlated_single():
         class_sep=2,
         random_state=1,
     )
-
-    # transform array into pandas df
-    colnames = ["var_" + str(i) for i in range(6)]
-    X = pd.DataFrame(X, columns=colnames)
-
-    return X
+    return {f"var_{i}": X[:, i].tolist() for i in range(6)}
 
 
 @pytest.fixture(scope="module")
-def df_correlated_double():
-    # create array with 8 correlated features and 4 independent ones
-    X, y = make_classification(
-        n_samples=1000,
-        n_features=12,
-        n_redundant=4,
-        n_clusters_per_class=1,
-        weights=[0.50],
-        class_sep=2,
-        random_state=1,
+def data_correlated_double(data_classification):
+    return {k: v for k, v in data_classification.items() if k != "target"}
+
+
+# init parameters
+@pytest.mark.parametrize("threshold", [3, "0.1", 0, 1, 2, -0.1, 1.5, None, [0.5], True])
+def test_error_if_threshold_not_allowed(threshold):
+    msg = f"`threshold` must be a float between 0 and 1. Got {threshold} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropCorrelatedFeatures(threshold=threshold)
+
+
+@pytest.mark.parametrize("missing_values", [2, "hola", False, None, ["raise"]])
+def test_error_if_missing_values_not_allowed(missing_values):
+    msg = (
+        "`missing_values` takes only values 'raise' or 'ignore'. "
+        f"Got {missing_values} instead."
     )
-
-    # transform array into pandas df
-    colnames = ["var_" + str(i) for i in range(12)]
-    X = pd.DataFrame(X, columns=colnames)
-
-    return X
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropCorrelatedFeatures(missing_values=missing_values)
 
 
-_input_params = [
-    (None, "pearson", 0.8, "ignore", False),
-    ("var1", "kendall", 0.5, "raise", True),
-    (["var1", "var2"], "spearman", 0.4, "raise", False),
-]
+@pytest.mark.parametrize("confirm_variables", [2, "hola", [True], None])
+def test_error_if_confirm_variables_not_bool(confirm_variables):
+    msg = (
+        "confirm_variables takes only values True and False. "
+        f"Got {confirm_variables} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropCorrelatedFeatures(confirm_variables=confirm_variables)
 
 
 @pytest.mark.parametrize(
-    "_variables, _method, _threshold, _missing_values, _confirm_vars", _input_params
+    "method, threshold, missing_values, confirm_variables",
+    [
+        ("pearson", 0.8, "ignore", False),
+        ("kendall", 0.5, "raise", True),
+        ("spearman", 0.0, "raise", False),
+        (pearson, 1.0, "ignore", True),
+    ],
 )
-def test_input_params_assignment(
-    _variables, _method, _threshold, _missing_values, _confirm_vars
-):
+def test_init_param_assignment(method, threshold, missing_values, confirm_variables):
     sel = DropCorrelatedFeatures(
-        variables=_variables,
-        method=_method,
-        threshold=_threshold,
-        missing_values=_missing_values,
-        confirm_variables=_confirm_vars,
+        method=method,
+        threshold=threshold,
+        missing_values=missing_values,
+        confirm_variables=confirm_variables,
     )
-
-    assert sel.variables == _variables
-    assert sel.method == _method
-    assert sel.threshold == _threshold
-    assert sel.missing_values == _missing_values
-    assert sel.confirm_variables == _confirm_vars
+    assert sel.method is method
+    assert sel.threshold == threshold
+    assert sel.missing_values == missing_values
+    assert sel.confirm_variables is confirm_variables
 
 
-@pytest.mark.parametrize("_threshold", [3, "0.1", -0, 2, 0, 3, 1])
-def test_raises_error_when_threshold_not_permitted(_threshold):
-    msg = f"`threshold` must be a float between 0 and 1. Got {_threshold} instead."
-    with pytest.raises(ValueError) as record:
-        DropCorrelatedFeatures(threshold=_threshold)
-    assert record.value.args[0] == msg
+# fit and transform
+def test_default_params(make_df, data_correlated_single):
+    X = make_df(data_correlated_single)
+    sel = DropCorrelatedFeatures()
+    Xt = sel.fit_transform(X)
+
+    assert sel.variables_ == ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]
+    assert sel.features_to_drop_ == ["var_2"]
+    assert sel.correlated_feature_sets_ == [{"var_1", "var_2"}]
+    assert sel.correlated_feature_dict_ == {"var_1": {"var_2"}}
+    assert sel.feature_names_in_ == [
+        "var_0",
+        "var_1",
+        "var_2",
+        "var_3",
+        "var_4",
+        "var_5",
+    ]
+    assert sel.n_features_in_ == 6
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        var: data_correlated_single[var]
+        for var in ["var_0", "var_1", "var_3", "var_4", "var_5"]
+    }
 
 
-def test_error_param_missing_values():
-    check_error_param_missing_values(DropCorrelatedFeatures())
+def test_result_does_not_depend_on_column_order(make_df, data_correlated_single):
+    order = ["var_5", "var_4", "var_3", "var_2", "var_1", "var_0"]
+    X = make_df({var: data_correlated_single[var] for var in order})
+    sel = DropCorrelatedFeatures()
+    Xt = sel.fit_transform(X)
+
+    assert sel.features_to_drop_ == ["var_2"]
+    assert sel.correlated_feature_sets_ == [{"var_1", "var_2"}]
+    assert sel.correlated_feature_dict_ == {"var_1": {"var_2"}}
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == ["var_5", "var_4", "var_3", "var_1", "var_0"]
 
 
-def test_error_param_confirm_variables():
-    check_error_param_confirm_variables(DropCorrelatedFeatures())
+def test_lower_threshold(make_df, data_correlated_single):
+    X = make_df(data_correlated_single)
+    sel = DropCorrelatedFeatures(threshold=0.6)
+    Xt = sel.fit_transform(X)
+
+    assert sel.features_to_drop_ == ["var_2", "var_4"]
+    assert sel.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
+    assert sel.correlated_feature_dict_ == {"var_1": {"var_2", "var_4"}}
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == ["var_0", "var_1", "var_3", "var_5"]
 
 
-def test_default_params(df_correlated_single):
-    transformer = DropCorrelatedFeatures(
-        variables=None, method="pearson", threshold=0.8
-    )
-    X = transformer.fit_transform(df_correlated_single)
+def test_more_than_one_correlated_group(make_df, data_correlated_double):
+    X = make_df(data_correlated_double)
+    sel = DropCorrelatedFeatures(threshold=0.6)
+    Xt = sel.fit_transform(X)
 
-    # expected result
-    df = df_correlated_single.drop("var_2", axis=1)
-
-    # test fit attrs
-    assert transformer.features_to_drop_ == ["var_2"]
-    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
-    assert transformer.correlated_feature_dict_ == {"var_1": {"var_2"}}
-    # test transform output
-    pd.testing.assert_frame_equal(X, df)
-
-
-def test_default_params_different_var_order(df_correlated_single):
-    transformer = DropCorrelatedFeatures(
-        variables=None, method="pearson", threshold=0.8
-    )
-    var_order = list(reversed(list(df_correlated_single.columns)))
-    X = transformer.fit_transform(df_correlated_single[var_order])
-
-    # expected result
-    df = df_correlated_single[var_order].drop("var_2", axis=1)
-
-    # test fit attrs
-    assert transformer.features_to_drop_ == ["var_2"]
-    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2"}]
-    assert transformer.correlated_feature_dict_ == {"var_1": {"var_2"}}
-    # test transform output
-    pd.testing.assert_frame_equal(X, df)
-
-
-def test_lower_threshold(df_correlated_single):
-    transformer = DropCorrelatedFeatures(
-        variables=None, method="pearson", threshold=0.6
-    )
-    X = transformer.fit_transform(df_correlated_single)
-
-    # expected result
-    df = df_correlated_single.drop(["var_2", "var_4"], axis=1)
-
-    # test fit attrs
-    assert transformer.features_to_drop_ == ["var_2", "var_4"]
-    assert transformer.correlated_feature_sets_ == [{"var_1", "var_2", "var_4"}]
-    assert transformer.correlated_feature_dict_ == {"var_1": {"var_2", "var_4"}}
-    # test transform output
-    pd.testing.assert_frame_equal(X, df)
-
-
-def test_more_than_1_correlated_group(df_correlated_double):
-    transformer = DropCorrelatedFeatures(
-        variables=None, method="pearson", threshold=0.6
-    )
-    X = transformer.fit_transform(df_correlated_double)
-
-    # expected result
-    df = df_correlated_double.drop(["var_6", "var_7", "var_8", "var_9"], axis=1)
-
-    # test fit attrs
-    assert transformer.features_to_drop_ == ["var_8", "var_6", "var_7", "var_9"]
-    assert transformer.correlated_feature_sets_ == [
+    assert sel.features_to_drop_ == ["var_8", "var_6", "var_7", "var_9"]
+    assert sel.correlated_feature_sets_ == [
         {"var_0", "var_8"},
         {"var_4", "var_6", "var_7", "var_9"},
     ]
-    assert transformer.correlated_feature_dict_ == {
+    assert sel.correlated_feature_dict_ == {
         "var_0": {"var_8"},
         "var_4": {"var_6", "var_7", "var_9"},
     }
-    # test transform output
-    pd.testing.assert_frame_equal(X, df)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        var: data_correlated_double[var]
+        for var in ["var_0", "var_1", "var_2", "var_3", "var_4", "var_5"]
+        + ["var_10", "var_11"]
+    }
 
 
-def test_callable_method(df_correlated_double, random_uniform_method):
-    X = df_correlated_double
+@pytest.mark.parametrize(
+    "method, features_to_drop, correlated_sets, correlated_dict, retained",
+    [
+        ("pearson", ["c"], [{"a", "c"}], {"a": {"c"}}, ["a", "b", "e"]),
+        ("spearman", ["b", "c"], [{"a", "b", "c"}], {"a": {"b", "c"}}, ["a", "e"]),
+        ("kendall", ["b"], [{"a", "b"}], {"a": {"b"}}, ["a", "c", "e"]),
+        (pearson, ["c"], [{"a", "c"}], {"a": {"c"}}, ["a", "b", "e"]),
+    ],
+)
+def test_correlation_methods(
+    make_df, method, features_to_drop, correlated_sets, correlated_dict, retained
+):
+    sel = DropCorrelatedFeatures(method=method)
+    Xt = sel.fit_transform(make_df(DATA))
 
-    transformer = DropCorrelatedFeatures(
-        variables=None, method=random_uniform_method, threshold=0.6
+    assert sel.features_to_drop_ == features_to_drop
+    assert sel.correlated_feature_sets_ == correlated_sets
+    assert sel.correlated_feature_dict_ == correlated_dict
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {var: DATA[var] for var in retained}
+
+
+def test_negative_correlation_is_also_dropped(make_df):
+    X = make_df(
+        {
+            "x": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+            "y": [-2.0, -4.0, -6.0, -8.0, -10.0, -12.5],
+            "z": [3.0, 1.0, 2.0, 6.0, 4.0, 5.0],
+        }
     )
+    sel = DropCorrelatedFeatures().fit(X)
 
-    Xt = transformer.fit_transform(X)
-
-    # test no empty dataframe
-    assert not Xt.empty
-
-    # test fit attrs
-    assert len(transformer.correlated_feature_sets_) > 0
-    assert len(transformer.features_to_drop_) > 0
-    assert len(transformer.variables_) > 0
-    assert transformer.n_features_in_ == len(X.columns)
+    assert sel.features_to_drop_ == ["y"]
+    assert sel.correlated_feature_dict_ == {"x": {"y"}}
 
 
-def test_raises_error_when_method_not_permitted(df_correlated_double):
+@pytest.mark.parametrize("method", ["pearson", "spearman", "kendall", pearson])
+def test_missing_values_are_ignored_pairwise(make_df, method):
+    # y differs from 2 * x only in the row where x is missing.
+    data = {
+        "x": [1.0, 2.0, 3.0, 4.0, 5.0, None],
+        "y": [2.0, 4.0, 6.0, 8.0, 10.0, 1000.0],
+        "w": [None, 3.0, 1.0, 2.0, 5.0, 4.0],
+    }
+    sel = DropCorrelatedFeatures(method=method, missing_values="ignore")
+    Xt = sel.fit_transform(make_df(data))
 
-    X = df_correlated_double
-    method = "hola"
-
-    transformer = DropCorrelatedFeatures(variables=None, method=method, threshold=0.8)
-
-    with pytest.raises(ValueError) as errmsg:
-        _ = transformer.fit_transform(X)
-
-    exceptionmsg = errmsg.value.args[0]
-
-    assert (
-        exceptionmsg
-        == "method must be either 'pearson', 'spearman', 'kendall', or a callable,"
-        + f" '{method}' was supplied"
-    )
+    assert sel.features_to_drop_ == ["y"]
+    assert sel.correlated_feature_sets_ == [{"x", "y"}]
+    assert sel.correlated_feature_dict_ == {"x": {"y"}}
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"x": data["x"], "w": data["w"]}
 
 
-def test_raises_missing_data_error(df_correlated_single):
-    df = df_correlated_single.copy()
-    df.iloc[0, 1] = np.nan
+def test_non_numerical_variables_are_ignored_and_kept(make_df):
+    data = {
+        **DATA,
+        "cat": ["x", "y"] * 5,
+        "dob": [datetime(2020, 2, 24, 0, minute) for minute in range(10)],
+    }
+    sel = DropCorrelatedFeatures()
+    Xt = sel.fit_transform(make_df(data))
+
+    assert sel.variables_ == ["a", "b", "c", "e"]
+    assert sel.features_to_drop_ == ["c"]
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        var: data[var] for var in ["a", "b", "e", "cat", "dob"]
+    }
+
+
+def test_variables_subset(make_df):
+    sel = DropCorrelatedFeatures(variables=["b", "c", "e"])
+    Xt = sel.fit_transform(make_df(DATA))
+
+    assert sel.variables_ == ["b", "c", "e"]
+    assert sel.features_to_drop_ == []
+    assert sel.correlated_feature_sets_ == []
+    assert sel.correlated_feature_dict_ == {}
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == DATA
+
+
+def test_confirm_variables(make_df):
+    sel = DropCorrelatedFeatures(variables=["a", "c", "hola"], confirm_variables=True)
+    Xt = sel.fit_transform(make_df(DATA))
+
+    assert sel.variables_ == ["a", "c"]
+    assert sel.features_to_drop_ == ["c"]
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == ["a", "b", "e"]
+
+
+def test_error_if_missing_values_and_raise(make_df):
+    X = make_df({**DATA, "a": [None] + DATA["a"][1:]})
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer."
     )
-    sel = DropCorrelatedFeatures(missing_values="raise")
-    with pytest.raises(ValueError) as record:
-        sel.fit(df)
-    assert record.value.args[0] == msg
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropCorrelatedFeatures(missing_values="raise").fit(X)
+
+
+def test_error_if_inf_and_raise(make_df):
+    X = make_df({**DATA, "a": [float("inf")] + DATA["a"][1:]})
+    msg = (
+        "Some of the variables to transform contain inf values. Check and "
+        "remove those before using this transformer."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropCorrelatedFeatures(missing_values="raise").fit(X)
+
+
+def test_error_if_less_than_two_numerical_variables(make_df):
+    X = make_df({"a": DATA["a"], "cat": ["x", "y"] * 5})
+    msg = (
+        "The selector needs at least 2 or more variables to select from. "
+        "Got only 1 variable: ['a']."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropCorrelatedFeatures().fit(X)
+
+
+def test_error_if_variables_not_numerical(make_df):
+    X = make_df({**DATA, "cat": ["x", "y"] * 5})
+    msg = (
+        "Some of the variables are not numerical. Please cast them as numerical "
+        "before using this transformer."
+    )
+    with pytest.raises(TypeError, match=re.escape(msg)):
+        DropCorrelatedFeatures(variables=["a", "cat"]).fit(X)
+
+
+def test_error_if_fit_input_not_dataframe():
+    msg = (
+        "X must be a dataframe from a library supported by narwhals "
+        "(e.g. pandas, polars, PyArrow). Got <class 'numpy.ndarray'> instead."
+    )
+    with pytest.raises(TypeError, match=re.escape(msg)):
+        DropCorrelatedFeatures().fit(np.ones((4, 3)))
+
+
+def test_error_if_method_not_allowed_pandas():
+    # the message comes from pandas.DataFrame.corr().
+    msg = (
+        "method must be either 'pearson', 'spearman', 'kendall', or a callable, "
+        "'hola' was supplied"
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        DropCorrelatedFeatures(method="hola").fit(pd.DataFrame(DATA))
+
+
+def test_integer_column_names_pandas():
+    X = pd.DataFrame({i: values for i, values in enumerate(DATA.values())})
+    sel = DropCorrelatedFeatures()
+    Xt = sel.fit_transform(X)
+
+    assert sel.features_to_drop_ == [2]
+    assert sel.correlated_feature_dict_ == {0: {2}}
+    pd.testing.assert_frame_equal(Xt, X[[0, 1, 3]])
