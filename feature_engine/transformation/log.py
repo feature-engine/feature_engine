@@ -195,13 +195,12 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
         if isinstance(self.C, dict):
-            X, variables_ = super()._fit_from_dict(X, self.C)
+            nw_X, variables_ = super()._fit_from_dict(X, self.C)
         else:
-            X, variables_ = self._fit_setup(X)
+            nw_X, variables_ = self._fit_setup(X)
 
-        values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+        values = nw_X.select(nw.col(variables_)).to_numpy()
         values = values.astype(float)
 
         C_ = self.C
@@ -248,8 +247,7 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         if self.C_ == 0:
             error_msg = (
@@ -261,8 +259,7 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 + " constant C, can't apply log."
             )
 
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
         shifted = values + self._c_as_array()
 
         if np.any(shifted <= 0):
@@ -297,11 +294,8 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
         c_arr = self._c_as_array()
 
         # inverse_transform

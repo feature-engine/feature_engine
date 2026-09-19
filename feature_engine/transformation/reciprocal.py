@@ -149,11 +149,10 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
         # check if the variables contain the value 0
-        values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+        values = nw_X.select(nw.col(variables_)).to_numpy()
         if np.any(values == 0):
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
@@ -180,11 +179,8 @@ class ReciprocalTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy()
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy()
 
         # check if the variables contain the value 0
         if np.any(values == 0):

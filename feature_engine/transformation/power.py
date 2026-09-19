@@ -156,8 +156,7 @@ class PowerTransformer(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        _, variables_ = self._fit_setup(X)
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
@@ -179,11 +178,8 @@ class PowerTransformer(BaseNumericalTransformer):
             The dataframe with the power transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
 
         # transform
         result = np.power(values, self.exp)
@@ -210,11 +206,8 @@ class PowerTransformer(BaseNumericalTransformer):
             The dataframe with the power transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
 
         # inverse_transform
         result = np.power(values, 1 / self.exp)

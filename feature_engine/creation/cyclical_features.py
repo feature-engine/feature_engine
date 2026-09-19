@@ -180,24 +180,19 @@ class CyclicalFeatures(
             It is not needed in this transformer. You can pass y or None.
         """
         if self.max_values is None:
-            X, variables_ = self._fit_setup(X)
+            nw_X, variables_ = self._fit_setup(X)
             if len(variables_) == 0:
                 # return_empty=True can leave variables_ empty; narwhals'
                 # select([]) collapses row count too, so .to_numpy().max()
                 # would fail on a genuinely empty selection.
-                max_values_ = {}
+                max_values_: dict = {}
             else:
-                max_arr = (
-                    nw.from_native(X, eager_only=True)
-                    .select(variables_)
-                    .to_numpy()
-                    .max(axis=0)
-                )
+                max_arr = nw_X.select(nw.col(variables_)).to_numpy().max(axis=0)
                 # .tolist() converts numpy scalars to plain Python int/float,
                 # matching the dtype .to_dict() used to return.
                 max_values_ = dict(zip(variables_, max_arr.tolist()))
         else:
-            X, variables_ = super()._fit_from_dict(X, self.max_values)
+            _, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values
 
         self.variables_ = variables_
@@ -220,14 +215,14 @@ class CyclicalFeatures(
         X_new: dataframe.
             The original dataframe plus the additional features.
         """
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         new_cols = []
         for variable in self.variables_:
             scaled = nw.col(variable) * (2.0 * np.pi / self.max_values_[variable])
             new_cols.append(scaled.sin().alias(f"{variable}_sin"))
             new_cols.append(scaled.cos().alias(f"{variable}_cos"))
-        nw_X = nw.from_native(X, eager_only=True).with_columns(*new_cols)
+        nw_X = nw_X.with_columns(*new_cols)
         if self.drop_original is True:
             nw_X = nw_X.drop(self.variables_)
         X = nw_X.to_native()

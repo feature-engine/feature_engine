@@ -246,3 +246,13 @@ def test_get_feature_names_out(make_df, input_features):
         == transformer.get_feature_names_out()
     )
     assert transformer.get_feature_names_out(input_features=input_features) == feat_out
+
+
+def test_integer_column_names():
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: [1.0, 2.0, 3.0], 1: [10.0, 20.0, 40.0]})
+    Xt = CyclicalFeatures().fit_transform(X)
+    expected = CyclicalFeatures().fit_transform(X.rename(columns=str))
+
+    assert list(Xt.columns) == [0, 1, "0_sin", "0_cos", "1_sin", "1_cos"]
+    assert Xt.to_numpy().tolist() == expected.to_numpy().tolist()

@@ -164,10 +164,9 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
-        values = nw.from_native(X, eager_only=True).select(variables_).to_numpy()
+        values = nw_X.select(nw.col(variables_)).to_numpy()
         values = values.astype(float)
 
         # scipy searches the optimal lambda one column at a time, there is no
@@ -197,11 +196,8 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
 
         # transform
         result = np.empty_like(values)
@@ -230,11 +226,8 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         X_tr: dataframe
             The dataframe with the transformed variables.
         """
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
-
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(self.variables_).to_numpy().astype(float)
+        nw_X = self._check_transform_input_and_state(X)
+        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
 
         # inverse_transform
         result = np.empty_like(values)

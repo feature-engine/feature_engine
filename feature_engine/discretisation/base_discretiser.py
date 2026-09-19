@@ -59,13 +59,11 @@ class BaseDiscretiser(BaseNumericalTransformer):
             The transformed data with the discrete variables.
         """
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
         # bin edges are already fixed by fit(), so sorting values into them is a
         # plain numpy searchsorted - vectorizable identically for every backend,
         # no pandas/polars-specific path needed.
-        nw_X = nw.from_native(X, eager_only=True)
         native_namespace = nw_X.__native_namespace__()
 
         if self.return_boundaries is True:

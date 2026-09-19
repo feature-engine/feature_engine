@@ -194,3 +194,14 @@ def test_check_return_empty(transformer_class):
             check_return_empty(transformer)
     else:
         check_return_empty(transformer)
+
+
+def test_integer_column_names(transformer_class):
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: [1.0, 2.0, 3.0], 1: [10.0, 20.0, 40.0], 2: ["a", "b", "c"]})
+    transformer = make_transformer(transformer_class)
+    Xt = transformer.fit_transform(X)
+    expected = make_transformer(transformer_class).fit_transform(X.rename(columns=str))
+
+    pd.testing.assert_frame_equal(Xt, expected.set_axis([0, 1, 2], axis=1))
+    pd.testing.assert_frame_equal(transformer.inverse_transform(Xt), X)

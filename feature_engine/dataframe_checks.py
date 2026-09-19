@@ -259,6 +259,10 @@ def _check_contains_inf(X: IntoDataFrame, variables: List[Union[str, int]]) -> N
     ValueError
         If the variable(s) contain np.inf values
     """
+    # polars can't select an empty list of columns
+    if len(variables) == 0:
+        return None
+
     values = nw.from_native(X, eager_only=True).select(nw.col(variables)).to_numpy()
     if np.isinf(values.astype(float)).any():
         raise ValueError(
