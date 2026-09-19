@@ -74,6 +74,7 @@ def test_transform_restores_train_column_order(make_df):
         ([], ["Name", "City", "Age", "Marks", "dob"]),
         (["dob"], ["Name", "City", "Age", "Marks"]),
         (["Age", "Name", "City", "dob"], ["Marks"]),
+        (["Name", "City", "Age", "Marks", "dob"], []),
     ],
 )
 def test_transform_returns_retained_features(make_df, features_to_drop, expected):

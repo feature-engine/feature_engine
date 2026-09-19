@@ -70,6 +70,10 @@ class BaseSelector(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         if nwd.is_pandas_dataframe(X) is True:
             return X[features]
         else:
+            if len(features) == 0:
+                # nw.col() needs at least one name. polars frames without columns
+                # have no rows either.
+                return nw_X.select([]).to_native()
             return nw_X.select(nw.col(*features)).to_native()
 
     def _get_feature_names_in(self, X: IntoDataFrame):
