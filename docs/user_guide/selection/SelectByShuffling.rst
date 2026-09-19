@@ -251,7 +251,7 @@ selected features are the same.
 In the following output, we see the features to drop and the polars dataframe with the
 selected features:
 
-.. code:: python
+.. code:: text
 
     ['age', 'sex', 'bp', 's3', 's4', 's6']
     shape: (5, 4)
