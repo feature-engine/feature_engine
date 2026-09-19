@@ -90,12 +90,6 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     n_features_in_:
         The number of features in the train set used in fit.
 
-    dtype_dict_:
-        If `match_dtypes` is set to `True`, then this attribute will exist, and it will
-        contain a dictionary of variables and their corresponding dtypes. With pandas,
-        these are pandas dtypes. With other dataframe libraries, like polars, these
-        are narwhals dtypes, which carry the same names as the polars dtypes.
-
     Methods
     -------
     fit:
@@ -242,9 +236,9 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         if self.match_dtypes is True:
             # narwhals dtypes don't carry the categories of pandas categoricals.
             if nwd.is_pandas_dataframe(X) is True:
-                self.dtype_dict_: Dict = X.dtypes.to_dict()
+                self._dtype_dict: Dict = X.dtypes.to_dict()
             else:
-                self.dtype_dict_ = dict(nw_X.schema)
+                self._dtype_dict = dict(nw_X.schema)
 
         return self
 
@@ -320,7 +314,7 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     def _dtypes_to_update(self, current_dtypes: Dict) -> Dict:
         dtypes_to_update = {
             column: new_dtype
-            for column, new_dtype in self.dtype_dict_.items()
+            for column, new_dtype in self._dtype_dict.items()
             if new_dtype != current_dtypes[column]
         }
         if self.verbose is True:
@@ -338,8 +332,17 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             # Handle pandas 4 future warning
             if new_dtype.name == "category":
                 X[column] = X[column].where(X[column].isin(new_dtype.categories))
+            elif new_dtype.kind in "iub" and X[column].hasnans is True:
+                # numpy integers can't hold NaN and booleans turn it into True.
+                dtypes_to_update[column] = self._nullable_dtype(new_dtype)
 
         return X.astype(dtypes_to_update)
+
+    def _nullable_dtype(self, dtype) -> str:
+        if dtype.kind == "b":
+            return "boolean"
+        prefix = "UInt" if dtype.kind == "u" else "Int"
+        return f"{prefix}{dtype.itemsize * 8}"
 
     def _match_dtypes_narwhals(self, nw_X: nw.DataFrame) -> nw.DataFrame:
         current_dtypes = nw_X.schema

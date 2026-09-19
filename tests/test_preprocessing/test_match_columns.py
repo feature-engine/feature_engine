@@ -105,7 +105,7 @@ def test_fit_attributes(make_df):
     transformer = MatchVariables().fit(make_df(DATA_TRAIN))
     assert transformer.feature_names_in_ == ["Name", "City", "Age", "Marks", "dob"]
     assert transformer.n_features_in_ == 5
-    assert not hasattr(transformer, "dtype_dict_")
+    assert not hasattr(transformer, "_dtype_dict")
 
 
 @pytest.mark.parametrize(
@@ -345,6 +345,24 @@ def test_match_dtypes_of_added_variables(make_df):
     assert nw.from_native(Xt).schema["City"] == nw.String
 
 
+def test_match_dtypes_of_added_integer_and_boolean_variables(make_df):
+    # the added variables are missing, so they need types that allow missing data
+    train = {"int": [1, 2, 3], "bool": [True, False, True], "float": [0.1, 0.2, 0.3]}
+    transformer = MatchVariables(match_dtypes=True, verbose=False)
+    transformer.fit(make_df(train))
+    Xt = transformer.transform(make_df({"float": [0.4, 0.5]}))
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "int": [None, None],
+        "bool": [None, None],
+        "float": [0.4, 0.5],
+    }
+    schema = nw.from_native(Xt).schema
+    assert schema["int"] == nw.Int64
+    assert schema["bool"] == nw.Boolean
+
+
 @pytest.mark.parametrize("test_is_categorical", [False, True])
 def test_match_dtypes_categories(make_df, test_is_categorical):
     # values not in the categories seen in fit become missing data.
@@ -390,7 +408,7 @@ def test_pandas_dtype_dict_and_categories():
     transformer = MatchVariables(match_dtypes=True, verbose=False).fit(train)
     Xt = transformer.transform(test)
 
-    assert transformer.dtype_dict_ == {
+    assert transformer._dtype_dict == {
         "Name": pd.CategoricalDtype(
             categories=["jack", "krish", "nick", "tom"], ordered=False
         ),
@@ -405,7 +423,7 @@ def test_pandas_dtype_dict_and_categories():
 def test_polars_dtype_dict():
     train = pl.DataFrame({"a": [1], "b": ["x"], "c": [DOB[0]]})
     transformer = MatchVariables(match_dtypes=True).fit(train)
-    assert transformer.dtype_dict_ == {
+    assert transformer._dtype_dict == {
         "a": nw.Int64(),
         "b": nw.String(),
         "c": nw.Datetime("us"),
