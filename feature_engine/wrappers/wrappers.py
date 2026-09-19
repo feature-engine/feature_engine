@@ -1,7 +1,10 @@
 import warnings
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
@@ -150,7 +153,8 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
     -----
     This transformer offers similar functionality to the ColumnTransformer from
     scikit-learn, but it allows entering the transformations directly into a
-    Pipeline and returns pandas dataframes.
+    Pipeline and returns a dataframe of the same library as the input, for
+    example, pandas or polars.
 
     See Also
     --------
@@ -195,6 +199,27 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
     0  a  1.0  4.0   1.0    4.0  16.0
     1  b  2.0  5.0   4.0   10.0  25.0
     2  c  3.0  6.0   9.0   18.0  36.0
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.wrappers import SklearnWrapper
+    >>> from sklearn.preprocessing import OneHotEncoder
+    >>> X = pl.DataFrame(dict(x1 = ["a","b","c"], x2 = [1,2,3], x3 = [4,5,6]))
+    >>> skw = SklearnWrapper(
+    >>>     OneHotEncoder(sparse_output = False), variables = "x1")
+    >>> skw.fit(X)
+    >>> skw.transform(X)
+    shape: (3, 5)
+    ┌─────┬─────┬──────┬──────┬──────┐
+    │ x2  ┆ x3  ┆ x1_a ┆ x1_b ┆ x1_c │
+    │ --- ┆ --- ┆ ---  ┆ ---  ┆ ---  │
+    │ i64 ┆ i64 ┆ f64  ┆ f64  ┆ f64  │
+    ╞═════╪═════╪══════╪══════╪══════╡
+    │ 1   ┆ 4   ┆ 1.0  ┆ 0.0  ┆ 0.0  │
+    │ 2   ┆ 5   ┆ 0.0  ┆ 1.0  ┆ 0.0  │
+    │ 3   ┆ 6   ┆ 0.0  ┆ 0.0  ┆ 1.0  │
+    └─────┴─────┴──────┴──────┴──────┘
     """
 
     def __init__(
@@ -204,10 +229,10 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
         return_empty: bool = False,
     ) -> None:
 
-        if not issubclass(transformer.__class__, TransformerMixin):
+        if not isinstance(transformer, TransformerMixin):
             raise TypeError(
                 "transformer expected a Scikit-learn transformer. "
-                f"got {transformer} instead. "
+                f"Got {transformer} instead."
             )
 
         if transformer.__class__.__name__ not in _ALL_TRANSFORMERS:
@@ -251,21 +276,22 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[str] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Fits the scikit-learn transformer to the selected variables.
 
         Parameters
         ----------
-        X: pandas DataFrame
-            The dataset to fit the transformer.
+        X: dataframe of shape = [n_samples, n_features]
+            The dataset to fit the transformer. Can be a pandas, polars, or any other
+            dataframe supported by narwhals.
 
-        y: pandas Series, default=None
-            The target variable.
+        y: Series, default=None
+            The target variable. Only needed by the transformers that use it, like
+            the feature selectors.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         self.transformer_ = clone(self.transformer)
 
@@ -290,27 +316,37 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
             else:
                 self.variables_ = check_numerical_variables(X, self.variables)
 
+        if nwd.is_pandas_dataframe(X) is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw_X.columns
+        self.n_features_in_ = nw_X.shape[1]
+
         if len(self.variables_) == 0:
-            # save input features
-            self.feature_names_in_ = X.columns.tolist()
-            self.n_features_in_ = X.shape[1]
             return self
 
-        self.transformer_.fit(X[self.variables_], y)
+        # set explicitly, so a global scikit-learn output config can't change the
+        # container that transform() expects. FunctionTransformer warns with
+        # "pandas" when its function returns an array.
+        if (
+            nwd.is_pandas_dataframe(X) is True
+            and self.transformer_.__class__.__name__ != "FunctionTransformer"
+        ):
+            self.transformer_.set_output(transform="pandas")
+        else:
+            self.transformer_.set_output(transform="default")
+
+        self.transformer_.fit(self._to_sklearn_input(X, nw_X), y)
 
         if self.transformer_.__class__.__name__ in _SELECTORS:
-            # Find features to drop.
-            selected = X[self.variables_].columns[self.transformer_.get_support()]
+            selected = [
+                self.variables_[i] for i in self.transformer_.get_support(indices=True)
+            ]
             self.features_to_drop_ = [f for f in self.variables_ if f not in selected]
-
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Apply the transformation to the dataframe. Only the selected variables will be
         modified.
@@ -326,56 +362,67 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: pandas DataFrame
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas DataFrame
+        X_new: dataframe
             The transformed dataset.
         """
         check_is_fitted(self)
-
-        # check that input is a dataframe
-        X = check_X(X)
-
-        # Check that input data contains same number of columns than
-        # the dataframe used to fit the imputer.
-
+        nw_X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # reorder df to match train set
-        X = X[self.feature_names_in_]
-
-        # nothing to transform, e.g. when return_empty selected no variables
         if len(self.variables_) == 0:
-            return X
-
-        # Transformers that add features: creators
-        if self.transformer_.__class__.__name__ in [
-            "OneHotEncoder",
-            "PolynomialFeatures",
-        ]:
-            new_features_df = pd.DataFrame(
-                data=self.transformer_.transform(X[self.variables_]),
-                columns=self.transformer_.get_feature_names_out(self.variables_),
-                index=X.index,
-            )
-            X = pd.concat([X.drop(columns=self.variables_), new_features_df], axis=1)
+            return self._select_columns(X, nw_X, self.feature_names_in_)
 
         # Feature selection: transformers that remove features
-        elif self.transformer_.__class__.__name__ in _SELECTORS:
+        if self.transformer_.__class__.__name__ in _SELECTORS:
+            return self._select_columns(
+                X,
+                nw_X,
+                [f for f in self.feature_names_in_ if f not in self.features_to_drop_],
+            )
 
-            # return the dataframe with the selected features
-            X.drop(columns=self.features_to_drop_, inplace=True)
+        # Transformers that add features: creators
+        if self.transformer_.__class__.__name__ in _CREATORS:
+            X_remaining = self._select_columns(
+                X,
+                nw_X,
+                [f for f in self.feature_names_in_ if f not in self.variables_],
+            )
+            X_new = self.transformer_.transform(self._to_sklearn_input(X, nw_X))
+            # pandas input: set_output already returned a dataframe with X's index.
+            if nwd.is_pandas_dataframe(X) is True:
+                nw_new = nw.from_native(X_new, eager_only=True)
+            else:
+                nw_new = self._to_frame(
+                    X_new,
+                    list(self.transformer_.get_feature_names_out(self.variables_)),
+                    nw_X,
+                )
+            return nw.concat(
+                [nw.from_native(X_remaining, eager_only=True), nw_new],
+                how="horizontal",
+            ).to_native()
 
         # Transformers that modify existing features
-        else:
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            X = X[self.feature_names_in_]
             X[self.variables_] = self.transformer_.transform(X[self.variables_])
+            return X
+        else:
+            X_new = self.transformer_.transform(self._to_sklearn_input(X, nw_X))
+            nw_new = self._to_frame(X_new, self.variables_, nw_X)
+            return (
+                nw_X.select(self.feature_names_in_)
+                .with_columns(*nw_new.iter_columns())
+                .to_native()
+            )
 
-        return X
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Convert the transformed variables back to the original values. Only
         implemented for the following scikit-learn transformers:
 
@@ -388,19 +435,16 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The transformed dataframe.
 
         Returns
         -------
-        X_tr: pandas dataframe of shape = [n_samples, n_features].
+        X_tr: dataframe of shape = [n_samples, n_features].
             The dataframe with the original values.
         """
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
-        X = check_X(X)
+        nw_X = check_X(X)
 
         if self.transformer_.__class__.__name__ not in _INVERSE_TRANSFORM:
             raise NotImplementedError(
@@ -409,17 +453,66 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
                     ", ".join(_INVERSE_TRANSFORM)
                 )
             )
-        # For safety, we check that the transformer has the method implemented.
-        if hasattr(self.transformer_, "inverse_transform") and callable(
-            self.transformer_.inverse_transform
-        ):
-            X[self.variables_] = self.transformer_.inverse_transform(X[self.variables_])
+
+        X_inv = self.transformer_.inverse_transform(self._to_sklearn_input(X, nw_X))
+
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            # replacing whole columns leaves the user's dataframe untouched, so a
+            # shallow copy is enough.
+            X = X.copy(deep=False)
+            X[self.variables_] = X_inv
+            return X
         else:
-            raise NotImplementedError(
-                "This Scikit-learn transformer does not have the method "
-                "`inverse_transform` implemented."
-            )
-        return X
+            nw_inv = self._to_frame(X_inv, self.variables_, nw_X)
+            return nw_X.with_columns(*nw_inv.iter_columns()).to_native()
+
+    def _to_sklearn_input(self, X: IntoDataFrame, nw_X: nw.DataFrame):
+        """Return the variables to transform in the format passed to the
+        scikit-learn transformer."""
+        if nwd.is_pandas_dataframe(X) is True:
+            return X[self.variables_]
+
+        # the function in a FunctionTransformer expects the user's dataframe.
+        if self.transformer_.__class__.__name__ == "FunctionTransformer":
+            return nw_X.select(self.variables_).to_native()
+
+        nw_vars = nw_X.select(self.variables_)
+        X_np = nw_vars.to_numpy()
+        # scikit-learn treats NaN, not None, as missing in text columns, which is
+        # what it gets from pandas.
+        if X_np.dtype == object and nw_vars.null_count().to_numpy().sum() > 0:
+            X_np[np.equal(X_np, None)] = np.nan
+        return X_np
+
+    def _to_frame(
+        self, X_new, columns: List[Union[str, int]], nw_X: nw.DataFrame
+    ) -> nw.DataFrame:
+        """Return the output of the scikit-learn transformer as a narwhals
+        dataframe with the given column names, in the backend of nw_X."""
+        # the function in a FunctionTransformer may return a dataframe.
+        if nwd.is_into_dataframe(X_new) is True:
+            nw_new = nw.from_native(X_new, eager_only=True)
+            return nw_new.rename(dict(zip(nw_new.columns, columns)))
+
+        # scikit-learn marks missing values with NaN, polars and others with null.
+        if X_new.dtype == object:
+            X_new[np.not_equal(X_new, X_new)] = None
+        elif X_new.dtype.kind == "f" and bool(np.isnan(X_new).any()) is True:
+            return nw.from_numpy(
+                X_new, schema=columns, backend=nw_X.implementation
+            ).with_columns(nw.all().fill_nan(None))
+
+        return nw.from_numpy(X_new, schema=columns, backend=nw_X.implementation)
+
+    def _select_columns(
+        self, X: IntoDataFrame, nw_X: nw.DataFrame, columns: List[Union[str, int]]
+    ) -> IntoDataFrame:
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            return X[columns]
+        else:
+            return nw_X.select(columns).to_native()
 
     def get_feature_names_out(
         self, input_features: Optional[List[Union[str, int]]] = None
