@@ -186,7 +186,7 @@ class Winsoriser(WinsorizerBase):
     ) -> None:
         if not isinstance(add_indicators, bool):
             raise ValueError(
-                "add_indicators takes only booleans True and False"
+                "add_indicators takes only booleans True and False. "
                 f"Got {add_indicators} instead."
             )
         super().__init__(
@@ -212,19 +212,10 @@ class Winsoriser(WinsorizerBase):
             to 'n_features', otherwise, will have an additional indicator column
             per processed feature for each tail.
         """
-        if not self.add_indicators:
-            X_out = super()._transform(X)
+        X_out = super()._transform(X)
 
-        else:
-            # X_out is validated and reordered by _transform(); the indicators
-            # compare it against the user's native X, variable by variable.
-            X_out = super()._transform(X)
-
-            # Benchmarked at 10k-100k rows x 1-10 columns: pandas-native
-            # comparison + concat is up to ~3x faster than the narwhals
-            # with_columns equivalent on pandas input (the loss grows with
-            # column count), so pandas keeps its own fast path here, same
-            # split as MissingIndicator's indicator-building step.
+        if self.add_indicators is True:
+            # pandas is faster than narwhals.
             if nwd.is_pandas_dataframe(X_out) is True:
                 pd = nw.from_native(X_out, eager_only=True).__native_namespace__()
                 X_orig_filtered = X[self.variables_]
