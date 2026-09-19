@@ -1,5 +1,7 @@
+from typing import List, Union
+
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import ClassifierMixin
 from sklearn.utils.multiclass import check_classification_targets, unique_labels
 
@@ -93,39 +95,82 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
     .. [1] Miller, et al. "Predicting customer behaviour: The University of Melbourne’s
         KDD Cup report". JMLR Workshop and Conference Proceeding. KDD 2009
         http://proceedings.mlr.press/v7/miller09/miller09.pdf
+
+    Examples
+    --------
+
+    >>> import pandas as pd
+    >>> from feature_engine._prediction.target_mean_classifier import (
+    ...     TargetMeanClassifier
+    ... )
+    >>> X = pd.DataFrame(dict(x1=[1, 2, 3, 4, 5, 6], x2=["a", "a", "b", "b", "c", "c"]))
+    >>> y = pd.Series(["no", "no", "no", "yes", "yes", "yes"])
+    >>> tmc = TargetMeanClassifier(bins=2)
+    >>> tmc.fit(X, y)
+    >>> tmc.predict(X)
+    array(['no', 'no', 'no', 'yes', 'yes', 'yes'], dtype='<U3')
+    >>> tmc.predict_proba(X)
+    array([[1.  , 0.  ],
+           [1.  , 0.  ],
+           [0.75, 0.25],
+           [0.25, 0.75],
+           [0.  , 1.  ],
+           [0.  , 1.  ]])
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine._prediction.target_mean_classifier import (
+    ...     TargetMeanClassifier
+    ... )
+    >>> X = pl.DataFrame(dict(x1=[1, 2, 3, 4, 5, 6], x2=["a", "a", "b", "b", "c", "c"]))
+    >>> y = pl.Series(["no", "no", "no", "yes", "yes", "yes"])
+    >>> tmc = TargetMeanClassifier(bins=2)
+    >>> tmc.fit(X, y)
+    >>> tmc.predict(X)
+    array(['no', 'no', 'no', 'yes', 'yes', 'yes'], dtype='<U3')
+    >>> tmc.predict_proba(X)
+    array([[1.  , 0.  ],
+           [1.  , 0.  ],
+           [0.75, 0.25],
+           [0.25, 0.75],
+           [0.  , 1.  ],
+           [0.  , 1.  ]])
     """
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(
+        self,
+        X: IntoDataFrame,
+        y: Union[IntoSeries, np.ndarray, List],
+    ):
         """
         Learn the mean target value per category or bin.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y : pandas series of shape = [n_samples,]
-            The target variable.
+        y: Series, numpy array or list of shape = [n_samples,]
+            The target variable. It must have 2 classes.
         """
         check_classification_targets(y)
-
         self.classes_ = unique_labels(y)
 
-        # check that y is binary
         if len(self.classes_) > 2:
             raise NotImplementedError(
                 "This classifier is designed for binary classification only. "
                 "The target has more than 2 unique values."
             )
 
-        # if target has values other than 0 and 1, we need to remap the values,
-        # to be able to compute meaningful averages.
+        # Other labels are mapped to 0 and 1, so that the target means are
+        # probabilities.
         if any(x for x in self.classes_ if x not in [0, 1]):
-            y = np.where(y == unique_labels(y)[0], 0, 1)
+            y = np.where(np.asarray(y) == self.classes_[0], 0, 1)
 
         return super().fit(X, y)
 
-    def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
+    def predict_proba(self, X: IntoDataFrame) -> np.ndarray:
         """
         Predict class probabilities for X.
 
@@ -136,7 +181,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
@@ -148,7 +193,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
         prob = self._predict(X)
         return np.vstack([1 - prob, prob]).T
 
-    def predict_log_proba(self, X: pd.DataFrame) -> np.ndarray:
+    def predict_log_proba(self, X: IntoDataFrame) -> np.ndarray:
         """
         Predict class log-probabilities for X.
 
@@ -156,7 +201,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
@@ -167,7 +212,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
         """
         return np.log(self.predict_proba(X))
 
-    def predict(self, X: pd.DataFrame) -> np.ndarray:
+    def predict(self, X: IntoDataFrame) -> np.ndarray:
         """
         Predict class for X.
 
@@ -175,7 +220,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
