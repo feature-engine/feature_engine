@@ -27,6 +27,13 @@ from a dataframe. DropDuplicateFeatures() will automatically evaluate all variab
 alternatively, you can pass a list with the variables you wish to have examined. And it
 works with numerical and categorical features alike.
 
+Two features are duplicated when they show the same value in every row, even if their data
+types differ. Numbers are compared by value, so an integer variable and a float variable
+with the same numbers are duplicated, and so are a boolean variable and a variable of 0s
+and 1s. String and categorical variables are compared by their values, and datetime
+variables by the moment in time they represent. Missing values are considered equal to
+each other.
+
 So let’s see how to set up :class:`DropDuplicateFeatures()`.
 
 Python implementation
@@ -136,7 +143,7 @@ We confirm that the duplicated features are gone:
 
 .. code:: python
 
-    Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'cabin', 'embarked'], dtype='object')
+    Index(['pclass', 'sex', 'age', 'sibsp', 'parch', 'fare', 'cabin', 'embarked'], dtype='str')
 
 The transformer also stores the groups of duplicated features, which is useful for data
 analysis and validation:
@@ -150,6 +157,58 @@ We see each original feature grouped together with the duplicates that were foun
 .. code:: python
 
     [{'sex', 'sex_dup'}, {'age', 'age_dup'}, {'sibsp', 'sibsp_dup'}]
+
+With polars
+-----------
+
+:class:`DropDuplicateFeatures()` works in the same way with a polars dataframe. In this
+example, `age_years` stores the ages of `age` as floats, `fare_copy` is a copy of `fare`,
+including its missing value, and `gender` repeats the values of `sex`:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.selection import DropDuplicateFeatures
+
+    df = pl.DataFrame({
+        "age": [22, 38, 26, 35],
+        "age_years": [22.0, 38.0, 26.0, 35.0],
+        "fare": [7.25, 71.28, None, 53.1],
+        "fare_copy": [7.25, 71.28, None, 53.1],
+        "sex": ["male", "female", "female", "female"],
+        "gender": ["male", "female", "female", "female"],
+    })
+
+    transformer = DropDuplicateFeatures()
+
+    print(transformer.fit_transform(df))
+
+The transformer keeps the first variable of each group of duplicates and returns a polars
+dataframe:
+
+.. code:: text
+
+    shape: (4, 3)
+    ┌─────┬───────┬────────┐
+    │ age ┆ fare  ┆ sex    │
+    │ --- ┆ ---   ┆ ---    │
+    │ i64 ┆ f64   ┆ str    │
+    ╞═════╪═══════╪════════╡
+    │ 22  ┆ 7.25  ┆ male   │
+    │ 38  ┆ 71.28 ┆ female │
+    │ 26  ┆ null  ┆ female │
+    │ 35  ┆ 53.1  ┆ female │
+    └─────┴───────┴────────┘
+
+The groups of duplicated features are stored as before:
+
+.. code:: python
+
+    transformer.duplicated_feature_sets_
+
+.. code:: python
+
+    [{'age', 'age_years'}, {'fare', 'fare_copy'}, {'gender', 'sex'}]
 
 
 Additional resources
