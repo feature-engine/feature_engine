@@ -2,9 +2,9 @@
 # License: BSD 3 clause
 
 import narwhals as nw
-from narwhals.typing import IntoDataFrame
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
-from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _left_tail_caps_docstring,
@@ -24,6 +24,7 @@ from feature_engine._docstrings.init_parameters.outliers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X_y
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
@@ -42,7 +43,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
+class OutlierTrimmer(WinsorizerBase):
     """The OutlierTrimmer() removes observations with outliers from the dataset.
 
     The OutlierTrimmer() first calculates the maximum and/or minimum values
@@ -189,13 +190,49 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
         X_new: dataframe of shape = [n_samples, n_features]
             The dataframe without outlier observations.
         """
-
         nw_X = self._check_transform_input_and_state(X)
+        return self._remove_outliers(nw_X).to_native()
 
+    def transform_x_y(self, X: IntoDataFrame, y: IntoSeries):
+        """
+        Remove observations with outliers from the dataframe and the target.
+
+        Parameters
+        ----------
+        X: dataframe of shape = [n_samples, n_features]
+            The dataframe to transform.
+
+        y: Series or Dataframe of length = n_samples
+            The target variable to transform. Can be multi-output.
+
+        Returns
+        -------
+        X_new: dataframe
+            The dataframe without outlier observations. It may contain less rows
+            than the original dataset.
+
+        y_new: Series or DataFrame
+            The target variable, with as many rows as those left in X_new.
+        """
+        _, y = check_X_y(X, y)
+
+        row_index = "__row_index__"
+        nw_X = self._check_transform_input_and_state(X).with_row_index(row_index)
+        nw_X = self._remove_outliers(nw_X)
+        rows = nw_X.get_column(row_index).to_list()
+
+        if nwd.is_into_series(y):
+            y = nw.from_native(y, series_only=True)[rows].to_native()
+        else:
+            y = nw.from_native(y, eager_only=True)[rows].to_native()
+
+        return nw_X.drop(row_index).to_native(), y
+
+    def _remove_outliers(self, nw_X: nw.DataFrame) -> nw.DataFrame:
         conditions = [nw.col(f) <= c for f, c in self.right_tail_caps_.items()]
         conditions += [nw.col(f) >= c for f, c in self.left_tail_caps_.items()]
 
         if len(conditions) > 0:
             nw_X = nw_X.filter(nw.all_horizontal(*conditions, ignore_nulls=False))
 
-        return nw_X.to_native()
+        return nw_X
