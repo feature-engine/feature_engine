@@ -35,11 +35,14 @@ _left_tail_caps_docstring = """left_tail_caps_:
 
 # used by selection module
 _feature_importances_docstring = """feature_importances_:
-        Pandas Series with the feature importance (comes from step 2)
+        The feature importance (comes from step 2). A pandas Series with the
+        features as index when X is a pandas dataframe, and a dictionary with the
+        features as keys otherwise.
     """.rstrip()
 
 _feature_importances_std_docstring = """feature_importances_std_:
-        Pandas Series with the standard deviation of the feature importance.
+        The standard deviation of the feature importance, as a pandas Series or a
+        dictionary, like `feature_importances_`.
     """.rstrip()
 
 _performance_drifts_docstring = """performance_drifts_:
