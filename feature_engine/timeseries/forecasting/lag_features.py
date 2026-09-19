@@ -4,7 +4,9 @@
 from collections.abc import Hashable
 from typing import List, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -41,13 +43,15 @@ class LagFeatures(BaseForecastTransformer):
     LagFeatures adds lag features to the dataframe. A lag feature is a feature with
     information about a prior time step.
 
-    LagFeatures has the same functionality as pandas `shift()` with the exception that
-    only one of `periods` or `freq` can be indicated at a time. LagFeatures builds on
-    top of pandas `shift()` in that multiple lags can be created at the same time and
-    the features with names will be concatenated to the original dataframe.
+    LagFeatures works like pandas `shift()`, with the exception that only one of
+    `periods` or `freq` can be indicated at a time. LagFeatures builds on top of
+    `shift()` in that multiple lags can be created at the same time, and the features
+    are added with names to the original dataframe.
 
-    To be compatible with LagFeatures, the dataframe's index must have unique values
-    and no NaN.
+    LagFeatures takes pandas and polars dataframes, among others. With pandas, the
+    index gives the time order of the rows, so it must have unique values and no NaN.
+    polars dataframes have no index: LagFeatures uses the rows in the order given, so
+    sort them by time first.
 
     LagFeatures works only with numerical variables. You can pass a list of variables
     to lag. Alternatively, LagFeatures will automatically select and lag all numerical
@@ -70,16 +74,19 @@ class LagFeatures(BaseForecastTransformer):
         Offset to use from the tseries module or time rule. See parameter `freq` in
         pandas `shift()`. It is the same functionality. If freq is a list, lag features
         will be created for each one of the frequency values in the list. If freq is not
-        None, then this parameter overrides the parameter `periods`.
+        None, then this parameter overrides the parameter `periods`. `freq` lags the
+        values based on the dataframe's DatetimeIndex, so it is only supported with
+        pandas dataframes. With polars, use `periods` instead.
 
     fill_value: object, optional
-        The scalar value to use for newly introduced missing values. The default
-        depends on the dtype of the variable. For numeric data, np.nan is used. For
-        datetime, timedelta, or period data, NaT is used. For extension dtypes,
-        self.dtype.na_value is used.
+        The scalar value to use for the missing values introduced by the lags. If None,
+        the lag features show missing values (NaN in pandas, null in polars) in the
+        rows that have no past values.
 
     sort_index: bool, default=True
         Whether to order the index of the dataframe before creating the lag features.
+        Only applies to pandas dataframes. polars dataframes have no index, so their
+        rows are used in the order given.
 
     {missing_values}
 
@@ -111,7 +118,8 @@ class LagFeatures(BaseForecastTransformer):
 
     See Also
     --------
-    pandas.shift
+    pandas.DataFrame.shift
+    polars.Expr.shift
 
     Examples
     --------
@@ -134,6 +142,33 @@ class LagFeatures(BaseForecastTransformer):
     2  2022-09-20   3   8       2.0       7.0       1.0       6.0
     3  2022-09-21   4   9       3.0       8.0       2.0       7.0
     4  2022-09-22   5  10       4.0       9.0       3.0       8.0
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.timeseries.forecasting import LagFeatures
+    >>> X = pl.DataFrame(dict(date = ["2022-09-18",
+    >>>                               "2022-09-19",
+    >>>                               "2022-09-20",
+    >>>                               "2022-09-21",
+    >>>                               "2022-09-22"],
+    >>>                       x1 = [1,2,3,4,5],
+    >>>                       x2 = [6,7,8,9,10]
+    >>>                     ))
+    >>> lf = LagFeatures(periods=[1,2])
+    >>> lf.fit_transform(X)
+    shape: (5, 7)
+    ┌────────────┬─────┬─────┬──────────┬──────────┬──────────┬──────────┐
+    │ date       ┆ x1  ┆ x2  ┆ x1_lag_1 ┆ x2_lag_1 ┆ x1_lag_2 ┆ x2_lag_2 │
+    │ ---        ┆ --- ┆ --- ┆ ---      ┆ ---      ┆ ---      ┆ ---      │
+    │ str        ┆ i64 ┆ i64 ┆ i64      ┆ i64      ┆ i64      ┆ i64      │
+    ╞════════════╪═════╪═════╪══════════╪══════════╪══════════╪══════════╡
+    │ 2022-09-18 ┆ 1   ┆ 6   ┆ null     ┆ null     ┆ null     ┆ null     │
+    │ 2022-09-19 ┆ 2   ┆ 7   ┆ 1        ┆ 6        ┆ null     ┆ null     │
+    │ 2022-09-20 ┆ 3   ┆ 8   ┆ 2        ┆ 7        ┆ 1        ┆ 6        │
+    │ 2022-09-21 ┆ 4   ┆ 9   ┆ 3        ┆ 8        ┆ 2        ┆ 7        │
+    │ 2022-09-22 ┆ 5   ┆ 10  ┆ 4        ┆ 9        ┆ 3        ┆ 8        │
+    └────────────┴─────┴─────┴──────────┴──────────┴──────────┴──────────┘
     """
 
     def __init__(
@@ -168,7 +203,7 @@ class LagFeatures(BaseForecastTransformer):
 
         if not isinstance(sort_index, bool):
             raise ValueError(
-                "sort_index takes values True and False." f"Got {sort_index} instead."
+                f"sort_index takes values True and False. Got {sort_index} instead."
             )
 
         super().__init__(
@@ -180,77 +215,84 @@ class LagFeatures(BaseForecastTransformer):
         self.fill_value = fill_value
         self.sort_index = sort_index
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Adds lag features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe, shape = [n_samples, n_features + lag_features]
-            The dataframe with the original plus the new variables.
+        X_new: dataframe of shape = [n_samples, n_features + lag_features]
+            The dataframe with the original plus the new variables. If
+            `drop_na=True`, rows with missing data in the lag features are removed.
         """
-        # Common dataframe checks and setting up.
-        X = self._check_transform_input_and_state(X).to_native()
+        return super().transform(X)
 
-        # if freq is not None, it overrides periods.
-        if self.freq is not None:
+    def _add_features(self, nw_X: nw.DataFrame) -> nw.DataFrame:
+        """Adds the lag features after the columns of nw_X."""
+        X = nw_X.to_native()
+        new_features = self._get_new_features_name()
 
-            if isinstance(self.freq, list):
-                df_ls = []
-                for fr in self.freq:
-                    tmp = X[self.variables_].shift(
-                        freq=fr,
-                        axis=0,
-                    )
-                    df_ls.append(tmp)
-                tmp = pd.concat(df_ls, axis=1, sort=False)
+        periods = self.periods if isinstance(self.periods, list) else [self.periods]
 
-            else:
-                tmp = X[self.variables_].shift(
-                    freq=self.freq,
-                    axis=0,
+        if nwd.is_pandas_dataframe(X) is True:
+            # pandas is faster than narwhals, and freq needs the pandas index. The
+            # suffixes are the ones merge() added when a lag name was already in X.
+            if self.freq is None:
+                lag = X[self.variables_].shift(
+                    periods=periods, fill_value=self.fill_value
+                )
+                lag.columns = new_features
+                return nw.from_native(
+                    X.join(lag, lsuffix="_x", rsuffix="_y"), eager_only=True
                 )
 
-        else:
-            if isinstance(self.periods, list):
-                df_ls = []
-                for pr in self.periods:
-                    tmp = X[self.variables_].shift(
-                        periods=pr,
-                        fill_value=self.fill_value,
-                        axis=0,
-                    )
-                    df_ls.append(tmp)
-                tmp = pd.concat(df_ls, axis=1, sort=False)
+            freqs = self.freq if isinstance(self.freq, list) else [self.freq]
+            # joining one lag at a time is faster than aligning all lags at once.
+            for i, fr in enumerate(freqs):
+                start, end = i * len(self.variables_), (i + 1) * len(self.variables_)
+                lag = X[self.variables_].shift(freq=fr)
+                lag.columns = new_features[start:end]
+                X = X.join(lag, lsuffix="_x", rsuffix="_y")
 
-            else:
-                tmp = X[self.variables_].shift(
-                    periods=self.periods,
-                    fill_value=self.fill_value,
-                    axis=0,
-                )
+            # shift() does not take fill_value together with freq.
+            if self.fill_value is not None:
+                X[new_features] = X[new_features].fillna(value=self.fill_value)
 
-        tmp.columns = self._get_new_features_name()
+            return nw.from_native(X, eager_only=True)
 
-        X = X.merge(tmp, left_index=True, right_index=True, how="left")
+        lags = [(var, pr) for pr in periods for var in self.variables_]
+        if self.fill_value is None:
+            return nw_X.with_columns(
+                nw.col(var).shift(pr).alias(name)
+                for (var, pr), name in zip(lags, new_features)
+            )
 
-        # we need this because pandas deprecated fill_value when using frequency
-        if self.freq is not None and self.fill_value is not None:
-            lags = [x for x in tmp.columns if x not in self.feature_names_in_]
-            X[lags] = X[lags].fillna(value=self.fill_value)
+        if nwd.is_polars_dataframe(X) is True:
+            # polars is faster than narwhals: it fills the rows that shift()
+            # introduces without copying the column.
+            col = nw.get_native_namespace(nw_X).col
+            return nw.from_native(
+                X.with_columns(
+                    col(var).shift(pr, fill_value=self.fill_value).alias(name)
+                    for (var, pr), name in zip(lags, new_features)
+                ),
+                eager_only=True,
+            )
 
-        if self.drop_original:
-            X = X.drop(self.variables_, axis=1)
-
-        if self.drop_na:
-            X = X.dropna(subset=tmp.columns, axis=0)
-
-        return X
+        # narwhals' shift() has no fill_value. The mask is True in the first rows,
+        # which have no past values, so missing data in X is not filled.
+        return nw_X.with_columns(
+            nw.when(nw.col(var).is_null().shift(pr).is_null())
+            .then(nw.lit(self.fill_value))
+            .otherwise(nw.col(var).shift(pr))
+            .alias(name)
+            for (var, pr), name in zip(lags, new_features)
+        )
 
     def _get_new_features_name(self) -> List:
         """Get names of the lag features."""

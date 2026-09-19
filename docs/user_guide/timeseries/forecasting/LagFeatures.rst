@@ -28,8 +28,8 @@ executing `X[my_variable].shift(freq=”1H”, axis=0)`, we create a new feature
 lagged values of `my_variable` by 1 hour.
 
 Feature-engine’s :class:`LagFeatures` automates the creation of lag features from multiple
-variables and by using multiple lags. It uses pandas `shift` under the hood, and automatically
-concatenates the new features to the input dataframe.
+variables and by using multiple lags. It works with pandas and polars dataframes, and
+automatically adds the new features to the input dataframe.
 
 Automating lag feature creation
 -------------------------------
@@ -40,7 +40,8 @@ takes integers that indicate the number of rows forward that the features will b
 
 Alternatively, we can use the parameter `freq`, which takes a string with the period and
 frequency, and lags features based on the datetime index. For example, if we pass `freq="1D"`,
-the values of the features will be moved 1 day forward.
+the values of the features will be moved 1 day forward. `freq` needs a pandas dataframe
+with a datetime index; with polars, use `periods`.
 
 The :class:`LagFeatures` transformer works very similarly to `pandas.shift`, but unlike
 `pandas.shift` we can indicate the lag using either `periods` or `freq` but not both at the
@@ -52,8 +53,13 @@ same time. Also, unlike `pandas.shift`, we can only lag features forward.
 - Second, it adds the features with a name to the original dataframe.
 - Third, it has the methods `fit()` and `transform()` that make it compatible with the scikit-learn's `Pipeline` and cross-validation functions.
 
-Note that, in the current implementation, :class:`LagFeatures` only works with dataframes whose index,
-containing the time series timestamp, contains unique values and no NaN.
+With pandas dataframes, the index, containing the time series timestamp, gives the time
+order of the rows. It must contain unique values and no NaN. By default, :class:`LagFeatures`
+sorts the rows by the index before creating the lag features; set `sort_index=False` to
+use the rows in the order given.
+
+polars dataframes have no index, so :class:`LagFeatures` uses the rows in the order in which
+they are in the dataframe. Sort the dataframe by time before creating the lag features.
 
 .. attention::
 
@@ -528,7 +534,7 @@ This is the resulting output:
     2020-05-15 13:15:00    32.50
     2020-05-15 13:30:00    32.52
     2020-05-15 13:45:00    32.68
-    Freq: 15T, Name: ambient_temp, dtype: float64
+    Freq: 15min, Name: ambient_temp, dtype: float64
 
 We can use :class:`LagFeatures` to create, for example, 3 features by lagging the
 pandas Series if we convert it to a pandas Dataframe using the method `to_frame()`:
@@ -588,6 +594,76 @@ The original variable is no longer in the output dataframe:
     2020-05-15 12:45:00               31.31
     2020-05-15 13:00:00               31.51
 
+With polars
+~~~~~~~~~~~
+
+:class:`LagFeatures` works in the same way with a polars dataframe. polars dataframes have
+no index, so the lag features are created with the rows in the order given. We sort the
+dataframe by the date column first, to make sure the rows are in time order:
+
+.. code:: python
+
+    from datetime import datetime
+
+    import polars as pl
+    from feature_engine.timeseries.forecasting import LagFeatures
+
+    X_pl = pl.DataFrame({
+        "date": pl.datetime_range(
+            datetime(2020, 5, 15, 12), datetime(2020, 5, 15, 13, 45), "15m", eager=True
+        ),
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68],
+        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52],
+    })
+    y_pl = pl.Series("y", [1, 2, 3, 4, 5, 6, 7, 8])
+
+    X_pl = X_pl.sort("date")
+
+    lag_f = LagFeatures(periods=1)
+
+    X_tr = lag_f.fit_transform(X_pl)
+
+    print(X_tr.head())
+
+The numerical variables were lagged 1 row forward. The date column is not numerical, so
+it was not lagged. In polars, the missing values are shown as null:
+
+.. code:: text
+
+    shape: (5, 5)
+    ┌─────────────────────┬──────────────┬─────────────┬────────────────────┬───────────────────┐
+    │ date                ┆ ambient_temp ┆ module_temp ┆ ambient_temp_lag_1 ┆ module_temp_lag_1 │
+    │ ---                 ┆ ---          ┆ ---         ┆ ---                ┆ ---               │
+    │ datetime[μs]        ┆ f64          ┆ f64         ┆ f64                ┆ f64               │
+    ╞═════════════════════╪══════════════╪═════════════╪════════════════════╪═══════════════════╡
+    │ 2020-05-15 12:00:00 ┆ 31.31        ┆ 49.18       ┆ null               ┆ null              │
+    │ 2020-05-15 12:15:00 ┆ 31.51        ┆ 49.84       ┆ 31.31              ┆ 49.18             │
+    │ 2020-05-15 12:30:00 ┆ 32.15        ┆ 52.35       ┆ 31.51              ┆ 49.84             │
+    │ 2020-05-15 12:45:00 ┆ 32.39        ┆ 50.63       ┆ 32.15              ┆ 52.35             │
+    │ 2020-05-15 13:00:00 ┆ 32.62        ┆ 49.61       ┆ 32.39              ┆ 50.63             │
+    └─────────────────────┴──────────────┴─────────────┴────────────────────┴───────────────────┘
+
+We can also drop the rows with missing data in the lag features from the dataframe and
+the target:
+
+.. code:: python
+
+    lag_f = LagFeatures(periods=[1, 2], drop_na=True)
+
+    lag_f.fit(X_pl)
+
+    X_tr, y_tr = lag_f.transform_x_y(X_pl, y_pl)
+
+    X_tr.shape, y_tr.shape, X_pl.shape, y_pl.shape
+
+The first 2 rows, which have no values 2 rows before, were removed from both:
+
+.. code:: python
+
+    ((6, 7), (6,), (8, 3), (8,))
+
+The parameter `sort_index` has no effect with polars dataframes, and `freq` is only
+supported with pandas dataframes.
 
 Getting the name of the lag features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
