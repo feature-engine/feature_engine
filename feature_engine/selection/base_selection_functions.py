@@ -1,8 +1,11 @@
-from typing import List, Union
 from types import GeneratorType
+from typing import List, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame
+from scipy.stats import kendalltau, rankdata
 from sklearn.model_selection import cross_validate
 
 from feature_engine.variable_handling import (
@@ -36,8 +39,19 @@ def get_feature_importances(estimator):
     return importances
 
 
+def _importance_series(X: IntoDataFrame, features, values: np.ndarray):
+    """
+    Return the importance of each feature as a pandas Series indexed by the
+    features when X is a pandas dataframe, or as a dictionary with the features as
+    keys otherwise.
+    """
+    if nwd.is_pandas_dataframe(X) is True:
+        return nw.get_native_namespace(X).Series(values, index=features)
+    return dict(zip(features, values.tolist()))
+
+
 def _select_all_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     variables: Variables,
     confirm_variables: bool,
     exclude_datetime: bool = False,
@@ -62,7 +76,7 @@ def _select_all_variables(
 
 
 def _select_numerical_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     variables: Variables,
     confirm_variables: bool,
 ):
@@ -85,8 +99,113 @@ def _select_numerical_variables(
     return variables_
 
 
+def _corrcoef(values: np.ndarray) -> np.ndarray:
+    # constant columns return NaN, like pandas, instead of warning.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.corrcoef(values, rowvar=False)
+
+
+def _pearson_pairwise_complete(values: np.ndarray, finite: np.ndarray) -> np.ndarray:
+    """
+    Pearson correlation of every pair of columns, using the rows where both are
+    finite. The sums of all pairs come from matrix products, which is much faster
+    than looping over the pairs.
+    """
+    mask: np.ndarray = finite.astype(float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # centring first keeps the sums below numerically stable.
+        mean = np.where(finite, values, 0.0).sum(axis=0) / mask.sum(axis=0)
+        x = np.where(finite, values - mean, 0.0)
+        n_obs = mask.T @ mask
+        sum_x = x.T @ mask
+        sum_xx = (x * x).T @ mask
+        var = sum_xx - sum_x * sum_x / n_obs
+        corr = (x.T @ x - sum_x * sum_x.T / n_obs) / np.sqrt(var * var.T)
+
+    # when the variance of the shared rows is tiny compared with the sums, the
+    # subtraction above loses precision: recompute those pairs one by one.
+    unstable = (var <= 1e-8 * sum_xx) | (var.T <= 1e-8 * sum_xx.T)
+    corr[unstable] = np.nan
+    for i, j in zip(*np.nonzero(np.triu(unstable & (n_obs > 1), 1))):
+        rows = finite[:, i] & finite[:, j]
+        corr[i, j] = _corrcoef(x[rows][:, [i, j]])[0, 1]
+    return corr
+
+
+def _spearman_pairwise_complete(nw_X: nw.DataFrame) -> np.ndarray:
+    """
+    Spearman correlation of every pair of columns, ranking each pair on the rows
+    where both are finite, like pandas.DataFrame.corr().
+    """
+    variables = nw_X.columns
+    exprs = []
+    for i, var_i in enumerate(variables):
+        for j in range(i + 1, len(variables)):
+            var_j = variables[j]
+            rows = nw.col(var_i).is_finite() & nw.col(var_j).is_finite()
+            x = nw.when(rows).then(nw.col(var_i)).rank("average")
+            y = nw.when(rows).then(nw.col(var_j)).rank("average")
+            dx = x - x.mean()
+            dy = y - y.mean()
+            exprs.append(
+                ((dx * dy).sum() / ((dx * dx).sum() * (dy * dy).sum()).sqrt()).alias(
+                    f"__{i}_{j}__"
+                )
+            )
+    n_vars = len(variables)
+    corr = np.full((n_vars, n_vars), np.nan)
+    corr[np.triu_indices(n_vars, 1)] = np.array(nw_X.select(exprs).row(0), dtype=float)
+    return corr
+
+
+def _correlation_matrix(X: IntoDataFrame, variables: list, method) -> np.ndarray:
+    """
+    Correlation matrix of the variables. Like pandas.DataFrame.corr(), each pair of
+    variables is compared on the rows where both have finite values. Only the
+    values above the diagonal are used.
+    """
+    if nwd.is_pandas_dataframe(X) is True:
+        values = X[variables].to_numpy(dtype=float, na_value=np.nan)
+    else:
+        nw_X = nw.from_native(X, eager_only=True).select(nw.col(*variables))
+        values = nw_X.to_numpy().astype(float)
+    finite = np.isfinite(values)
+
+    # numpy is faster than pandas and narwhals.
+    if method == "pearson":
+        if finite.all():
+            return _corrcoef(values)
+        return _pearson_pairwise_complete(values, finite)
+
+    if method == "spearman" and finite.all():
+        # scipy ranks faster than pandas, and polars faster than scipy.
+        if nwd.is_pandas_dataframe(X) is True:
+            return _corrcoef(rankdata(values, axis=0))
+        return _corrcoef(nw_X.select(nw.all().rank("average")).to_numpy())
+
+    # pandas is faster than narwhals.
+    if nwd.is_pandas_dataframe(X) is True:
+        return X[variables].corr(method=method).to_numpy()
+
+    if method == "spearman":
+        return _spearman_pairwise_complete(nw_X)
+
+    # kendall and callables are computed pair by pair, as pandas does.
+    corr_func = (lambda a, b: kendalltau(a, b)[0]) if method == "kendall" else method
+    n_vars = len(variables)
+    corr = np.full((n_vars, n_vars), np.nan)
+    for i in range(n_vars):
+        for j in range(i + 1, n_vars):
+            rows = finite[:, i] & finite[:, j]
+            if rows.all():
+                corr[i, j] = corr_func(values[:, i], values[:, j])
+            elif rows.any():
+                corr[i, j] = corr_func(values[rows, i], values[rows, j])
+    return corr
+
+
 def find_correlated_features(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     variables: list[Union[str, int]],
     method: str,
     threshold: float,
@@ -96,7 +215,7 @@ def find_correlated_features(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
+    X : dataframe of shape = [n_samples, n_features]
         The training dataset.
 
     variables : list
@@ -133,36 +252,32 @@ def find_correlated_features(
         correlated with the key. The key + the values should be the same as the set
         found in `correlated_feature_groups`.
     """
-    # the correlation matrix
-    correlated_matrix = X[variables].corr(method=method).to_numpy()
+    correlated_matrix = _correlation_matrix(X, variables, method)
 
     # the correlated pairs
     correlated_mask = np.triu(np.abs(correlated_matrix), 1) > threshold
 
-    examined = set()
+    examined: np.ndarray = np.zeros(len(variables), dtype=bool)
     correlated_groups = list()
     features_to_drop = list()
     correlated_dict = {}
     for i, f_i in enumerate(variables):
-        if f_i not in examined:
-            examined.add(f_i)
-            temp_set = set([f_i])
-            for j, f_j in enumerate(variables):
-                if f_j not in examined:
-                    if correlated_mask[i, j] == 1:
-                        examined.add(f_j)
-                        features_to_drop.append(f_j)
-                        temp_set.add(f_j)
-            if len(temp_set) > 1:
-                correlated_groups.append(temp_set)
-                correlated_dict[f_i] = temp_set.difference({f_i})
+        if examined.item(i) is False:
+            examined[i] = True
+            correlated = np.flatnonzero(correlated_mask[i] & ~examined)
+            if len(correlated) > 0:
+                examined[correlated] = True
+                correlated_features = [variables[j] for j in correlated]
+                features_to_drop.extend(correlated_features)
+                correlated_groups.append({f_i, *correlated_features})
+                correlated_dict[f_i] = set(correlated_features)
 
     return correlated_groups, features_to_drop, correlated_dict
 
 
 def single_feature_performance(
-    X: pd.DataFrame,
-    y: pd.Series,
+    X: IntoDataFrame,
+    y,
     variables: List[Union[str, int]],
     estimator,
     cv,
@@ -174,7 +289,7 @@ def single_feature_performance(
 
     Parameters
     ----------
-    X: pandas dataframe of shape = [n_samples, n_features]
+    X: dataframe of shape = [n_samples, n_features]
        The input dataframe
 
     y: array-like of shape (n_samples)
@@ -211,12 +326,13 @@ def single_feature_performance(
     feature_performance_std = {}
 
     cv = list(cv) if isinstance(cv, GeneratorType) else cv
+    nw_X = nw.from_native(X, eager_only=True)
 
     # train a model for every feature and store the performance
     for feature in variables:
         model = cross_validate(
             estimator,
-            X[feature].to_frame(),
+            nw_X.get_column(feature).to_frame().to_native(),
             y,
             cv=cv,
             groups=groups,
@@ -230,8 +346,8 @@ def single_feature_performance(
 
 
 def find_feature_importance(
-    X: pd.DataFrame,
-    y: pd.Series,
+    X: IntoDataFrame,
+    y,
     estimator,
     cv,
     scoring,
@@ -245,7 +361,7 @@ def find_feature_importance(
 
     Parameters
     ----------
-    X: pandas dataframe of shape = [n_samples, n_features]
+    X: dataframe of shape = [n_samples, n_features]
        The input dataframe
 
     y: array-like of shape (n_samples)
@@ -268,14 +384,15 @@ def find_feature_importance(
 
     Returns
     -------
-    feature_importance: pd.Series
-        A pandas Series with the feature name as index and its importance as value. The
-        importance is given by the coefficients of linear models or the impurity gain
-        from tree-based models.
+    feature_importance: pandas Series or dict
+        The importance of each feature, given by the coefficients of linear models or
+        the impurity gain from tree-based models. A pandas Series with the feature
+        names as index when X is a pandas dataframe, and a dictionary with the
+        feature names as keys otherwise.
 
-    feature_importance_std: pd.Series
-        A pandas Series with the feature name as key and the standard deviation of the
-        feature importance as value.
+    feature_importance_std: pandas Series or dict
+        The standard deviation of the importance of each feature, as a pandas Series
+        or a dictionary, like `feature_importance`.
     """
     cv = list(cv) if isinstance(cv, GeneratorType) else cv
 
@@ -289,19 +406,16 @@ def find_feature_importance(
         return_estimator=True,
     )
 
-    # dataframe to store the feature importance for each cv fold
-    feature_importances_cv = pd.DataFrame()
+    importances = np.array([get_feature_importances(m) for m in model["estimator"]])
 
-    # Populate dataframe with columns containing the feature importance values
-    # for each cv fold. There are as many columns as folds.
-    for i in range(len(model["estimator"])):
-        m = model["estimator"][i]
-        feature_importances_cv[i] = get_feature_importances(m)
+    # pandas keeps the columns index, with its name and dtype.
+    if nwd.is_pandas_dataframe(X) is True:
+        features = X.columns
+    else:
+        features = nw.from_native(X, eager_only=True).columns
 
-    # add the variables as the index to feature_importances_cv
-    feature_importances_cv.index = X.columns
-
-    # aggregate the feature importance returned in each fold
-    feature_importances_ = feature_importances_cv.mean(axis=1)
-    feature_importances_std_ = feature_importances_cv.std(axis=1)
+    feature_importances_ = _importance_series(X, features, importances.mean(axis=0))
+    feature_importances_std_ = _importance_series(
+        X, features, importances.std(axis=0, ddof=1)
+    )
     return feature_importances_, feature_importances_std_
