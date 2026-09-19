@@ -262,7 +262,7 @@ The transformed dataframe is a polars dataframe:
 
     print(Xt)
 
-.. code:: python
+.. code:: text
 
     shape: (5, 2)
     ┌───────┬───────┐
