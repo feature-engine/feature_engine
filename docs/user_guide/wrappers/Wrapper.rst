@@ -15,8 +15,8 @@ The :class:`SklearnWrapper()` offers similar functionality to the
 class available in scikit-learn. They differ in the implementation to select the
 variables and the output.
 
-The :class:`SklearnWrapper()` returns a pandas dataframe with the variables
-in the order of the original data. The
+The :class:`SklearnWrapper()` returns a dataframe of the same library as the input,
+for example pandas or polars, with the variables in the order of the original data. The
 `ColumnTransformer <https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html>`_
 returns a Numpy array, and the order of the variables may not coincide with that of the
 original dataset.
@@ -170,7 +170,9 @@ list:
 
 .. code:: python
 
-    cols = [var for var in X_train.columns if X_train[var].dtypes !='O']
+    from feature_engine.variable_handling import find_numerical_variables
+
+    cols = find_numerical_variables(X_train)
 
 Now, we set up the wrapper with the SelectKBest, and fit it to the train set:
 
@@ -211,7 +213,7 @@ imports and a function to load and clean the Titanic dataset:
         data = data.replace('?', np.nan)
         data['cabin'] = data['cabin'].astype(str).str[0]
         data['pclass'] = data['pclass'].astype('O')
-        data['embarked'].fillna('C', inplace=True)
+        data['embarked'] = data['embarked'].fillna('C')
         data.drop(["name", "home.dest", "ticket", "boat", "body"], axis=1, inplace=True)
         return data
 
@@ -234,7 +236,7 @@ to transform the train and test sets:
 .. code:: python
 
     ohe = SklearnWrapper(
-            OneHotEncoder(sparse=False, drop='first'),
+            OneHotEncoder(sparse_output=False, drop='first'),
             variables = ['pclass','sex'])
 
     ohe.fit(X_train)
@@ -253,11 +255,11 @@ The resulting dataframe is:
 .. code:: python
 
          age  sibsp  parch     fare cabin embarked  pclass_2  pclass_3  sex_male
-    772   17      0      0   7.8958     n        S       0.0       1.0       1.0
-    543   36      0      0     10.5     n        S       1.0       0.0       1.0
+    772   17      0      0   7.8958   NaN        S       0.0       1.0       1.0
+    543   36      0      0     10.5   NaN        S       1.0       0.0       1.0
     289   18      0      2    79.65     E        S       0.0       0.0       0.0
     10    47      1      0  227.525     C        C       0.0       0.0       1.0
-    147  NaN      0      0     42.4     n        S       0.0       0.0       1.0
+    147  NaN      0      0     42.4   NaN        S       0.0       0.0       1.0
 
 
 Let's say you want to use :class:`SklearnWrapper()` in a more complex
@@ -323,7 +325,7 @@ We see the resulting dataframe, with the new interaction features at the end:
     772  17.000000      0      0    7.8958      0         0     3.0  0.0
     543  36.000000      0      0   10.5000      0         0     2.0  0.0
     289  18.000000      0      2   79.6500      1         0     1.0  1.0
-    10   47.000000      1      0  227.5250      2         1     1.0  0.0
+    10   47.000000      1      0  227.5250      0         1     1.0  0.0
     147  29.532738      0      0   42.4000      0         0     1.0  0.0
 
          pclass sex
@@ -332,6 +334,59 @@ We see the resulting dataframe, with the new interaction features at the end:
     289         1.0
     10          0.0
     147         0.0
+
+
+With polars
+^^^^^^^^^^^
+
+:class:`SklearnWrapper()` works in the same way with a polars dataframe, and returns a
+polars dataframe. In polars, missing values are `null`. The wrapper passes them to the
+scikit-learn transformer as missing values, so imputers replace them, and it returns the
+missing values that remain as `null`:
+
+.. code:: python
+
+    import polars as pl
+    from sklearn.impute import SimpleImputer
+    from sklearn.preprocessing import StandardScaler
+    from feature_engine.wrappers import SklearnWrapper
+
+    X = pl.DataFrame({
+        "city": ["London", None, "Paris", "London"],
+        "age": [20, 30, None, 40],
+        "income": [1000.0, 2000.0, 1500.0, None],
+    })
+
+    imputer = SklearnWrapper(
+        transformer=SimpleImputer(strategy="most_frequent"),
+        variables=["city"],
+    )
+    X_t = imputer.fit_transform(X)
+
+    scaler = SklearnWrapper(transformer=StandardScaler())
+    X_t = scaler.fit_transform(X_t)
+
+    print(X_t)
+
+The imputer replaced the missing city with the most frequent one, and the scaler
+standardised the numerical variables, leaving their missing values as `null`:
+
+.. code:: text
+
+    shape: (4, 3)
+    ┌────────┬───────────┬───────────┐
+    │ city   ┆ age       ┆ income    │
+    │ ---    ┆ ---       ┆ ---       │
+    │ str    ┆ f64       ┆ f64       │
+    ╞════════╪═══════════╪═══════════╡
+    │ London ┆ -1.224745 ┆ -1.224745 │
+    │ London ┆ 0.0       ┆ 1.224745  │
+    │ Paris  ┆ null      ┆ 0.0       │
+    │ London ┆ 1.224745  ┆ null      │
+    └────────┴───────────┴───────────┘
+
+When you use a `FunctionTransformer`, its function receives the polars dataframe, so
+write it with polars methods.
 
 
 More details
