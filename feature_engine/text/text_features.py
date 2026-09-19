@@ -35,7 +35,8 @@ TEXT_FEATURES = {
     "char_count": lambda t: t.length - t.count_in(_WHITESPACE),
     "word_count": lambda t: t.word_count,
     "sentence_count": lambda t: t.count(r"[.!?]+"),
-    "avg_word_length": lambda t: t.strip_length() / t.word_count.clip(1),
+    "avg_word_length": lambda t: (t.length - t.count_in(_WHITESPACE))
+    / t.word_count.clip(1),
     "digit_count": lambda t: t.count(r"\d"),
     "letter_count": lambda t: t.count_in(string.ascii_letters),
     "uppercase_count": lambda t: t.count(r"[A-Z]"),
@@ -82,9 +83,6 @@ class _PandasText:
     def unique_word_count(self):
         words = [len(set(s.lower().split())) for s in self.text.tolist()]
         return self._pd.Series(words, index=self.text.index)
-
-    def strip_length(self):
-        return self.text.str.strip().str.len()
 
     def count(self, pattern):
         if ("count", pattern) not in self._counts:
@@ -143,9 +141,6 @@ class _NarwhalsText:
             .otherwise(words.list.unique().list.len())
             .cast(self._ns.Int64)
         )
-
-    def strip_length(self):
-        return self.text.str.strip_chars(_WHITESPACE).str.len_chars()
 
     def count(self, pattern):
         # narwhals can't count matches, but replacing each match with 2
@@ -211,8 +206,7 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         - 'char_count': Number of characters, excluding whitespace
         - 'word_count': Number of words (whitespace-separated tokens)
         - 'sentence_count': Number of sentences (based on .!? punctuation)
-        - 'avg_word_length': Number of characters, from the first to the last
-          non-whitespace character, divided by the number of words
+        - 'avg_word_length': Average number of characters per word
         - 'digit_count': Number of digit characters
         - 'letter_count': Number of letters a-z and A-Z
         - 'uppercase_count': Number of uppercase letters A-Z
@@ -288,8 +282,6 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     ...     features=['char_count', 'word_count', 'has_digits']
     ... )
     >>> tf.fit(X)
-    TextFeatures(features=['char_count', 'word_count', 'has_digits'],
-                 variables=['text'])
     >>> X = tf.transform(X)
     >>> pd.options.display.max_columns = 10
     >>> print(X)
@@ -464,33 +456,8 @@ class TextFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         return X_new
 
-    def get_feature_names_out(self, input_features=None) -> List[str]:
-        """
-        Get output feature names for transformation.
-
-        Parameters
-        ----------
-        input_features : array-like of str or None, default=None
-            Input features. If ``None``, uses ``feature_names_in_``.
-
-        Returns
-        -------
-        feature_names_out : list of str
-            Output feature names.
-        """
-        check_is_fitted(self)
-
-        # Start with original features
-        if self.drop_original is True:
-            feature_names = [
-                f for f in self.feature_names_in_ if f not in self.variables_
-            ]
-        else:
-            feature_names = list(self.feature_names_in_)
-
-        # Add new text feature names
-        for var in self.variables_:
-            for feature_name in self.features_:
-                feature_names.append(f"{var}_{feature_name}")
-
-        return feature_names
+    def _get_new_features_name(self) -> List[str]:
+        """Return the names of the created features."""
+        return [
+            f"{var}_{feature}" for var in self.variables_ for feature in self.features_
+        ]

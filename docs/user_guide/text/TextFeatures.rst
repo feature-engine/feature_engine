@@ -41,8 +41,7 @@ Text features
 - **char_count**: Number of characters, excluding whitespace
 - **word_count**: Number of words (whitespace-separated tokens)
 - **sentence_count**: Number of sentences (based on .!? punctuation)
-- **avg_word_length**: Number of characters from the first to the last non-whitespace
-  character, including the spaces between words, divided by the number of words
+- **avg_word_length**: Average number of characters per word
 - **digit_count**: Number of digit characters
 - **letter_count**: Number of letters a-z and A-Z
 - **uppercase_count**: Number of uppercase letters A-Z
@@ -225,10 +224,10 @@ The output dataframe contains all 20 text features extracted from the `review` c
     3                       TERRIBLE!!! DO NOT BUY!          Awful                 20                  4
 
        review_sentence_count  review_avg_word_length  review_digit_count  review_letter_count
-    0                      2                6.285714                   0                   36
-    1                      2                6.200000                   0                   25
-    2                      2                3.888889                   2                   23
-    3                      2                5.750000                   0                   16
+    0                      2                5.428571                   0                   36
+    1                      2                5.400000                   0                   25
+    2                      2                3.000000                   2                   23
+    3                      2                5.000000                   0                   16
 
        review_uppercase_count  review_lowercase_count  review_special_char_count  review_whitespace_count
     0                       9                      27                          2                        6

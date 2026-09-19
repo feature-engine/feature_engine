@@ -65,8 +65,8 @@ EXPECTED = {
     "word_count": [2, 1, 1, 2, 0, 1, 1, 0, 0, 3, 1, 2, 2, 1, 4, 6, 2, 2, 2, 11],
     "sentence_count": [1, 0, 0, 4, 0, 0, 1, 0, 0, 3, 0, 1, 1, 1, 2, 2, 1, 2, 2, 1],
     "avg_word_length": [
-        6, 5, 5, 9 / 2, 0, 8, 6, 0, 0, 8 / 3, 5, 3, 13 / 2, 3, 19 / 4, 19 / 6, 6,
-        13 / 2, 17 / 2, 101 / 11,
+        11 / 2, 5, 5, 4, 0, 8, 6, 0, 0, 2, 5, 5 / 2, 6, 3, 4, 14 / 6, 11 / 2, 6, 8,
+        91 / 11,
     ],
     "digit_count": [0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 5, 0, 0, 0, 0],
     "letter_count": [10, 5, 0, 4, 0, 8, 3, 0, 0, 3, 5, 2, 4, 0, 13, 4, 10, 10, 10, 90],
@@ -102,7 +102,9 @@ EXPECTED_EDGE_CASES = {
     "char_count": [0, 0, 0, 11, 5, 13, 7, 3, 2, 2, 3, 9, 8, 14],
     "word_count": [0, 0, 0, 2, 1, 3, 2, 3, 1, 1, 2, 3, 2, 6],
     "sentence_count": [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 2],
-    "avg_word_length": [0, 0, 0, 6, 5, 5, 4, 5 / 3, 2, 2, 2, 11 / 3, 9 / 2, 19 / 6],
+    "avg_word_length": [
+        0, 0, 0, 11 / 2, 5, 13 / 3, 7 / 2, 1, 2, 2, 3 / 2, 3, 4, 14 / 6,
+    ],
     "digit_count": [0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 5],
     "letter_count": [0, 0, 0, 10, 5, 8, 6, 3, 1, 1, 2, 9, 0, 4],
     "uppercase_count": [0, 0, 0, 2, 5, 4, 0, 0, 0, 0, 0, 4, 0, 2],
@@ -504,6 +506,37 @@ def test_get_feature_names_out(make_df, drop_original, expected):
 
     assert transformer.get_feature_names_out() == expected
     assert list(Xt.columns) == expected
+
+
+@pytest.mark.parametrize(
+    "input_features", [["text", "other"], np.array(["text", "other"])]
+)
+def test_get_feature_names_out_with_input_features(make_df, input_features):
+    X = make_df({"text": ["Hello"], "other": [1]})
+    transformer = TextFeatures(variables=["text"], features=["char_count"]).fit(X)
+    assert transformer.get_feature_names_out(input_features) == [
+        "text",
+        "other",
+        "text_char_count",
+    ]
+
+
+@pytest.mark.parametrize("input_features", [["other", "text"], ["text"]])
+def test_error_if_input_features_not_feature_names_in(make_df, input_features):
+    X = make_df({"text": ["Hello"], "other": [1]})
+    transformer = TextFeatures(variables=["text"], features=["char_count"]).fit(X)
+    msg = "input_features is not equal to feature_names_in_"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.get_feature_names_out(input_features)
+
+
+@pytest.mark.parametrize("input_features", ["text", 1, {"text": 1}])
+def test_error_if_input_features_not_list_or_array(make_df, input_features):
+    X = make_df({"text": ["Hello"], "other": [1]})
+    transformer = TextFeatures(variables=["text"], features=["char_count"]).fit(X)
+    msg = f"input_features must be a list or an array. Got {input_features} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.get_feature_names_out(input_features)
 
 
 def test_integer_column_names():
