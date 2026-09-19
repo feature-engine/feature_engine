@@ -229,19 +229,28 @@ def _check_contains_na(
     )
     if len(variables) == 0:
         return
-    nw_X = nw.from_native(X, eager_only=True)
-    if nwd.is_pandas_dataframe(X):
-        numeric_vars = list(X[variables].select_dtypes(include="number").columns)
-    else:
-        numeric_vars = nw_X.select(variables).select(nw.selectors.numeric()).columns
-    if nw_X.select(nw.col(variables).is_null().any()).to_numpy().any() or (
-        numeric_vars
-        and nw_X.select(nw.col(numeric_vars).is_nan().any()).to_numpy().any()
-    ):
+
+    if _contains_na(X, variables) is True:
         if error_msg == "simple":
             raise ValueError(error_msg_simple)
         else:
             raise ValueError(error_msg_ignore)
+
+
+def _contains_na(X: IntoDataFrame, variables: List[Union[str, int]]) -> bool:
+    # pandas is faster than narwhals.
+    if nwd.is_pandas_dataframe(X) is True:
+        return bool(X[variables].isna().to_numpy().any())
+    else:
+        nw_X = nw.from_native(X, eager_only=True)
+        # polars stores the null count, so check it before scanning floats for NaN.
+        if sum(nw_X.select(nw.col(variables).null_count()).row(0)) > 0:
+            return True
+        schema = nw_X.schema
+        floats = [var for var in variables if schema[var].is_float() is True]
+        if len(floats) == 0:
+            return False
+        return True in nw_X.select(nw.col(floats).is_nan().any()).row(0)
 
 
 def _check_contains_inf(X: IntoDataFrame, variables: List[Union[str, int]]) -> None:
