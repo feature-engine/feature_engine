@@ -253,7 +253,7 @@ nulls, which is how polars represents missing data:
 The transformer added `sex` and `age`, removed `var_a`, sorted the variables as in the
 train set and cast `sex` to the string dtype that it had in the train set:
 
-.. code:: python
+.. code:: text
 
     The following variables are added to the DataFrame: ['sex', 'age']
     The following variables are dropped from the DataFrame: ['var_a']
