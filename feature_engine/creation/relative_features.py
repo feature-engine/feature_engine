@@ -1,6 +1,8 @@
 from typing import List, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -31,6 +33,20 @@ _PERMITTED_FUNCTIONS = [
     "pow",
 ]
 
+_NUMPY_OPS = {
+    "add": np.add,
+    "sub": np.subtract,
+    "mul": np.multiply,
+    "div": np.divide,
+    "truediv": np.true_divide,
+    "floordiv": np.floor_divide,
+    "mod": np.mod,
+    "pow": np.power,
+}
+
+# these can divide by zero; fill_value handling applies only to them.
+_DIVISION_LIKE = {"div", "truediv", "floordiv", "mod"}
+
 
 @Substitution(
     variables=_variables_numerical_docstring,
@@ -54,12 +70,10 @@ class RelativeFeatures(BaseCreation):
     features to / by a group of reference variables. The features resulting from these
     functions are added to the dataframe.
 
-    This transformer works only with numerical variables. It uses the pandas methods
-    `pd.DataFrame.add`, `pd.DataFrame.sub`, `pd.DataFrame.mul`, `pd.DataFrame.div`,
-    `pd.DataFrame.truediv`, `pd.DataFrame.floordiv`, `pd.DataFrame.mod` and
-    `pd.DataFrame.pow`.
-    Find out more in `pandas documentation
-    <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.add.html>`_.
+    This transformer works only with numerical variables. It uses NumPy's `add`,
+    `subtract`, `multiply`, `divide`, `true_divide`, `floor_divide`, `mod` and
+    `power` under the hood, matching the semantics of the equivalent pandas
+    `DataFrame.add`, `DataFrame.sub`, etc. methods.
 
     More details in the :ref:`User Guide <relative_features>`.
 
@@ -125,6 +139,27 @@ class RelativeFeatures(BaseCreation):
     0   1   4   3   0.333333   1.333333
     1   2   5   4   0.500000   1.250000
     2   3   6   5   0.600000   1.200000
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.creation import RelativeFeatures
+    >>> X = pl.DataFrame({"x1": [1, 2, 3], "x2": [4, 5, 6], "x3": [3, 4, 5]})
+    >>> rf = RelativeFeatures(variables=["x1", "x2"],
+    >>>                     reference=["x3"],
+    >>>                     func=["div"])
+    >>> rf.fit(X)
+    >>> rf.transform(X)
+    shape: (3, 5)
+    ┌─────┬─────┬─────┬───────────┬───────────┐
+    │ x1  ┆ x2  ┆ x3  ┆ x1_div_x3 ┆ x2_div_x3 │
+    │ --- ┆ --- ┆ --- ┆ ---       ┆ ---       │
+    │ i64 ┆ i64 ┆ i64 ┆ f64       ┆ f64       │
+    ╞═════╪═════╪═════╪═══════════╪═══════════╡
+    │ 1   ┆ 4   ┆ 3   ┆ 0.333333  ┆ 1.333333  │
+    │ 2   ┆ 5   ┆ 4   ┆ 0.5       ┆ 1.25      │
+    │ 3   ┆ 6   ┆ 5   ┆ 0.6       ┆ 1.2       │
+    └─────┴─────┴─────┴───────────┴───────────┘
     """
 
     def __init__(
@@ -179,124 +214,70 @@ class RelativeFeatures(BaseCreation):
         self.func = func
         self.fill_value = fill_value
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Add new features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The input dataframe plus the new variables.
         """
 
         X = self._check_transform_input_and_state(X)
 
-        methods_dict = {
-            "add": self._add,
-            "mul": self._mul,
-            "sub": self._sub,
-            "div": self._div,
-            "truediv": self._truediv,
-            "floordiv": self._floordiv,
-            "mod": self._mod,
-            "pow": self._pow,
-        }
+        nw_X = nw.from_native(X, eager_only=True)
+        # Extract each column as its own 1D array (not one batched 2D array
+        # via select().to_numpy()) so mixed int/float variables each keep
+        # their own dtype promotion, matching pandas' per-column .sub()/
+        # .div()/etc. instead of upcasting everything to a common dtype.
+        var_arrays = {var: nw_X.get_column(var).to_numpy() for var in self.variables}
+        ref_arrays = {ref: nw_X.get_column(ref).to_numpy() for ref in self.reference}
 
+        new_series = []
         for func in self.func:
-            methods_dict[func](X)
+            op = _NUMPY_OPS[func]
+            for reference in self.reference:
+                ref_arr = ref_arrays[reference]
 
-        if self.drop_original:
-            X.drop(
-                columns=set(self.variables + self.reference),
-                inplace=True,
-            )
+                if func in _DIVISION_LIKE:
+                    zero_mask = ref_arr == 0
+                    contains_zero = zero_mask.any()
+                    if self.fill_value is None and contains_zero:
+                        self._raise_error_when_zero_in_denominator()
 
-        return X
+                for var in self.variables:
+                    name = f"{var}_{func}_{reference}"
+                    if func in _DIVISION_LIKE:
+                        with np.errstate(divide="ignore", invalid="ignore"):
+                            result = op(var_arrays[var], ref_arr)
+                        if contains_zero:
+                            # floordiv/mod on integer input stay integer-typed;
+                            # widen to match fill_value if it wouldn't fit,
+                            # mirroring pandas' automatic dtype promotion.
+                            fill_arr = np.asarray(self.fill_value)
+                            if not np.can_cast(fill_arr, result.dtype, casting="safe"):
+                                result = result.astype(
+                                    np.result_type(result.dtype, fill_arr.dtype)
+                                )
+                            result[zero_mask] = self.fill_value
+                    else:
+                        result = op(var_arrays[var], ref_arr)
 
-    def _sub(self, X):
-        for reference in self.reference:
-            varname = [f"{var}_sub_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].sub(X[reference], axis=0)
-        return X
+                    new_series.append(
+                        nw.new_series(name, result, backend=nw_X.implementation)
+                    )
 
-    def _add(self, X):
-        for reference in self.reference:
-            varname = [f"{var}_add_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].add(X[reference], axis=0)
-        return X
+        nw_X = nw_X.with_columns(*new_series)
+        if self.drop_original is True:
+            nw_X = nw_X.drop(list(set(self.variables + self.reference)))
 
-    def _mul(self, X):
-        for reference in self.reference:
-            varname = [f"{var}_mul_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].mul(X[reference], axis=0)
-        return X
-
-    def _div(self, X):
-        for reference in self.reference:
-            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
-
-            if self.fill_value is None and contains_zero:
-                self._raise_error_when_zero_in_denominator()
-
-            varname = [f"{var}_div_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].div(X[reference], axis=0)
-
-            if contains_zero:
-                X.loc[zeros_ix, varname] = self.fill_value
-        return X
-
-    def _truediv(self, X):
-        for reference in self.reference:
-            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
-
-            if self.fill_value is None and contains_zero:
-                self._raise_error_when_zero_in_denominator()
-
-            varname = [f"{var}_truediv_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].truediv(X[reference], axis=0)
-
-            if contains_zero:
-                X.loc[zeros_ix, varname] = self.fill_value
-        return X
-
-    def _floordiv(self, X):
-        for reference in self.reference:
-            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
-
-            if self.fill_value is None and contains_zero:
-                self._raise_error_when_zero_in_denominator()
-
-            varname = [f"{var}_floordiv_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].floordiv(X[reference], axis=0)
-
-            if contains_zero:
-                X.loc[zeros_ix, varname] = self.fill_value
-        return X
-
-    def _mod(self, X):
-        for reference in self.reference:
-            zeros_ix, contains_zero = self._find_zeroes_in_reference(X, reference)
-
-            if self.fill_value is None and contains_zero:
-                self._raise_error_when_zero_in_denominator()
-
-            varname = [f"{var}_mod_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].mod(X[reference], axis=0)
-
-            if contains_zero:
-                X.loc[zeros_ix, varname] = self.fill_value
-        return X
-
-    def _pow(self, X):
-        for reference in self.reference:
-            varname = [f"{var}_pow_{reference}" for var in self.variables]
-            X[varname] = X[self.variables].pow(X[reference], axis=0)
-        return X
+        return nw_X.to_native()
 
     def _raise_error_when_zero_in_denominator(self):
         raise ValueError(
@@ -304,11 +285,6 @@ class RelativeFeatures(BaseCreation):
             "does not exist. Replace zeros before using this transformer for division "
             "or set `fill_value` to a number."
         )
-
-    def _find_zeroes_in_reference(self, X, var):
-        zero_ix = X[var] == 0
-        zero_bool = (zero_ix).any()
-        return zero_ix, zero_bool
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

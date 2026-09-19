@@ -3,7 +3,11 @@ classes. Provides the base functionality within the fit() and transform() method
 shared by most transformers, like checking that input is a df, the size, NA, etc.
 """
 
-import pandas as pd
+from typing import List, Tuple, Union
+
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -28,7 +32,9 @@ class BaseNumericalTransformer(
     variable transformers, discretisers, math combination.
     """
 
-    def _fit_setup(self, X: pd.DataFrame):
+    def _fit_setup(
+        self, X: IntoDataFrame
+    ) -> Tuple[nw.DataFrame, List[Union[str, int]]]:
         """
         Checks that input is a dataframe, finds numerical variables, or alternatively
         checks that variables entered by the user are of type numerical, and checks
@@ -38,12 +44,12 @@ class BaseNumericalTransformer(
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X : dataframe
 
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame or a numpy array
+            If the input is not a recognised dataframe
             If any of the user provided variables are not numerical
         ValueError
             If there are no numerical variables in the df or the df is empty
@@ -51,77 +57,70 @@ class BaseNumericalTransformer(
 
         Returns
         -------
-        X : Pandas DataFrame
-            The same dataframe entered as parameter
+        nw_X : narwhals dataframe
+            The dataframe entered as parameter, as a narwhals dataframe.
 
         variables_ : List
             The variables that were found or checked.
         """
+        nw_X = check_X(X)
 
-        # check input dataframe
-        X = check_X(X)
-
-        # find or check for numerical variables
         if self.variables is None:
             variables_ = find_numerical_variables(X, return_empty=self.return_empty)
         else:
             variables_ = check_numerical_variables(X, self.variables)
 
-        # check if dataset contains na or inf
         _check_contains_na(X, variables_)
         _check_contains_inf(X, variables_)
 
-        return X, variables_
+        return nw_X, variables_
 
     def _get_feature_names_in(self, X):
         """Get the names and number of features in the train set (the dataframe
         used during fit)."""
 
-        self.feature_names_in_ = X.columns.tolist()
+        if nwd.is_pandas_dataframe(X) is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_transform_input_and_state(self, X: IntoDataFrame) -> nw.DataFrame:
         """
         Checks that the input is a dataframe and of the same size than the one used
         in the fit() method. Checks absence of NA and Inf.
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X : dataframe
 
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame
+            If the input is not a recognised dataframe
         ValueError
             - If the variable(s) contain null values
             - If the df has different number of features than the df used in fit()
 
         Returns
         -------
-        X : Pandas DataFrame.
-            The same dataframe entered by the user.
+        nw_X : narwhals dataframe
+            The dataframe entered by the user, as a narwhals dataframe, with the
+            variables in the same order as in the train set.
         """
-
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
-        X = check_X(X)
-
-        # Check if input data contains same number of columns as dataframe used to fit.
+        nw_X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
-
-        # check if dataset contains na or inf
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, self.variables_)
 
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
-
-        return X
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            return nw.from_native(X[self.feature_names_in_], eager_only=True)
+        else:
+            return nw_X.select(nw.col(*self.feature_names_in_))
 
     # for the check_estimator tests
     def _more_tags(self):

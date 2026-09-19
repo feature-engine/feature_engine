@@ -1,5 +1,38 @@
+from datetime import datetime, timezone
+
 import pandas as pd
+import polars as pl
 import pytest
+
+
+def cast_categorical(df, columns):
+    """Cast `columns` to the backend's categorical dtype, whichever backend `df`
+    (pandas or polars) happens to be. Used to build matched pandas/polars data
+    for tests parametrized over both libraries.
+    """
+    if isinstance(df, pd.DataFrame):
+        df = df.copy()
+        df[columns] = df[columns].astype("category")
+        return df
+    return df.with_columns([pl.col(c).cast(pl.Categorical) for c in columns])
+
+
+# Data shared between the pandas and polars variants of a test.
+BASIC_DATA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
+
+DATETIME_DATA = {
+    **BASIC_DATA,
+    "date_range": [datetime(2020, 2, 24, 0, i) for i in range(4)],
+    "date_obj0": ["2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27"],
+    "date_range_tz": [
+        datetime(2020, 2, 24, 0, i, tzinfo=timezone.utc) for i in range(4)
+    ],
+}
 
 
 @pytest.fixture

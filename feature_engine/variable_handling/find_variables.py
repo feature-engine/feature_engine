@@ -1,21 +1,55 @@
-"""Functions to select certain types of variables."""
+"""Functions to select different types of variables."""
 
 import warnings
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
-import pandas as pd
-from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame
 
 from feature_engine.variable_handling._variable_type_checks import (
     _is_categorical_and_is_datetime,
     _is_categorical_and_is_not_datetime,
 )
-from feature_engine.variable_handling.dtypes import DATETIME_TYPES
+
+
+def _find_nw_categoricals(
+    X: IntoDataFrame,
+    variables: Optional[List[Union[str, int]]] = None,
+    exclude_datetime: bool = True,
+) -> List[Union[str, int]]:
+    if nwd.is_pandas_dataframe(X) is True:
+        sub_X = X if variables is None else X[variables]
+        candidates = list(
+            sub_X.select_dtypes(include=["object", "category", "string"]).columns
+        )
+        nw_X = nw.from_native(sub_X, eager_only=True)
+    else:
+        nw_X = nw.from_native(X, eager_only=True)
+        if variables is not None:
+            nw_X = nw_X.select(variables)
+        _NW_SELECTOR = (
+            nw.selectors.categorical()
+            | nw.selectors.enum()
+            | nw.selectors.string()
+            | nw.selectors.by_dtype(nw.Object)
+        )
+        # `|`-combined selectors don't preserve column order,
+        # so re-filter over nw_X.columns to restore it.
+        matched = set(nw_X.select(_NW_SELECTOR).columns)
+        candidates = [column for column in nw_X.columns if column in matched]
+
+    if exclude_datetime is True:
+        candidates = [
+            column
+            for column in candidates
+            if _is_categorical_and_is_not_datetime(nw_X.get_column(column))
+        ]
+    return candidates
 
 
 def find_numerical_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     return_empty: bool = False,
 ) -> List[Union[str, int]]:
     """
@@ -25,8 +59,9 @@ def find_numerical_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset.
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     return_empty : bool, default=False
         Whether to return an empty list when no numerical variables are found.
@@ -50,13 +85,18 @@ def find_numerical_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_ = find_numerical_variables(X)
     >>> var_
     ['var_num']
     """
-    variables = list(X.select_dtypes(include="number").columns)
+    if nwd.is_pandas_dataframe(X) is True:
+        variables = list(X.select_dtypes(include="number").columns)
+    else:
+        nw_X = nw.from_native(X, eager_only=True)
+        variables = nw_X.select(nw.selectors.numeric()).columns
+
     if len(variables) == 0:
         if return_empty is False:
             raise TypeError(
@@ -73,8 +113,9 @@ def find_numerical_variables(
 
 
 def find_categorical_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     return_empty: bool = False,
+    exclude_datetime: bool = True,
 ) -> List[Union[str, int]]:
     """
     Returns a list with the names of all the categorical variables in a dataframe.
@@ -85,8 +126,9 @@ def find_categorical_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset.
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     return_empty : bool, default=False
         Whether to return an empty list when no categorical variables are found.
@@ -97,6 +139,9 @@ def find_categorical_variables(
            True in version 2.1. To keep the current behaviour and silence the
            warning, explicitly set `return_empty=False` instead of relying on the
            default.
+
+    exclude_datetime: bool, default=True
+        Whether to exclude variables that can be parsed as datetime.
 
     Returns
     -------
@@ -110,17 +155,14 @@ def find_categorical_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_ = find_categorical_variables(X)
     >>> var_
     ['var_cat']
     """
-    variables = [
-        column
-        for column in X.select_dtypes(include=["O", "category", "string"]).columns
-        if _is_categorical_and_is_not_datetime(X[column])
-    ]
+    variables = _find_nw_categoricals(X, exclude_datetime=exclude_datetime)
+
     if len(variables) == 0:
         if return_empty is False:
             raise TypeError(
@@ -138,7 +180,7 @@ def find_categorical_variables(
 
 
 def find_datetime_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     return_empty: bool = False,
 ) -> List[Union[str, int]]:
     """
@@ -152,8 +194,9 @@ def find_datetime_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset.
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     return_empty : bool, default=False
         Whether to return an empty list when no datetime variables are found.
@@ -170,6 +213,13 @@ def find_datetime_variables(
     variables: List
         The names of the datetime variables.
 
+    Notes
+    -----
+    String columns are parsed with flexible, dateutil-backed date guessing, so
+    formats like "01-Jan-2010" or "10/11/12" are recognised, in addition to
+    ISO-8601 strings and native `Date`/`Datetime` columns, regardless of the
+    dataframe library backing `X`.
+
     Examples
     --------
     >>> import pandas as pd
@@ -177,18 +227,30 @@ def find_datetime_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_date = find_datetime_variables(X)
     >>> var_date
     ['var_date']
     """
+    if nwd.is_pandas_dataframe(X) is True:
+        non_numeric = X.select_dtypes(exclude="number").columns
+        datetime_cols = set(X.select_dtypes(include=["datetime", "datetimetz"]).columns)
+        nw_X = nw.from_native(X, eager_only=True)
+    else:
+        nw_X = nw.from_native(X, eager_only=True)
+        non_numeric = nw_X.select(~nw.selectors.numeric()).columns
+        datetime_cols = set(
+            nw_X.select(nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
+        )
 
     variables = [
         column
-        for column in X.select_dtypes(exclude="number").columns
-        if is_datetime(X[column]) or _is_categorical_and_is_datetime(X[column])
+        for column in non_numeric
+        if column in datetime_cols
+        or _is_categorical_and_is_datetime(nw_X.get_column(column))
     ]
+
     if len(variables) == 0:
         if return_empty is False:
             raise TypeError(
@@ -205,7 +267,7 @@ def find_datetime_variables(
 
 
 def find_all_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     exclude_datetime: bool = False,
     return_empty: bool = False,
 ) -> List[Union[str, int]]:
@@ -217,8 +279,9 @@ def find_all_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset.
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     exclude_datetime: bool, default=False
         Whether to exclude datetime variables.
@@ -245,21 +308,40 @@ def find_all_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> vars_all = find_all_variables(X)
     >>> vars_all
     ['var_num', 'var_cat', 'var_date']
     """
-    if exclude_datetime is True:
-        variables = X.select_dtypes(exclude=DATETIME_TYPES).columns.to_list()
-        variables = [
-            var
-            for var in variables
-            if is_numeric(X[var]) or not _is_categorical_and_is_datetime(X[var])
-        ]
+    if nwd.is_pandas_dataframe(X) is True:
+        if exclude_datetime is True:
+            variables = X.select_dtypes(exclude=["datetime", "datetimetz"]).columns
+            numeric_cols = set(X.select_dtypes(include="number").columns)
+            nw_X = nw.from_native(X, eager_only=True)
+            variables = [
+                var
+                for var in variables
+                if var in numeric_cols
+                or not _is_categorical_and_is_datetime(nw_X.get_column(var))
+            ]
+        else:
+            variables = list(X.columns)
     else:
-        variables = X.columns.to_list()
+        nw_X = nw.from_native(X, eager_only=True)
+        if exclude_datetime is True:
+            variables = nw_X.select(
+                ~nw.selectors.by_dtype(nw.Date, nw.Datetime)
+            ).columns
+            numeric_cols = set(nw_X.select(nw.selectors.numeric()).columns)
+            variables = [
+                var
+                for var in variables
+                if var in numeric_cols
+                or not _is_categorical_and_is_datetime(nw_X.get_column(var))
+            ]
+        else:
+            variables = nw_X.columns
 
     if len(variables) == 0:
         if return_empty is False:
@@ -276,9 +358,10 @@ def find_all_variables(
 
 
 def find_categorical_and_numerical_variables(
-    X: pd.DataFrame,
+    X: IntoDataFrame,
     variables: Union[None, int, str, List[Union[str, int]]] = None,
     return_empty: bool = False,
+    exclude_datetime: bool = True,
 ) -> Tuple[List[Union[str, int]], List[Union[str, int]]]:
     """
     Find numerical and categorical variables in a dataframe or from a list.
@@ -290,8 +373,9 @@ def find_categorical_and_numerical_variables(
 
     Parameters
     ----------
-    X : pandas dataframe of shape = [n_samples, n_features]
-        The dataset.
+    X : dataframe of shape = [n_samples, n_features]
+        The dataset. Can be a pandas, polars, or any other dataframe supported by
+        narwhals.
 
     variables : list, default=None
         If `None`, the function finds all categorical and numerical variables in X.
@@ -308,6 +392,9 @@ def find_categorical_and_numerical_variables(
            warning, explicitly set `return_empty=False` instead of relying on the
            default.
 
+    exclude_datetime: bool, default=True
+        Whether to exclude variables that can be parsed as datetime.
+
     Returns
     -------
     variables: tuple
@@ -323,21 +410,28 @@ def find_categorical_and_numerical_variables(
     >>> X = pd.DataFrame({
     >>>     "var_num": [1, 2, 3],
     >>>     "var_cat": ["A", "B", "C"],
-    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="T")
+    >>>     "var_date": pd.date_range("2020-02-24", periods=3, freq="min")
     >>> })
     >>> var_cat, var_num = find_categorical_and_numerical_variables(X)
     >>> var_cat, var_num
     (['var_cat'], ['var_num'])
     """
+    nw_X = nw.from_native(X, eager_only=True)
 
     # If the user passes just 1 variable outside a list.
     if isinstance(variables, (str, int)):
-        if X[variables].dtype.name == "category" or _is_categorical_and_is_not_datetime(
-            X[variables]
-        ):
+        s = nw_X.get_column(variables)
+        is_cat = bool(
+            _find_nw_categoricals(
+                X, variables=[variables], exclude_datetime=exclude_datetime
+            )
+        )
+        is_num = s.dtype.is_numeric()
+
+        if is_cat:
             variables_cat = [variables]
             variables_num = []
-        elif is_numeric(X[variables]):
+        elif is_num:
             variables_num = [variables]
             variables_cat = []
         else:
@@ -358,12 +452,11 @@ def find_categorical_and_numerical_variables(
 
     # If user leaves default None parameter.
     elif variables is None:
-        variables_cat = [
-            column
-            for column in X.select_dtypes(include=["O", "category", "string"]).columns
-            if _is_categorical_and_is_not_datetime(X[column])
-        ]
-        variables_num = list(X.select_dtypes(include="number").columns)
+        variables_cat = _find_nw_categoricals(X, exclude_datetime=exclude_datetime)
+        if nwd.is_pandas_dataframe(X) is True:
+            variables_num = list(X.select_dtypes(include="number").columns)
+        else:
+            variables_num = nw_X.select(nw.selectors.numeric()).columns
 
         if len(variables_num) == 0 and len(variables_cat) == 0:
             if return_empty is False:
@@ -399,15 +492,15 @@ def find_categorical_and_numerical_variables(
                 variables_num = []
 
         else:
-            # find categorical variables
-            variables_cat = [
-                column
-                for column in X[variables]
-                .select_dtypes(include=["O", "category", "string"])
-                .columns
-                if _is_categorical_and_is_not_datetime(X[column])
-            ]
-            # find numerical variables
-            variables_num = list(X[variables].select_dtypes(include="number").columns)
+            variables_cat = _find_nw_categoricals(
+                X, variables=variables, exclude_datetime=exclude_datetime
+            )
+            if nwd.is_pandas_dataframe(X) is True:
+                variables_num = list(
+                    X[variables].select_dtypes(include="number").columns
+                )
+            else:
+                sub_X = nw_X.select(variables)
+                variables_num = sub_X.select(nw.selectors.numeric()).columns
 
     return variables_cat, variables_num

@@ -126,3 +126,67 @@ However, this command returns an empty list:
         exclude_datetime=True,
         return_empty=True,
     )
+
+With polars
+-----------
+
+:class:`find_all_variables()` works in the same way with a polars dataframe.
+Let's create an equivalent toy dataset:
+
+.. code:: python
+
+    import polars as pl
+    from datetime import datetime, timedelta
+    from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import find_all_variables
+
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=4,
+        n_redundant=1,
+        n_clusters_per_class=1,
+        weights=[0.50],
+        class_sep=2,
+        random_state=1,
+    )
+
+    colnames = [f"num_var_{i+1}" for i in range(4)]
+    X = pl.DataFrame(X, schema=colnames)
+
+    X = X.with_columns(
+        pl.lit("Hello").alias("cat_var1"),
+        pl.lit("Bye").alias("cat_var2"),
+        pl.Series("date1", [datetime(2020, 2, 24) + timedelta(minutes=i) for i in range(1000)]),
+        pl.Series("date2", [datetime(2021, 9, 29) + timedelta(hours=i) for i in range(1000)]),
+        pl.lit("2020-02-24").alias("date3"),
+    )
+
+    vars_all = find_all_variables(X)
+
+    vars_all
+
+We see the variable names in the list below:
+
+.. code:: python
+
+    ['num_var_1',
+     'num_var_2',
+     'num_var_3',
+     'num_var_4',
+     'cat_var1',
+     'cat_var2',
+     'date1',
+     'date2',
+     'date3']
+
+And, as with pandas, we can exclude the datetime variables:
+
+.. code:: python
+
+    vars_all = find_all_variables(X, exclude_datetime=True)
+
+    vars_all
+
+.. code:: python
+
+    ['num_var_1', 'num_var_2', 'num_var_3', 'num_var_4', 'cat_var1', 'cat_var2']

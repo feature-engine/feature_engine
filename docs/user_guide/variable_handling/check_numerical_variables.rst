@@ -25,7 +25,7 @@ Now, we create the dataset:
         "City": ["London", "Manchester", "Liverpool", "Bristol"],
         "Age": [20, 21, 19, 18],
         "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="T"),
+        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
     })
 
     print(df.head())
@@ -67,3 +67,32 @@ Below we see the error message:
 
     TypeError: Some of the variables are not numerical. Please cast them as numerical
     before using this transformer.
+
+With polars
+-----------
+
+:class:`check_numerical_variables()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from datetime import datetime
+    from feature_engine.variable_handling import check_numerical_variables
+
+    df = pl.DataFrame({
+        "Name": ["tom", "nick", "krish", "jack"],
+        "City": ["London", "Manchester", "Liverpool", "Bristol"],
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+        "dob": [datetime(2020, 2, 24, 0, i) for i in range(4)],
+    })
+
+    var_num = check_numerical_variables(df, ['Age', 'Marks'])
+
+    var_num
+
+If the variables are numerical, the function returns their names in a list:
+
+.. code:: python
+
+    ['Age', 'Marks']

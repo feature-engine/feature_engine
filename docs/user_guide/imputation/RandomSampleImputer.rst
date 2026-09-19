@@ -28,12 +28,12 @@ missing data and `seed` is the number you entered in the `random_state`.
 
 If `seed = 'observation'`, then the random_state should be a variable name
 or a list of variable names. The seed will be calculated observation per
-observation, either by adding or multiplying the values of the variables
-indicated in the `random_state`. Then, a value will be extracted from the train set
-using that seed and used to replace the NAN in that particular observation. This is the
-equivalent of `pandas.sample(1, random_state=var1+var2)` if the `seeding_method` is
-set to `add` or `pandas.sample(1, random_state=var1*var2)` if the `seeding_method`
-is set to `multiply`.
+observation from the values of the variables indicated in the `random_state`.
+Then, a value will be extracted from the train set using that seed and used to
+replace the NAN in that particular observation.
+
+Observations with the same values in the `random_state` variables receive the same
+imputation, regardless of their position in the dataframe.
 
 For example, if the observation shows variables colour: np.nan, height: 152, weight:52,
 and we set the imputer as:
@@ -43,20 +43,56 @@ and we set the imputer as:
     RandomSampleImputer(
         random_state=['height', 'weight'],
         seed='observation',
-        seeding_method='add',
     )
 
-the np.nan in the variable colour will be replaced using pandas sample as follows:
-
-.. code:: python
-
-	observation.sample(1, random_state=int(152+52))
+the np.nan in the variable colour will be replaced with a value extracted from the train
+set, using a seed derived from the values 152 and 52. Any other observation with
+height 152 and weight 52 will receive the same value.
 
 .. note::
 
-    Note, if the variables indicated in the `random_state` list are not numerical
-    the imputer will return an error. In addition, the variables indicated as seed
-    should not contain missing values themselves.
+    The variables indicated in the `random_state` must be numerical, otherwise the
+    imputer will return an error. Missing values in those variables are treated as 0.
+
+With polars
+-----------
+
+:class:`RandomSampleImputer()` also accepts polars dataframes as input to `fit()` and
+`transform()`.
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.imputation import RandomSampleImputer
+
+    X_train = pl.DataFrame({
+        "MSSubClass": [60, 20, 60, 20, 50],
+        "YrSold": [2008, 2007, 2008, 2007, 2009],
+        "LotFrontage": [65.0, None, 68.0, 60.0, None],
+    })
+
+    imputer = RandomSampleImputer(
+        variables=["LotFrontage"],
+        random_state=["MSSubClass", "YrSold"],
+        seed="observation",
+    )
+    imputer.fit(X_train)
+    imputer.transform(X_train)
+
+.. code:: text
+
+    shape: (5, 3)
+    ┌────────────┬────────┬─────────────┐
+    │ MSSubClass ┆ YrSold ┆ LotFrontage │
+    │ ---        ┆ ---    ┆ ---         │
+    │ i64        ┆ i64    ┆ f64         │
+    ╞════════════╪════════╪═════════════╡
+    │ 60         ┆ 2008   ┆ 65.0        │
+    │ 20         ┆ 2007   ┆ 68.0        │
+    │ 60         ┆ 2008   ┆ 68.0        │
+    │ 20         ┆ 2007   ┆ 60.0        │
+    │ 50         ┆ 2009   ┆ 65.0        │
+    └────────────┴────────┴─────────────┘
 
 Important for GDPR
 ------------------
@@ -105,8 +141,8 @@ First, let's load the data and separate it into train and test:
     )
 
 In this example, we sample values at random, observation per observation, using as seed
-the value of the variable 'MSSubClass' plus the value of the variable 'YrSold'. Note
-that the seed's value is different for each observation.
+the values of the variables 'MSSubClass' and 'YrSold'. Observations with the same values
+in these variables receive the same imputed values.
 
 The :class:`RandomSampleImputer()` will impute all variables in the data, as we left the
 default value of the parameter `variables` to `None`.
@@ -117,7 +153,6 @@ default value of the parameter `variables` to `None`.
 	imputer = RandomSampleImputer(
                 random_state=['MSSubClass', 'YrSold'],
                 seed='observation',
-                seeding_method='add'
             )
 
 	# fit the imputer

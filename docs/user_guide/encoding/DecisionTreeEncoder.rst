@@ -438,6 +438,63 @@ In the following image we also see a monotonic relationship after the encoding:
     be some sort of relationship between the target and the categories that can be captured by
     the decision tree. Use with caution.
 
+With polars
+-----------
+
+:class:`DecisionTreeEncoder()` works the same way with a polars dataframe. Let's create a toy
+dataset:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import DecisionTreeEncoder
+
+    X = pl.DataFrame({
+        "city": ["London", "Manchester", "Liverpool", "London", "Manchester", "Liverpool"],
+        "price": [500, 300, 250, 520, 310, 260],
+    })
+    y = pl.Series("target", [1, 0, 0, 1, 0, 1])
+
+Let's set up :class:`DecisionTreeEncoder()` to encode `city` with a classification tree, and fit
+it to the data:
+
+.. code:: python
+
+    encoder = DecisionTreeEncoder(variables=["city"], regression=False, cv=2)
+    encoder.fit(X, y)
+
+    encoder.encoder_dict_
+
+We see the resulting mappings from category to the tree's predictions:
+
+.. code:: python
+
+    {'city': {'London': 1.0, 'Manchester': 0.25, 'Liverpool': 0.25}}
+
+Now let's transform the data:
+
+.. code:: python
+
+    encoder.transform(X)
+
+We obtain a polars dataframe with the categories in `city` replaced by the tree's predictions:
+
+.. code:: text
+
+    shape: (6, 2)
+    ┌──────┬───────┐
+    │ city ┆ price │
+    │ ---  ┆ ---   │
+    │ f64  ┆ i64   │
+    ╞══════╪═══════╡
+    │ 1.0  ┆ 500   │
+    │ 0.25 ┆ 300   │
+    │ 0.25 ┆ 250   │
+    │ 1.0  ┆ 520   │
+    │ 0.25 ┆ 310   │
+    │ 0.25 ┆ 260   │
+    └──────┴───────┘
+
 Additional resources
 --------------------
 

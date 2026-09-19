@@ -1,72 +1,98 @@
+import narwhals as nw
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from feature_engine.transformation import BoxCoxTransformer
 
+DATA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
 
-def test_automatically_finds_variables(df_vartypes):
-    # test case 1: automatically select variables
+DATA_NA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, None, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
+
+
+def assert_df_equal(X, expected: dict, abs_tol: float = 1e-5) -> None:
+    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
+    assert list(result.keys()) == list(expected.keys())
+    for col, values in expected.items():
+        assert result[col] == pytest.approx(values, abs=abs_tol, nan_ok=True)
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_automatically_finds_variables_and_inverse_transform(make_df):
+    df = make_df(DATA)
+
     transformer = BoxCoxTransformer(variables=None)
-    X = transformer.fit_transform(df_vartypes)
-
-    # expected output
-    transf_df = df_vartypes.copy()
-    transf_df["Age"] = [9.78731, 10.1666, 9.40189, 9.0099]
-    transf_df["Marks"] = [-0.101687, -0.207092, -0.316843, -0.431788]
+    X = transformer.fit_transform(df)
 
     # test init params
     assert transformer.variables is None
     # test fit attr
     assert transformer.variables_ == ["Age", "Marks"]
-    assert transformer.n_features_in_ == 5
-    # test transform output
-    pd.testing.assert_frame_equal(X, transf_df)
+    assert transformer.n_features_in_ == 4
+
+    expected = dict(DATA)
+    expected["Age"] = [9.78731, 10.1666, 9.40189, 9.0099]
+    expected["Marks"] = [-0.101687, -0.207092, -0.316843, -0.431788]
+    assert_df_equal(X, expected)
 
     # test inverse_transform
     Xit = transformer.inverse_transform(X)
-
-    # convert numbers to original format.
-    Xit["Age"] = Xit["Age"].round().astype("int64")
-    Xit["Marks"] = Xit["Marks"].round(1)
-
-    # test
-    pd.testing.assert_frame_equal(Xit, df_vartypes)
+    result = nw.from_native(Xit, eager_only=True).to_dict(as_series=False)
+    assert [round(v) for v in result["Age"]] == DATA["Age"]
+    assert [round(v, 1) for v in result["Marks"]] == DATA["Marks"]
 
 
-def test_fit_raises_error_if_df_contains_na(df_na):
-    # test case 2: when dataset contains na, fit method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_raises_error_if_df_contains_na(make_df):
+    df_na = make_df(DATA_NA)
     transformer = BoxCoxTransformer()
     with pytest.raises(ValueError):
         transformer.fit(df_na)
 
 
-def test_transform_raises_error_if_df_contains_na(df_vartypes, df_na):
-    # test case 3: when dataset contains na, transform method
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_transform_raises_error_if_df_contains_na(make_df):
+    df = make_df(DATA)
+    df_na = make_df(DATA_NA)
     transformer = BoxCoxTransformer()
-    transformer.fit(df_vartypes)
+    transformer.fit(df)
     with pytest.raises(ValueError):
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+        transformer.transform(df_na)
 
 
-def test_error_if_df_contains_negative_values(df_vartypes):
-    # test error when data contains negative values
-    df_neg = df_vartypes.copy()
-    df_neg.loc[1, "Age"] = -1
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_error_if_df_contains_negative_values(make_df):
+    data_neg = {k: list(v) for k, v in DATA.items()}
+    data_neg["Age"][1] = -1
+    df_neg = make_df(data_neg)
+    df = make_df(DATA)
 
-    # test case 4: when variable contains negative value, fit
+    # when variable contains negative value, fit
     transformer = BoxCoxTransformer()
     with pytest.raises(ValueError):
         transformer.fit(df_neg)
 
-    # test case 5: when variable contains negative value, transform
+    # when variable contains negative value, transform
     transformer = BoxCoxTransformer()
-    transformer.fit(df_vartypes)
+    transformer.fit(df)
     with pytest.raises(ValueError):
         transformer.transform(df_neg)
 
 
-def test_non_fitted_error(df_vartypes):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_non_fitted_error(make_df):
+    df = make_df(DATA)
     transformer = BoxCoxTransformer()
     with pytest.raises(NotFittedError):
-        transformer.transform(df_vartypes)
+        transformer.transform(df)

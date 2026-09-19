@@ -55,7 +55,8 @@ Datetime ordinal with feature-engine
 ordinal numbers. It works with variables whose dtype is datetime, as well as with
 object-type variables, provided that they can be parsed into datetime format.
 
-:class:`DatetimeOrdinal()` uses pandas `toordinal()` under the hood. The main
+:class:`DatetimeOrdinal()` computes the same proleptic Gregorian ordinal that
+Python's `toordinal()` returns, vectorized under the hood for speed. The main
 functionalities are:
 
 - It can convert multiple datetime variables at once.
@@ -111,6 +112,51 @@ We see the new ordinal feature in the output:
 By default, :class:`DatetimeOrdinal()` drops the original datetime variable. To keep
 it, you can set `drop_original=False`.
 
+With polars
+~~~~~~~~~~~
+
+:class:`DatetimeOrdinal()` works the same way with polars dataframes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.datetime import DatetimeOrdinal
+
+    toy_df = pl.DataFrame({
+        "var_date1": ["1989-05-15", "2020-12-01", "1999-01-20", "2002-02-14"],
+        "var_date2": ["2012-06-21", "1998-02-10", "2010-08-03", "2020-10-31"],
+        "other_var": [1, 2, 3, 4]
+    })
+
+    dtfs = DatetimeOrdinal(variables="var_date2")
+
+    df_transf = dtfs.fit_transform(toy_df)
+
+    df_transf
+
+.. code:: text
+
+    shape: (4, 3)
+    ┌────────────┬───────────┬───────────────────┐
+    │ var_date1  ┆ other_var ┆ var_date2_ordinal │
+    │ ---        ┆ ---       ┆ ---               │
+    │ str        ┆ i64       ┆ i64               │
+    ╞════════════╪═══════════╪═══════════════════╡
+    │ 1989-05-15 ┆ 1         ┆ 734675            │
+    │ 2020-12-01 ┆ 2         ┆ 729430            │
+    │ 1999-01-20 ┆ 3         ┆ 733987            │
+    │ 2002-02-14 ┆ 4         ┆ 737729            │
+    └────────────┴───────────┴───────────────────┘
+
+.. note::
+
+    For string variables, pandas leans on `dateutil` and can guess its way through
+    loosely-formatted or ambiguous dates (e.g. ``"May-1989"``, ``"06/21/2012"``).
+    Polars parses dates natively and needs the format to be unambiguous and
+    consistent across the column - ISO 8601 (e.g. ``"1989-05-15"``) parses
+    reliably, but looser formats may raise an error. If your dates arrive in a
+    looser format, convert them to a native `Date`/`Datetime` column upstream.
+
 Calculate days from a start date
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -135,9 +181,9 @@ The new feature now represents the number of days between `var_date2` and Januar
 
       var_date1  other_var  var_date2_ordinal
     0    May-1989          1                903
-    1    Dec-2020          2              -4343
+    1    Dec-2020          2              -4342
     2    Jan-1999          3                215
-    3    Feb-2002          4               3956
+    3    Feb-2002          4               3957
 
 
 Missing timestamps
@@ -150,7 +196,8 @@ If `missing_values="raise"`, the transformer will raise an error if NaT values a
 found in the datetime variables during `fit()` or `transform()`.
 
 If `missing_values="ignore"`, the transformer will ignore NaT values, and the resulting
-ordinal feature will contain `NaN` (or `pd.NA`) in their place.
+ordinal feature will contain a missing value in their place - `NaN` (`float64`) for
+pandas, and `null` (`Int64`) for polars, following each library's own convention.
 
 
 Additional resources

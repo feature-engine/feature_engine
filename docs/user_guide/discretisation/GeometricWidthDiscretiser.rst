@@ -144,6 +144,66 @@ In the following output, we see the interval limits determined for each variable
         2212.974,
         inf]}
 
+With polars
+-----------
+
+:class:`GeometricWidthDiscretiser()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import numpy as np
+    import polars as pl
+    from feature_engine.discretisation import GeometricWidthDiscretiser
+
+    np.random.seed(42)
+    df = pl.DataFrame({"x": np.random.randint(1, 100, 100).astype(float)})
+
+    disc = GeometricWidthDiscretiser(bins=10)
+    Xt = disc.fit_transform(df)
+
+    print(Xt["x"].value_counts().sort("x"))
+
+The resulting bin counts:
+
+.. code:: text
+
+    shape: (9, 2)
+    ┌─────┬───────┐
+    │ x   ┆ count │
+    │ --- ┆ ---   │
+    │ i64 ┆ u32   │
+    ╞═════╪═══════╡
+    │ 0   ┆ 6     │
+    │ 1   ┆ 3     │
+    │ 3   ┆ 3     │
+    │ 4   ┆ 1     │
+    │ 5   ┆ 5     │
+    │ 6   ┆ 9     │
+    │ 7   ┆ 8     │
+    │ 8   ┆ 25    │
+    │ 9   ┆ 40    │
+    └─────┴───────┘
+
+And the fitted bin edges, matching what we'd get fitting on the same values with pandas:
+
+.. code:: python
+
+    disc.binner_dict_
+
+.. code:: python
+
+    {'x': [-inf,
+        3.573433146226546,
+        4.475691865644366,
+        5.895335641248283,
+        8.129050213617685,
+        11.643650760992958,
+        17.173639757979174,
+        25.874707744105372,
+        39.565256521047,
+        61.106419756718246,
+        inf]}
+
 Interval width
 ~~~~~~~~~~~~~~
 

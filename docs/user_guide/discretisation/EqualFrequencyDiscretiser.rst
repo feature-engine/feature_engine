@@ -46,8 +46,9 @@ would potentially impact the model's performance in this scenario.
 EqualFrequencyDiscretiser
 -------------------------
 
-Feature-engine's :class:`EqualFrequencyDiscretiser` applies equal frequency discretisation to numerical variables. It uses
-the `pandas.qcut()` function under the hood to determine the interval limits.
+Feature-engine's :class:`EqualFrequencyDiscretiser` applies equal frequency discretisation to numerical variables. It
+determines the interval limits from the variable's quantiles, matching the limits that `pandas.qcut()` would return, and
+works with both pandas and polars dataframes.
 
 You can specify the variables to be discretised by passing their names in a list when setting up the transformer. Alternatively,
 :class:`EqualFrequencyDiscretiser` will automatically infer the data types and compute the interval limits for all numeric variables.
@@ -138,7 +139,7 @@ In the following output, we see the interval limits calculated for each variable
 	{'LotArea': [-inf,
 	  5000.0,
 	  7105.6,
-	  8099.200000000003,
+	  8099.200000000004,
 	  8874.0,
 	  9600.0,
 	  10318.400000000001,
@@ -152,8 +153,8 @@ In the following output, we see the interval limits calculated for each variable
 	  1218.0,
 	  1348.4,
 	  1476.5,
-	  1601.6000000000001,
-	  1717.6999999999998,
+	  1601.6000000000004,
+	  1717.7000000000003,
 	  1893.0000000000005,
 	  2166.3999999999996,
 	  inf]}
@@ -392,6 +393,49 @@ In the following image, we see that after the discretisation there is an even di
 the value range.
 
 .. image:: ../../images/equalfrequencydiscretisation_skewed.png
+
+With polars
+-----------
+
+:class:`EqualFrequencyDiscretiser` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.discretisation import EqualFrequencyDiscretiser
+
+    df = pl.DataFrame({
+        "Age": [20, 21, 19, 18, 25, 30, 45, 60, 15, 22],
+        "Marks": [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.95],
+    })
+
+    disc = EqualFrequencyDiscretiser(q=5, variables=["Age", "Marks"])
+
+    print(disc.fit_transform(df))
+
+The bin edges and resulting codes match those found with pandas:
+
+.. code:: text
+
+    shape: (10, 2)
+    ┌─────┬───────┐
+    │ Age ┆ Marks │
+    │ --- ┆ ---   │
+    │ i64 ┆ i64   │
+    ╞═════╪═══════╡
+    │ 1   ┆ 4     │
+    │ 2   ┆ 3     │
+    │ 1   ┆ 3     │
+    │ 0   ┆ 2     │
+    │ 3   ┆ 2     │
+    │ 3   ┆ 1     │
+    │ 4   ┆ 1     │
+    │ 4   ┆ 0     │
+    │ 0   ┆ 0     │
+    │ 2   ┆ 4     │
+    └─────┴───────┘
+
+`return_object`, `return_boundaries`, and `get_feature_names_out()` work identically to the pandas examples above.
 
 See Also
 --------

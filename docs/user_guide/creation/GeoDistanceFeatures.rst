@@ -77,11 +77,11 @@ In the following output we see the trip ID followed by the distance travelled in
 
 .. code:: python
 
-       trip_id   distance_km
-    0        1   3935.746254
-    1        2   2808.517344
-    2        3   1144.286561
-    3        4   1634.724892
+       trip_id  distance_km
+    0        1  3935.746255
+    1        2  2803.971507
+    2        3  1144.291274
+    3        4  1632.166882
 
 Using different distance methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,10 +108,10 @@ for Earth's curvature:
 .. code:: python
 
        trip_id  distance_euclidean
-    0        1         4940.252715
-    1        2         3493.298968
-    2        3         1519.295694
-    3        4         1720.178310
+    0        1         4965.730734
+    1        2         3507.416606
+    2        3         1517.763567
+    3        4         1898.819227
 
 Alternatively, we can use the Manhattan distance, which is useful for grid-based city layouts:
 
@@ -133,10 +133,10 @@ The Manhattan distance sums the absolute differences in latitude and longitude:
 .. code:: python
 
        trip_id  distance_manhattan
-    0        1          5628.24000
-    1        2          4684.15800
-    2        3          1637.36700
-    3        4          2279.96460
+    0        1           5649.7113
+    1        2           4266.8178
+    2        3           1641.5901
+    3        4           2263.5342
 
 Using different output units
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,10 +162,10 @@ The distances are now expressed in miles instead of kilometres:
 .. code:: python
 
        trip_id  distance_miles
-    0        1     2445.258392
-    1        2     1745.046817
-    2        3      711.000629
-    3        4     1015.643614
+    0        1     2445.586607
+    1        2     1742.326542
+    2        3      711.037560
+    3        4     1014.192788
 
 Dropping original coordinate columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -192,6 +192,55 @@ After transformation, only the non-coordinate columns and the new distance colum
 .. code:: python
 
     ['trip_id', 'geo_distance']
+
+With polars
+-----------
+
+:class:`GeoDistanceFeatures()` works in the same way with a polars dataframe.
+Let's create an equivalent toy dataset:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.creation import GeoDistanceFeatures
+
+    X = pl.DataFrame({
+        'origin_lat': [40.7128, 34.0522, 41.8781, 29.7604],
+        'origin_lon': [-74.0060, -118.2437, -87.6298, -95.3698],
+        'dest_lat': [34.0522, 41.8781, 40.7128, 33.4484],
+        'dest_lon': [-118.2437, -87.6298, -74.0060, -112.0740],
+        'trip_id': [1, 2, 3, 4]
+    })
+
+    gdt = GeoDistanceFeatures(
+        lat1='origin_lat', lon1='origin_lon',
+        lat2='dest_lat', lon2='dest_lon',
+        method='haversine', output_unit='km', output_col='distance_km'
+    )
+
+    gdt.fit(X)
+    X_transformed = gdt.transform(X)
+
+    print(X_transformed.select(['trip_id', 'distance_km']))
+
+We see the resulting distances:
+
+.. code:: text
+
+    shape: (4, 2)
+    ┌─────────┬─────────────┐
+    │ trip_id ┆ distance_km │
+    │ ---     ┆ ---         │
+    │ i64     ┆ f64         │
+    ╞═════════╪═════════════╡
+    │ 1       ┆ 3935.746255 │
+    │ 2       ┆ 2803.971507 │
+    │ 3       ┆ 1144.291274 │
+    │ 4       ┆ 1632.166882 │
+    └─────────┴─────────────┘
+
+`drop_original=True` and the different distance methods and output units
+work identically to the pandas examples above.
 
 Calculating distance within a Pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -232,7 +281,7 @@ The pipeline successfully trains and returns predictions:
 
 .. code:: python
 
-    Predictions: [100. 150.  80. 200.]
+    Predictions: [116.67298659 120.75252844  88.47598336 204.09850161]
 
 Additional resources
 --------------------

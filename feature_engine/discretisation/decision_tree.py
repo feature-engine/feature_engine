@@ -3,8 +3,10 @@
 
 from typing import Dict, List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from joblib import Parallel, delayed
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
@@ -115,6 +117,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         DecisionTreeClassifier(). For reproducibility it is recommended to set
         the random_state to an integer.
 
+    n_jobs: int, default=None
+        The number of jobs to run in parallel. `fit` is parallelized over the variables,
+        training one decision tree per variable. `None` means 1 unless in a
+        `joblib.parallel_backend` context. `-1` means using all processors.
+
     Attributes
     ----------
     binner_dict_:
@@ -163,9 +170,10 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     >>> dtd = DecisionTreeDiscretiser(random_state=42)
     >>> dtd.fit(X, y_reg)
     >>> dtd.transform(X)["x"].value_counts()
+    x
     -0.090091    90
-    0.479454    10
-    Name: x, dtype: int64
+     0.479454    10
+    Name: count, dtype: int64
 
     You can also apply this for classification problems adjusting the scoring metric.
 
@@ -173,9 +181,27 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     >>> dtd = DecisionTreeDiscretiser(regression=False, scoring="f1", random_state=42)
     >>> dtd.fit(X, y_clf)
     >>> dtd.transform(X)["x"].value_counts()
+    x
     0.480769    52
     0.687500    48
-    Name: x, dtype: int64
+    Name: count, dtype: int64
+
+    With polars:
+
+    >>> import polars as pl
+    >>> X = pl.DataFrame({"x": X["x"].to_list()})
+    >>> dtd = DecisionTreeDiscretiser(random_state=42)
+    >>> dtd.fit(X, y_reg)
+    >>> dtd.transform(X)["x"].value_counts()
+    shape: (2, 2)
+    ┌───────────┬───────┐
+    │ x         ┆ count │
+    │ ---       ┆ ---   │
+    │ f64       ┆ u32   │
+    ╞═══════════╪═══════╡
+    │ -0.090091 ┆ 90    │
+    │ 0.479454  ┆ 10    │
+    └───────────┴───────┘
     """
 
     def __init__(
@@ -189,9 +215,14 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         param_grid: Optional[Dict[str, Union[str, int, float, List[int]]]] = None,
         regression: bool = True,
         random_state: Optional[int] = None,
+        n_jobs: Optional[int] = None,
     ) -> None:
 
-        if bin_output not in ["prediction", "bin_number", "boundaries"]:
+        if not isinstance(bin_output, str) or bin_output not in [
+            "prediction",
+            "bin_number",
+            "boundaries",
+        ]:
             raise ValueError(
                 "bin_output takes values  'prediction', 'bin_number' or 'boundaries'. "
                 f"Got {bin_output} instead."
@@ -223,9 +254,10 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.param_grid = param_grid
         self.random_state = random_state
+        self.n_jobs = n_jobs
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Fit one decision tree per variable to discretise with cross-validation and
         grid-search for hyperparameters.
@@ -233,11 +265,11 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         Parameters
         ----------
 
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
-        y: pandas series.
+        y: Series.
             Target variable. Required to train the decision tree.
         """
         # confirm model type and target variables are compatible.
@@ -251,33 +283,24 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         else:
             check_classification_targets(y)
 
-        # check input dataframe
-        X, variables_ = self._fit_setup(X)
+        nw_X, variables_ = self._fit_setup(X)
 
         if self.param_grid:
             param_grid = self.param_grid
         else:
             param_grid = {"max_depth": [1, 2, 3, 4]}
 
-        binner_dict_ = {}
-        scores_dict_ = {}
+        X_subs = [nw_X.get_column(var).to_frame().to_native() for var in variables_]
 
-        for var in variables_:
+        fitted = Parallel(n_jobs=self.n_jobs, prefer="threads")(
+            delayed(self._fit_one_tree)(X_sub, y, param_grid) for X_sub in X_subs
+        )
 
-            if self.regression:
-                model = DecisionTreeRegressor(random_state=self.random_state)
-            else:
-                model = DecisionTreeClassifier(random_state=self.random_state)
-
-            tree_model = GridSearchCV(
-                model, cv=self.cv, scoring=self.scoring, param_grid=param_grid
-            )
-
-            # fit the model to the variable
-            tree_model.fit(X[var].to_frame(), y)
-
-            binner_dict_[var] = tree_model
-            scores_dict_[var] = tree_model.score(X[var].to_frame(), y)
+        binner_dict_ = dict(zip(variables_, fitted))
+        scores_dict_ = {
+            var: tree_model.score(X_sub, y)
+            for var, X_sub, tree_model in zip(variables_, X_subs, fitted)
+        }
 
         if self.bin_output != "prediction":
             for var in variables_:
@@ -296,63 +319,75 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Replaces original variable values with the predictions of the tree. The
         decision tree predictions are finite, aka, discrete.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The dataframe with transformed variables.
         """
+        nw_X = self._check_transform_input_and_state(X)
 
-        # check input dataframe and if class was fitted
-        X = self._check_transform_input_and_state(X)
+        # add all new columns in one step, instead of one per variable, and leave
+        # the user's dataframe unchanged
+        new_columns: Dict[Union[str, int], np.ndarray] = {}
 
         if self.bin_output == "prediction":
             for feature in self.variables_:
-                if self.regression:
-                    preds = self.binner_dict_[feature].predict(X[feature].to_frame())
-                    if self.precision is None:
-                        X[feature] = preds
-                    else:
-                        X[feature] = np.round(preds, self.precision)
+                X_sub = nw_X.get_column(feature).to_frame().to_native()
+                if self.regression is True:
+                    preds = self.binner_dict_[feature].predict(X_sub)
                 else:
-                    tmp = self.binner_dict_[feature].predict_proba(
-                        X[feature].to_frame()
-                    )
-                    preds = tmp[:, 1]
-                    if self.precision is None:
-                        X[feature] = preds
-                    else:
-                        X[feature] = np.round(preds, self.precision)
+                    preds = self.binner_dict_[feature].predict_proba(X_sub)[:, 1]
+                if self.precision is not None:
+                    preds = np.round(preds, self.precision)
+                new_columns[feature] = preds
 
         elif self.bin_output == "boundaries":
+            # __init__ already guarantees precision is set when bin_output is
+            # "boundaries"; assert narrows the type for mypy.
+            assert self.precision is not None
             for feature in self.variables_:
-                X[feature] = pd.cut(
-                    X[feature],
-                    self.binner_dict_[feature],
-                    precision=self.precision,
-                    include_lowest=True,
-                )
-            X[self.variables_] = X[self.variables_].astype(str)
+                thresholds = self.binner_dict_[feature]
+                labels = self._bin_labels(thresholds, self.precision)
+                values = nw_X.get_column(feature).to_numpy()
+                bin_idx = self._bin_index(values, thresholds)
+                new_columns[feature] = np.array(labels)[bin_idx]
 
         else:
             for feature in self.variables_:
-                X[feature] = pd.cut(
-                    X[feature],
-                    self.binner_dict_[feature],
-                    labels=False,
-                    include_lowest=True,
-                )
+                thresholds = self.binner_dict_[feature]
+                values = nw_X.get_column(feature).to_numpy()
+                new_columns[feature] = self._bin_index(values, thresholds)
+
+        new_series = [
+            nw.new_series(name, values, backend=nw_X.implementation)
+            for name, values in new_columns.items()
+        ]
+        X = nw_X.with_columns(*new_series).to_native()
 
         return X
+
+    def _fit_one_tree(self, X_sub: IntoDataFrame, y: IntoSeries, param_grid: Dict):
+        """Instantiate and fit one decision tree on one variable."""
+        if self.regression is True:
+            model = DecisionTreeRegressor(random_state=self.random_state)
+        else:
+            model = DecisionTreeClassifier(random_state=self.random_state)
+
+        tree_model = GridSearchCV(
+            model, cv=self.cv, scoring=self.scoring, param_grid=param_grid
+        )
+        tree_model.fit(X_sub, y)
+        return tree_model
 
     def _more_tags(self):
         tags_dict = _return_tags()
@@ -363,3 +398,50 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         return tags
+
+    def _round_bin_edge(self, x: float, precision: int) -> float:
+        """Round a bin edge the way pandas.cut historically formatted Interval labels:
+        -inf/inf/0 pass through unrounded, and numbers with magnitude < 1 get extra
+        decimals so that `precision` significant digits survive past the leading
+        zeros (e.g. -0.0942 at precision=3 keeps 4 decimals, not 3, since
+        round(-0.0942, 3) == -0.094 would only keep 2 significant digits).
+        """
+        if not np.isfinite(x) or x == 0:
+            return x
+        frac, whole = np.modf(x)
+        if whole == 0:
+            digits = -int(np.floor(np.log10(abs(frac)))) - 1 + precision
+        else:
+            digits = precision
+        return round(x, digits)
+
+    def _infer_bin_precision(self, thresholds: List[float], precision: int) -> int:
+        """Find the smallest precision >= `precision` at which every rounded
+        threshold is still distinct, mirroring pandas.cut's behaviour of bumping
+        precision (for every edge, not just the colliding pair) when the requested
+        precision would make two adjacent bin edges collide."""
+        for prec in range(precision, 20):
+            rounded = [self._round_bin_edge(t, prec) for t in thresholds]
+            if len(set(rounded)) == len(thresholds):
+                return prec
+        return precision
+
+    def _format_bin_edge(self, x: float, precision: int) -> str:
+        if x == -np.inf:
+            return "-inf"
+        if x == np.inf:
+            return "inf"
+        return str(self._round_bin_edge(x, precision))
+
+    def _bin_labels(self, thresholds: List[float], precision: int) -> List[str]:
+        """Build the `(left, right]` interval label for every bin delimited by
+        `thresholds`, which starts with -inf and ends with inf."""
+        precision = self._infer_bin_precision(thresholds, precision)
+        edges = [self._format_bin_edge(t, precision) for t in thresholds]
+        return [f"({edges[i]}, {edges[i + 1]}]" for i in range(len(edges) - 1)]
+
+    def _bin_index(self, values: np.ndarray, thresholds: List[float]) -> np.ndarray:
+        """Map each value to the 0-indexed bin delimited by `thresholds` (which
+        starts with -inf and ends with inf), bins being closed on the right.
+        """
+        return np.digitize(values, thresholds[1:-1], right=True)

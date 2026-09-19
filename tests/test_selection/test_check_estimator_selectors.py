@@ -1,10 +1,8 @@
 import pandas as pd
 import pytest
-import sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.fixes import parse_version
 
 from feature_engine.selection import (
     MRMR,
@@ -29,8 +27,6 @@ from tests.estimator_checks.init_params_triggered_functionality_checks import (
     check_raises_error_if_only_1_variable,
 )
 from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
-
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
 
 _logreg = LogisticRegression(C=0.0001, max_iter=2, random_state=1)
 
@@ -85,28 +81,20 @@ _model_based_estimators = [
     ProbeFeatureSelection(estimator=_logreg, scoring="accuracy"),
 ]
 
-if sklearn_version < parse_version("1.6"):
 
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(estimator)
-
-else:
-    # In sklearn 1.6. the API changes break the tests for the target mean selector.
-    # We need to investigate further.
-    # TODO: investigate checks for target mean selector.
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        if estimator.__class__.__name__ not in [
-            "SelectByTargetEncoding",
-            "SelectByTargetMeanPerformance",
-            "SelectByInformationValue",
-        ]:
-            failed_tests = estimator._more_tags()["_xfail_checks"]
-            return check_estimator(
-                estimator=wrap_for_check_estimator(estimator),
-                expected_failed_checks=failed_tests,
-            )
+# TODO: investigate checks for target mean selector.
+@pytest.mark.parametrize("estimator", _estimators)
+def test_check_estimator_from_sklearn(estimator):
+    if estimator.__class__.__name__ not in [
+        "SelectByTargetEncoding",
+        "SelectByTargetMeanPerformance",
+        "SelectByInformationValue",
+    ]:
+        failed_tests = estimator._more_tags()["_xfail_checks"]
+        return check_estimator(
+            estimator=wrap_for_check_estimator(estimator),
+            expected_failed_checks=failed_tests,
+        )
 
 
 @pytest.mark.parametrize("estimator", _univariate_estimators)

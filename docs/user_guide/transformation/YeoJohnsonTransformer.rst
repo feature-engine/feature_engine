@@ -201,6 +201,43 @@ values, using the `inverse_transform` method.
         test_unt = tf.inverse_transform(test_t)
 
 
+With polars
+-----------
+
+:class:`YeoJohnsonTransformer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import YeoJohnsonTransformer
+
+    df = pl.DataFrame({
+        "var_1": [-4.0, -1.0, 0.0, 3.0, 10.0],
+        "var_2": [1.0, 8.0, 27.0, 64.0, 125.0],
+    })
+
+    tf = YeoJohnsonTransformer(variables=None)
+    tf.fit(df)
+    Xt = tf.transform(df)
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌───────────┬──────────┐
+    │ var_1     ┆ var_2    │
+    │ ---       ┆ ---      │
+    │ f64       ┆ f64      │
+    ╞═══════════╪══════════╡
+    │ -5.520511 ┆ 0.740576 │
+    │ -1.129157 ┆ 2.723463 │
+    │ 0.0       ┆ 4.64057  │
+    │ 2.323426  ┆ 6.353727 │
+    │ 6.13494   ┆ 7.905058 │
+    └───────────┴──────────┘
+
+
 Additional resources
 --------------------
 

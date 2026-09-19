@@ -1,16 +1,27 @@
-import math
 import re
 
 import numpy as np
-import pandas as pd
 import pytest
 
 from feature_engine.outliers import Winsoriser, Winsorizer
+from tests.backend_helpers import frame_to_dict
 
 DEPRECATION_WARNING = (
     "Winsorizer was deprecated in favour of Winsoriser in version 2.0.0 and will "
     "be removed in version 2.1.0. To silence this warning, use Winsoriser instead."
 )
+
+MSG_NA = (
+    "Some of the variables in the dataset contain NaN. Check and "
+    "remove those before using this transformer."
+)
+
+VARTYPES = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
 
 
 @pytest.fixture(
@@ -28,263 +39,153 @@ def make_transformer(transformer_class, **kwargs):
     return transformer_class(**kwargs)
 
 
+# init parameters
+# the errors of the parameters from WinsorizerBase are tested in test_base_outlier.py
 def test_winsorizer_raises_future_warning():
     with pytest.warns(FutureWarning, match=re.escape(DEPRECATION_WARNING)):
         Winsorizer()
 
 
-def test_gaussian_capping_right_tail_with_fold_1(df_normal_dist, transformer_class):
-    # test case 1: mean and std, right tail
-    transformer = make_transformer(
-        transformer_class, capping_method="gaussian", tail="right", fold=1
+@pytest.mark.parametrize("add_indicators", [-1, 1, "True", None, (), [True]])
+def test_error_if_add_indicators_not_permitted(add_indicators, transformer_class):
+    msg = (
+        "add_indicators takes only booleans True and False. "
+        f"Got {add_indicators} instead."
     )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(upper=0.1067690260251065)
-
-    # test init params
-    assert transformer.capping_method == "gaussian"
-    assert transformer.tail == "right"
-    assert transformer.fold == 1
-    # test fit attr
-    assert math.isclose(transformer.right_tail_caps_["var"], 0.1067690260251065)
-    assert transformer.left_tail_caps_ == {}
-    assert transformer.n_features_in_ == 1
-    # test transform outputs
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].max(), 0.10676902602510658)
-    assert math.isclose(df_transf["var"].max(), 0.1067690260251065)
-
-
-def test_gaussian_capping_both_tails_with_fold_2(df_normal_dist, transformer_class):
-    # test case 2: mean and std, both tails, different fold value
-    transformer = make_transformer(
-        transformer_class, capping_method="gaussian", tail="both", fold=2
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(-0.1955956473898675, 0.2075572504967645)
-
-    # test fit params
-    assert math.isclose(transformer.right_tail_caps_["var"], 0.2075572504967645)
-    assert math.isclose(transformer.left_tail_caps_["var"], -0.1955956473898675)
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].max(), 0.2075572504967645)
-    assert math.isclose(X["var"].min(), -0.1955956473898675)
-    assert math.isclose(df_transf["var"].max(), 0.2075572504967645)
-    assert math.isclose(df_transf["var"].min(), -0.1955956473898675)
-
-
-def test_iqr_capping_both_tails_with_fold_1(df_normal_dist, transformer_class):
-    # test case 3: IQR, both tails, fold 1
-    transformer = make_transformer(
-        transformer_class, capping_method="iqr", tail="both", fold=1
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(-0.20247907173293223, 0.21180113880445128)
-
-    # test fit params
-    assert math.isclose(transformer.right_tail_caps_["var"], 0.21180113880445128)
-    assert math.isclose(transformer.left_tail_caps_["var"], -0.20247907173293223)
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].max(), 0.21180113880445128)
-    assert math.isclose(X["var"].min(), -0.20247907173293223)
-    assert math.isclose(df_transf["var"].max(), 0.21180113880445128)
-    assert math.isclose(df_transf["var"].min(), -0.20247907173293223)
-
-
-def test_iqr_capping_left_tail_with_fold_2(df_normal_dist, transformer_class):
-    # test case 4: IQR, left tail, fold 2
-    transformer = make_transformer(
-        transformer_class, capping_method="iqr", tail="left", fold=0.8
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(lower=-0.17486039103044)
-
-    # test fit params
-    assert transformer.right_tail_caps_ == {}
-    assert math.isclose(transformer.left_tail_caps_["var"], -0.17486039103044)
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].min(), -0.17486039103044)
-    assert math.isclose(df_transf["var"].min(), -0.17486039103044)
-
-
-def test_quantile_capping_both_tails_with_fold_10_percent(
-    df_normal_dist, transformer_class
-):
-    # test case 5: quantiles, both tails, fold 10%
-    transformer = make_transformer(
-        transformer_class, capping_method="quantiles", tail="both", fold=0.1
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(-0.12366227743232801, 0.14712481122898166)
-
-    # test fit params
-    assert math.isclose(transformer.right_tail_caps_["var"], 0.14712481122898166)
-    assert math.isclose(transformer.left_tail_caps_["var"], -0.12366227743232801)
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].max(), 0.14712481122898166)
-    assert math.isclose(X["var"].min(), -0.12366227743232801)
-    assert math.isclose(df_transf["var"].max(), 0.14712481122898166)
-    assert math.isclose(df_transf["var"].min(), -0.12366227743232801)
-
-
-def test_quantile_capping_right_tail_with_fold_15_percent(
-    df_normal_dist, transformer_class
-):
-    # test case 6: quantiles, right tail, fold 15%
-    transformer = make_transformer(
-        transformer_class, capping_method="quantiles", tail="right", fold=0.15
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(upper=0.11823196128033647)
-
-    # test fit params
-    assert math.isclose(transformer.right_tail_caps_["var"], 0.11823196128033647)
-    assert transformer.left_tail_caps_ == {}
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].max(), 0.11823196128033647)
-    assert math.isclose(df_transf["var"].max(), 0.11823196128033647)
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        make_transformer(transformer_class, add_indicators=add_indicators)
 
 
 @pytest.mark.parametrize(
-    "strings,expected",
+    "capping_method, tail, fold, add_indicators, missing_values",
+    [
+        ("gaussian", "right", "auto", False, "raise"),
+        ("iqr", "left", 2, True, "ignore"),
+        ("mad", "both", 1.5, False, "ignore"),
+        ("quantiles", "both", 0.1, True, "raise"),
+    ],
+)
+def test_init_param_assignment(
+    capping_method, tail, fold, add_indicators, missing_values, transformer_class
+):
+    transformer = make_transformer(
+        transformer_class,
+        capping_method=capping_method,
+        tail=tail,
+        fold=fold,
+        add_indicators=add_indicators,
+        missing_values=missing_values,
+    )
+    assert transformer.capping_method == capping_method
+    assert transformer.tail == tail
+    assert transformer.fold == fold
+    assert transformer.add_indicators == add_indicators
+    assert transformer.missing_values == missing_values
+
+
+# fit and transform
+@pytest.mark.parametrize(
+    "capping_method, tail, fold, right, left",
+    [
+        ("gaussian", "right", 1, 0.1067690260251065, None),
+        ("gaussian", "both", 2, 0.2075572504967645, -0.1955956473898675),
+        ("iqr", "both", 1, 0.21180113880445128, -0.20247907173293223),
+        ("iqr", "left", 0.8, None, -0.17486039103044),
+        ("quantiles", "both", 0.1, 0.14712481122898166, -0.12366227743232801),
+        ("quantiles", "right", 0.15, 0.11823196128033647, None),
+        ("mad", "right", 1, 0.10995521088494983, None),
+        ("mad", "both", 2, 0.21050080982609987, -0.1916815859385002),
+    ],
+)
+def test_capping(
+    make_df,
+    data_normal_dist,
+    transformer_class,
+    capping_method,
+    tail,
+    fold,
+    right,
+    left,
+):
+    transformer = make_transformer(
+        transformer_class, capping_method=capping_method, tail=tail, fold=fold
+    )
+    X_out = transformer.fit_transform(make_df(data_normal_dist))
+
+    upper = np.inf if right is None else right
+    lower = -np.inf if left is None else left
+    expected = [min(max(v, lower), upper) for v in data_normal_dist["var"]]
+
+    if right is None:
+        assert transformer.right_tail_caps_ == {}
+    else:
+        assert transformer.right_tail_caps_ == {"var": pytest.approx(right)}
+    if left is None:
+        assert transformer.left_tail_caps_ == {}
+    else:
+        assert transformer.left_tail_caps_ == {"var": pytest.approx(left)}
+    assert transformer.n_features_in_ == 1
+    assert isinstance(X_out, make_df)
+    assert frame_to_dict(X_out) == {"var": pytest.approx(expected)}
+
+
+@pytest.mark.parametrize(
+    "capping_method, expected",
     [("gaussian", 3), ("iqr", 1.5), ("mad", 3.29), ("quantiles", 0.05)],
 )
-def test_auto_fold_default_value(strings, expected, df_normal_dist, transformer_class):
+def test_auto_fold_default_value(
+    make_df, data_normal_dist, capping_method, expected, transformer_class
+):
     transformer = make_transformer(
-        transformer_class, capping_method=strings, fold="auto"
+        transformer_class, capping_method=capping_method, fold="auto"
     )
-    transformer.fit(df_normal_dist)
+    transformer.fit(make_df(data_normal_dist))
     assert transformer.fold_ == expected
 
 
-def test_mad_capping_right_tail_with_fold_1(df_normal_dist, transformer_class):
-    # test case 1: median and mad, right tail
-    transformer = make_transformer(
-        transformer_class, capping_method="mad", tail="right", fold=1
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(upper=0.10995521088494983)
-
-    # test init params
-    assert transformer.capping_method == "mad"
-    assert transformer.tail == "right"
-    assert transformer.fold == 1
-    # test fit attr
-    assert math.isclose(transformer.right_tail_caps_["var"], 0.10995521088494983)
-    assert transformer.left_tail_caps_ == {}
-    assert transformer.n_features_in_ == 1
-    # test transform outputs
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].max(), 0.10995521088494983)
-    assert math.isclose(df_transf["var"].max(), 0.10995521088494983)
-
-
-def test_mad_capping_both_tails_with_fold_2(df_normal_dist, transformer_class):
-    # test case 2: mean and std, both tails, different fold value
-    transformer = make_transformer(
-        transformer_class, capping_method="mad", tail="both", fold=2
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = df_transf["var"].clip(-0.1916815859385002, 0.21050080982609987)
-
-    # test fit params
-    assert math.isclose(transformer.right_tail_caps_["var"], 0.21050080982609987)
-    assert math.isclose(transformer.left_tail_caps_["var"], -0.1916815859385002)
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["var"].max(), 0.21050080982609987)
-    assert math.isclose(X["var"].min(), -0.1916815859385002)
-    assert math.isclose(df_transf["var"].max(), 0.21050080982609987)
-    assert math.isclose(df_transf["var"].min(), -0.1916815859385002)
-
-
-def test_indicators_are_added(df_normal_dist, transformer_class):
+@pytest.mark.parametrize("tail, n_indicators", [("both", 2), ("left", 1), ("right", 1)])
+def test_indicators_are_added(
+    make_df, data_normal_dist, transformer_class, tail, n_indicators
+):
+    X = make_df(data_normal_dist)
     transformer = make_transformer(
         transformer_class,
-        tail="both",
+        tail=tail,
         capping_method="quantiles",
         fold=0.1,
         add_indicators=True,
     )
-    X = transformer.fit_transform(df_normal_dist)
-    # test that the number of output variables is correct
-    assert X.shape[1] == 3 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    X_out = transformer.fit_transform(X)
 
-    transformer = make_transformer(
-        transformer_class,
-        tail="left",
-        capping_method="quantiles",
-        fold=0.1,
-        add_indicators=True,
-    )
-    X = transformer.fit_transform(df_normal_dist)
-    assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
-
-    transformer = make_transformer(
-        transformer_class,
-        tail="right",
-        capping_method="quantiles",
-        fold=0.1,
-        add_indicators=True,
-    )
-    X = transformer.fit_transform(df_normal_dist)
-    assert X.shape[1] == 2 * df_normal_dist.shape[1]
-    assert np.all(X.iloc[:, df_normal_dist.shape[1]:].sum(axis=0) > 0)
+    assert isinstance(X_out, make_df)
+    assert X_out.shape[1] == 1 + n_indicators
+    result = frame_to_dict(X_out)
+    for col in list(X_out.columns)[1:]:
+        assert sum(result[col]) > 0
 
 
-def test_indicators_filter_variables(df_vartypes, transformer_class):
+@pytest.mark.parametrize("tail, n_indicators", [("both", 4), ("left", 2), ("right", 2)])
+def test_indicators_filter_variables(make_df, transformer_class, tail, n_indicators):
+    X = make_df(VARTYPES)
     transformer = make_transformer(
         transformer_class,
         variables=["Age", "Marks"],
-        tail="both",
+        tail=tail,
         capping_method="quantiles",
         fold=0.1,
         add_indicators=True,
     )
-    X = transformer.fit_transform(df_vartypes)
-    assert X.shape[1] == df_vartypes.shape[1] + 4
+    X_out = transformer.fit_transform(X)
 
-    transformer.set_params(tail="left")
-    X = transformer.fit_transform(df_vartypes)
-    assert X.shape[1] == df_vartypes.shape[1] + 2
-
-    transformer.set_params(tail="right")
-    X = transformer.fit_transform(df_vartypes)
-    assert X.shape[1] == df_vartypes.shape[1] + 2
+    assert isinstance(X_out, make_df)
+    assert X_out.shape[1] == len(VARTYPES) + n_indicators
 
 
-def test_indicators_are_correct(transformer_class):
+def test_indicators_are_correct(make_df, transformer_class):
+    X = make_df({"col": [float(i) for i in range(100)]})
+    expected_left = [1.0] * 10 + [0.0] * 90
+    expected_right = [0.0] * 90 + [1.0] * 10
+
     transformer = make_transformer(
         transformer_class,
         tail="left",
@@ -292,39 +193,23 @@ def test_indicators_are_correct(transformer_class):
         fold=0.1,
         add_indicators=True,
     )
-    df = pd.DataFrame({"col": np.arange(100).astype(np.float64)})
-    df_out = transformer.fit_transform(df)
-    expected_ind = np.r_[np.repeat(True, 10), np.repeat(False, 90)].astype(np.float64)
-    pd.testing.assert_frame_equal(
-        df_out.drop("col", axis=1), df.assign(col_left=expected_ind).drop("col", axis=1)
-    )
+    X_out = transformer.fit_transform(X)
+    assert isinstance(X_out, make_df)
+    assert frame_to_dict(X_out)["col_left"] == expected_left
 
     transformer.set_params(tail="right")
-    df_out = transformer.fit_transform(df)
-    expected_ind = np.r_[np.repeat(False, 90), np.repeat(True, 10)].astype(np.float64)
-    pd.testing.assert_frame_equal(
-        df_out.drop("col", axis=1),
-        df.assign(col_right=expected_ind).drop("col", axis=1),
-    )
+    X_out = transformer.fit_transform(X)
+    assert frame_to_dict(X_out)["col_right"] == expected_right
 
     transformer.set_params(tail="both")
-    df_out = transformer.fit_transform(df)
-    expected_ind_left = np.r_[np.repeat(True, 10), np.repeat(False, 90)].astype(
-        np.float64
-    )
-    expected_ind_right = np.r_[np.repeat(False, 90), np.repeat(True, 10)].astype(
-        np.float64
-    )
-    pd.testing.assert_frame_equal(
-        df_out.drop("col", axis=1),
-        df.assign(col_left=expected_ind_left, col_right=expected_ind_right).drop(
-            "col", axis=1
-        ),
-    )
+    X_out = transformer.fit_transform(X)
+    result = frame_to_dict(X_out)
+    assert result["col_left"] == expected_left
+    assert result["col_right"] == expected_right
+    assert list(X_out.columns) == ["col", "col_left", "col_right"]
 
 
-def test_transformer_ignores_na_in_df(df_na, transformer_class):
-    # test case 7: dataset contains na and transformer is asked to ignore them
+def test_transformer_ignores_na_in_df(make_df, data_na, transformer_class):
     transformer = make_transformer(
         transformer_class,
         capping_method="gaussian",
@@ -333,124 +218,74 @@ def test_transformer_ignores_na_in_df(df_na, transformer_class):
         variables=["Age", "Marks"],
         missing_values="ignore",
     )
-    X = transformer.fit_transform(df_na)
+    X_out = transformer.fit_transform(make_df(data_na))
 
-    # expected output
-    df_transf = df_na.copy()
-    df_transf["Age"] = df_transf["Age"].clip(upper=38.04494616731882)
-    df_transf["Marks"] = df_transf["Marks"].clip(upper=0.8784116651786605)
-
-    # test fit params
-    assert math.isclose(transformer.right_tail_caps_["Age"], 38.04494616731882)
-    assert math.isclose(transformer.right_tail_caps_["Marks"], 0.8784116651786605)
+    assert transformer.right_tail_caps_ == {
+        "Age": pytest.approx(38.04494616731882),
+        "Marks": pytest.approx(0.8784116651786605),
+    }
     assert transformer.left_tail_caps_ == {}
-    assert transformer.n_features_in_ == 6
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert math.isclose(X["Age"].max(), 38.04494616731882)
-    assert math.isclose(X["Age"].max(), 38.04494616731882)
-    assert math.isclose(X["Marks"].max(), 0.8784116651786605)
-    assert math.isclose(df_transf["Marks"].max(), 0.8784116651786605)
+    assert transformer.n_features_in_ == 5
+    assert isinstance(X_out, make_df)
+    result = frame_to_dict(X_out)
+    for var, cap in [("Age", 38.04494616731882), ("Marks", 0.8784116651786605)]:
+        expected = [None if v is None else min(v, cap) for v in data_na[var]]
+        assert result[var] == pytest.approx(expected)
 
 
-def test_error_if_capping_method_not_permitted(transformer_class):
-    # test error raises
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, capping_method="other")
-
-
-def test_error_if_tail_value_not_permitted(transformer_class):
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, tail="other")
-
-
-def test_error_if_missing_values_not_permited(transformer_class):
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, missing_values="other")
-
-
-def test_error_if_fold_value_not_permitted(transformer_class):
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, fold=-1)
-
-
-def test_error_if_capping_method_quantiles_and_fold_value_not_permitted(
-    transformer_class,
-):
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, capping_method="quantiles", fold=0.3)
-
-
-def test_error_if_add_incators_not_permitted(transformer_class):
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, add_indicators=-1)
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, add_indicators=())
-    with pytest.raises(ValueError):
-        make_transformer(transformer_class, add_indicators=[True])
-
-
-def test_fit_raises_error_if_na_in_inut_df(df_na, transformer_class):
-    # test case 8: when dataset contains na, fit method
-    with pytest.raises(ValueError):
-        transformer = make_transformer(transformer_class)
-        transformer.fit(df_na)
+def test_fit_raises_error_if_na_in_input_df(make_df, data_na, transformer_class):
+    transformer = make_transformer(transformer_class)
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        transformer.fit(make_df(data_na))
 
 
 def test_transform_raises_error_if_na_in_input_df(
-    df_vartypes, df_na, transformer_class
+    make_df, data_na, transformer_class
 ):
-    # test case 9: when dataset contains na, transform method
-    with pytest.raises(ValueError):
-        transformer = make_transformer(transformer_class)
-        transformer.fit(df_vartypes)
-        transformer.transform(df_na[["Name", "City", "Age", "Marks", "dob"]])
+    X_na = make_df({k: data_na[k] for k in ["Name", "City", "Age", "Marks"]})
+    transformer = make_transformer(transformer_class)
+    transformer.fit(make_df(VARTYPES))
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        transformer.transform(X_na)
 
 
-def test_get_feature_names_out(df_na, transformer_class):
-    original_features = df_na.columns.to_list()
-    input_features = ["Age", "Marks"]
-
-    # when indicators is false, we've got the generic check.
-    # We need to test only when true
+# without indicators, the feature names are covered by the generic checks
+@pytest.mark.parametrize(
+    "tail, indicators",
+    [
+        ("left", ["Age_left", "Marks_left"]),
+        ("right", ["Age_right", "Marks_right"]),
+        ("both", ["Age_left", "Age_right", "Marks_left", "Marks_right"]),
+    ],
+)
+def test_get_feature_names_out(make_df, data_na, transformer_class, tail, indicators):
+    original_features = list(data_na)
     tr = make_transformer(
-        transformer_class,
-        tail="left",
-        add_indicators=True,
-        missing_values="ignore",
+        transformer_class, tail=tail, add_indicators=True, missing_values="ignore"
     )
-    tr.fit(df_na)
+    tr.fit(make_df(data_na))
 
-    out = [f + "_left" for f in input_features]
-    assert tr.get_feature_names_out() == original_features + out
-    assert tr.get_feature_names_out(original_features) == original_features + out
+    expected = original_features + indicators
+    assert tr.get_feature_names_out() == expected
+    assert tr.get_feature_names_out(original_features) == expected
 
-    tr = make_transformer(
-        transformer_class,
-        tail="right",
-        add_indicators=True,
-        missing_values="ignore",
+
+def test_variables_without_variation_are_left_untouched(
+    make_df, data_normal_dist, transformer_class
+):
+    data = {
+        "var": [v // 10 for v in data_normal_dist["var"]],
+        "other": data_normal_dist["var"],
+    }
+    transformer = make_transformer(
+        transformer_class, capping_method="mad", tail="both", add_indicators=True
     )
-    tr.fit(df_na)
+    Xt = transformer.fit_transform(make_df(data))
 
-    out = [f + "_right" for f in input_features]
-    assert tr.get_feature_names_out() == original_features + out
-    assert tr.get_feature_names_out(original_features) == original_features + out
-
-    tr = make_transformer(
-        transformer_class,
-        tail="both",
-        add_indicators=True,
-        missing_values="ignore",
-    )
-    tr.fit(df_na)
-
-    out = ["Age_left", "Age_right", "Marks_left", "Marks_right"]
-    assert tr.get_feature_names_out() == original_features + out
-    assert tr.get_feature_names_out(original_features) == original_features + out
-
-
-def test_low_variation(df_normal_dist, transformer_class):
-    transformer = make_transformer(transformer_class, capping_method="mad")
-    with pytest.raises(ValueError):
-        transformer.fit(df_normal_dist // 10)
+    assert transformer.right_tail_caps_["var"] == np.inf
+    assert transformer.left_tail_caps_["var"] == -np.inf
+    assert isinstance(Xt, make_df)
+    result = frame_to_dict(Xt)
+    assert result["var"] == data["var"]
+    assert result["var_left"] == [0.0] * len(data["var"])
+    assert result["var_right"] == [0.0] * len(data["var"])

@@ -134,6 +134,45 @@ imputation (in red the imputed variable):
 
 .. image:: ../../images/arbitraryvalueimputation.png
 
+With polars
+-----------
+
+:class:`ArbitraryImputer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.imputation import ArbitraryImputer
+
+    df = pl.DataFrame({
+        "LotFrontage": [65.0, None, 68.0, None, 84.0],
+        "MasVnrArea": [196.0, None, 162.0, None, 350.0],
+    })
+
+    transformer = ArbitraryImputer(
+        arbitrary_number=-999,
+        variables=["LotFrontage", "MasVnrArea"],
+    )
+
+    print(transformer.fit_transform(df))
+
+The resulting values match those found with pandas:
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌─────────────┬────────────┐
+    │ LotFrontage ┆ MasVnrArea │
+    │ ---         ┆ ---        │
+    │ f64         ┆ f64        │
+    ╞═════════════╪════════════╡
+    │ 65.0        ┆ 196.0      │
+    │ -999.0      ┆ -999.0     │
+    │ 68.0        ┆ 162.0      │
+    │ -999.0      ┆ -999.0     │
+    │ 84.0        ┆ 350.0      │
+    └─────────────┴────────────┘
+
 Additional resources
 --------------------
 

@@ -3,8 +3,9 @@
 
 from typing import List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.pipeline import Pipeline
 from sklearn.utils.multiclass import check_classification_targets, type_of_target
 
@@ -139,6 +140,11 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     fill_value: float, default=None
         The value used to encode unseen categories. Only used when `unseen='encode'`.
 
+    n_jobs: int, default=None
+        The number of jobs to run in parallel. `fit` is parallelized over the variables,
+        training one decision tree per variable. `None` means 1 unless in a
+        `joblib.parallel_backend` context. `-1` means using all processors.
+
     Attributes
     ----------
     encoder_dict_:
@@ -212,6 +218,27 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
     2   3  0.666667
     3   4  0.500000
     4   5  0.500000
+
+    With polars:
+
+    >>> import polars as pl
+    >>> X = pl.DataFrame(dict(x1 = [1,2,3,4,5], x2 = ["b", "b", "b", "a", "a"]))
+    >>> y = [0, 1, 1, 1, 0]
+    >>> dte = DecisionTreeEncoder(regression=False, cv=2)
+    >>> dte.fit(X, y)
+    >>> dte.transform(X)
+    shape: (5, 2)
+    ┌─────┬──────────┐
+    │ x1  ┆ x2       │
+    │ --- ┆ ---      │
+    │ i64 ┆ f64      │
+    ╞═════╪══════════╡
+    │ 1   ┆ 0.666667 │
+    │ 2   ┆ 0.666667 │
+    │ 3   ┆ 0.666667 │
+    │ 4   ┆ 0.5      │
+    │ 5   ┆ 0.5      │
+    └─────┴──────────┘
     """
 
     def __init__(
@@ -228,9 +255,13 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         precision: Optional[int] = None,
         unseen: str = "ignore",
         fill_value: Optional[float] = None,
+        n_jobs: Optional[int] = None,
     ) -> None:
 
-        if encoding_method not in ["ordered", "arbitrary"]:
+        if not isinstance(encoding_method, str) or encoding_method not in [
+            "ordered",
+            "arbitrary",
+        ]:
             raise ValueError(
                 "`encoding_method` takes only values 'ordered' and 'arbitrary'."
                 f" Got {encoding_method} instead."
@@ -261,22 +292,23 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         self.precision = precision
         self.unseen = unseen
         self.fill_value = fill_value
+        self.n_jobs = n_jobs
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Fit a decision tree per variable.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             categorical variables.
 
-        y : pandas series.
+        y: Series.
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
         """
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
 
         # confirm model type and target variables are compatible.
         if self.regression is True:
@@ -309,59 +341,58 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             missing_values="raise",
             ignore_format=self.ignore_format,
         )
-
         tree = DecisionTreeDiscretiser(
+            variables=variables_,
             cv=self.cv,
             scoring=self.scoring,
-            variables=variables_,
             param_grid=param_grid,
             regression=self.regression,
             random_state=self.random_state,
+            n_jobs=self.n_jobs,
         )
+        Xt = Pipeline([("encoder", encoder), ("tree", tree)]).fit_transform(X, y)
+        nw_Xt = nw.from_native(Xt, eager_only=True)
 
-        # pipeline for the encoder
-        pipe = Pipeline(
-            [
-                ("encoder", encoder),
-                ("tree", tree),
-            ]
-        )
-
-        Xt = pipe.fit_transform(X, y)
-
-        encoder_ = {}
-        if self.precision is None:
-            for var in variables_:
-                encoder_[var] = dict(zip(X[var], Xt[var]))
-        else:
-            for var in variables_:
-                encoder_[var] = dict(zip(X[var], np.round(Xt[var], self.precision)))
+        # map each category to the prediction of its tree
+        encoder_dict_ = {}
+        for var in variables_:
+            pairs = (
+                nw_X.get_column(var)
+                .alias("__category__")
+                .to_frame()
+                .with_columns(nw_Xt.get_column(var).alias("__prediction__"))
+                .unique()
+            )
+            preds = pairs["__prediction__"].to_numpy()
+            if self.precision is not None:
+                preds = np.round(preds, self.precision)
+            encoder_dict_[var] = dict(zip(pairs["__category__"].to_list(), preds))
 
         if self.unseen == "encode":
             self._unseen = self.fill_value
 
-        self.encoder_dict_ = encoder_
+        self.encoder_dict_ = encoder_dict_
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Replace categorical variables by the predictions of the decision tree.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
-        X_new : pandas dataframe of shape = [n_samples, n_features].
+        X_new: dataframe of shape = [n_samples, n_features].
             Dataframe with variables encoded with decision tree predictions.
         """
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        X = self._encode(X)
+        X = self._encode(nw_X)
 
         return X
 

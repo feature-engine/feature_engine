@@ -4,7 +4,7 @@
 
 from typing import Optional
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_input_dictionary import (
     _check_numerical_dict,
@@ -119,80 +119,78 @@ class ArbitraryOutlierCapper(BaseOutlier):
         missing_values: str = "raise",
     ) -> None:
 
-        if not max_capping_dict and not min_capping_dict:
+        _check_numerical_dict(max_capping_dict)
+        _check_numerical_dict(min_capping_dict)
+
+        if (max_capping_dict is None or len(max_capping_dict) == 0) and (
+            min_capping_dict is None or len(min_capping_dict) == 0
+        ):
             raise ValueError(
                 "Please provide at least 1 dictionary with the capping values."
             )
 
-        if missing_values not in ["raise", "ignore"]:
-            raise ValueError("missing_values takes only values 'raise' or 'ignore'")
-
-        _check_numerical_dict(max_capping_dict)
-        _check_numerical_dict(min_capping_dict)
+        if not isinstance(missing_values, str) or missing_values not in [
+            "raise",
+            "ignore",
+        ]:
+            raise ValueError(
+                "missing_values must be 'raise' or 'ignore'. "
+                f"Got {missing_values} instead."
+            )
 
         self.max_capping_dict = max_capping_dict
         self.min_capping_dict = min_capping_dict
         self.missing_values = missing_values
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             y is not needed in this transformer. You can pass y or None.
         """
-        X = check_X(X)
+        nw_X = check_X(X)
 
-        # find variables to be capped
-        if self.min_capping_dict is None and self.max_capping_dict:
-            self.variables_ = [x for x in self.max_capping_dict.keys()]
-        elif self.max_capping_dict is None and self.min_capping_dict:
-            self.variables_ = [x for x in self.min_capping_dict.keys()]
-        elif self.min_capping_dict and self.max_capping_dict:
-            tmp = self.min_capping_dict.copy()
-            tmp.update(self.max_capping_dict)
-            self.variables_ = [x for x in tmp.keys()]
+        if self.max_capping_dict is None:
+            self.right_tail_caps_ = {}
+        else:
+            self.right_tail_caps_ = self.max_capping_dict
+
+        if self.min_capping_dict is None:
+            self.left_tail_caps_ = {}
+        else:
+            self.left_tail_caps_ = self.min_capping_dict
+
+        variables = list({**self.left_tail_caps_, **self.right_tail_caps_})
 
         if self.missing_values == "raise":
-            # check if dataset contains na
-            _check_contains_na(X, self.variables_)
-            _check_contains_inf(X, self.variables_)
+            _check_contains_na(X, variables)
+            _check_contains_inf(X, variables)
 
-        # find or check for numerical variables
-        self.variables_ = check_numerical_variables(X, self.variables_)
+        self.variables_ = check_numerical_variables(X, variables)
 
-        if self.max_capping_dict is not None:
-            self.right_tail_caps_ = self.max_capping_dict
-        else:
-            self.right_tail_caps_ = {}
-
-        if self.min_capping_dict is not None:
-            self.left_tail_caps_ = self.min_capping_dict
-        else:
-            self.left_tail_caps_ = {}
-
-        self.feature_names_in_ = X.columns.to_list()
-        self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = nw_X.columns
+        self.n_features_in_ = nw_X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Cap the variable values.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The dataframe with the capped variables.
         """
         return super()._transform(X)

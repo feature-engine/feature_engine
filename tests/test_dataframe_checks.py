@@ -1,278 +1,81 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
+from polars.testing import assert_frame_equal as pl_assert_frame_equal
+from polars.testing import assert_series_equal as pl_assert_series_equal
 from scipy.sparse import csr_matrix
 
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
-    _check_optional_contains_na,
     _check_X_matches_training_df,
     check_X,
     check_X_y,
     check_y,
 )
 
-
-def test_check_X_returns_df(df_vartypes):
-    assert_frame_equal(check_X(df_vartypes), df_vartypes)
-
-
-def test_check_X_converts_numpy_to_pandas():
-    a1D = np.array([1, 2, 3, 4])
-    a2D = np.array([[1, 2], [3, 4]])
-    a3D = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
-
-    df_2D = pd.DataFrame(a2D, columns=["x0", "x1"])
-    assert_frame_equal(df_2D, check_X(a2D))
-
-    with pytest.raises(ValueError):
-        check_X(a3D)
-    with pytest.raises(ValueError):
-        check_X(a1D)
+# ------------------------
+# test check_X
+# ------------------------
 
 
-def test_check_X_raises_error_sparse_matrix():
-    sparse_mx = csr_matrix([[5]])
-    with pytest.raises(TypeError):
-        assert check_X(sparse_mx)
+@pytest.mark.parametrize(
+    "make_df, assert_equal_fn",
+    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+)
+def test_check_X_returns_df_unchanged(make_df, assert_equal_fn):
+    df = make_df({"a": [1, 2, 3], "b": [4.0, 5.0, 6.0]})
+    X = check_X(df)
+    assert isinstance(X, nw.DataFrame)
+    assert_equal_fn(X.to_native(), df)
 
 
-def test_check_X_raises_error_with_complex_data():
-    msg = "Complex data not supported"
-    rng = np.random.RandomState(0)
-    X = rng.uniform(size=10) + 1j * rng.uniform(size=10)
-    X = X.reshape(-1, 1)
-    with pytest.raises(TypeError, match=msg):
-        assert check_X(X)
+@pytest.mark.parametrize(
+    "make_df, assert_equal_fn",
+    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+)
+def test_check_X_returns_df_with_mixed_dtypes(make_df, assert_equal_fn):
+    data = {
+        "Name": ["tom", "nick", "krish", "jack"],
+        "City": ["London", "Manchester", "Liverpool", "Bristol"],
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
+    }
+    df = make_df(data)
+    X = check_X(df)
+    assert isinstance(X, nw.DataFrame)
+    assert_equal_fn(X.to_native(), df)
 
 
-def test_raises_error_if_empty_df():
-    df = pd.DataFrame([])
+@pytest.mark.parametrize(
+    "df",
+    [
+        pd.DataFrame([]),
+        pd.DataFrame({"a": []}),
+        pl.DataFrame({"a": []}),
+    ],
+)
+def test_raises_error_if_empty_df(df):
     with pytest.raises(ValueError):
         check_X(df)
 
 
-def test_check_y_returns_series():
-    s = pd.Series([0, 1, 2, 3, 4])
-    assert_series_equal(check_y(s), s)
-
-
-def test_check_y_returns_dataframe():
-    d = pd.DataFrame({"t1": [0, 1, 2, 3, 4], "t2": [5, 6, 7, 8, 9]})
-    assert_frame_equal(check_y(d), d)
-
-
-def test_check_y_converts_np_array():
-    a1D = np.array([1, 2, 3, 4])
-    s = pd.Series(a1D)
-    assert_series_equal(check_y(a1D), s)
-
-
-def test_check_y_converts_np_array_2D():
-    a2D = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(2, 4)
-    d = pd.DataFrame(a2D)
-    assert_frame_equal(check_y(a2D), d)
-
-
-def test_check_y_raises_none_error():
+def test_check_X_raises_error_if_0_columns():
+    # A dataframe with rows but no columns is not caught by `is_empty()`, which
+    # only looks at the row count, so it needs its own explicit check. Polars has
+    # no representation for "rows with 0 columns", so this case is pandas-only.
+    df = pd.DataFrame(index=range(3))
+    assert df.shape == (3, 0)
     with pytest.raises(ValueError):
-        check_y(None)
-
-
-def test_check_y_raises_nan_error():
-    msg = "y contains NaN values."
-
-    # y is series
-    s = pd.Series([0, np.nan, 2, 3, 4])
-    with pytest.raises(ValueError) as record:
-        check_y(s)
-    assert str(record.value) == msg
-
-    # y is multioutput
-    d = pd.DataFrame(np.array([1, np.nan, 3, 4, 5, 6, np.nan, 8]).reshape(2, 4))
-    with pytest.raises(ValueError) as record:
-        check_y(d)
-    assert str(record.value) == msg
-
-
-def test_check_y_raises_inf_error():
-    msg = "y contains infinity values."
-
-    # y is series
-    s = pd.Series([0, np.inf, 2, 3, 4])
-    with pytest.raises(ValueError) as record:
-        check_y(s)
-    assert str(record.value) == msg
-
-    # y is multioutput
-    d = pd.DataFrame(np.array([1, np.inf, 3, 4, 5, 6, np.inf, 8]).reshape(2, 4))
-    with pytest.raises(ValueError) as record:
-        check_y(d)
-    assert str(record.value) == msg
-
-
-def test_check_y_converts_string_to_number():
-    s = pd.Series(["0", "1", "2", "3", "4"])
-    assert_series_equal(check_y(s, y_numeric=True), s.astype("float"))
-
-
-def test_check_x_y_returns_pandas_from_pandas(df_vartypes):
-    # when s is series
-    s = pd.Series([0, 1, 2, 3])
-    x, y = check_X_y(df_vartypes, s)
-    assert_frame_equal(df_vartypes, x)
-    assert_series_equal(s, y)
-
-    # when y is multioutput
-    d = pd.DataFrame(np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2))
-    x, y = check_X_y(df_vartypes, d)
-    assert_frame_equal(df_vartypes, x)
-    assert_frame_equal(d, y)
-
-
-def test_check_X_y_returns_pandas_from_pandas_with_non_typical_index():
-    df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
-    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
-    x, y = check_X_y(df, s)
-    assert_frame_equal(df, x)
-    assert_series_equal(s, y)
-
-
-def test_check_X_y_raises_error_when_pandas_index_dont_match():
-    msg = "The indexes of X and y do not match."
-
-    df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
-    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 999])
-    with pytest.raises(ValueError) as record:
-        check_X_y(df, s)
-    assert str(record.value) == msg
-
-    # when y is multioutput
-    d = pd.DataFrame(
-        np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2), index=[22, 99, 101, 999]
-    )
-    with pytest.raises(ValueError) as record:
-        check_X_y(df, d)
-    assert str(record.value) == msg
-
-
-def test_check_x_y_reassings_index_when_only_one_input_is_pandas():
-    # X is dataframe, y is 1D array
-    df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
-    s = np.array([1, 2, 3, 4])
-    s_exp = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
-    x, y = check_X_y(df, s)
-    assert_frame_equal(df, x)
-    assert_series_equal(s_exp.astype(int), y.astype(int))
-
-    # X is dataframe, y is 2d array
-    s = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2)
-    s_exp = pd.DataFrame(s, index=[22, 99, 101, 212])
-    x, y = check_X_y(df, s)
-    assert_frame_equal(df, x)
-    assert_frame_equal(s_exp.astype(int), y.astype(int))
-
-    # X is not a df, y is a series
-    df = np.array([[1, 2, 3, 4], [5, 6, 7, 8]]).T
-    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
-    df_exp = pd.DataFrame(df, columns=["x0", "x1"])
-    df_exp.index = s.index
-    x, y = check_X_y(df, s)
-    assert_frame_equal(df_exp, x)
-    assert_series_equal(s, y)
-
-    # X is not a df, y is a dataframe
-    s = np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2)
-    s = pd.DataFrame(s, index=[22, 99, 101, 212])
-    df = np.array([[1, 2, 3, 4], [5, 6, 7, 8]]).T
-    df_exp = pd.DataFrame(df, columns=["x0", "x1"])
-    df_exp.index = s.index
-    x, y = check_X_y(df, s)
-    assert_frame_equal(df_exp, x)
-    assert_frame_equal(s, y)
-
-
-def test_check_x_y_converts_numpy_to_pandas():
-    a2D = np.array([[1, 2], [3, 4], [3, 4], [3, 4]])
-    df2D = pd.DataFrame(a2D, columns=["x0", "x1"])
-
-    a1D = np.array([1, 2, 3, 4])
-    s1D = pd.Series(a1D)
-
-    # X is df and y is array
-    x, y = check_X_y(df2D, a1D)
-    assert_frame_equal(df2D, x)
-    assert_series_equal(s1D, y)
-
-    # X is array and y is series
-    x, y = check_X_y(a2D, s1D)
-    assert_frame_equal(df2D, x)
-    assert_series_equal(s1D, y)
-
-    # X is df and y is 2d array
-    y2D = pd.DataFrame(a2D, columns=[0, 1])
-    x, y = check_X_y(df2D, a2D)
-    assert_frame_equal(df2D, x)
-    assert_frame_equal(y2D, y)
-
-    # X is array and y multioutput df
-    x, y = check_X_y(a2D, df2D)
-    assert_frame_equal(df2D, x)
-    assert_frame_equal(df2D, y)
-
-
-def test_check_x_y_raises_error_when_inconsistent_length(df_vartypes):
-    s = pd.Series([0, 1, 2, 3, 5])
-    with pytest.raises(ValueError):
-        check_X_y(df_vartypes, s)
-
-
-def test_check_X_matches_training_df(df_vartypes):
-    with pytest.raises(ValueError):
-        assert _check_X_matches_training_df(df_vartypes, 4)
-
-
-def test_contains_na(df_na):
-    msg = (
-        "Some of the variables in the dataset contain NaN. Check and "
-        "remove those before using this transformer."
-    )
-
-    with pytest.raises(ValueError) as record:
-        assert _check_contains_na(df_na, ["Name", "City"])
-    assert str(record.value) == msg
-
-
-def test_optional_contains_na(df_na):
-    msg = (
-        "Some of the variables in the dataset contain NaN. Check and "
-        "remove those before using this transformer or set the parameter "
-        "`missing_values='ignore'` when initialising this transformer."
-    )
-
-    with pytest.raises(ValueError) as record:
-        assert _check_optional_contains_na(df_na, ["Name", "City"])
-    assert str(record.value) == msg
-
-
-def test_contains_inf_raises_on_inf():
-    msg = (
-        "Some of the variables to transform contain inf values. Check and "
-        "remove those before using this transformer."
-    )
-    df = pd.DataFrame({"A": [1.1, np.inf, 3.3]})
-    with pytest.raises(ValueError, match=msg):
-        _check_contains_inf(df, ["A"])
-
-
-def test_contains_inf_passes_without_inf():
-    df = pd.DataFrame({"A": [1.1, 2.2, 3.3]})
-    assert _check_contains_inf(df, ["A"]) is None
+        check_X(df)
 
 
 def test_check_X_raises_error_on_duplicated_column_names():
+    # only relevant for pandas
     df = pd.DataFrame(
         {
             "Name": ["tom", "nick", "krish", "jack"],
@@ -282,23 +85,381 @@ def test_check_X_raises_error_on_duplicated_column_names():
         }
     )
     df.columns = ["var_A", "var_A", "var_B", "var_C"]
-    with pytest.raises(ValueError) as err_txt:
+    msg = "Expected unique column names"
+    with pytest.raises(ValueError, match=msg):
         check_X(df)
-    assert err_txt.match("Input data contains duplicated variable names.")
 
 
-def test_check_X_errors():
-    # Test scalar array error (line 58)
-    with pytest.raises(ValueError) as record:
-        check_X(np.array(1))
-    assert record.match("Expected 2D array, got scalar array instead")
-
-    # Test 1D array error (line 65)
-    with pytest.raises(ValueError) as record:
-        check_X(np.array([1, 2, 3]))
-    assert record.match("Expected 2D array, got 1D array instead")
-
-    # Test incorrect type error (line 80)
+@pytest.mark.parametrize(
+    "X",
+    [
+        np.array([[1, 2], [3, 4]]),
+        np.array([1, 2, 3]),
+        np.array(1),
+        [1, 2, 3],
+        {"a": [1, 2, 3]},
+        "not a dataframe",
+        None,
+        csr_matrix([[1, 2], [3, 4]]),
+    ],
+)
+def test_check_X_raises_error_on_non_dataframe_input(X):
     with pytest.raises(TypeError) as record:
-        check_X("not a dataframe")
-    assert record.match("X must be a numpy array or pandas dataframe")
+        check_X(X)
+    assert record.match("X must be a dataframe from a library supported by narwhals")
+
+
+# ------------------------
+# test check_y
+# ------------------------
+
+# --- series input ---
+
+
+@pytest.mark.parametrize(
+    "make_series, assert_equal_fn",
+    [(pd.Series, assert_series_equal), (pl.Series, pl_assert_series_equal)],
+)
+def test_check_y_series_returns_values_unchanged(make_series, assert_equal_fn):
+    s = make_series([0, 1, 2, 3, 4])
+    assert_equal_fn(check_y(s), s)
+
+
+@pytest.mark.parametrize(
+    "make_series",
+    [pd.Series, pl.Series],
+)
+def test_check_y_series_raises_nan_error(make_series):
+    s = make_series([0.0, None, 2.0])
+    with pytest.raises(ValueError, match="y contains NaN values."):
+        check_y(s)
+
+
+@pytest.mark.parametrize(
+    "make_series",
+    [pd.Series, pl.Series],
+)
+def test_check_y_series_raises_nan_error_for_explicit_nan(make_series):
+    # in polars, an explicit float("nan") is not a null value, so it is only
+    # caught if is_nan() is checked in addition to is_null()
+    s = make_series([0.0, float("nan"), 2.0])
+    with pytest.raises(ValueError, match="y contains NaN values."):
+        check_y(s)
+
+
+@pytest.mark.parametrize(
+    "make_series",
+    [pd.Series, pl.Series],
+)
+def test_check_y_series_raises_inf_error(make_series):
+    s = make_series([0.0, float("inf"), 2.0])
+    with pytest.raises(ValueError, match="y contains infinity values."):
+        check_y(s)
+
+
+@pytest.mark.parametrize(
+    "make_series, assert_equal_fn",
+    [(pd.Series, assert_series_equal), (pl.Series, pl_assert_series_equal)],
+)
+def test_check_y_series_converts_string_to_number_when_y_numeric(
+    make_series, assert_equal_fn
+):
+    s = make_series(["0", "1", "2"])
+    y = check_y(s, y_numeric=True)
+    expected = make_series([0.0, 1.0, 2.0])
+    assert_equal_fn(y, expected)
+
+
+@pytest.mark.parametrize(
+    "make_series, assert_equal_fn",
+    [(pd.Series, assert_series_equal), (pl.Series, pl_assert_series_equal)],
+)
+def test_check_y_series_leaves_non_numeric_unchanged_by_default(
+    make_series, assert_equal_fn
+):
+    # y_numeric defaults to False: a non-numeric series (e.g. classification
+    # labels) should be returned as-is, without being cast to float.
+    s = make_series(["a", "b", "c"])
+    assert_equal_fn(check_y(s), s)
+
+
+# --- dataframe (multioutput) input ---
+
+
+@pytest.mark.parametrize(
+    "make_df, assert_equal_fn",
+    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+)
+def test_check_y_dataframe_returns_values_unchanged(make_df, assert_equal_fn):
+    d = make_df({"t1": [0, 1, 2, 3, 4], "t2": [5, 6, 7, 8, 9]})
+    assert_equal_fn(check_y(d), d)
+
+
+@pytest.mark.parametrize(
+    "make_df",
+    [pd.DataFrame, pl.DataFrame],
+)
+def test_check_y_dataframe_raises_nan_error(make_df):
+    d = make_df({"t1": [0.0, None, 2.0], "t2": [5.0, 6.0, 7.0]})
+    with pytest.raises(ValueError, match="y contains NaN values."):
+        check_y(d)
+
+
+@pytest.mark.parametrize(
+    "make_df",
+    [pd.DataFrame, pl.DataFrame],
+)
+def test_check_y_dataframe_raises_nan_error_for_explicit_nan(make_df):
+    # in polars, an explicit float("nan") is not a null value, so it is only
+    # caught if is_nan() is checked in addition to is_null()
+    d = make_df({"t1": [0.0, float("nan"), 2.0], "t2": [5.0, 6.0, 7.0]})
+    with pytest.raises(ValueError, match="y contains NaN values."):
+        check_y(d)
+
+
+@pytest.mark.parametrize(
+    "make_df",
+    [pd.DataFrame, pl.DataFrame],
+)
+def test_check_y_dataframe_raises_inf_error(make_df):
+    d = make_df({"t1": [0.0, 0.4, 2.0], "t2": [5.0, float("inf"), 7.0]})
+    with pytest.raises(ValueError, match="y contains infinity values."):
+        check_y(d)
+
+
+# --- array-like input ---
+
+
+@pytest.mark.parametrize(
+    "a",
+    [
+        np.array([1, 2, 3, 4]),
+        np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(2, 4),
+        [1, 2, 3, 4],
+    ],
+)
+def test_check_y_array_returns_unchanged(a):
+    y = check_y(a)
+    assert isinstance(y, np.ndarray)
+    np.testing.assert_array_equal(a, y)
+
+
+def test_check_y_raises_none_error():
+    msg = "requires y to be passed, but the target y"
+    with pytest.raises(ValueError, match=msg):
+        check_y(None)
+
+
+# ------------------------
+# test check_X_y
+# ------------------------
+
+
+@pytest.mark.parametrize(
+    "make_df, assert_frame_fn, make_series, assert_series_fn",
+    [
+        (pd.DataFrame, assert_frame_equal, pd.Series, assert_series_equal),
+        (pl.DataFrame, pl_assert_frame_equal, pl.Series, pl_assert_series_equal),
+    ],
+)
+def test_check_X_y_returns_df_and_series_unchanged(
+    make_df, assert_frame_fn, make_series, assert_series_fn
+):
+    df = make_df({"a": [1, 2, 3], "b": [4, 5, 6]})
+    s = make_series([0, 1, 2])
+    X, y = check_X_y(df, s)
+    assert isinstance(X, nw.DataFrame) and isinstance(y, type(s))
+    assert_frame_fn(X.to_native(), df)
+    assert_series_fn(y, s)
+
+
+@pytest.mark.parametrize(
+    "make_df, assert_frame_fn",
+    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+)
+def test_check_X_y_returns_df_and_multioutput_y_unchanged(make_df, assert_frame_fn):
+    df = make_df({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]})
+    d = make_df({"t1": [1, 2, 3, 4], "t2": [5, 6, 7, 8]})
+    X, y = check_X_y(df, d)
+    assert isinstance(X, nw.DataFrame)
+    assert_frame_fn(X.to_native(), df)
+    assert_frame_fn(y, d)
+
+
+@pytest.mark.parametrize(
+    "make_df, assert_frame_fn",
+    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+)
+@pytest.mark.parametrize(
+    "y",
+    [
+        np.array([0, 1, 2]),
+        [0, 1, 2],
+        np.array([[0, 1], [2, 3], [4, 5]]),
+    ],
+)
+def test_check_X_y_with_array_like_y_returns_check_y_output(
+    make_df, assert_frame_fn, y
+):
+    df = make_df({"a": [1, 2, 3], "b": [4, 5, 6]})
+    X, y_out = check_X_y(df, y)
+    assert isinstance(X, nw.DataFrame)
+    assert_frame_fn(X.to_native(), df)
+    np.testing.assert_array_equal(y_out, check_y(y))
+
+
+def test_check_X_y_returns_pandas_with_non_typical_index():
+    # only relevant for pandas: polars has no index to reconcile
+    df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
+    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
+    x, y = check_X_y(df, s)
+    assert isinstance(x, nw.DataFrame)
+    assert_frame_equal(df, x.to_native())
+    assert_series_equal(s, y)
+
+
+def test_check_X_y_raises_error_when_pandas_index_dont_match():
+    # only relevant for pandas: polars has no index to reconcile
+    msg = "The indexes of X and y do not match."
+
+    df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
+    s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 999])
+    with pytest.raises(ValueError, match=msg):
+        check_X_y(df, s)
+
+    # when y is multioutput
+    d = pd.DataFrame(
+        np.array([1, 2, 3, 4, 5, 6, 7, 8]).reshape(4, 2), index=[22, 99, 101, 999]
+    )
+    with pytest.raises(ValueError, match=msg):
+        check_X_y(df, d)
+
+
+@pytest.mark.parametrize(
+    "make_df, make_series",
+    [(pd.DataFrame, pd.Series), (pl.DataFrame, pl.Series)],
+)
+def test_check_x_y_raises_error_when_inconsistent_length(make_df, make_series):
+    df = make_df({"a": [1, 2, 3]})
+    s = make_series([0, 1])
+    with pytest.raises(ValueError):
+        check_X_y(df, s)
+
+
+# -----------------------------------
+# test _check_X_matches_training_df
+# -----------------------------------
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_check_X_matches_training_df_passes_when_columns_match(make_df):
+    df = make_df({"a": [1, 2], "b": [3, 4]})
+    assert _check_X_matches_training_df(df, 2) is None
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_check_X_matches_training_df_raises_error_when_columns_dont_match(make_df):
+    msg = "The number of columns in this dataset is different from"
+    df = make_df({"a": [1, 2], "b": [3, 4]})
+    with pytest.raises(ValueError, match=msg):
+        _check_X_matches_training_df(df, 3)
+
+
+# -------------------------
+# test _check_contains_na
+# -------------------------
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_raises_when_nan(make_df):
+    msg1 = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    msg2 = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+
+    df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
+    with pytest.raises(ValueError, match=msg1):
+        _check_contains_na(df, ["Name", "City"])
+
+    with pytest.raises(ValueError, match=msg2):
+        _check_contains_na(df, ["Name", "City"], error_msg="other")
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_passes_when_no_nan(make_df):
+    df = make_df({"Name": ["tom", "nick"], "City": ["London", "Manchester"]})
+    assert _check_contains_na(df, ["Name", "City"]) is None
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_ignores_columns_not_in_variables(make_df):
+    df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
+    assert _check_contains_na(df, ["City"]) is None
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_raises_for_explicit_nan_in_numeric_column(make_df):
+    # in polars, an explicit float("nan") is not a null value, so it is only
+    # caught if is_nan() is checked in addition to is_null()
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    df = make_df({"Age": [20.0, float("nan"), 19.0], "City": ["a", "b", "c"]})
+    with pytest.raises(ValueError, match=msg):
+        _check_contains_na(df, ["Age", "City"])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_raises_for_mix_of_null_and_nan_across_dtypes(make_df):
+    # a numeric column with a NaN and a string column with a null should both
+    # still be caught, and the numeric-only is_nan() scoping must not error out
+    # on the string column
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer."
+    )
+    df = make_df({"Age": [20.0, float("nan"), 19.0], "City": ["a", None, "c"]})
+    with pytest.raises(ValueError, match=msg):
+        _check_contains_na(df, ["Age", "City"])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_na_no_ops_when_variables_is_empty(make_df):
+    # on the narwhals/polars backend, nw.col([]) raises a TypeError, so an
+    # empty `variables` list must short-circuit before any column selection
+    df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
+    assert _check_contains_na(df, []) is None
+
+
+# --------------------------
+# test _check_contains_inf
+# --------------------------
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_inf_raises_on_inf(make_df):
+    msg = (
+        "Some of the variables to transform contain inf values. Check and "
+        "remove those before using this transformer."
+    )
+    df = make_df({"A": [1.1, np.inf, 3.3]})
+    with pytest.raises(ValueError, match=msg):
+        _check_contains_inf(df, ["A"])
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_inf_passes_without_inf(make_df):
+    df = make_df({"A": [1.1, 2.2, 3.3]})
+    assert _check_contains_inf(df, ["A"]) is None
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_contains_inf_ignores_columns_not_in_variables(make_df):
+    df = make_df({"A": [1.1, float("inf"), 3.3], "B": [1.0, 2.0, 3.0]})
+    assert _check_contains_inf(df, ["B"]) is None

@@ -1,7 +1,9 @@
 import warnings
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -19,7 +21,7 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import _check_optional_contains_na, check_X
+from feature_engine.dataframe_checks import check_X
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -40,7 +42,8 @@ class MatchCategories(
 ):
     """
     MatchCategories() ensures that categorical variables are encoded as pandas
-    `'categorical'` dtype, instead of generic python `'object'` or other dtypes.
+    `'categorical'` dtype, or polars `'Enum'` dtype, instead of generic python
+    `'object'`, string or other dtypes.
 
     Under the hood, `'categorical'` dtype is a representation that maps each
     category to an integer, thus providing a more memory-efficient object
@@ -51,7 +54,11 @@ class MatchCategories(
     category, and can thus be used to ensure that the correct encoding gets
     applied when passing categorical data to modelling packages that support this
     dtype, or to prevent unseen categories from reaching a further transformer
-    or estimator in a pipeline, for example.
+    or estimator in a pipeline, for example. Categories not seen during fit become
+    missing values.
+
+    The polars `'Enum'` dtype only takes strings, so with polars, numerical
+    variables cast with `ignore_format=True` become strings.
 
     More details in the :ref:`User Guide <match_categories>`.
 
@@ -68,7 +75,8 @@ class MatchCategories(
     Attributes
     ----------
     category_dict_:
-        Dictionary with the category encodings assigned to each variable.
+        Dictionary with the categories learned for each variable. With polars, the
+        categories are stored as lists of strings.
 
     {variables_}
 
@@ -94,7 +102,7 @@ class MatchCategories(
         Set the parameters of this estimator.
 
     transform:
-        Enforce the type of categorical variables as dtype `categorical`.
+        Cast the categorical variables to a categorical dtype.
 
     Examples
     --------
@@ -131,84 +139,103 @@ class MatchCategories(
         super().__init__(variables, missing_values, ignore_format)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
-        Learn the encodings or levels to use for representing categorical variables.
+        Learn the categories of each categorical variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
-        y: pandas Series, default = None
-            y is not needed in this encoder. You can pass y or None.
+        y: Series, default = None
+            y is not needed in this transformer. You can pass y or None.
         """
-        X = check_X(X)
+        nw_X = check_X(X)
         variables_ = self._check_or_select_variables(X)
+        self._check_na(X, variables_)
 
-        if self.missing_values == "raise":
-            _check_optional_contains_na(X, variables_)
-
-        self.category_dict_ = dict()
-        for var in variables_:
-            self.category_dict_[var] = pd.Categorical(X[var]).categories
+        if nwd.is_pandas_dataframe(X) is True:
+            # pandas is faster than narwhals.
+            self.category_dict_ = {
+                var: X[var].astype("category").cat.categories for var in variables_
+            }
+        else:
+            self.category_dict_ = {
+                var: self._find_categories(nw_X.get_column(var)) for var in variables_
+            }
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
-        Encode categorical variables as pandas categorical dtype.
+        Cast the categorical variables to a categorical dtype with the categories
+        learned during fit. Categories not seen during fit become missing values.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
-            The dataset to encode.
+        X: dataframe of shape = [n_samples, n_features].
+            The dataset to transform.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features].
-            The dataframe with the variables encoded as pandas categorical dtype.
+        X_new: dataframe of shape = [n_samples, n_features].
+            The dataframe with the variables cast to pandas `category` or polars
+            `Enum` dtype.
         """
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
+        self._check_na(X, self.variables_)
 
-        if self.missing_values == "raise":
-            _check_optional_contains_na(X, self.variables_)
-
-        for feature, levels in self.category_dict_.items():
-            X[feature] = pd.Categorical(
-                X[feature].where(X[feature].isin(levels)),
-                categories=levels
+        if nwd.is_pandas_dataframe(X) is True:
+            # pandas is faster than narwhals.
+            X = X.copy()
+            categorical = nw.get_native_namespace(nw_X).Categorical
+            for feature, levels in self.category_dict_.items():
+                # get_indexer returns -1 for unseen categories, which from_codes
+                # turns into NaN.
+                X[feature] = categorical.from_codes(
+                    levels.get_indexer(X[feature]), categories=levels
+                )
+            nw_X = nw.from_native(X, eager_only=True)
+        else:
+            nw_X = nw_X.with_columns(
+                *[
+                    nw.when(nw.col(feature).cast(nw.String).is_in(levels))
+                    .then(nw.col(feature).cast(nw.String))
+                    .cast(nw.Enum(levels))
+                    for feature, levels in self.category_dict_.items()
+                ]
             )
 
-        self._check_nas_in_result(X)
-        return X
+        self._check_nas_in_result(nw_X)
+        return nw_X.to_native()
 
-    def _check_nas_in_result(self, X: pd.DataFrame):
-        # check if NaN values were introduced by the encoding
-        if X[self.category_dict_.keys()].isnull().sum().sum() > 0:
+    def _check_nas_in_result(self, nw_X: nw.DataFrame):
+        nan_columns = [
+            str(feature)
+            for feature in self.category_dict_
+            if nw_X.get_column(feature).null_count() > 0
+        ]
 
-            # obtain the name(s) of the columns that have null values
-            nan_columns = (
-                X[self.category_dict_.keys()]
-                .columns[X[self.category_dict_.keys()].isnull().any()]
-                .tolist()
+        if len(nan_columns) > 0:
+            msg = (
+                "During the encoding, NaN values were introduced in the feature(s) "
+                f"{', '.join(nan_columns)}."
             )
-
-            if len(nan_columns) > 1:
-                nan_columns_str = ", ".join(nan_columns)
-            else:
-                nan_columns_str = nan_columns[0]
-
             if self.missing_values == "ignore":
-                warnings.warn(
-                    "During the encoding, NaN values were introduced in the feature(s) "
-                    f"{nan_columns_str}."
-                )
+                warnings.warn(msg)
             elif self.missing_values == "raise":
-                raise ValueError(
-                    "During the encoding, NaN values were introduced in the feature(s) "
-                    f"{nan_columns_str}."
-                )
+                raise ValueError(msg)
+
+    def _find_categories(self, series: nw.Series) -> List[str]:
+        if series.dtype == nw.Enum:
+            return list(series.dtype.categories)
+        if series.dtype.is_float() is True:
+            # NaN is a missing value in pandas, but a regular value in polars.
+            series = series.filter(~series.is_nan())
+        # polars Enum only takes strings, so categories are sorted in the original
+        # dtype, to keep numbers in numeric order, and then cast to string.
+        return series.drop_nulls().unique().sort().cast(nw.String).to_list()

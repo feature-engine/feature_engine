@@ -86,11 +86,11 @@ We see that `sex` and `age` are no longer in the dataframe:
 .. code:: python
 
          pclass  survived  sibsp  parch     fare cabin embarked
-    1000      3         1      0      0   7.7500     n        Q
-    1001      3         1      2      0  23.2500     n        Q
-    1002      3         1      2      0  23.2500     n        Q
-    1003      3         1      2      0  23.2500     n        Q
-    1004      3         1      0      0   7.7875     n        Q
+    1000      3         1      0      0   7.7500   NaN        Q
+    1001      3         1      2      0  23.2500   NaN        Q
+    1002      3         1      2      0  23.2500   NaN        Q
+    1003      3         1      2      0  23.2500   NaN        Q
+    1004      3         1      0      0   7.7875   NaN        Q
 
 If we transform the dataframe with the dropped columns using :class:`MatchVariables()`,
 we see that the new dataframe contains all the variables, and those that were missing
@@ -107,13 +107,13 @@ Indeed, `sex` and `age` are back, filled with missing values:
 
 .. code:: python
 
-    The following variables are added to the DataFrame: ['age', 'sex']
+    The following variables are added to the DataFrame: ['sex', 'age']
          pclass  survived  sex  age  sibsp  parch     fare cabin embarked
-    1000      3         1  NaN  NaN      0      0   7.7500     n        Q
-    1001      3         1  NaN  NaN      2      0  23.2500     n        Q
-    1002      3         1  NaN  NaN      2      0  23.2500     n        Q
-    1003      3         1  NaN  NaN      2      0  23.2500     n        Q
-    1004      3         1  NaN  NaN      0      0   7.7875     n        Q
+    1000      3         1  NaN  NaN      0      0   7.7500   NaN        Q
+    1001      3         1  NaN  NaN      2      0  23.2500   NaN        Q
+    1002      3         1  NaN  NaN      2      0  23.2500   NaN        Q
+    1003      3         1  NaN  NaN      2      0  23.2500   NaN        Q
+    1004      3         1  NaN  NaN      0      0   7.7875   NaN        Q
 
 Note how the missing columns were added back to the transformed test set, with
 missing values, in the position (i.e., order) in which they were in the train set.
@@ -133,11 +133,11 @@ We now have 2 extra columns, `var_a` and `var_b`, that were not present in the t
 .. code:: python
 
          pclass  survived  sibsp  parch     fare cabin embarked  var_a  var_b
-    1000      3         1      0      0   7.7500     n        Q      0      0
-    1001      3         1      2      0  23.2500     n        Q      0      0
-    1002      3         1      2      0  23.2500     n        Q      0      0
-    1003      3         1      2      0  23.2500     n        Q      0      0
-    1004      3         1      0      0   7.7875     n        Q      0      0
+    1000      3         1      0      0   7.7500   NaN        Q      0      0
+    1001      3         1      2      0  23.2500   NaN        Q      0      0
+    1002      3         1      2      0  23.2500   NaN        Q      0      0
+    1003      3         1      2      0  23.2500   NaN        Q      0      0
+    1004      3         1      0      0   7.7875   NaN        Q      0      0
 
 And now, we transform the data with :class:`MatchVariables()`:
 
@@ -152,14 +152,14 @@ the additional columns from the resulting dataset:
 
 .. code:: python
 
-    The following variables are added to the DataFrame: ['age', 'sex']
-    The following variables are dropped from the DataFrame: ['var_b', 'var_a']
+    The following variables are added to the DataFrame: ['sex', 'age']
+    The following variables are dropped from the DataFrame: ['var_a', 'var_b']
          pclass  survived  sex  age  sibsp  parch     fare cabin embarked
-    1000      3         1  NaN  NaN      0      0   7.7500     n        Q
-    1001      3         1  NaN  NaN      2      0  23.2500     n        Q
-    1002      3         1  NaN  NaN      2      0  23.2500     n        Q
-    1003      3         1  NaN  NaN      2      0  23.2500     n        Q
-    1004      3         1  NaN  NaN      0      0   7.7875     n        Q
+    1000      3         1  NaN  NaN      0      0   7.7500   NaN        Q
+    1001      3         1  NaN  NaN      2      0  23.2500   NaN        Q
+    1002      3         1  NaN  NaN      2      0  23.2500   NaN        Q
+    1003      3         1  NaN  NaN      2      0  23.2500   NaN        Q
+    1004      3         1  NaN  NaN      0      0   7.7875   NaN        Q
 
 However, if we look closely, the dtypes for the `sex` variable do not match. This could
 cause issues if other transformations depend upon having the correct dtypes. This is the
@@ -173,7 +173,7 @@ Which is:
 
 .. code:: python
 
-    dtype('O')
+    <StringDtype(storage='python', na_value=nan)>
 
 And this is the dtype in the transformed test set:
 
@@ -201,8 +201,8 @@ We see in the messages that the `sex` dtype was changed to match that of the tra
 .. code:: python
 
     The following variables are added to the DataFrame: ['sex', 'age']
-    The following variables are dropped from the DataFrame: ['var_b', 'var_a']
-    The sex dtype is changing from  float64 to object
+    The following variables are dropped from the DataFrame: ['var_a', 'var_b']
+    The sex dtype is changing from  float64 to str
 
 Now the dtype matches:
 
@@ -214,10 +214,60 @@ Which is:
 
 .. code:: python
 
-    dtype('O')
+    <StringDtype(storage='python', na_value=nan)>
 
 By default, :class:`MatchVariables()` will print out messages indicating which variables
 were added, removed and altered. We can switch off the messages through the parameter `verbose`.
+
+Working with polars
+^^^^^^^^^^^^^^^^^^^
+
+:class:`MatchVariables()` also works with polars dataframes, and returns a polars
+dataframe. With polars, the variables added with the default `fill_value` contain
+nulls, which is how polars represents missing data:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.preprocessing import MatchVariables
+
+    train = pl.DataFrame({
+        "pclass": [1, 1, 3, 2],
+        "sex": ["female", "male", "male", "female"],
+        "age": [29.0, 2.0, 30.0, 25.0],
+        "fare": [211.34, 151.55, 7.75, 26.0],
+    })
+
+    test = pl.DataFrame({
+        "fare": [7.75, 23.25, 7.78],
+        "pclass": [3, 3, 3],
+        "var_a": [0, 0, 0],
+    })
+
+    match_cols = MatchVariables(match_dtypes=True)
+    match_cols.fit(train)
+
+    test_t = match_cols.transform(test)
+    print(test_t)
+
+The transformer added `sex` and `age`, removed `var_a`, sorted the variables as in the
+train set and cast `sex` to the string dtype that it had in the train set:
+
+.. code:: text
+
+    The following variables are added to the DataFrame: ['sex', 'age']
+    The following variables are dropped from the DataFrame: ['var_a']
+    The sex dtype is changing from  Float64 to String
+    shape: (3, 4)
+    ┌────────┬──────┬──────┬───────┐
+    │ pclass ┆ sex  ┆ age  ┆ fare  │
+    │ ---    ┆ ---  ┆ ---  ┆ ---   │
+    │ i64    ┆ str  ┆ f64  ┆ f64   │
+    ╞════════╪══════╪══════╪═══════╡
+    │ 3      ┆ null ┆ null ┆ 7.75  │
+    │ 3      ┆ null ┆ null ┆ 23.25 │
+    │ 3      ┆ null ┆ null ┆ 7.78  │
+    └────────┴──────┴──────┴───────┘
 
 
 When to use the transformer

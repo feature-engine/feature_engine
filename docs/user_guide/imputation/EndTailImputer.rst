@@ -119,6 +119,53 @@ imputation (in red the imputed variable):
 The second peak corresponds to the missing data, which were replaced with a value at that
 side of the distribution.
 
+With polars
+-----------
+
+:class:`EndTailImputer()` also works with polars dataframes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.imputation import EndTailImputer
+
+    X = pl.DataFrame({
+        "LotFrontage": [65.0, 80.0, None, 60.0, 84.0, None, 75.0],
+        "MasVnrArea": [196.0, None, 162.0, 0.0, 350.0, None, 0.0],
+    })
+
+    # set up the imputer
+    tail_imputer = EndTailImputer(
+        imputation_method='gaussian',
+        tail='right',
+        fold=3,
+        variables=['LotFrontage', 'MasVnrArea'],
+    )
+
+    # fit the imputer
+    tail_imputer.fit(X)
+
+    # transform the data
+    X_t = tail_imputer.transform(X)
+    X_t
+
+.. code:: text
+
+    shape: (7, 2)
+    ┌─────────────┬────────────┐
+    │ LotFrontage ┆ MasVnrArea │
+    │ ---         ┆ ---        │
+    │ f64         ┆ f64        │
+    ╞═════════════╪════════════╡
+    │ 65.0        ┆ 196.0      │
+    │ 80.0        ┆ 583.800407 │
+    │ 103.053925  ┆ 162.0      │
+    │ 60.0        ┆ 0.0        │
+    │ 84.0        ┆ 350.0      │
+    │ 103.053925  ┆ 583.800407 │
+    │ 75.0        ┆ 0.0        │
+    └─────────────┴────────────┘
+
 Additional resources
 --------------------
 
