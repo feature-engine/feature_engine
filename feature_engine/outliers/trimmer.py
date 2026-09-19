@@ -195,14 +195,7 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
         conditions = [nw.col(f) <= c for f, c in self.right_tail_caps_.items()]
         conditions += [nw.col(f) >= c for f, c in self.left_tail_caps_.items()]
 
-        # A single combined filter() call is pushed down to the native backend
-        # (pandas/polars) - benchmarked on par with or faster than sequential
-        # pandas .loc masking at 50k+ rows, unlike a numpy boolean-mask
-        # extraction which doesn't consistently beat it either.
         if len(conditions) > 0:
-            combined = conditions[0]
-            for condition in conditions[1:]:
-                combined = combined & condition
-            nw_X = nw_X.filter(combined)
+            nw_X = nw_X.filter(nw.all_horizontal(*conditions, ignore_nulls=False))
 
         return nw_X.to_native()
