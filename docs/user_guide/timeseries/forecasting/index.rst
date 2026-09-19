@@ -96,6 +96,24 @@ methods like mean, sum, standard deviation, min, max, among others. Unlike rolli
 don't need to specify a window size as the window is expanded automatically at each time step.
 
 
+Time order of the rows
+~~~~~~~~~~~~~~~~~~~~~~
+
+Lag and window features take values from previous rows, so the rows must be in time
+order. How the transformers find that order depends on the dataframe you pass.
+
+With **pandas** dataframes, the index gives the time order. The index must have unique
+values and no missing data. With `sort_index=True`, the default, the transformers sort
+the rows by the index before creating the features. The parameter `freq`, and windows
+given as a time span, like `"3D"`, need a DatetimeIndex.
+
+**polars** dataframes have no index, so the transformers use the rows in the order in
+which they are in the dataframe. Sort the dataframe by time before passing it to the
+transformers, for example with `df.sort("date")`. The parameter `sort_index` has no
+effect with polars. The parameter `freq`, and windows given as a time span, are only
+supported with pandas dataframes; with polars, use a number of rows instead.
+
+
 Datetime Features
 -----------------
 

@@ -206,7 +206,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
             The dataframe with the original plus the new variables.
         """
         # Common dataframe checks and setting up.
-        X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X).to_native()
 
         tmp = (
             X[self.variables_]

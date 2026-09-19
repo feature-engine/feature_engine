@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Conventions for working in this repo. Optimize for readability and speed, 
-in that order of how you decide, but don't ship a slow default when a 
-fast one is free.
+Conventions for working in this repo. Optimize for speed, readability and
+simplicity, in that order of how you decide: never ship a slow default when a
+fast one is available.
 
 ## Inputs
 
