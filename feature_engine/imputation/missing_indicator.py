@@ -215,6 +215,7 @@ class MissingIndicator(BaseImputer):
         """
 
         nw_X = self._transform(X)
+        X = nw_X.to_native()
 
         # Benchmarked: building a separate indicator frame and concatenating
         # it (pandas-native) is ~2-5x faster than narwhals' with_columns

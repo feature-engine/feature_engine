@@ -22,6 +22,9 @@ from tests.estimator_checks.estimator_checks import (
     check_feature_engine_estimator,
     test_df,
 )
+from tests.estimator_checks.fit_functionality_checks import (
+    check_transform_returns_training_variable_order,
+)
 from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 _estimators = [
@@ -288,3 +291,15 @@ def test_encoders_raise_error_when_x_pandas_y_pandas_index_mismatch(encoder, df_
     with pytest.raises(Exception) as e:
         encoder.fit_transform(X, y)
     assert "indexes" in e.value.args[0].lower()
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_transform_returns_training_variable_order(estimator, make_df):
+    data = {
+        "var_A": ["a", "b", "a", "b", "c", "a"],
+        "var_B": ["x", "x", "y", "y", "x", "y"],
+        "var_C": [1, 2, 1, 2, 1, 2],
+    }
+    check_transform_returns_training_variable_order(
+        estimator, make_df, data, [0, 1, 0, 1, 1, 0]
+    )

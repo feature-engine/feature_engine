@@ -5,7 +5,11 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
-from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.dataframe_checks import (
+    _check_X_matches_training_df,
+    _reorder_as_training_df,
+    check_X,
+)
 from feature_engine.tags import _return_tags
 
 
@@ -19,7 +23,7 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         - Check transformer was fit
         - Check that the input is a dataframe
         - Check that input has same size than the train set used in fit()
-        - Re-orders dataframe features if necessary
+        - Re-orders the variables as in the train set
 
         Parameters
         ----------
@@ -27,12 +31,14 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        X: narwhals dataframe.
-            The narwhalified version of the dataframe entered by the user.
+        nw_X: narwhals dataframe.
+            The dataframe entered by the user, with the variables in the order of
+            the train set.
         """
         check_is_fitted(self)
         nw_X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
+        nw_X = _reorder_as_training_df(nw_X, self.feature_names_in_)
 
         return nw_X
 
@@ -51,6 +57,7 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             The dataframe without missing values in the selected variables.
         """
         nw_X = self._transform(X)
+        X = nw_X.to_native()
 
         # pandas-native fillna is ~1.3-1.6x faster than narwhals-generic
         # fill_null equivalent at the 10k-100k

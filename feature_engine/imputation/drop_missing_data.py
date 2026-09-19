@@ -7,7 +7,6 @@ import narwhals as nw
 import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
-from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
@@ -23,7 +22,7 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
     _return_empty_docstring
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_checks import check_X, check_X_y
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
@@ -35,7 +34,7 @@ from feature_engine.variable_handling import check_all_variables, find_all_varia
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class DropMissingData(BaseImputer, TransformXyMixin):
+class DropMissingData(BaseImputer):
     """
     DropMissingData() deletes rows containing missing values. It provides
     similar functionality to `pandas.dropna()`, but within the `fit` and `transform`
@@ -248,6 +247,41 @@ class DropMissingData(BaseImputer, TransformXyMixin):
 
         X = self._transform(X)
         return self._select_rows(X, keep=False)
+
+    def transform_x_y(self, X: IntoDataFrame, y: IntoSeries):
+        """
+        Remove rows with missing data from the dataframe and the target.
+
+        Parameters
+        ----------
+        X: dataframe of shape = [n_samples, n_features]
+            The dataframe to transform.
+
+        y: Series or Dataframe of length = n_samples
+            The target variable to transform. Can be multi-output.
+
+        Returns
+        -------
+        X_new: dataframe
+            The complete case dataframe for the selected variables. It may contain
+            less rows than the original dataset.
+
+        y_new: Series or DataFrame
+            The target variable, with as many rows as those left in X_new.
+        """
+        _, y = check_X_y(X, y)
+
+        row_index = "__row_index__"
+        nw_X = self._transform(X).with_row_index(row_index)
+        nw_X = nw.from_native(self._select_rows(nw_X, keep=True), eager_only=True)
+        rows = nw_X.get_column(row_index).to_list()
+
+        if nwd.is_into_series(y):
+            y = nw.from_native(y, series_only=True)[rows].to_native()
+        else:
+            y = nw.from_native(y, eager_only=True)[rows].to_native()
+
+        return nw_X.drop(row_index).to_native(), y
 
     def _select_rows(self, X: IntoDataFrame, keep: bool) -> IntoDataFrame:
         """

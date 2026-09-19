@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from sklearn import clone
 
+from tests.backend_helpers import frame_to_dict, make_series
 from tests.estimator_checks.dataframe_for_checks import test_df
 
 
@@ -86,3 +87,19 @@ def check_return_empty(estimator):
     dft = transformer.transform(df)
     pd.testing.assert_frame_equal(dft, df)
     assert transformer.get_feature_names_out() == list(df.columns)
+
+
+def check_transform_returns_training_variable_order(estimator, make_df, data, target):
+    """
+    transform() returns the variables in the order seen during fit, even when the
+    dataframe to transform has them in a different order.
+    """
+    # clone keeps set_output settings from other tests, which would return pandas
+    transformer = clone(estimator).set_output(transform="default")
+    transformer.fit(make_df(data), make_series(make_df, target))
+    Xt = transformer.transform(make_df(data))
+    Xt_reordered = transformer.transform(make_df({k: data[k] for k in reversed(data)}))
+
+    assert isinstance(Xt_reordered, make_df)
+    assert list(Xt_reordered.columns) == list(Xt.columns)
+    assert frame_to_dict(Xt_reordered) == frame_to_dict(Xt)

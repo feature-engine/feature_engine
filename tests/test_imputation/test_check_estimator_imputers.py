@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from sklearn import clone
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
 
@@ -15,6 +16,9 @@ from feature_engine.imputation import (
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
+)
+from tests.estimator_checks.fit_functionality_checks import (
+    check_transform_returns_training_variable_order,
 )
 from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
@@ -87,3 +91,18 @@ def test_raises_non_fitted_error_when_error_during_fit(estimator):
         X = pd.DataFrame()
 
     check_raises_non_fitted_error_when_fit_fails(estimator, X)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_transform_returns_training_variable_order(estimator, make_df):
+    # a fixed seed, so RandomSampleImputer imputes the same values in both calls
+    if "random_state" in estimator.get_params():
+        estimator = clone(estimator).set_params(random_state=0)
+    data = {
+        "var_A": [1.0, None, 3.0, 4.0, 5.0, 6.0],
+        "var_B": ["a", "b", None, "a", "b", "a"],
+        "var_C": [0.5, 0.1, 0.3, None, 0.2, 0.4],
+    }
+    check_transform_returns_training_variable_order(
+        estimator, make_df, data, [0, 1, 0, 1, 1, 0]
+    )

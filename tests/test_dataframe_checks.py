@@ -12,10 +12,12 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     _check_X_matches_training_df,
+    _reorder_as_training_df,
     check_X,
     check_X_y,
     check_y,
 )
+from tests.backend_helpers import frame_to_dict
 
 # ------------------------
 # test check_X
@@ -463,3 +465,22 @@ def test_contains_inf_passes_without_inf(make_df):
 def test_contains_inf_ignores_columns_not_in_variables(make_df):
     df = make_df({"A": [1.1, float("inf"), 3.3], "B": [1.0, 2.0, 3.0]})
     assert _check_contains_inf(df, ["B"]) is None
+
+
+def test_reorder_as_training_df(make_df):
+    X = nw.from_native(make_df({"b": [1, 2], "c": ["x", "y"], "a": [0.1, 0.2]}))
+    nw_X = _reorder_as_training_df(X, ["a", "b", "c"])
+    assert isinstance(nw_X.to_native(), make_df)
+    assert nw_X.columns == ["a", "b", "c"]
+    assert frame_to_dict(nw_X.to_native()) == {
+        "a": [0.1, 0.2],
+        "b": [1, 2],
+        "c": ["x", "y"],
+    }
+
+
+def test_reorder_as_training_df_with_integer_column_names():
+    # integer column names are pandas-only
+    X = pd.DataFrame({2: [1, 2], 0: ["x", "y"], 1: [0.1, 0.2]})
+    nw_X = _reorder_as_training_df(nw.from_native(X), [0, 1, 2])
+    assert_frame_equal(nw_X.to_native(), X[[0, 1, 2]])

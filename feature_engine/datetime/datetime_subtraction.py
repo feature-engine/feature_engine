@@ -31,6 +31,7 @@ from feature_engine.creation.base_creation import BaseCreation
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
+    _reorder_as_training_df,
     check_X,
 )
 from feature_engine.variable_handling.check_variables import check_datetime_variables
@@ -320,6 +321,8 @@ class DatetimeSubtraction(BaseCreation):
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
+        nw_X = _reorder_as_training_df(nw_X, self.feature_names_in_)
+        X = nw_X.to_native()
 
         if self.missing_values == "raise":
             vars = list(set(self.variables_ + self.reference_))

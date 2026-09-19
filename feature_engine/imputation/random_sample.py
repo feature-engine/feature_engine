@@ -275,6 +275,7 @@ class RandomSampleImputer(BaseImputer):
         """
 
         nw_X = self._transform(X)
+        X = nw_X.to_native()
 
         if nwd.is_pandas_dataframe(X):
             X = self._transform_pandas(X)
