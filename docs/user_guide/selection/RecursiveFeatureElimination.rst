@@ -144,7 +144,7 @@ entire dataset:
 
 .. code:: python
 
-    0.488702767247119
+    0.48870212980353145
 
 Evaluating feature importance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -257,7 +257,7 @@ features:
 
     r['mean'].plot.bar(yerr=[r['std'], r['std']], subplots=True)
 
-    plt.title("Performance drift elicited by adding features")
+    plt.title("Performance drift elicited by removing features")
     plt.ylabel('Mean performance drift')
     plt.xlabel('Features')
     plt.show()
@@ -326,6 +326,65 @@ be dropped:
 ..  code:: python
 
     [False, True, True, True, True, True, False, False, True, False]
+
+With polars
+~~~~~~~~~~~
+
+:class:`RecursiveFeatureElimination` also accepts polars dataframes. The selection is
+the same as with pandas, and `transform()` returns a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from sklearn.datasets import load_diabetes
+    from sklearn.linear_model import LinearRegression
+    from feature_engine.selection import RecursiveFeatureElimination
+
+    data = load_diabetes()
+    X = pl.DataFrame(data.data, schema=data.feature_names)
+    y = pl.Series("target", data.target)
+
+    tr = RecursiveFeatureElimination(estimator=LinearRegression(), scoring="r2", cv=3)
+    Xt = tr.fit_transform(X, y)
+    print(Xt.head())
+
+In the following output we see the same six features that we selected from the pandas
+dataframe:
+
+.. code:: text
+
+    shape: (5, 6)
+    ┌───────────┬───────────┬───────────┬───────────┬───────────┬───────────┐
+    │ sex       ┆ bmi       ┆ bp        ┆ s1        ┆ s2        ┆ s5        │
+    │ ---       ┆ ---       ┆ ---       ┆ ---       ┆ ---       ┆ ---       │
+    │ f64       ┆ f64       ┆ f64       ┆ f64       ┆ f64       ┆ f64       │
+    ╞═══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═══════════╡
+    │ 0.05068   ┆ 0.061696  ┆ 0.021872  ┆ -0.044223 ┆ -0.034821 ┆ 0.019907  │
+    │ -0.044642 ┆ -0.051474 ┆ -0.026328 ┆ -0.008449 ┆ -0.019163 ┆ -0.068332 │
+    │ 0.05068   ┆ 0.044451  ┆ -0.00567  ┆ -0.045599 ┆ -0.034194 ┆ 0.002861  │
+    │ -0.044642 ┆ -0.011595 ┆ -0.036656 ┆ 0.012191  ┆ 0.024991  ┆ 0.022688  │
+    │ -0.044642 ┆ -0.036385 ┆ 0.021872  ┆ 0.003935  ┆ 0.015596  ┆ -0.031988 │
+    └───────────┴───────────┴───────────┴───────────┴───────────┴───────────┘
+
+With polars dataframes, the feature importance is stored in a dictionary instead of a
+pandas Series, still sorted from the least to the most important feature:
+
+.. code:: python
+
+    tr.feature_importances_
+
+.. code:: text
+
+    {'age': 41.41804062408145,
+     's6': 64.76841724774016,
+     's3': 113.96599187843395,
+     's4': 182.174833735295,
+     'sex': 238.6195264502995,
+     'bp': 322.0918016880965,
+     's2': 436.67158399913274,
+     'bmi': 522.3301645404875,
+     's5': 741.4713367752565,
+     's1': 750.0238715216746}
 
 And that's it! You now know how to select features by recursively removing them from a dataset.
 
