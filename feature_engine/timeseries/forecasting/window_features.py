@@ -221,7 +221,7 @@ class WindowFeatures(BaseForecastTransformer):
             for win in self.window:
                 tmp = (
                     X[self.variables_]
-                    .rolling(window=win)
+                    .rolling(window=win, min_periods=self.min_periods)
                     .agg(self.functions)
                     .shift(periods=self.periods, freq=self.freq)
                 )
@@ -231,7 +231,7 @@ class WindowFeatures(BaseForecastTransformer):
         else:
             tmp = (
                 X[self.variables_]
-                .rolling(window=self.window)
+                .rolling(window=self.window, min_periods=self.min_periods)
                 .agg(self.functions)
                 .shift(periods=self.periods, freq=self.freq)
             )

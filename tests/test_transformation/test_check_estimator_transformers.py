@@ -18,6 +18,7 @@ from tests.estimator_checks.estimator_checks import check_feature_engine_estimat
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
 )
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 _estimators = [
     BoxCoxTransformer(),
@@ -66,7 +67,7 @@ def test_check_estimator_from_sklearn(estimator):
         extra_failing_checks.get(estimator.__class__.__name__, {})
     )
     return check_estimator(
-        estimator=estimator,
+        estimator=wrap_for_check_estimator(estimator),
         expected_failed_checks=expected_failed_checks,
     )
 

@@ -11,6 +11,7 @@ from feature_engine.timeseries.forecasting import (
     WindowFeatures,
 )
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 _estimators = [
     LagFeatures(missing_values="ignore"),
@@ -26,7 +27,7 @@ def test_check_estimator_from_sklearn(estimator):
         "or infinity."
     }
     return check_estimator(
-        estimator=estimator,
+        estimator=wrap_for_check_estimator(estimator),
         expected_failed_checks={
             **extra_failing_checks,
             **estimator._more_tags()["_xfail_checks"],

@@ -14,6 +14,7 @@ from tests.estimator_checks.estimator_checks import check_feature_engine_estimat
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
 )
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 # Estimators for sklearn's check_estimator
 # Note: GeoDistanceFeatures is not included here because it requires 4 specific
@@ -32,7 +33,7 @@ _estimators = [
 @pytest.mark.parametrize("estimator", _estimators)
 def test_check_estimator_from_sklearn(estimator):
     return check_estimator(
-        estimator=estimator,
+        estimator=wrap_for_check_estimator(estimator),
         expected_failed_checks=estimator._more_tags()["_xfail_checks"],
     )
 
@@ -72,12 +73,14 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
 # Test GeoDistanceFeatures in pipeline with proper column names
 def test_geo_distance_transformer_in_pipeline():
     """Test GeoDistanceFeatures works in a sklearn pipeline."""
-    X = pd.DataFrame({
-        "lat1": [40.7128, 34.0522],
-        "lon1": [-74.0060, -118.2437],
-        "lat2": [34.0522, 41.8781],
-        "lon2": [-118.2437, -87.6298],
-    })
+    X = pd.DataFrame(
+        {
+            "lat1": [40.7128, 34.0522],
+            "lon1": [-74.0060, -118.2437],
+            "lat2": [34.0522, 41.8781],
+            "lon2": [-118.2437, -87.6298],
+        }
+    )
     y = pd.Series([0, 1])
 
     transformer = GeoDistanceFeatures(

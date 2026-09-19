@@ -10,6 +10,7 @@ from tests.estimator_checks.estimator_checks import (
 )
 from tests.estimator_checks.fit_functionality_checks import check_feature_names_in
 from tests.estimator_checks.non_fitted_error_checks import check_raises_non_fitted_error
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 from tests.estimator_checks.variable_selection_checks import (
     check_all_types_variables_assignment,
     check_numerical_variables_assignment,
@@ -18,16 +19,14 @@ from tests.estimator_checks.variable_selection_checks import (
 
 def test_sklearn_transformer_wrapper():
     check_estimator(
-        estimator=SklearnWrapper(transformer=SimpleImputer()),
-        expected_failed_checks=SklearnWrapper(
-            transformer=SimpleImputer()
-        )._more_tags()["_xfail_checks"],
+        estimator=wrap_for_check_estimator(SklearnWrapper(transformer=SimpleImputer())),
+        expected_failed_checks=SklearnWrapper(transformer=SimpleImputer())._more_tags()[
+            "_xfail_checks"
+        ],
     )
 
 
-@pytest.mark.parametrize(
-    "estimator", [SklearnWrapper(transformer=OrdinalEncoder())]
-)
+@pytest.mark.parametrize("estimator", [SklearnWrapper(transformer=OrdinalEncoder())])
 def test_check_estimator_from_feature_engine(estimator):
     check_raises_non_fitted_error(estimator)
     check_raises_error_when_input_not_a_df(estimator)
@@ -35,12 +34,8 @@ def test_check_estimator_from_feature_engine(estimator):
 
 
 def test_check_variables_assignment():
-    check_numerical_variables_assignment(
-        SklearnWrapper(transformer=StandardScaler())
-    )
-    check_all_types_variables_assignment(
-        SklearnWrapper(transformer=OrdinalEncoder())
-    )
+    check_numerical_variables_assignment(SklearnWrapper(transformer=StandardScaler()))
+    check_all_types_variables_assignment(SklearnWrapper(transformer=OrdinalEncoder()))
 
 
 def test_raises_error_when_no_transformer_passed():
