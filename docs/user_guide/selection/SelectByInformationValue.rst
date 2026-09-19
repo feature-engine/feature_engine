@@ -160,11 +160,11 @@ In the attribute :code:`variables_`, we find the variables that were evaluated:
 
     sel.variables_
 
-These are the 7 variables that were evaluated:
+These are the 6 variables that were evaluated:
 
 .. code:: python
 
-    ['A1', 'A6', 'A7', 'A9', 'A10', 'A12', 'A13']
+    ['A1', 'A6', 'A9', 'A10', 'A12', 'A13']
 
 In the attribute :code:`features_to_drop_`, we find the variables that were not selected:
 
@@ -189,7 +189,7 @@ Below we see the IV score for each variable:
 .. code:: python
 
    {'A1': 0.0009535686492270659,
-    'A6': 0.6006252129425703,
+    'A6': 0.6006252129425705,
     'A9': 2.9184484098456807,
     'A10': 0.8606638171665587,
     'A12': 0.012251943759377052,
@@ -274,10 +274,10 @@ We see the following:
 .. code:: python
 
     {'A1': 0.0009535686492270659,
-     'A2': 0.10319123021570434,
+     'A2': 0.10319123021570435,
      'A3': 0.2596258749173557,
-     'A6': 0.6006252129425703,
-     'A8': 0.7291628533346297,
+     'A6': 0.6006252129425705,
+     'A8': 0.7291628533346296,
      'A9': 2.9184484098456807,
      'A10': 0.8606638171665587,
      'A11': 1.0634602064399297,
@@ -299,14 +299,84 @@ We see the following:
     ['A1', 'A2', 'A12', 'A13']
 
 
-Note
-----
+Categories with no positive or no negative cases
+------------------------------------------------
 
-The WoE is given by a logarithm of a fraction. Thus, if for any category or bin, the fraction of
-observations of class 0 is 0, the WoE is not defined, and the transformer will raise an error.
+The WoE is given by a logarithm of a fraction. Thus, if a category or interval has no
+observations of class 1 or no observations of class 0, the WoE is not defined.
+:class:`SelectByInformationValue()` then replaces the zero count by 0.5 to calculate the
+WoE and the IV of that category or interval.
 
-If you encounter this problem try grouping variables into fewer bins if they are numerical,
-or grouping rare categories with the RareLabelEncoder if they are categorical.
+In the following example, the category red has only positive cases:
+
+.. code:: python
+
+    import pandas as pd
+    from feature_engine.selection import SelectByInformationValue
+
+    X = pd.DataFrame({
+        "colour": ["blue", "blue", "blue", "red", "red", "green", "green", "green"],
+        "size": ["S", "M", "M", "S", "S", "M", "M", "S"],
+    })
+    y = pd.Series([1, 0, 1, 1, 1, 0, 1, 0])
+
+    sel = SelectByInformationValue()
+    sel.fit(X, y)
+
+    sel.information_values_
+
+There are 5 positive and 3 negative cases. Red has 2 positive cases and no negative
+cases, so it adds (2 / 5 - 0.5 / 3) * log((2 / 5) / (0.5 / 3)) = 0.20 to the IV of colour:
+
+.. code:: python
+
+    {'colour': 0.7782847845209437, 'size': 0.2929632769781625}
+
+IV values calculated from very few observations are unreliable. If you encounter
+categories or intervals with no positive or no negative cases, try sorting the numerical
+variables into fewer bins, or grouping rare categories with the
+:ref:`RareLabelEncoder <rarelabel_encoder>`.
+
+With polars
+-----------
+
+:class:`SelectByInformationValue()` also works with polars dataframes, and returns a
+polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.selection import SelectByInformationValue
+
+    X = pl.DataFrame(dict(x1 = [1,1,1,1,1,1],
+                          x2 = [3,2,2,3,3,2],
+                          x3 = ["a","b","c","a","c","b"]))
+    y = pl.Series([1,1,1,0,0,0])
+
+    sel = SelectByInformationValue()
+    Xt = sel.fit_transform(X, y)
+
+    print(sel.information_values_)
+    print(Xt)
+
+We see the information values and the resulting dataframe below:
+
+.. code:: text
+
+    {'x1': 0.0, 'x2': 0.46209812037329684, 'x3': 0.0}
+    shape: (6, 1)
+    ┌─────┐
+    │ x2  │
+    │ --- │
+    │ i64 │
+    ╞═════╡
+    │ 3   │
+    │ 2   │
+    │ 2   │
+    │ 3   │
+    │ 3   │
+    │ 2   │
+    └─────┘
 
 Additional resources
 --------------------
