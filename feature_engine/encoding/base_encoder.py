@@ -22,6 +22,7 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
+    _reorder_as_training_df,
     check_X,
 )
 from feature_engine.tags import _return_tags
@@ -207,6 +208,7 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         nw_X = check_X(X)
 
         _check_X_matches_training_df(X, self.n_features_in_)
+        nw_X = _reorder_as_training_df(nw_X, self.feature_names_in_)
 
         return nw_X
 

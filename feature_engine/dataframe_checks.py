@@ -195,6 +195,32 @@ def _check_X_matches_training_df(X: IntoDataFrame, reference: int) -> None:
         )
 
 
+def _reorder_as_training_df(
+    nw_X: nw.DataFrame, feature_names_in: List[Union[str, int]]
+) -> nw.DataFrame:
+    """
+    Returns the dataframe with the variables in the order seen during fit.
+
+    Parameters
+    ----------
+    nw_X : narwhals dataframe
+        The dataframe to transform.
+
+    feature_names_in : List
+        The names of the variables in the train set, in their order.
+
+    Returns
+    -------
+    nw_X : narwhals dataframe
+        The dataframe with the variables in the order of `feature_names_in`.
+    """
+    # pandas is faster than narwhals.
+    if nw_X.implementation.is_pandas() is True:
+        return nw.from_native(nw_X.to_native()[feature_names_in], eager_only=True)
+    else:
+        return nw_X.select(nw.col(*feature_names_in))
+
+
 def _check_contains_na(
     X: IntoDataFrame,
     variables: List[Union[str, int]],

@@ -233,6 +233,7 @@ class CategoricalImputer(BaseImputer):
         # Imputation with string
         else:
             nw_X = self._transform(X)
+            X = nw_X.to_native()
 
             if nwd.is_pandas_dataframe(X):
                 # if variable is of type category, we need to add the new
