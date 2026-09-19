@@ -96,6 +96,48 @@ The 6 variables that we indicated are no longer in the dataframe:
 
     Index(['pclass', 'name', 'sex', 'age', 'cabin', 'embarked', 'boat'], dtype='object')
 
+With polars
+~~~~~~~~~~~
+
+:class:`DropFeatures()` also works with polars dataframes, and returns a polars
+dataframe. Here, we drop the date variables once we have the applicant's age:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.selection import DropFeatures
+
+    X = pl.DataFrame({
+        "age": [25, 38, 26, 35],
+        "date_of_birth": ["1999-03-01", "1986-07-15", "1998-11-30", "1989-05-20"],
+        "date_of_application": ["2024-04-02", "2024-08-10", "2024-12-01", "2024-06-18"],
+        "income": [32000.0, 54000.0, None, 47000.0],
+    })
+
+    transformer = DropFeatures(
+        features_to_drop=["date_of_birth", "date_of_application"]
+    )
+
+    Xt = transformer.fit_transform(X)
+
+    print(Xt)
+
+The date variables are no longer in the dataframe:
+
+.. code:: text
+
+    shape: (4, 2)
+    ┌─────┬─────────┐
+    │ age ┆ income  │
+    │ --- ┆ ---     │
+    │ i64 ┆ f64     │
+    ╞═════╪═════════╡
+    │ 25  ┆ 32000.0 │
+    │ 38  ┆ 54000.0 │
+    │ 26  ┆ null    │
+    │ 35  ┆ 47000.0 │
+    └─────┴─────────┘
+
 
 Additional resources
 --------------------
