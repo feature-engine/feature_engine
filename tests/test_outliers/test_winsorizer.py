@@ -1,6 +1,7 @@
 import math
 import re
 
+import numpy as np
 import pytest
 
 from feature_engine.outliers import Winsoriser, Winsorizer
@@ -436,8 +437,22 @@ def test_get_feature_names_out(make_df, data_na, transformer_class):
     assert tr.get_feature_names_out(original_features) == original_features + out
 
 
-def test_low_variation(make_df, data_normal_dist, transformer_class):
-    X = make_df({"var": [v // 10 for v in data_normal_dist["var"]]})
-    transformer = make_transformer(transformer_class, capping_method="mad")
-    with pytest.raises(ValueError, match="have low variation for method 'mad'"):
-        transformer.fit(X)
+def test_variables_without_variation_are_left_untouched(
+    make_df, data_normal_dist, transformer_class
+):
+    data = {
+        "var": [v // 10 for v in data_normal_dist["var"]],
+        "other": data_normal_dist["var"],
+    }
+    transformer = make_transformer(
+        transformer_class, capping_method="mad", tail="both", add_indicators=True
+    )
+    Xt = transformer.fit_transform(make_df(data))
+
+    assert transformer.right_tail_caps_["var"] == np.inf
+    assert transformer.left_tail_caps_["var"] == -np.inf
+    assert isinstance(Xt, make_df)
+    result = frame_to_dict(Xt)
+    assert result["var"] == data["var"]
+    assert result["var_left"] == [0.0] * len(data["var"])
+    assert result["var_right"] == [0.0] * len(data["var"])

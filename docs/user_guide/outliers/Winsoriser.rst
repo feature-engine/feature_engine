@@ -67,6 +67,13 @@ Percentiles or quantiles
     The values used by default by :class:`Winsoriser()` are those suggested as optimal
     in statistical studies.
 
+.. note::
+
+    If all or most of the values of a variable are the same, the method may return a
+    spread of 0 (for example, an IQR of 0 when over half of the values are 0). The
+    variable then has no outliers, so :class:`Winsoriser()` sets its limits to infinity
+    in `right_tail_caps_` and `left_tail_caps_`, and leaves it untouched.
+
 The following image shows the four methods applied to a normal distribution. Their capping
 values are close together because, when the data is roughly symmetric and bell-shaped, the
 mean, median, standard deviation, IQR, and MAD all describe the same thing.
