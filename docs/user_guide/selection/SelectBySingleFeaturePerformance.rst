@@ -107,8 +107,8 @@ feature in the key of the dictionary:
      'bmi': 0.33662080998769284,
      'bp': 0.19218913007834937,
      's1': 0.037115559827549806,
-     's2': 0.017854228256932614,
-     's3': 0.1515388617752689,
+     's2': 0.01785422825693254,
+     's3': 0.15153886177526887,
      's4': 0.1772160996650173,
      's5': 0.31494478799681097,
      's6': 0.13876602125792703}
@@ -128,8 +128,8 @@ In the following output, we see the standard deviation:
      'bmi': 0.04257342727445452,
      'bp': 0.027318947204928765,
      's1': 0.031397211603399186,
-     's2': 0.03224477055466249,
-     's3': 0.020243573053986438,
+     's2': 0.03224477055466244,
+     's3': 0.020243573053986393,
      's4': 0.04782262499458294,
      's5': 0.02473650354444323,
      's6': 0.029051175300521623}
@@ -194,6 +194,56 @@ In the following output, we see the selected features:
     3  0.022688 -0.009362
     4 -0.031988 -0.046641
 
+
+With polars
+-----------
+
+:class:`SelectBySingleFeaturePerformance()` works in the same way with a polars dataframe.
+Let's load the diabetes dataset into a polars dataframe and a polars series:
+
+.. code:: python
+
+    import polars as pl
+    from sklearn.datasets import load_diabetes
+    from sklearn.linear_model import LinearRegression
+    from feature_engine.selection import SelectBySingleFeaturePerformance
+
+    diabetes = load_diabetes()
+    X = pl.DataFrame(diabetes.data, schema=diabetes.feature_names)
+    y = pl.Series("target", diabetes.target)
+
+Now, we select the features with the same parameters we used with pandas:
+
+.. code:: python
+
+    sel = SelectBySingleFeaturePerformance(
+            estimator=LinearRegression(), scoring="r2", cv=3, threshold=0.01)
+    sel.fit(X, y)
+
+    print(sel.features_to_drop_)
+
+The feature performance is the same as with pandas, so the selector drops the same
+feature:
+
+.. code:: python
+
+    ['sex']
+
+`feature_performance_` and `feature_performance_std_` are also dictionaries, with the
+same values we obtained with pandas.
+
+With `transform()`, we obtain a polars dataframe without the feature `sex`:
+
+.. code:: python
+
+    Xt = sel.transform(X)
+    print(Xt.columns)
+
+In the following output, we see the remaining features:
+
+.. code:: python
+
+    ['age', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6']
 
 
 Additional resources

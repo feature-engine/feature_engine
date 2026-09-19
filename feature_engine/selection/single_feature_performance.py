@@ -1,7 +1,8 @@
 import warnings
 from typing import List, Union
 
-import pandas as pd
+import numpy as np
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -147,6 +148,35 @@ class SelectBySingleFeaturePerformance(BaseSelector):
     3   1   0
     4   2   0
     5   2   0
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from feature_engine.selection import SelectBySingleFeaturePerformance
+    >>> X = pl.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
+    >>>                     x2 = [2,4,3,1,2,2],
+    >>>                     x3 = [1,1,1,0,0,0],
+    >>>                     x4 = [1,2,1,1,0,1],
+    >>>                     x5 = [1,1,1,1,1,1]))
+    >>> y = pl.Series([1,0,0,1,1,0])
+    >>> sfp = SelectBySingleFeaturePerformance(
+    >>>                     RandomForestClassifier(random_state=42),
+    >>>                     cv=2)
+    >>> sfp.fit_transform(X, y)
+    shape: (6, 2)
+    ┌─────┬─────┐
+    │ x2  ┆ x3  │
+    │ --- ┆ --- │
+    │ i64 ┆ i64 │
+    ╞═════╪═════╡
+    │ 2   ┆ 1   │
+    │ 4   ┆ 1   │
+    │ 3   ┆ 1   │
+    │ 1   ┆ 0   │
+    │ 2   ┆ 0   │
+    │ 2   ┆ 0   │
+    └─────┴─────┘
     """
 
     def __init__(
@@ -160,7 +190,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         confirm_variables: bool = False,
     ):
 
-        if threshold:
+        if threshold is not None:
             if not isinstance(threshold, (int, float)):
                 raise ValueError(
                     "`threshold` can only be integer, float or None. "
@@ -187,22 +217,23 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         self.cv = cv
         self.groups = groups
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y):
         """
         Determines model performance based on single features. Selects features whose
         performance is above the threshold.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-           The input dataframe
+        X: dataframe of shape = [n_samples, n_features]
+           The input dataframe. Can be a pandas, polars, or any other dataframe
+           supported by narwhals.
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
         """
 
         # check input dataframe
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
 
         self.variables_ = _select_numerical_variables(
             X, self.variables, self.confirm_variables
@@ -230,8 +261,9 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         )
 
         # select features
-        if not self.threshold:
-            threshold = pd.Series(self.feature_performance_).mean()
+        if self.threshold is None:
+            # nanmean skips the features whose performance could not be computed.
+            threshold = np.nanmean(list(self.feature_performance_.values()))
         else:
             threshold = self.threshold
 
@@ -242,7 +274,7 @@ class SelectBySingleFeaturePerformance(BaseSelector):
         ]
 
         # check we are not dropping all the columns in the df
-        if len(self.features_to_drop_) == len(X.columns):
+        if len(self.features_to_drop_) == nw_X.shape[1]:
             warnings.warn("All features will be dropped, try changing the threshold.")
 
         # save input features
