@@ -676,7 +676,7 @@ the beginning of this section:
 
 The probe feature has the same values that we obtained with pandas:
 
-.. code:: python
+.. code:: text
 
     shape: (5, 1)
     ┌──────────────────┐
