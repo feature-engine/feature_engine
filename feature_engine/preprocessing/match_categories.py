@@ -113,7 +113,6 @@ class MatchCategories(
     >>> X_test = pd.DataFrame(dict(x1 = ["c","b","a","d"], x2 = [5,6,4,7]))
     >>> mc = MatchCategories(missing_values="ignore")
     >>> mc.fit(X_train)
-    MatchCategories(missing_values='ignore')
     >>> mc.transform(X_train)
       x1  x2
     0  a   4
