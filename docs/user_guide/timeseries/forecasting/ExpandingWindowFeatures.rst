@@ -32,7 +32,7 @@ For example, by executing:
 
 .. code:: python
 
-    X[["var_1", "var_2"].expanding(min_periods=3).agg(["max", "mean"])
+    X[["var_1", "var_2"]].expanding(min_periods=3).agg(["max", "mean"])
 
 With the previous command, we create 2 window features for each variable, `var_1` and
 `var_2`, by taking the maximum and average value of all observations up to (and including)
@@ -43,7 +43,7 @@ we would also shift the window forward with pandas method `shift`:
 
 .. code:: python
 
-    X[["var_1", "var_2"].expanding(min_periods=3).agg(["max", "mean"]).shift(period=1)
+    X[["var_1", "var_2"]].expanding(min_periods=3).agg(["max", "mean"]).shift(periods=1)
 
 
 Expanding window features with feature-engine
@@ -59,15 +59,20 @@ likely to be predictive. To capitalise on the past values of a variable, we can 
 lag features with :class:`LagFeatures`. We can also create features that summarise the
 past values into a single quantity utilising :class:`ExpandingWindowFeatures`.
 
-:class:`ExpandingWindowFeatures` works on top of `pandas.expanding`, `pandas.aggregate`
-and `pandas.shift`.
+:class:`ExpandingWindowFeatures` works with pandas and polars dataframes, and returns
+the same type of dataframe it receives.
 
-:class:`ExpandingWindowFeatures` uses `pandas.aggregate` to perform the mathematical
-operations over the expanding window. Therefore, you can use any operation supported
-by pandas. For supported aggregation functions, see Expanding Window
+With pandas dataframes, :class:`ExpandingWindowFeatures` works on top of `pandas.expanding`,
+`pandas.aggregate` and `pandas.shift`. It uses `pandas.aggregate` to perform the
+mathematical operations over the expanding window. Therefore, you can use any operation
+supported by pandas. For supported aggregation functions, see Expanding Window
 `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
-With `pandas.shift`, :class:`ExpandingWindowFeatures` lags the result of the expanding
+With polars dataframes, :class:`ExpandingWindowFeatures` supports the functions `"count"`,
+`"sum"`, `"mean"`, `"median"`, `"min"`, `"max"`, `"std"` and `"var"`, and returns the
+same values as pandas.
+
+:class:`ExpandingWindowFeatures` lags the result of the expanding
 window operation. This is useful to ensure that only the information known at predict
 time is used to compute the window feature. So if at predict time we only know
 the value of a feature at the previous time period and before that, then we should lag the
@@ -80,8 +85,10 @@ name to the original dataframe. It also has the methods `fit()` and `transform()
 that make it compatible with the scikit-learn's `Pipeline` and cross-validation
 functions.
 
-Note that, in the current implementation, :class:`ExpandingWindowFeatures` only works with
-dataframes whose index, containing the time series timestamp, contains unique values and no NaN.
+With pandas, :class:`ExpandingWindowFeatures` uses the dataframe's index, containing the
+time series timestamp, to order the rows in time. The index must contain unique values
+and no NaN. polars dataframes have no index, so the rows need to be in time order before
+the transformation. See the section "With polars" below.
 
 .. attention::
 
@@ -366,7 +373,7 @@ This is the resulting output:
     2020-05-15 13:15:00    32.50
     2020-05-15 13:30:00    32.52
     2020-05-15 13:45:00    32.68
-    Freq: 15T, Name: ambient_temp, dtype: float64
+    Freq: 15min, Name: ambient_temp, dtype: float64
 
 We can use :class:`ExpandingWindowFeatures` to create, for example, 2 new expanding window
 features by finding the mean and maximum value of a pandas Series if we convert
@@ -423,6 +430,67 @@ The original variable is no longer in the output dataframe:
     2020-05-15 12:30:00                    31.410000                       31.51
     2020-05-15 12:45:00                    31.656667                       32.15
     2020-05-15 13:00:00                    31.840000                       32.39
+
+With polars
+~~~~~~~~~~~
+
+:class:`ExpandingWindowFeatures` also works with polars dataframes. polars dataframes have
+no index, so the transformer takes the rows in the order in which they are in the
+dataframe. Make sure the rows are sorted in time before creating the features. The
+parameters `freq` and `sort_index` are only used with pandas.
+
+Let's create a polars dataframe whose rows are not in time order, and sort it by date:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.timeseries.forecasting import ExpandingWindowFeatures
+
+    X = pl.DataFrame({
+        "date": ["2020-05-15 12:30", "2020-05-15 12:00", "2020-05-15 13:00",
+                 "2020-05-15 12:15", "2020-05-15 12:45"],
+        "ambient_temp": [32.15, 31.31, 32.62, 31.51, 32.39],
+    })
+
+    X = X.sort("date")
+
+Now we create the expanding mean and maximum of the temperature:
+
+.. code:: python
+
+    win_f = ExpandingWindowFeatures(functions=["mean", "max"])
+
+    X_tr = win_f.fit_transform(X)
+
+    print(X_tr)
+
+We obtain a polars dataframe with the new features. The first row has no past values,
+so its expanding window features are null:
+
+.. code:: text
+
+    shape: (5, 4)
+    ┌──────────────────┬──────────────┬─────────────────────────────┬────────────────────────────┐
+    │ date             ┆ ambient_temp ┆ ambient_temp_expanding_mean ┆ ambient_temp_expanding_max │
+    │ ---              ┆ ---          ┆ ---                         ┆ ---                        │
+    │ str              ┆ f64          ┆ f64                         ┆ f64                        │
+    ╞══════════════════╪══════════════╪═════════════════════════════╪════════════════════════════╡
+    │ 2020-05-15 12:00 ┆ 31.31        ┆ null                        ┆ null                       │
+    │ 2020-05-15 12:15 ┆ 31.51        ┆ 31.31                       ┆ 31.31                      │
+    │ 2020-05-15 12:30 ┆ 32.15        ┆ 31.41                       ┆ 31.51                      │
+    │ 2020-05-15 12:45 ┆ 32.39        ┆ 31.656667                   ┆ 32.15                      │
+    │ 2020-05-15 13:00 ┆ 32.62        ┆ 31.84                       ┆ 32.39                      │
+    └──────────────────┴──────────────┴─────────────────────────────┴────────────────────────────┘
+
+With polars, other functions, like `"skew"`, raise an error:
+
+.. code:: python
+
+    ExpandingWindowFeatures(functions=["skew"]).fit_transform(X)
+
+.. code:: text
+
+    NotImplementedError: With dataframes other than pandas, ExpandingWindowFeatures supports the functions ['count', 'sum', 'mean', 'median', 'min', 'max', 'std', 'var']. Got ['skew'] instead.
 
 Getting the name of the new features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
