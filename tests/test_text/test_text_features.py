@@ -1,787 +1,462 @@
+import re
+from datetime import datetime
+from types import SimpleNamespace
+
+import narwhals as nw
+import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
+from sklearn.exceptions import NotFittedError
 
-from feature_engine.text import TextFeatures
+from feature_engine.text import TextFeatures, text_features
 from feature_engine.text.text_features import TEXT_FEATURES
+from tests.backend_helpers import frame_to_dict, make_series
 
-# ==============================================================================
-# INIT TESTS
-# ==============================================================================
+TEXT = [
+    "Hello World!",
+    "HELLO",
+    "12345",
+    "e.g. i.e.",
+    "   ",
+    " trailing ",
+    "abc...",
+    "",
+    None,
+    "A? B! C.",
+    "HeLLo",
+    "Hi! @#",
+    "A1b2 C3d4!@#$",
+    "???",
+    "i.e., this is wrong",
+    "Is 1 > 2? No, 100%!",
+    "Hello. World",
+    "Hello. World.",
+    "Hello... World!?!",
+    "This is a proper sentence containing "
+    "supercalifragilisticexpialidocious and exceptionally long words.",
+]
+
+# non-ASCII letters and digits, non-breaking space (\xa0), file separator (\x1c),
+# new lines around the final punctuation and a Greek final sigma
+TEXT_EDGE_CASES = [
+    "",
+    None,
+    "   ",
+    "Hello World!",
+    "HELLO",
+    "\N{LATIN CAPITAL LETTER E WITH ACUTE}COLE "
+    "na\N{LATIN SMALL LETTER I WITH DIAERESIS}ve 123",
+    "\N{ARABIC-INDIC DIGIT THREE} digits",
+    "a\xa0b\x1cc",
+    "x.\n",
+    "x.\n\n",
+    "a\nb.",
+    "Dog dog DOG",
+    "\N{GREEK CAPITAL LETTER OMICRON}\N{GREEK CAPITAL LETTER DELTA}"
+    "\N{GREEK CAPITAL LETTER OMICRON}\N{GREEK CAPITAL LETTER SIGMA} "
+    "\N{GREEK SMALL LETTER OMICRON}\N{GREEK SMALL LETTER DELTA}"
+    "\N{GREEK SMALL LETTER OMICRON}\N{GREEK SMALL LETTER FINAL SIGMA}",
+    "Is 1 > 2? No, 100%!",
+]
+
+EXPECTED = {
+    "char_count": [11, 5, 5, 8, 0, 8, 6, 0, 0, 6, 5, 5, 12, 3, 16, 14, 11, 12, 16, 91],
+    "word_count": [2, 1, 1, 2, 0, 1, 1, 0, 0, 3, 1, 2, 2, 1, 4, 6, 2, 2, 2, 11],
+    "sentence_count": [1, 0, 0, 4, 0, 0, 1, 0, 0, 3, 0, 1, 1, 1, 2, 2, 1, 2, 2, 1],
+    "avg_word_length": [
+        11 / 2, 5, 5, 4, 0, 8, 6, 0, 0, 2, 5, 5 / 2, 6, 3, 4, 14 / 6, 11 / 2, 6, 8,
+        91 / 11,
+    ],
+    "digit_count": [0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 5, 0, 0, 0, 0],
+    "letter_count": [10, 5, 0, 4, 0, 8, 3, 0, 0, 3, 5, 2, 4, 0, 13, 4, 10, 10, 10, 90],
+    "uppercase_count": [2, 5, 0, 0, 0, 0, 0, 0, 0, 3, 3, 1, 2, 0, 0, 2, 2, 2, 2, 1],
+    "lowercase_count": [8, 0, 0, 4, 0, 8, 3, 0, 0, 0, 2, 1, 2, 0, 13, 2, 8, 8, 8, 89],
+    "special_char_count": [1, 0, 0, 4, 0, 0, 3, 0, 0, 3, 0, 3, 4, 3, 3, 5, 1, 2, 6, 1],
+    "whitespace_count": [1, 0, 0, 1, 3, 2, 0, 0, 0, 2, 0, 1, 1, 0, 3, 5, 1, 1, 1, 10],
+    "whitespace_ratio": [
+        1 / 12, 0, 0, 1 / 9, 1, 2 / 10, 0, 0, 0, 2 / 8, 0, 1 / 6, 1 / 13, 0, 3 / 19,
+        5 / 19, 1 / 12, 1 / 13, 1 / 17, 10 / 101,
+    ],
+    "digit_ratio": [
+        0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4 / 12, 0, 0, 5 / 14, 0, 0, 0, 0,
+    ],
+    "uppercase_ratio": [
+        2 / 11, 1, 0, 0, 0, 0, 0, 0, 0, 3 / 6, 3 / 5, 1 / 5, 2 / 12, 0, 0, 2 / 14,
+        2 / 11, 2 / 12, 2 / 16, 1 / 91,
+    ],
+    "has_digits": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+    "has_uppercase": [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+    "is_empty": [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "starts_with_uppercase": [
+        1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1,
+    ],
+    "ends_with_punctuation": [
+        1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1,
+    ],
+    "unique_word_count": [2, 1, 1, 2, 0, 1, 1, 0, 0, 3, 1, 2, 2, 1, 4, 6, 2, 2, 2, 11],
+    "lexical_diversity": [1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+}
+
+EXPECTED_EDGE_CASES = {
+    "char_count": [0, 0, 0, 11, 5, 13, 7, 3, 2, 2, 3, 9, 8, 14],
+    "word_count": [0, 0, 0, 2, 1, 3, 2, 3, 1, 1, 2, 3, 2, 6],
+    "sentence_count": [0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 2],
+    "avg_word_length": [
+        0, 0, 0, 11 / 2, 5, 13 / 3, 7 / 2, 1, 2, 2, 3 / 2, 3, 4, 14 / 6,
+    ],
+    "digit_count": [0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 5],
+    "letter_count": [0, 0, 0, 10, 5, 8, 6, 3, 1, 1, 2, 9, 0, 4],
+    "uppercase_count": [0, 0, 0, 2, 5, 4, 0, 0, 0, 0, 0, 4, 0, 2],
+    "lowercase_count": [0, 0, 0, 8, 0, 4, 6, 3, 1, 1, 2, 5, 0, 2],
+    "special_char_count": [0, 0, 0, 1, 0, 2, 1, 0, 1, 1, 1, 0, 8, 5],
+    "whitespace_count": [0, 0, 3, 1, 0, 2, 1, 2, 1, 2, 1, 2, 1, 5],
+    "whitespace_ratio": [
+        0, 0, 1, 1 / 12, 0, 2 / 15, 1 / 8, 2 / 5, 1 / 3, 2 / 4, 1 / 4, 2 / 11, 1 / 9,
+        5 / 19,
+    ],
+    "digit_ratio": [0, 0, 0, 0, 0, 3 / 13, 1 / 7, 0, 0, 0, 0, 0, 0, 5 / 14],
+    "uppercase_ratio": [0, 0, 0, 2 / 11, 1, 4 / 13, 0, 0, 0, 0, 0, 4 / 9, 0, 2 / 14],
+    "has_digits": [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+    "has_uppercase": [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+    "is_empty": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "starts_with_uppercase": [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    "ends_with_punctuation": [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    "unique_word_count": [0, 0, 0, 2, 1, 3, 2, 3, 1, 1, 2, 1, 1, 6],
+    "lexical_diversity": [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 / 3, 1 / 2, 1],
+}
+
+
+# init parameters
+@pytest.mark.parametrize(
+    "variables", [123, True, None, [1, 2], ["text", 123], ("text",), {"text": 1}]
+)
+def test_error_if_variables_not_string_or_list_of_strings(variables):
+    msg = f"variables must be a string or a list of strings. Got {variables} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        TextFeatures(variables=variables)
 
 
 @pytest.mark.parametrize(
-    "invalid_variables",
+    "features",
     [
+        "char_count",
         123,
         True,
+        ("char_count",),
+        {"char_count": 1},
         [1, 2],
-        ["text", 123],
-        {"text": 1},
+        ["char_count", True],
+        ["invalid_feature"],
+        ["char_count", "invalid_feature"],
     ],
 )
-def test_invalid_variables_raises_error(invalid_variables):
-    with pytest.raises(ValueError, match="variables must be a string or a list of"):
-        TextFeatures(variables=invalid_variables)
+def test_error_if_features_not_permitted(features):
+    msg = (
+        f"features must be None or a list with any of {list(TEXT_FEATURES.keys())}. "
+        f"Got {features} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        TextFeatures(variables=["text"], features=features)
+
+
+@pytest.mark.parametrize("missing_values", ["empanada", True, 1, None, ["raise"]])
+def test_error_if_missing_values_not_permitted(missing_values):
+    msg = (
+        "missing_values takes only values 'raise' or 'ignore'. "
+        f"Got {missing_values} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        TextFeatures(variables=["text"], missing_values=missing_values)
+
+
+@pytest.mark.parametrize("drop_original", ["True", 1, None, [True]])
+def test_error_if_drop_original_not_bool(drop_original):
+    msg = (
+        "drop_original takes only boolean values True and False. "
+        f"Got {drop_original} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        TextFeatures(variables=["text"], drop_original=drop_original)
 
 
 @pytest.mark.parametrize(
-    "invalid_features, err_msg",
+    "features, missing_values, drop_original",
     [
-        ("some_string", "features must be"),
-        ([1, 2], "features must be"),
-        (123, "features must be"),
-        (True, "features must be"),
-        (["some_string", True], "features must be"),
-        ({"some_string": 1}, "features must be"),
-        (["invalid_feature"], "Invalid features"),
-        (["char_count", "invalid_feature"], "Invalid features"),
+        (None, "ignore", False),
+        (["char_count"], "raise", True),
+        (["word_count", "lexical_diversity"], "ignore", True),
     ],
 )
-def test_invalid_features_raises_error(invalid_features, err_msg):
-    with pytest.raises(ValueError, match=err_msg):
-        TextFeatures(variables=["text"], features=invalid_features)
+def test_init_param_assignment(features, missing_values, drop_original):
+    transformer = TextFeatures(
+        variables=["text"],
+        features=features,
+        missing_values=missing_values,
+        drop_original=drop_original,
+    )
+    assert transformer.features == features
+    assert transformer.missing_values == missing_values
+    assert transformer.drop_original is drop_original
 
 
-# ==============================================================================
-# FIT TESTS
-# ==============================================================================
-
-
+# fit and transform
 @pytest.mark.parametrize(
-    "variables, features",
+    "variables, features, variables_, features_",
     [
-        ("text", None),
-        (["string"], ["char_count"]),
-        (["text", "string"], ["sentence_count", "avg_word_length"]),
+        ("text", None, ["text"], list(TEXT_FEATURES.keys())),
+        (["string"], ["char_count"], ["string"], ["char_count"]),
+        (["text", "string"], ["word_count"], ["text", "string"], ["word_count"]),
     ],
 )
-def test_fit_stores_attributes(variables, features):
-    X = pd.DataFrame({"text": ["Hello"], "string": ["Bye"]})
-    transformer = TextFeatures(variables=variables, features=features)
-    transformer.fit(X)
+def test_fit_attributes(make_df, variables, features, variables_, features_):
+    X = make_df({"text": ["Hello"], "string": ["Bye"], "number": [1]})
+    transformer = TextFeatures(variables=variables, features=features).fit(X)
 
-    assert (
-        transformer.variables_ == variables
-        if isinstance(variables, list)
-        else transformer.variables_ == [variables]
-    )
-    assert (
-        transformer.features_ == list(TEXT_FEATURES.keys())
-        if features is None
-        else transformer.features_ == features
-    )
-    assert transformer.feature_names_in_ == ["text", "string"]
-    assert transformer.n_features_in_ == 2
+    assert transformer.variables_ == variables_
+    assert transformer.features_ == features_
+    assert transformer.feature_names_in_ == ["text", "string", "number"]
+    assert transformer.n_features_in_ == 3
 
 
-def test_missing_variable_raises_error():
-    X = pd.DataFrame({"text": ["Hello"]})
+@pytest.mark.parametrize("target", ["series", "list", "array"])
+def test_fit_ignores_the_target(make_df, target):
+    X = make_df({"text": ["Hello", "World"]})
+    y = {
+        "series": make_series(make_df, [0, 1]),
+        "list": [0, 1],
+        "array": np.array([0, 1]),
+    }[target]
+    transformer = TextFeatures(variables=["text"], features=["char_count"])
+    Xt = transformer.fit(X, y).transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"text": ["Hello", "World"], "text_char_count": [5, 5]}
+
+
+def test_error_if_variable_not_in_dataframe(make_df):
+    X = make_df({"text": ["Hello"]})
     transformer = TextFeatures(variables=["nonexistent"])
-    with pytest.raises(ValueError, match="not present in the dataframe"):
+    msg = "Variables {'nonexistent'} are not present in the dataframe."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.fit(X)
 
 
-@pytest.mark.parametrize("variables", ["Age", "Marks", "dob"])
-def test_no_text_columns_raises_error(df_vartypes, variables):
-    transformer = TextFeatures(variables=variables)
-    with pytest.raises(ValueError, match="not object or string"):
-        transformer.fit(df_vartypes)
-
-
-def test_nan_handling_raise_error_fit(df_na):
-    transformer = TextFeatures(
-        variables=["City"], features=["char_count"], missing_values="raise"
+@pytest.mark.parametrize(
+    "variable, values",
+    [
+        ("Age", [20, 21]),
+        ("Marks", [0.9, 0.8]),
+        ("dob", [datetime(2020, 2, 24), datetime(2020, 2, 25)]),
+    ],
+)
+def test_error_if_variable_not_text(make_df, variable, values):
+    X = make_df({"Name": ["tom", "nick"], variable: values})
+    transformer = TextFeatures(variables=["Name", variable])
+    msg = (
+        f"Variables ['{variable}'] are not object or string. "
+        "Please provide text variables only."
     )
-    msg = "`missing_values='ignore'` when initialising this transformer"
-    with pytest.raises(ValueError, match=msg):
-        transformer.fit(df_na)
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.fit(X)
 
 
-# ==============================================================================
-# TRANSFORM TESTS - GENERAL
-# ==============================================================================
+def test_categorical_variables_with_string_categories(make_df):
+    X = make_df({"text": ["Hello World", "Hi", "Hello World"]})
+    X = nw.from_native(X).with_columns(nw.col("text").cast(nw.Categorical))
+    transformer = TextFeatures(variables=["text"], features=["word_count"])
+    Xt = transformer.fit_transform(X.to_native())
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "text": ["Hello World", "Hi", "Hello World"],
+        "text_word_count": [2, 1, 2],
+    }
 
 
-def test_transform_on_new_data():
-    X_train = pd.DataFrame({"text": ["Hello World", "Foo Bar"]})
-    X_test = pd.DataFrame({"text": ["New Data", "Test 123"]})
+def test_error_if_categories_are_not_strings():
+    # polars categories are always strings
+    X = pd.DataFrame({"text": pd.Series([1, 2], dtype="category")})
+    transformer = TextFeatures(variables=["text"])
+    msg = (
+        "Variables ['text'] are not object or string. "
+        "Please provide text variables only."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.fit(X)
 
+
+def test_error_if_missing_values_in_fit(make_df):
+    X = make_df({"text": ["Hello", None, "World"]})
+    transformer = TextFeatures(variables=["text"], missing_values="raise")
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.fit(X)
+
+
+def test_error_if_missing_values_in_transform(make_df):
+    transformer = TextFeatures(variables=["text"], missing_values="raise")
+    transformer.fit(make_df({"text": ["Hello", "World"]}))
+    msg = (
+        "Some of the variables in the dataset contain NaN. Check and "
+        "remove those before using this transformer or set the parameter "
+        "`missing_values='ignore'` when initialising this transformer."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.transform(make_df({"text": ["Hello", None, "World"]}))
+
+
+def test_missing_values_are_treated_as_empty_strings(make_df):
+    X = make_df({"text": ["Hello", None, "World"]})
+    transformer = TextFeatures(variables=["text"], features=["char_count"])
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "text": ["Hello", "", "World"],
+        "text_char_count": [5, 0, 5],
+    }
+    assert frame_to_dict(X) == {"text": ["Hello", None, "World"]}
+
+
+def test_missing_values_raise_returns_same_values(make_df):
+    X = make_df({"text": ["Hello World", "Hi"]})
+    transformer = TextFeatures(
+        variables=["text"], features=["word_count"], missing_values="raise"
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "text": ["Hello World", "Hi"],
+        "text_word_count": [2, 1],
+    }
+
+
+def test_error_if_not_fitted(make_df):
+    transformer = TextFeatures(variables=["text"])
+    msg = (
+        "This TextFeatures instance is not fitted yet. Call 'fit' with "
+        "appropriate arguments before using this estimator."
+    )
+    with pytest.raises(NotFittedError, match=re.escape(msg)):
+        transformer.transform(make_df({"text": ["Hello"]}))
+
+
+def test_error_if_transform_gets_different_number_of_columns(make_df):
+    transformer = TextFeatures(variables=["text"]).fit(make_df({"text": ["Hello"]}))
+    msg = (
+        "The number of columns in this dataset is different from the one used to "
+        "fit this transformer (when using the fit() method)."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.transform(make_df({"text": ["Hello"], "other": [1]}))
+
+
+def test_transform_on_new_data(make_df):
     transformer = TextFeatures(
         variables=["text"], features=["char_count", "has_digits"]
     )
-    transformer.fit(X_train)
-    X_tr = transformer.transform(X_test)
+    transformer.fit(make_df({"text": ["Hello World", "Foo Bar"]}))
+    Xt = transformer.transform(make_df({"text": ["New Data", "Test 123"]}))
 
-    assert X_tr["text_char_count"].tolist() == [7, 7]
-    assert X_tr["text_has_digits"].tolist() == [0, 1]
-
-
-def test_nan_handling_raise_error_transform():
-    X_train = pd.DataFrame({"text": ["Hello", "World"]})
-    X_test = pd.DataFrame({"text": ["Hello", None, "World"]})
-    transformer = TextFeatures(
-        variables=["text"], features=["char_count"], missing_values="raise"
-    )
-    transformer.fit(X_train)
-    msg = "`missing_values='ignore'` when initialising this transformer"
-    with pytest.raises(ValueError, match=msg):
-        transformer.transform(X_test)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "text": ["New Data", "Test 123"],
+        "text_char_count": [7, 7],
+        "text_has_digits": [0, 1],
+    }
 
 
-def test_nan_handling():
-    X = pd.DataFrame({"text": ["Hello", None, "World"]})
+def test_transform_reorders_columns_as_in_fit(make_df):
     transformer = TextFeatures(variables=["text"], features=["char_count"])
-    X_tr = transformer.fit_transform(X)
+    transformer.fit(make_df({"text": ["Hello"], "other": [1]}))
+    Xt = transformer.transform(make_df({"other": [2], "text": ["Hi"]}))
 
-    # NaN should be filled with empty string, resulting in char_count of 0
-    assert X_tr["text_char_count"].tolist() == [5, 0, 5]
-
-
-def test_default_all_features():
-    """Test extracting all features with default parameters."""
-    X = pd.DataFrame({"text": ["Hello World!", "Python 123", "AI"]})
-    transformer = TextFeatures(variables=["text"])
-    X_tr = transformer.fit_transform(X)
-
-    # Spot check a few features to ensure they were added and computed
-    assert X_tr["text_char_count"].tolist() == [11, 9, 2]
-    assert X_tr["text_word_count"].tolist() == [2, 2, 1]
-    assert X_tr["text_digit_count"].tolist() == [0, 3, 0]
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"text": ["Hi"], "other": [2], "text_char_count": [2]}
 
 
-def test_specific_features():
-    """Test extracting specific features only."""
-    X = pd.DataFrame({"text": ["Hello", "World"]})
+def test_default_extracts_all_features(make_df):
+    X = make_df({"text": ["Hello World!", "Python 123", "AI"]})
+    Xt = TextFeatures(variables=["text"]).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == ["text"] + [f"text_{f}" for f in TEXT_FEATURES]
+
+
+def test_only_selected_variables_and_features_are_added(make_df):
+    X = make_df({"a": ["Hello", "World"], "b": ["Foo", "Bar"], "numeric": [1, 2]})
     transformer = TextFeatures(
-        variables=["text"], features=["char_count", "word_count"]
+        variables=["b", "a"], features=["word_count", "is_empty"]
     )
-    X_tr = transformer.fit_transform(X)
+    Xt = transformer.fit_transform(X)
 
-    # Check only specified features are extracted
-    assert X_tr.columns.tolist() == ["text", "text_char_count", "text_word_count"]
-
-
-def test_specific_variables():
-    """Test extracting features from specific variables only."""
-    X = pd.DataFrame(
-        {"text1": ["Hello", "World"], "text2": ["Foo", "Bar"], "numeric": [1, 2]}
-    )
-    transformer = TextFeatures(variables=["text1"], features=["char_count"])
-    X_tr = transformer.fit_transform(X)
-
-    # Only text1 should have features extracted
-    assert X_tr.columns.tolist() == ["text1", "text2", "numeric", "text1_char_count"]
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "a": ["Hello", "World"],
+        "b": ["Foo", "Bar"],
+        "numeric": [1, 2],
+        "b_word_count": [1, 1],
+        "b_is_empty": [0, 0],
+        "a_word_count": [1, 1],
+        "a_is_empty": [0, 0],
+    }
 
 
-def test_drop_original():
-    """Test drop_original parameter."""
-    X = pd.DataFrame({"text": ["Hello", "World"], "other": [1, 2]})
+def test_drop_original(make_df):
+    X = make_df({"text": ["Hello", "World"], "other": [1, 2]})
     transformer = TextFeatures(
         variables=["text"], features=["char_count"], drop_original=True
     )
-    X_tr = transformer.fit_transform(X)
+    Xt = transformer.fit_transform(X)
 
-    assert X_tr.columns.tolist() == ["other", "text_char_count"]
-
-
-def test_string_variable_input():
-    """Test that passing a single string variable works (auto-converted to list)."""
-    X = pd.DataFrame({"text": ["Hello", "World"], "other": ["A", "B"]})
-    transformer = TextFeatures(variables="text", features=["char_count"])
-    X_tr = transformer.fit_transform(X)
-
-    assert transformer.variables_ == ["text"]
-    assert X_tr.columns.tolist() == ["text", "other", "text_char_count"]
-    assert X_tr["text_char_count"].tolist() == [5, 5]
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"other": [1, 2], "text_char_count": [5, 5]}
 
 
-def test_multiple_text_columns():
-    """Test extracting features from multiple text columns."""
-    X = pd.DataFrame({"a": ["Hello", "World"], "b": ["Foo", "Bar"]})
-    transformer = TextFeatures(
-        variables=["a", "b"], features=["char_count", "word_count"]
+@pytest.mark.parametrize("feature", list(TEXT_FEATURES.keys()))
+def test_feature_values(make_df, feature):
+    X = make_df({"text": TEXT})
+    Xt = TextFeatures(variables=["text"], features=[feature]).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt)[f"text_{feature}"] == pytest.approx(EXPECTED[feature])
+
+
+@pytest.mark.parametrize("feature", list(TEXT_FEATURES.keys()))
+def test_feature_values_on_edge_cases(make_df, feature):
+    X = make_df({"text": TEXT_EDGE_CASES})
+    Xt = TextFeatures(variables=["text"], features=[feature]).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt)[f"text_{feature}"] == pytest.approx(
+        EXPECTED_EDGE_CASES[feature]
     )
-    X_tr = transformer.fit_transform(X)
-
-    assert X_tr.columns.tolist() == [
-        "a",
-        "b",
-        "a_char_count",
-        "a_word_count",
-        "b_char_count",
-        "b_word_count",
-    ]
 
 
-# ==============================================================================
-# TRANSFORM - TEST TEXT FEATURES
-# ==============================================================================
-
-
-@pytest.fixture(scope="module")
-def df_text():
-    df = pd.DataFrame(
-        {
-            "text": [
-                "Hello World!",
-                "HELLO",
-                "12345",
-                "e.g. i.e.",
-                "   ",
-                " trailing ",
-                "abc...",
-                "",
-                None,
-                "A? B! C.",
-                "HeLLo",
-                "Hi! @#",
-                "A1b2 C3d4!@#$",
-                "???",
-                "i.e., this is wrong",
-                "Is 1 > 2? No, 100%!",
-                "Hello. World",
-                "Hello. World.",
-                "Hello... World!?!",
-                "This is a proper sentence containing "
-                "supercalifragilisticexpialidocious and exceptionally long words.",
-            ]
-        }
+@pytest.mark.parametrize("feature", list(TEXT_FEATURES.keys()))
+def test_feature_values_on_other_backends(monkeypatch, feature):
+    # makes polars take the path used by backends other than pandas and polars
+    backend_checks = SimpleNamespace(
+        is_pandas_dataframe=lambda X: False, is_polars_dataframe=lambda X: False
     )
-    return df
+    monkeypatch.setattr(text_features, "nwd", backend_checks)
+    X = pl.DataFrame({"text": TEXT_EDGE_CASES})
+    Xt = TextFeatures(variables=["text"], features=[feature]).fit_transform(X)
 
-
-def test_whitespace_features(df_text):
-    text_features = ["whitespace_count", "whitespace_ratio"]
-    transformer = TextFeatures(variables=["text"], features=text_features)
-    X_tr = transformer.fit_transform(df_text)
-    assert X_tr["text_whitespace_count"].tolist() == [
-        1,
-        0,
-        0,
-        1,
-        3,
-        2,
-        0,
-        0,
-        0,
-        2,
-        0,
-        1,
-        1,
-        0,
-        3,
-        5,
-        1,
-        1,
-        1,
-        10,
-    ]
-    assert X_tr["text_whitespace_ratio"].tolist() == [
-        0.08333333333333333,
-        0.0,
-        0.0,
-        0.1111111111111111,
-        1.0,
-        0.2,
-        0.0,
-        0.0,
-        0.0,
-        0.25,
-        0.0,
-        0.16666666666666666,
-        0.07692307692307693,
-        0.0,
-        0.15789473684210525,
-        0.2631578947368421,
-        0.08333333333333333,
-        0.07692307692307693,
-        0.058823529411764705,
-        0.09900990099009901,
-    ]
-
-
-def test_digit_features(df_text):
-    transformer = TextFeatures(
-        variables=["text"], features=["digit_count", "digit_ratio", "has_digits"]
+    assert isinstance(Xt, pl.DataFrame)
+    assert frame_to_dict(Xt)[f"text_{feature}"] == pytest.approx(
+        EXPECTED_EDGE_CASES[feature]
     )
-    X_tr = transformer.fit_transform(df_text)
-    assert X_tr["text_digit_count"].tolist() == [
-        0,
-        0,
-        5,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        4,
-        0,
-        0,
-        5,
-        0,
-        0,
-        0,
-        0,
-    ]
-    assert X_tr["text_digit_ratio"].tolist() == [
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.3333333333333333,
-        0.0,
-        0.0,
-        0.35714285714285715,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-    ]
-    assert X_tr["text_has_digits"].tolist() == [
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-    ]
 
 
-def test_uppercase_features(df_text):
-    transformer = TextFeatures(
-        variables=["text"],
-        features=[
-            "uppercase_count",
-            "uppercase_ratio",
-            "has_uppercase",
-            "starts_with_uppercase",
-        ],
-    )
-    X_tr = transformer.fit_transform(df_text)
-    assert X_tr["text_uppercase_count"].tolist() == [
-        2,
-        5,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        3,
-        3,
-        1,
-        2,
-        0,
-        0,
-        2,
-        2,
-        2,
-        2,
-        1,
-    ]
-    assert X_tr["text_uppercase_ratio"].tolist() == [
-        0.18181818181818182,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.5,
-        0.6,
-        0.2,
-        0.16666666666666666,
-        0.0,
-        0.0,
-        0.14285714285714285,
-        0.18181818181818182,
-        0.16666666666666666,
-        0.125,
-        0.01098901098901099,
-    ]
-    assert X_tr["text_has_uppercase"].tolist() == [
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        1,
-    ]
-    assert X_tr["text_starts_with_uppercase"].tolist() == [
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        1,
-    ]
-
-
-def test_punctuation_features(df_text):
-    transformer = TextFeatures(
-        variables=["text"], features=["special_char_count", "ends_with_punctuation"]
-    )
-    X_tr = transformer.fit_transform(df_text)
-    assert X_tr["text_special_char_count"].tolist() == [
-        1,
-        0,
-        0,
-        4,
-        0,
-        0,
-        3,
-        0,
-        0,
-        3,
-        0,
-        3,
-        4,
-        3,
-        3,
-        5,
-        1,
-        2,
-        6,
-        1,
-    ]
-    assert X_tr["text_ends_with_punctuation"].tolist() == [
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        1,
-        1,
-    ]
-
-
-def test_word_features(df_text):
-    transformer = TextFeatures(
-        variables=["text"],
-        features=[
-            "word_count",
-            "unique_word_count",
-            "lexical_diversity",
-            "avg_word_length",
-        ],
-    )
-    X_tr = transformer.fit_transform(df_text)
-    assert X_tr["text_word_count"].tolist() == [
-        2,
-        1,
-        1,
-        2,
-        0,
-        1,
-        1,
-        0,
-        0,
-        3,
-        1,
-        2,
-        2,
-        1,
-        4,
-        6,
-        2,
-        2,
-        2,
-        11,
-    ]
-    assert X_tr["text_unique_word_count"].tolist() == [
-        2,
-        1,
-        1,
-        2,
-        0,
-        1,
-        1,
-        0,
-        0,
-        3,
-        1,
-        2,
-        2,
-        1,
-        4,
-        6,
-        2,
-        2,
-        2,
-        11,
-    ]
-    assert X_tr["text_lexical_diversity"].tolist() == [
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        0.0,
-        1.0,
-        1.0,
-        0.0,
-        0.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-    ]
-    assert X_tr["text_avg_word_length"].tolist() == [
-        6.0,
-        5.0,
-        5.0,
-        4.5,
-        0.0,
-        8.0,
-        6.0,
-        0.0,
-        0.0,
-        2.6666666666666665,
-        5.0,
-        3.0,
-        6.5,
-        3.0,
-        4.75,
-        3.1666666666666665,
-        6.0,
-        6.5,
-        8.5,
-        9.181818181818182,
-    ]
-
-
-def test_basic_features(df_text):
-    transformer = TextFeatures(
-        variables=["text"],
-        features=[
-            "char_count",
-            "sentence_count",
-            "letter_count",
-            "lowercase_count",
-            "is_empty",
-        ],
-    )
-    X_tr = transformer.fit_transform(df_text)
-    assert X_tr["text_char_count"].tolist() == [
-        11,
-        5,
-        5,
-        8,
-        0,
-        8,
-        6,
-        0,
-        0,
-        6,
-        5,
-        5,
-        12,
-        3,
-        16,
-        14,
-        11,
-        12,
-        16,
-        91,
-    ]
-    assert X_tr["text_sentence_count"].tolist() == [
-        1,
-        0,
-        0,
-        4,
-        0,
-        0,
-        1,
-        0,
-        0,
-        3,
-        0,
-        1,
-        1,
-        1,
-        2,
-        2,
-        1,
-        2,
-        2,
-        1,
-    ]
-    assert X_tr["text_letter_count"].tolist() == [
-        10,
-        5,
-        0,
-        4,
-        0,
-        8,
-        3,
-        0,
-        0,
-        3,
-        5,
-        2,
-        4,
-        0,
-        13,
-        4,
-        10,
-        10,
-        10,
-        90,
-    ]
-    assert X_tr["text_lowercase_count"].tolist() == [
-        8,
-        0,
-        0,
-        4,
-        0,
-        8,
-        3,
-        0,
-        0,
-        0,
-        2,
-        1,
-        2,
-        0,
-        13,
-        2,
-        8,
-        8,
-        8,
-        89,
-    ]
-    assert X_tr["text_is_empty"].tolist() == [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    ]
-
-
-# ==============================================================================
-# OTHER METHOD TESTS
-# ==============================================================================
-
-
-def test_get_feature_names_out():
-    X = pd.DataFrame({"text": ["Hello"], "other": [1]})
-    transformer = TextFeatures(
-        variables=["text"], features=["char_count", "word_count"]
-    )
-    transformer.fit(X)
-
-    feature_names = transformer.get_feature_names_out()
-    expected_features = ["text", "other", "text_char_count", "text_word_count"]
-    assert feature_names == expected_features
-
-
-def test_get_feature_names_out_with_drop():
-    """Test get_feature_names_out with drop_original=True."""
-    X = pd.DataFrame({"text": ["Hello"], "other": [1]})
-    transformer = TextFeatures(
-        variables=["text"], features=["char_count"], drop_original=True
-    )
-    transformer.fit(X)
-
-    feature_names = transformer.get_feature_names_out()
-    expected_features = ["other", "text_char_count"]
-    assert feature_names == expected_features
-
-
-def test_lexical_diversity_is_unique_words_over_total_words():
-    X = pd.DataFrame(
+def test_lexical_diversity_is_unique_words_over_total_words(make_df):
+    X = make_df(
         {
             "text": [
                 "the cat sat on the mat",  # 6 words, 5 unique
@@ -791,8 +466,109 @@ def test_lexical_diversity_is_unique_words_over_total_words():
         }
     )
     transformer = TextFeatures(variables=["text"], features=["lexical_diversity"])
-    X_tr = transformer.fit_transform(X)
+    Xt = transformer.fit_transform(X)
 
-    assert X_tr["text_lexical_diversity"].tolist() == [5 / 6, 1 / 4, 1.0]
-    # a ratio of unique words to total words never exceeds 1
-    assert (X_tr["text_lexical_diversity"] <= 1.0).all()
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt)["text_lexical_diversity"] == pytest.approx(
+        [5 / 6, 1 / 4, 1]
+    )
+
+
+def test_output_dtypes(make_df):
+    X = make_df({"text": ["Hello World", "Hi"]})
+    features = ["char_count", "whitespace_ratio", "has_digits", "unique_word_count"]
+    Xt = TextFeatures(variables=["text"], features=features).fit_transform(X)
+
+    schema = nw.from_native(Xt).schema
+    assert [schema[f"text_{f}"] for f in features] == [
+        nw.Int64,
+        nw.Float64,
+        nw.Int64,
+        nw.Int64,
+    ]
+
+
+@pytest.mark.parametrize(
+    "drop_original, expected",
+    [
+        (False, ["text", "other", "text_char_count", "text_word_count"]),
+        (True, ["other", "text_char_count", "text_word_count"]),
+    ],
+)
+def test_get_feature_names_out(make_df, drop_original, expected):
+    X = make_df({"text": ["Hello"], "other": [1]})
+    transformer = TextFeatures(
+        variables=["text"],
+        features=["char_count", "word_count"],
+        drop_original=drop_original,
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert transformer.get_feature_names_out() == expected
+    assert list(Xt.columns) == expected
+
+
+@pytest.mark.parametrize(
+    "input_features", [["text", "other"], np.array(["text", "other"])]
+)
+def test_get_feature_names_out_with_input_features(make_df, input_features):
+    X = make_df({"text": ["Hello"], "other": [1]})
+    transformer = TextFeatures(variables=["text"], features=["char_count"]).fit(X)
+    assert transformer.get_feature_names_out(input_features) == [
+        "text",
+        "other",
+        "text_char_count",
+    ]
+
+
+@pytest.mark.parametrize("input_features", [["other", "text"], ["text"]])
+def test_error_if_input_features_not_feature_names_in(make_df, input_features):
+    X = make_df({"text": ["Hello"], "other": [1]})
+    transformer = TextFeatures(variables=["text"], features=["char_count"]).fit(X)
+    msg = "input_features is not equal to feature_names_in_"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.get_feature_names_out(input_features)
+
+
+@pytest.mark.parametrize("input_features", ["text", 1, {"text": 1}])
+def test_error_if_input_features_not_list_or_array(make_df, input_features):
+    X = make_df({"text": ["Hello"], "other": [1]})
+    transformer = TextFeatures(variables=["text"], features=["char_count"]).fit(X)
+    msg = f"input_features must be a list or an array. Got {input_features} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.get_feature_names_out(input_features)
+
+
+def test_integer_column_names():
+    X = pd.DataFrame({0: [1, 2], "text": ["Hello World", None], 1: ["a", "b"]})
+    transformer = TextFeatures(variables=["text"], features=["word_count"])
+    Xt = transformer.fit_transform(X)
+
+    expected = pd.DataFrame(
+        {
+            0: [1, 2],
+            "text": ["Hello World", ""],
+            1: ["a", "b"],
+            "text_word_count": [2, 0],
+        }
+    )
+    pd.testing.assert_frame_equal(Xt, expected)
+    assert transformer.get_feature_names_out() == [0, "text", 1, "text_word_count"]
+
+
+def test_pandas_index_is_kept():
+    X = pd.DataFrame({"text": ["Hello World", "Hi", "Hey"]}, index=[10, 10, 3])
+    transformer = TextFeatures(
+        variables=["text"], features=["char_count", "unique_word_count"]
+    )
+    Xt = transformer.fit_transform(X)
+
+    expected = pd.DataFrame(
+        {
+            "text": ["Hello World", "Hi", "Hey"],
+            "text_char_count": [10, 2, 3],
+            "text_unique_word_count": [2, 1, 1],
+        },
+        index=[10, 10, 3],
+    )
+    pd.testing.assert_frame_equal(Xt, expected)

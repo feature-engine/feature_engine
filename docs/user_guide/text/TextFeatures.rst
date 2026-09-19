@@ -38,26 +38,29 @@ Text features
 
 :class:`TextFeatures()` can extract the following features from a text piece:
 
-- **char_count**: Number of characters in the text
+- **char_count**: Number of characters, excluding whitespace
 - **word_count**: Number of words (whitespace-separated tokens)
 - **sentence_count**: Number of sentences (based on .!? punctuation)
-- **avg_word_length**: Average length of words
+- **avg_word_length**: Average number of characters per word
 - **digit_count**: Number of digit characters
-- **letter_count**: Number of alphabetic characters (a-z, A-Z)
-- **uppercase_count**: Number of uppercase letters
-- **lowercase_count**: Number of lowercase letters
-- **special_char_count**: Number of special characters (non-alphanumeric)
+- **letter_count**: Number of letters a-z and A-Z
+- **uppercase_count**: Number of uppercase letters A-Z
+- **lowercase_count**: Number of lowercase letters a-z
+- **special_char_count**: Number of characters that are not a-z, A-Z, 0-9 or whitespace
 - **whitespace_count**: Number of whitespace characters
 - **whitespace_ratio**: Ratio of whitespace to total characters
-- **digit_ratio**: Ratio of digits to total characters
-- **uppercase_ratio**: Ratio of uppercase to total characters
+- **digit_ratio**: Ratio of digits to non-whitespace characters
+- **uppercase_ratio**: Ratio of uppercase letters to non-whitespace characters
 - **has_digits**: Binary indicator if text contains digits
-- **has_uppercase**: Binary indicator if text contains uppercase
+- **has_uppercase**: Binary indicator if text contains uppercase letters A-Z
 - **is_empty**: Binary indicator if text is empty
-- **starts_with_uppercase**: Binary indicator if text starts with uppercase
+- **starts_with_uppercase**: Binary indicator if text starts with A-Z
 - **ends_with_punctuation**: Binary indicator if text ends with .!?
 - **unique_word_count**: Number of unique words (case-insensitive)
 - **lexical_diversity**: Ratio of unique words to total words
+
+Letters with accents or from other alphabets, like é or ß, are not counted as letters
+or uppercase letters; they are counted as special characters.
 
 The **number of sentences** is inferred by :class:`TextFeatures()` by counting blocks of
 sentence-ending punctuation (., !, ?) as a proxy for sentence boundaries. This means that
@@ -160,7 +163,7 @@ The input dataframe looks like this:
 
 Now let's extract 5 specific text features: the number of words, the number of
 characters, the number of sentences, whether the text has digits, and the ratio of
-upper- to lowercase:
+uppercase letters to non-whitespace characters:
 
 .. code:: python
 
@@ -221,10 +224,10 @@ The output dataframe contains all 20 text features extracted from the `review` c
     3                       TERRIBLE!!! DO NOT BUY!          Awful                 20                  4
 
        review_sentence_count  review_avg_word_length  review_digit_count  review_letter_count
-    0                      2                6.285714                   0                   36
-    1                      2                6.200000                   0                   25
-    2                      2                3.888889                   2                   23
-    3                      2                5.750000                   0                   16
+    0                      2                5.428571                   0                   36
+    1                      2                5.400000                   0                   25
+    2                      2                3.000000                   2                   23
+    3                      2                5.000000                   0                   16
 
        review_uppercase_count  review_lowercase_count  review_special_char_count  review_whitespace_count
     0                       9                      27                          2                        6
@@ -278,6 +281,57 @@ extracted features remain:
     1  Disappointed                   5                 27
     2       Average                   9                 27
     3         Awful                   4                 20
+
+With polars
+~~~~~~~~~~~
+
+:class:`TextFeatures()` works the same way with a polars dataframe, and returns a polars
+dataframe. Let's create a toy dataset with a missing value:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.text import TextFeatures
+
+    X = pl.DataFrame({
+        'review': [
+            'This product is AMAZING! Best purchase ever.',
+            'Not great. Would not recommend.',
+            'OK for the price. 3 out of 5 stars.',
+            None,
+        ],
+    })
+
+Let's extract the number of words, whether the text has digits, and the ratio of
+uppercase letters:
+
+.. code:: python
+
+    tf = TextFeatures(
+        variables=['review'],
+        features=['word_count', 'has_digits', 'uppercase_ratio'],
+    )
+
+    X_transformed = tf.fit_transform(X)
+
+    print(X_transformed)
+
+We obtain a polars dataframe with the new features. The missing value was replaced by
+an empty string, which has 0 words:
+
+.. code-block:: none
+
+    shape: (4, 4)
+    ┌─────────────────────────────────┬───────────────────┬───────────────────┬────────────────────────┐
+    │ review                          ┆ review_word_count ┆ review_has_digits ┆ review_uppercase_ratio │
+    │ ---                             ┆ ---               ┆ ---               ┆ ---                    │
+    │ str                             ┆ i64               ┆ i64               ┆ f64                    │
+    ╞═════════════════════════════════╪═══════════════════╪═══════════════════╪════════════════════════╡
+    │ This product is AMAZING! Best … ┆ 7                 ┆ 0                 ┆ 0.236842               │
+    │ Not great. Would not recommend… ┆ 5                 ┆ 0                 ┆ 0.074074               │
+    │ OK for the price. 3 out of 5 s… ┆ 9                 ┆ 1                 ┆ 0.074074               │
+    │                                 ┆ 0                 ┆ 0                 ┆ 0.0                    │
+    └─────────────────────────────────┴───────────────────┴───────────────────┴────────────────────────┘
 
 Combining with sklearn's bag-of-words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
