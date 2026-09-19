@@ -1,6 +1,9 @@
+from itertools import product
 from typing import Callable, List, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -20,6 +23,34 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     BaseForecastTransformer,
 )
+
+# pandas' rolling functions that other dataframes support: with narwhals, or with
+# polars' own expressions when narwhals has none (they are faster than numpy).
+_NW_ROLLING = {
+    "count": lambda col, win, min_samples: (~col.is_null())
+    .cast(nw.Float64)
+    .rolling_sum(win, min_samples=min_samples),
+    "mean": lambda col, win, min_samples: col.rolling_mean(
+        win, min_samples=min_samples
+    ),
+    "std": lambda col, win, min_samples: col.rolling_std(win, min_samples=min_samples),
+    "sum": lambda col, win, min_samples: col.rolling_sum(win, min_samples=min_samples),
+    "var": lambda col, win, min_samples: col.rolling_var(win, min_samples=min_samples),
+}
+_POLARS_ROLLING = {
+    # bias=False gives the sample skewness and kurtosis, as pandas.
+    "kurt": lambda col, win, min_samples: col.rolling_kurtosis(
+        win, bias=False, min_samples=min_samples
+    ),
+    "max": lambda col, win, min_samples: col.rolling_max(win, min_samples=min_samples),
+    "median": lambda col, win, min_samples: col.rolling_median(
+        win, min_samples=min_samples
+    ),
+    "min": lambda col, win, min_samples: col.rolling_min(win, min_samples=min_samples),
+    "skew": lambda col, win, min_samples: col.rolling_skew(
+        win, bias=False, min_samples=min_samples
+    ),
+}
 
 
 @Substitution(
@@ -41,11 +72,12 @@ class WindowFeatures(BaseForecastTransformer):
     example, the mean value of the previous 3 months of data is a window feature. The
     maximum value of the previous three rows of data is another window feature.
 
-    WindowFeatures uses pandas functions `rolling()`, `agg()` and `shift()`. With
-    `rolling()`, it creates rolling windows. With `agg()` it applies multiple functions
-    within those windows. With `shift()` it allocates the values to the correct rows.
+    WindowFeatures works with pandas and polars dataframes.
 
-    For supported aggregation functions, see Rolling Window
+    With pandas, WindowFeatures uses pandas functions `rolling()` and `shift()`. With
+    `rolling()`, it creates rolling windows and applies the functions within those
+    windows. With `shift()` it allocates the values to the correct rows. For supported
+    aggregation functions, see Rolling Window
     `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
     With pandas `rolling()` we can perform rolling operations over 1 window size at a
@@ -53,8 +85,10 @@ class WindowFeatures(BaseForecastTransformer):
     be derived from multiple window sizes, and the created features will be
     automatically concatenated to the original dataframe.
 
-    To be compatible with WindowFeatures, the dataframe's index must have unique values
-    and no missing data.
+    With pandas, the rows are ordered in time by the dataframe's index, which must have
+    unique values and no missing data. Polars dataframes have no index: their rows are
+    taken in the order given, so they must be sorted in time. With polars, the windows
+    are a number of rows, and `freq` is not supported.
 
     WindowFeatures works only with numerical variables. You can pass a list of variables
     to use as input for the windows. Alternatively, WindowFeatures will automatically
@@ -78,25 +112,31 @@ class WindowFeatures(BaseForecastTransformer):
         the above specified values, in which case, features will be created for each
         one of the windows specified in the list.
 
+        With polars, `window` takes only integers or lists of integers.
+
     min_periods: int, default None.
         Minimum number of observations in the window required to have a value;
         otherwise, the result is np.nan. See parameter `min_periods` in pandas
-        `rolling()` documentation for more details.
+        `rolling()` documentation for more details. With polars, `min_periods` must be
+        greater than 0.
 
     functions: string or list of strings, default = 'mean'
         The functions to apply within the window. Valid functions can be found
-        `here <https://pandas.pydata.org/docs/reference/window.html>`_.
+        `here <https://pandas.pydata.org/docs/reference/window.html>`_. With polars,
+        the valid functions are 'count', 'kurt', 'max', 'mean', 'median', 'min',
+        'skew', 'std', 'sum' and 'var'.
 
-    periods: int, list of ints, default=1
+    periods: int, default=1
         Number of periods to shift. Can be a positive integer. See param `periods` in
         pandas `shift()`.
 
-    freq: str, list of str, default=None
+    freq: str, default=None
         Offset to use from the tseries module or time rule. See parameter `freq` in
-        pandas `shift()`.
+        pandas `shift()`. Only supported with pandas.
 
     sort_index: bool, default=True
-        Whether to order the index of the dataframe before creating the features.
+        Whether to order the index of the dataframe before creating the features. It
+        does not apply to polars dataframes, which have no index.
 
     {missing_values}
 
@@ -153,6 +193,25 @@ class WindowFeatures(BaseForecastTransformer):
     2  2022-09-20   3   8               1.5               6.5
     3  2022-09-21   4   9               2.5               7.5
     4  2022-09-22   5  10               3.5               8.5
+
+    With polars, the rows are taken in the order given:
+
+    >>> import polars as pl
+    >>> X = pl.DataFrame(dict(x1 = [1,2,3,4,5], x2 = [6,7,8,9,10]))
+    >>> wf = WindowFeatures(window = 2)
+    >>> wf.fit_transform(X)
+    shape: (5, 4)
+    ┌─────┬─────┬──────────────────┬──────────────────┐
+    │ x1  ┆ x2  ┆ x1_window_2_mean ┆ x2_window_2_mean │
+    │ --- ┆ --- ┆ ---              ┆ ---              │
+    │ i64 ┆ i64 ┆ f64              ┆ f64              │
+    ╞═════╪═════╪══════════════════╪══════════════════╡
+    │ 1   ┆ 6   ┆ null             ┆ null             │
+    │ 2   ┆ 7   ┆ null             ┆ null             │
+    │ 3   ┆ 8   ┆ 1.5              ┆ 6.5              │
+    │ 4   ┆ 9   ┆ 2.5              ┆ 7.5              │
+    │ 5   ┆ 10  ┆ 3.5              ┆ 8.5              │
+    └─────┴─────┴──────────────────┴──────────────────┘
     """
 
     def __init__(
@@ -199,54 +258,134 @@ class WindowFeatures(BaseForecastTransformer):
         self.freq = freq
         self.sort_index = sort_index
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_index(self, X: IntoDataFrame):
+        """
+        Checks that the rows of the dataframe can be ordered in time and, with
+        dataframes other than pandas, that `window`, `functions` and `min_periods`
+        are supported.
+
+        Parameters
+        ----------
+        X: dataframe of shape = [n_samples, n_features]
+            The dataset.
+        """
+        super()._check_index(X)
+
+        if nwd.is_pandas_dataframe(X) is False:
+            windows = self.window if isinstance(self.window, list) else [self.window]
+            if not all(isinstance(win, int) for win in windows):
+                raise NotImplementedError(
+                    "Time spans in window, like '3D', are only supported with pandas "
+                    "dataframes, because they use the dataframe's DatetimeIndex. With "
+                    "other dataframes, window takes integers, the number of rows in "
+                    f"each window. Got {self.window} instead."
+                )
+
+            functions = (
+                self.functions if isinstance(self.functions, list) else [self.functions]
+            )
+            if not all(
+                function in _NW_ROLLING or function in _POLARS_ROLLING
+                for function in functions
+            ):
+                raise NotImplementedError(
+                    "With dataframes other than pandas, functions takes only "
+                    f"{sorted([*_NW_ROLLING, *_POLARS_ROLLING])}. "
+                    f"Got {self.functions} instead."
+                )
+
+            if self.min_periods == 0:
+                raise NotImplementedError(
+                    "min_periods=0 is only supported with pandas dataframes. With "
+                    "other dataframes, min_periods takes integers greater than 0 or "
+                    f"None. Got {self.min_periods} instead."
+                )
+
+        return self
+
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Adds window features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe, shape = [n_samples, n_features + window_features]
-            The dataframe with the original plus the new variables.
+        X_new: dataframe of shape = [n_samples, n_features + window_features]
+            The dataframe with the original plus the new variables. If
+            `drop_na=True`, rows with missing data in the new features are removed.
         """
-        # Common dataframe checks and setting up.
-        X = self._check_transform_input_and_state(X)
+        return super().transform(X)
 
-        if isinstance(self.window, list):
-            df_ls = []
-            for win in self.window:
-                tmp = (
-                    X[self.variables_]
-                    .rolling(window=win, min_periods=self.min_periods)
-                    .agg(self.functions)
-                    .shift(periods=self.periods, freq=self.freq)
+    def _add_features(self, nw_X: nw.DataFrame) -> nw.DataFrame:
+        """
+        Adds the window features after the columns of `nw_X`.
+
+        Parameters
+        ----------
+        nw_X: narwhals dataframe of shape = [n_samples, n_features]
+            The data returned by `_check_transform_input_and_state()`.
+        """
+        if len(self.variables_) == 0:
+            return nw_X
+
+        windows = self.window if isinstance(self.window, list) else [self.window]
+        functions = (
+            self.functions if isinstance(self.functions, list) else [self.functions]
+        )
+        new_features = self._get_new_features_name()
+        X = nw_X.to_native()
+
+        if nwd.is_pandas_dataframe(X) is True:
+            # pandas is faster than narwhals, and time spans and freq need its index.
+            tmp = []
+            for win in windows:
+                rolling = X[self.variables_].rolling(
+                    window=win, min_periods=self.min_periods
                 )
-                df_ls.append(tmp)
-            tmp = pd.concat(df_ls, axis=1, sort=False)
-
-        else:
-            tmp = (
-                X[self.variables_]
-                .rolling(window=self.window, min_periods=self.min_periods)
-                .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
+                for function in functions:
+                    # the rolling methods are faster than agg() with many variables.
+                    rolled = getattr(rolling, function)().shift(
+                        periods=self.periods, freq=self.freq
+                    )
+                    rolled.columns = [
+                        f"{var}_window_{win}_{function}" for var in self.variables_
+                    ]
+                    tmp.append(rolled)
+            # with freq, the index of the features moves: merge aligns them to X.
+            X = X.merge(
+                tmp[0].join(tmp[1:])[new_features],
+                left_index=True,
+                right_index=True,
+                how="left",
             )
+            return nw.from_native(X, eager_only=True)
 
-        tmp.columns = self._get_new_features_name()
+        plx = nw.get_native_namespace(nw_X)
+        nw_exprs, native_exprs = [], []
+        for name, (win, var, function) in zip(
+            new_features, product(windows, self.variables_, functions)
+        ):
+            # like pandas, windows of integers need all their rows by default.
+            min_samples = win if self.min_periods is None else self.min_periods
+            if function in _NW_ROLLING:
+                rolled = _NW_ROLLING[function](nw.col(var), win, min_samples)
+                nw_exprs.append(rolled.shift(self.periods).alias(name))
+            else:
+                rolled = _POLARS_ROLLING[function](plx.col(var), win, min_samples)
+                native_exprs.append(rolled.shift(self.periods).alias(name))
 
-        X = X.merge(tmp, left_index=True, right_index=True, how="left")
+        columns = nw_X.columns
+        nw_X = nw_X.with_columns(nw_exprs)
+        if len(native_exprs) > 0:
+            # the polars features were added last: restore the order of the names.
+            X = nw_X.to_native().with_columns(native_exprs)
+            nw_X = nw.from_native(X, eager_only=True).select(columns + new_features)
 
-        if self.drop_original:
-            X = X.drop(self.variables_, axis=1)
-
-        if self.drop_na:
-            X = X.dropna(subset=tmp.columns, axis=0)
-
-        return X
+        return nw_X
 
     def _get_new_features_name(self) -> List:
         """Get names of the lag features."""
