@@ -236,9 +236,11 @@ def test_extract_datetime_features_from_specified_variables(make_df):
     # multiple datetime variables, in different order than they appear in X
     Xt = DatetimeFeatures(variables=["date2", "date"]).fit_transform(X)
     result = nw.from_native(Xt, eager_only=True)
-    expected_cols = vars_non_dt + [
-        f"date2{FEATURES_SUFFIXES[feat]}" for feat in FEATURES_DEFAULT
-    ] + feat_names_default_cb
+    expected_cols = (
+        vars_non_dt
+        + [f"date2{FEATURES_SUFFIXES[feat]}" for feat in FEATURES_DEFAULT]
+        + feat_names_default_cb
+    )
     assert result.columns == expected_cols
     for col, expected in _expected_cross_backend_features(FEATURES_DEFAULT).items():
         assert _to_py_values(result.get_column(col)) == expected
@@ -294,9 +296,7 @@ def test_extract_all_datetime_features(make_df):
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
-@pytest.mark.parametrize(
-    "features", [["semester", "week"], ["hour", "day_of_week"]]
-)
+@pytest.mark.parametrize("features", [["semester", "week"], ["hour", "day_of_week"]])
 def test_extract_specified_datetime_features(make_df, features):
     X = make_df(CROSS_BACKEND_DATA)
     Xt = DatetimeFeatures(features_to_extract=features).fit_transform(X)
@@ -515,6 +515,23 @@ def test_polars_string_parsing_needs_explicit_format_for_ambiguous_dates():
     assert nw.from_native(Xt, eager_only=True).get_column(
         "date_obj1_year"
     ).to_list() == [2010, 1945]
+
+
+def test_ignore_nan_for_week_and_days_in_month():
+    # week and days_in_month must propagate NaN like the other features when
+    # missing_values="ignore", instead of raising on the int cast of a NaT.
+    X = DatetimeFeatures(
+        features_to_extract=["week", "days_in_month"], missing_values="ignore"
+    ).fit_transform(dates_nan)
+    pd.testing.assert_frame_equal(
+        X,
+        pd.DataFrame(
+            {
+                "dates_na_week": [5.0, np.nan, 22.0, np.nan],
+                "dates_na_days_in_month": [28.0, np.nan, 30.0, np.nan],
+            }
+        ),
+    )
 
 
 def test_extract_features_with_different_datetime_parsing_options(df_datetime):

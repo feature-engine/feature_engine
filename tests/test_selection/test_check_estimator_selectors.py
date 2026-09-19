@@ -26,6 +26,7 @@ from tests.estimator_checks.init_params_triggered_functionality_checks import (
     check_confirm_variables,
     check_raises_error_if_only_1_variable,
 )
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 _logreg = LogisticRegression(C=0.0001, max_iter=2, random_state=1)
 
@@ -90,7 +91,10 @@ def test_check_estimator_from_sklearn(estimator):
         "SelectByInformationValue",
     ]:
         failed_tests = estimator._more_tags()["_xfail_checks"]
-        return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+        return check_estimator(
+            estimator=wrap_for_check_estimator(estimator),
+            expected_failed_checks=failed_tests,
+        )
 
 
 @pytest.mark.parametrize("estimator", _univariate_estimators)

@@ -6,6 +6,7 @@ from sklearn.utils.estimator_checks import check_estimator
 from feature_engine.outliers import ArbitraryOutlierCapper, OutlierTrimmer, Winsoriser
 from feature_engine.tags import _return_tags
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
+from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 _estimators = [
     ArbitraryOutlierCapper(max_capping_dict={"x0": 10}),
@@ -38,7 +39,10 @@ FAILED_CHECKS_AOC.update(
     ],
 )
 def test_check_estimator_from_sklearn(estimator, failed_tests):
-    return check_estimator(estimator=estimator, expected_failed_checks=failed_tests)
+    return check_estimator(
+        estimator=wrap_for_check_estimator(estimator),
+        expected_failed_checks=failed_tests,
+    )
 
 
 @pytest.mark.parametrize("estimator", _estimators)
