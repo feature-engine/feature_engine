@@ -1,6 +1,7 @@
 import re
 
 import narwhals as nw
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
@@ -163,14 +164,18 @@ def test_fit_raises_error_if_na(make_df, data_na):
 
 
 @pytest.mark.parametrize("capping_method", ["gaussian", "iqr", "mad", "quantiles"])
-def test_error_if_low_variation(make_df, capping_method):
-    X = make_df({"var": [1.0] * 10, "other": list(range(10))})
-    msg = (
-        f"Input columns ['var'] have low variation for method '{capping_method}'. "
-        "Try other capping methods or drop these columns."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        WinsorizerBase(capping_method=capping_method, variables=["var"]).fit(X)
+@pytest.mark.parametrize("tail", ["right", "left", "both"])
+def test_variables_without_variation_get_infinite_caps(make_df, capping_method, tail):
+    X = make_df({"var": [1.0] * 10, "other": [float(v) for v in range(10)]})
+    transformer = WinsorizerBase(capping_method=capping_method, tail=tail)
+    transformer.fit(X)
+
+    if tail in ("right", "both"):
+        assert transformer.right_tail_caps_["var"] == np.inf
+        assert np.isfinite(transformer.right_tail_caps_["other"])
+    if tail in ("left", "both"):
+        assert transformer.left_tail_caps_["var"] == -np.inf
+        assert np.isfinite(transformer.left_tail_caps_["other"])
 
 
 def test_fit_with_integer_column_names(data_normal_dist):
@@ -265,3 +270,16 @@ def test_transform_raises_non_fitted_error(make_df):
     )
     with pytest.raises(NotFittedError, match=re.escape(msg)):
         MockCapper().transform(make_df(DATA_CAP))
+
+
+def test_transform_leaves_variables_with_infinite_caps_untouched(make_df):
+    transformer = MockCapper().fit(make_df(DATA_CAP))
+    transformer.right_tail_caps_ = {"a": np.inf, "b": np.inf}
+    transformer.left_tail_caps_ = {"a": -np.inf, "c": -np.inf}
+
+    Xt = transformer.transform(make_df(DATA_CAP))
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == DATA_CAP
+    # the integer column is not cast to float
+    assert nw.from_native(Xt, eager_only=True)["c"].dtype.is_integer()

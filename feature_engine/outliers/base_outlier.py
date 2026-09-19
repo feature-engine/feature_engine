@@ -90,21 +90,15 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         # check if class was fitted
         nw_X = self._check_transform_input_and_state(X)
 
-        both = [
-            var
-            for var in self.variables_
-            if var in self.right_tail_caps_ and var in self.left_tail_caps_
-        ]
+        # infinite limits don't cap, and clipping to them turns integers into floats
+        right = {v: c for v, c in self.right_tail_caps_.items() if np.isfinite(c)}
+        left = {v: c for v, c in self.left_tail_caps_.items() if np.isfinite(c)}
+
+        both = [var for var in self.variables_ if var in right and var in left]
         right_only = [
-            var
-            for var in self.variables_
-            if var in self.right_tail_caps_ and var not in self.left_tail_caps_
+            var for var in self.variables_ if var in right and var not in left
         ]
-        left_only = [
-            var
-            for var in self.variables_
-            if var in self.left_tail_caps_ and var not in self.right_tail_caps_
-        ]
+        left_only = [var for var in self.variables_ if var in left and var not in right]
 
         # Grouping columns by which bound(s) apply turns the per-column .clip()
         # loop into up to 3 vectorized numpy calls (benchmarked 2-6x faster than
@@ -114,8 +108,8 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         new_series = []
         if len(both) > 0:
             values = nw_X.select(nw.col(*both)).to_numpy()
-            lower = np.array([self.left_tail_caps_[var] for var in both])
-            upper = np.array([self.right_tail_caps_[var] for var in both])
+            lower = np.array([left[var] for var in both])
+            upper = np.array([right[var] for var in both])
             clipped = np.clip(values, lower, upper)
             new_series += [
                 nw.new_series(var, clipped[:, i], backend=nw_X.implementation)
@@ -123,7 +117,7 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             ]
         if len(right_only) > 0:
             values = nw_X.select(nw.col(*right_only)).to_numpy()
-            upper = np.array([self.right_tail_caps_[var] for var in right_only])
+            upper = np.array([right[var] for var in right_only])
             clipped = np.minimum(values, upper)
             new_series += [
                 nw.new_series(var, clipped[:, i], backend=nw_X.implementation)
@@ -131,7 +125,7 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             ]
         if len(left_only) > 0:
             values = nw_X.select(nw.col(*left_only)).to_numpy()
-            lower = np.array([self.left_tail_caps_[var] for var in left_only])
+            lower = np.array([left[var] for var in left_only])
             clipped = np.maximum(values, lower)
             new_series += [
                 nw.new_series(var, clipped[:, i], backend=nw_X.implementation)
@@ -311,16 +305,6 @@ class WinsorizerBase(BaseOutlier):
             # scaling factor for normal distribution
             scale = np.nanmedian(np.abs(values - bias), axis=0) / 0.67449
 
-        if (scale == 0).any():
-            failing_vars = [
-                var for var, s in zip(self.variables_, scale) if s == 0
-            ]
-            raise ValueError(
-                f"Input columns {failing_vars!r}"
-                f" have low variation for method {self.capping_method!r}."
-                f" Try other capping methods or drop these columns."
-            )
-
         # estimate the end values
         if self.tail in ("right", "both"):
             if self.capping_method in ("gaussian", "mad"):
@@ -357,6 +341,14 @@ class WinsorizerBase(BaseOutlier):
                 self.left_tail_caps_ = {
                     var: float(q) for var, q in zip(self.variables_, q_lo)
                 }
+
+        # variables without variation have no outliers, so they get infinite limits
+        for var, s in zip(self.variables_, scale):
+            if s == 0:
+                if var in self.right_tail_caps_:
+                    self.right_tail_caps_[var] = float("inf")
+                if var in self.left_tail_caps_:
+                    self.left_tail_caps_[var] = float("-inf")
 
         # list() normalises both a narwhals `.columns` (already a list) and a
         # pandas Index to a plain list.
