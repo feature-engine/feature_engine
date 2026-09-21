@@ -1,7 +1,11 @@
 from types import GeneratorType
-from typing import List, Union
+from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
+from scipy.stats import kendalltau, spearmanr
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -29,8 +33,9 @@ from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
     check_X,
-    check_y,
+    check_X_y,
 )
+from feature_engine.encoding._helper_functions import TARGET_NAME, add_target_to_X
 from feature_engine.selection.base_selector import BaseSelector
 
 from .base_selection_functions import (
@@ -71,8 +76,6 @@ class SmartCorrelatedSelection(BaseSelector):
     correlated features, the selected variable, plus all the features that were
     not correlated to any other.
 
-    Correlation is calculated with `pandas.corr()`.
-
     SmartCorrelatedSelection() works only with numerical variables. Categorical
     variables will need to be encoded to numerical or will be excluded from the
     analysis.
@@ -91,8 +94,6 @@ class SmartCorrelatedSelection(BaseSelector):
         - 'kendall': Kendall Tau correlation coefficient
         - 'spearman': Spearman rank correlation
         - callable: callable with input two 1d ndarrays and returning a float.
-
-        For more details on this parameter visit the `pandas.corr()` documentation.
 
     threshold: float, default=0.8
         The correlation threshold above which a feature will be deemed correlated with
@@ -173,7 +174,6 @@ class SmartCorrelatedSelection(BaseSelector):
 
     See Also
     --------
-    pandas.corr
     feature_engine.selection.DropCorrelatedFeatures
 
     Examples
@@ -186,10 +186,10 @@ class SmartCorrelatedSelection(BaseSelector):
     >>>                 x3 = [1, 0, 0, 0]))
     >>> scs = SmartCorrelatedSelection(threshold=0.7)
     >>> scs.fit_transform(X)
-       x2  x3
-    0   2   1
-    1   4   0
-    2   3   0
+       x1  x3
+    0   1   1
+    1   2   0
+    2   1   0
     3   1   0
 
     It is also possible to use alternative selection methods. Here, we select those
@@ -205,6 +205,27 @@ class SmartCorrelatedSelection(BaseSelector):
     1  2000   0
     2  1500   0
     3   500   0
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.selection import SmartCorrelatedSelection
+    >>> X = pl.DataFrame(dict(x1 = [2,4,3,1],
+    ...                 x2 = [1000,2000,1500,500],
+    ...                 x3 = [1, 0, 0, 0]))
+    >>> scs = SmartCorrelatedSelection(threshold=0.7, selection_method="variance")
+    >>> scs.fit_transform(X)
+    shape: (4, 2)
+    ┌──────┬─────┐
+    │ x2   ┆ x3  │
+    │ ---  ┆ --- │
+    │ i64  ┆ i64 │
+    ╞══════╪═════╡
+    │ 1000 ┆ 1   │
+    │ 2000 ┆ 0   │
+    │ 1500 ┆ 0   │
+    │ 500  ┆ 0   │
+    └──────┴─────┘
     """
 
     def __init__(
@@ -225,13 +246,16 @@ class SmartCorrelatedSelection(BaseSelector):
                 f"`threshold` must be a float between 0 and 1. Got {threshold} instead."
             )
 
-        if missing_values not in ["raise", "ignore"]:
+        if not isinstance(missing_values, str) or missing_values not in [
+            "raise",
+            "ignore",
+        ]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'. "
                 f"Got {missing_values} instead."
             )
 
-        if selection_method not in [
+        if not isinstance(selection_method, str) or selection_method not in [
             "missing_values",
             "cardinality",
             "variance",
@@ -269,23 +293,30 @@ class SmartCorrelatedSelection(BaseSelector):
         self.cv = cv
         self.groups = groups
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Find the correlated feature groups. Determine which feature should be selected
         from each group.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y: pandas series. Default = None
+        y: Series, list or numpy array of shape = [n_samples], default=None
             y is needed if selection_method == 'model_performance' or
                 'corr_with_target'.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        if self.selection_method in ["model_performance", "corr_with_target"]:
+            if y is None:
+                raise ValueError(
+                    f"When `selection_method = '{self.selection_method}'` y is "
+                    "needed to fit the transformer."
+                )
+            nw_X, y = check_X_y(X, y)
+        else:
+            nw_X = check_X(X)
 
         self.variables_ = _select_numerical_variables(
             X, self.variables, self.confirm_variables
@@ -299,47 +330,37 @@ class SmartCorrelatedSelection(BaseSelector):
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
-        if (
-            self.selection_method in ["model_performance", "corr_with_target"]
-        ) and y is None:
-            raise ValueError(
-                f"When `selection_method = '{self.selection_method}'` y is needed to "
-                "fit the transformer."
-            )
-
-        if self.selection_method == "missing_values":
-            features = (
-                X[self.variables_]
-                .isnull()
-                .sum()
-                .sort_values(ascending=True, kind="mergesort")
-                .index.to_list()
-            )
-        elif self.selection_method == "variance":
-            features = (
-                X[self.variables_]
-                .std()
-                .sort_values(ascending=False, kind="mergesort")
-                .index.to_list()
-            )
-        elif self.selection_method == "cardinality":
-            features = (
-                X[self.variables_]
-                .nunique()
-                .sort_values(ascending=False, kind="mergesort")
-                .index.to_list()
-            )
-        elif self.selection_method == "corr_with_target":
-            y = check_y(y)
-            features = (
-                X[self.variables_]
-                .corrwith(y, method=self.method)
-                .abs()
-                .sort_values(ascending=False, kind="mergesort")
-                .index.to_list()
-            )
-        else:
+        if self.selection_method == "model_performance":
             features = sorted(self.variables_)
+        elif self.selection_method == "corr_with_target":
+            correlation = _correlation_with_target(
+                X, nw_X, self.variables_, y, self.method
+            )
+            features = _sort_features(self.variables_, np.abs(correlation), False)
+        elif self.selection_method == "missing_values":
+            # pandas is faster than narwhals.
+            if nwd.is_pandas_dataframe(X) is True:
+                missing = X[self.variables_].isna().sum().to_numpy()
+            else:
+                missing = nw_X.select(nw.col(*self.variables_).null_count()).row(0)
+            features = _sort_features(self.variables_, missing, True)
+        elif self.selection_method == "variance":
+            # pandas is faster than narwhals.
+            if nwd.is_pandas_dataframe(X) is True:
+                std = X[self.variables_].std().to_numpy()
+            else:
+                std = nw_X.select(nw.col(*self.variables_).std()).row(0)
+            features = _sort_features(self.variables_, std, False)
+        else:
+            # pandas is faster than narwhals.
+            if nwd.is_pandas_dataframe(X) is True:
+                cardinality = X[self.variables_].nunique().to_numpy()
+            else:
+                # like pandas, nulls are not counted as a value.
+                cardinality = nw_X.select(
+                    nw.col(*self.variables_).drop_nulls().n_unique()
+                ).row(0)
+            features = _sort_features(self.variables_, cardinality, False)
 
         correlated_groups, features_to_drop, correlated_dict = find_correlated_features(
             X, features, self.method, self.threshold
@@ -353,18 +374,18 @@ class SmartCorrelatedSelection(BaseSelector):
                 feature_performance, _ = single_feature_performance(
                     X=X,
                     y=y,
-                    variables=feature_group,
+                    variables=sorted(feature_group),
                     estimator=self.estimator,
                     cv=cv,
                     groups=self.groups,
                     scoring=self.scoring,
                 )
                 # get most important feature
-                f_i = (
-                    pd.Series(feature_performance)
-                    .sort_values(ascending=False, kind="mergesort")
-                    .index[0]
-                )
+                f_i = _sort_features(
+                    list(feature_performance),
+                    list(feature_performance.values()),
+                    False,
+                )[0]
                 correlated_dict[f_i] = feature_group.difference({f_i})
 
             # convoluted way to pick up the variables from the sets in the
@@ -383,3 +404,75 @@ class SmartCorrelatedSelection(BaseSelector):
         self._get_feature_names_in(X)
 
         return self
+
+
+def _sort_features(features: list, values, ascending: bool) -> list:
+    """
+    Sort the features by their values. Like pandas' stable sort, ties keep the order
+    of the features and NaN go last.
+    """
+    values = np.asarray(values, dtype=float)
+    order = np.argsort(values if ascending is True else -values, kind="stable")
+    return [features[i] for i in order]
+
+
+def _correlation_with_target(
+    X: IntoDataFrame, nw_X: nw.DataFrame, variables: list, y, method
+) -> np.ndarray:
+    """
+    Correlation of each variable with the target. Like pandas.DataFrame.corrwith(),
+    each variable is compared with the target on the rows where it is not NaN.
+    """
+    # polars is faster than numpy and narwhals.
+    if method in ["pearson", "spearman"] and nwd.is_polars_dataframe(X) is True:
+        native_ns = nw.get_native_namespace(X)
+        target = native_ns.col(TARGET_NAME)
+        exprs = []
+        for var in variables:
+            # null and NaN are missing values, like in pandas; inf are not.
+            rows = native_ns.col(var).is_not_nan()
+            corr = native_ns.corr(
+                native_ns.col(var).filter(rows), target.filter(rows), method=method
+            )
+            exprs.append(corr.alias(var))
+        Xy = add_target_to_X(nw_X, y).to_native()
+        return np.array(Xy.select(exprs).row(0), dtype=float)
+
+    if nwd.is_pandas_dataframe(X) is True:
+        values = X[variables].to_numpy(dtype=float, na_value=np.nan)
+    else:
+        values = nw_X.select(nw.col(*variables)).to_numpy().astype(float)
+    target = np.asarray(y, dtype=float)
+
+    # numpy and scipy are faster than pandas, and return the same values.
+    if method == "pearson":
+        corr_func = _pearson
+    elif method == "spearman":
+        corr_func = _spearman
+    elif method == "kendall":
+        corr_func = _kendall
+    else:
+        corr_func = method
+
+    correlation = np.full(len(variables), np.nan)
+    for i in range(len(variables)):
+        rows = ~np.isnan(values[:, i])
+        if rows.all():
+            correlation[i] = corr_func(values[:, i], target)
+        elif rows.any():
+            correlation[i] = corr_func(values[rows, i], target[rows])
+    return correlation
+
+
+def _pearson(a: np.ndarray, b: np.ndarray) -> float:
+    # constant variables return NaN, like pandas, instead of warning.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.corrcoef(a, b)[0, 1]
+
+
+def _spearman(a: np.ndarray, b: np.ndarray) -> float:
+    return spearmanr(a, b)[0]
+
+
+def _kendall(a: np.ndarray, b: np.ndarray) -> float:
+    return kendalltau(a, b)[0]
