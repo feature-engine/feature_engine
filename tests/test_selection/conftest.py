@@ -26,6 +26,23 @@ def df_test():
 
 
 @pytest.fixture(scope="module")
+def data_classification():
+    """The data of df_test as a plain dict, with the target under "target"."""
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=12,
+        n_redundant=4,
+        n_clusters_per_class=1,
+        weights=[0.50],
+        class_sep=2,
+        random_state=1,
+    )
+    data = {f"var_{i}": X[:, i].tolist() for i in range(12)}
+    data["target"] = y.tolist()
+    return data
+
+
+@pytest.fixture(scope="module")
 def df_test_with_groups():
     # Parameters
     n_samples = 100  # Total number of samples
