@@ -1,4 +1,9 @@
-import pandas as pd
+from typing import Any, Dict
+
+import narwhals as nw
+import narwhals.dependencies as nwd
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.model_selection import cross_validate
 
 from feature_engine._docstrings.fit_attributes import (
@@ -28,6 +33,7 @@ from feature_engine._docstrings.selection._docstring import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
+from feature_engine.selection.base_selection_functions import _importance_series
 
 
 @Substitution(
@@ -144,85 +150,84 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
     3   1   1
     4   2   0
     5   2   1
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from feature_engine.selection import RecursiveFeatureAddition
+    >>> X = pl.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
+    >>>                     x2 = [2,4,3,1,2,2],
+    >>>                     x3 = [1,1,1,0,0,0],
+    >>>                     x4 = [1,2,1,1,0,1],
+    >>>                     x5 = [1,1,1,1,1,1]))
+    >>> y = pl.Series([1,0,0,1,1,0])
+    >>> rfa = RecursiveFeatureAddition(RandomForestClassifier(random_state=42), cv=2)
+    >>> rfa.fit_transform(X, y)
+    shape: (6, 2)
+    ┌─────┬─────┐
+    │ x2  ┆ x4  │
+    │ --- ┆ --- │
+    │ i64 ┆ i64 │
+    ╞═════╪═════╡
+    │ 2   ┆ 1   │
+    │ 4   ┆ 2   │
+    │ 3   ┆ 1   │
+    │ 1   ┆ 1   │
+    │ 2   ┆ 0   │
+    │ 2   ┆ 1   │
+    └─────┴─────┘
     """
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Find the important features. Note that the selector trains various models at
         each round of selection, so it might take a while.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-           The input dataframe
+        X: dataframe of shape = [n_samples, n_features]
+           The input dataframe.
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
         """
 
-        X, y = super().fit(X, y)
+        nw_X, y = super().fit(X, y)
 
-        # Sort the feature importance values decreasingly
-        self.feature_importances_.sort_values(ascending=False, inplace=True)
-
-        # Extract most important feature from the ordered list of features
-        first_most_important_feature = list(self.feature_importances_.index)[0]
-
-        # Run baseline model using only the most important feature
-        baseline_model = cross_validate(
-            estimator=self.estimator,
-            X=X[first_most_important_feature].to_frame(),
-            y=y,
-            cv=self._cv,
-            groups=self.groups,
-            scoring=self.scoring,
-            return_estimator=True,
+        importances = dict(self.feature_importances_)
+        features = list(importances)
+        values = np.array(list(importances.values()))
+        # Same order as pandas' sort_values(ascending=False), which sorts the reversed
+        # values, so features with the same importance are ranked as before.
+        order = (len(values) - 1 - values[::-1].argsort(kind="quicksort"))[::-1]
+        ranked_features = [features[i] for i in order]
+        self.feature_importances_ = _importance_series(
+            X, ranked_features, values[order]
         )
 
-        # Save baseline model performance
-        baseline_model_performance = baseline_model["test_score"].mean()
+        first_most_important_feature = ranked_features[0]
+        baseline_scores = self._cross_validate(
+            X, nw_X, y, [first_most_important_feature]
+        )
+        baseline_model_performance = baseline_scores.mean()
 
-        # list to collect selected features
-        # It is initialized with the most important feature
         _selected_features = [first_most_important_feature]
+        self.performance_drifts_: Dict[Any, float] = {first_most_important_feature: 0}
+        self.performance_drifts_std_: Dict[Any, float] = {
+            first_most_important_feature: 0
+        }
 
-        # dict to collect features and their performance_drift
-        # It is initialized with the performance drift of
-        # the most important feature
-        self.performance_drifts_ = {first_most_important_feature: 0}
-        self.performance_drifts_std_ = {first_most_important_feature: 0}
-
-        # loop over the ordered list of features by feature importance starting
-        # from the second element in the list.
-        for feature in list(self.feature_importances_.index)[1:]:
-
-            # Add feature and train new model
-            model_tmp = cross_validate(
-                estimator=self.estimator,
-                X=X[_selected_features + [feature]],
-                y=y,
-                cv=self._cv,
-                groups=self.groups,
-                scoring=self.scoring,
-                return_estimator=True,
-            )
-
-            # assign new model performance
-            model_tmp_performance = model_tmp["test_score"].mean()
-
-            # Calculate performance drift
+        for feature in ranked_features[1:]:
+            scores = self._cross_validate(X, nw_X, y, _selected_features + [feature])
+            model_tmp_performance = scores.mean()
             performance_drift = model_tmp_performance - baseline_model_performance
 
-            # Save feature and performance drift
             self.performance_drifts_[feature] = performance_drift
-            self.performance_drifts_std_[feature] = model_tmp["test_score"].std()
+            self.performance_drifts_std_[feature] = scores.std()
 
-            # If new performance model is
             if performance_drift > self.threshold:
-                # add feature to the list of selected features
                 _selected_features.append(feature)
-
-                # Update new baseline model performance
                 baseline_model_performance = model_tmp_performance
 
         self.features_to_drop_ = [
@@ -230,3 +235,22 @@ class RecursiveFeatureAddition(BaseRecursiveSelector):
         ]
 
         return self
+
+    def _cross_validate(
+        self, X: IntoDataFrame, nw_X: nw.DataFrame, y: IntoSeries, features: list
+    ) -> np.ndarray:
+        """Return the test scores of the estimator trained on the features."""
+        if nwd.is_pandas_dataframe(X) is True:
+            # pandas is faster than narwhals.
+            X_model = X[features]
+        else:
+            X_model = nw_X.select(nw.col(*features)).to_native()
+
+        return cross_validate(
+            estimator=self.estimator,
+            X=X_model,
+            y=y,
+            cv=self._cv,
+            groups=self.groups,
+            scoring=self.scoring,
+        )["test_score"]
