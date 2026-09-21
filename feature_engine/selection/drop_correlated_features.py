@@ -1,6 +1,6 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -47,9 +47,10 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 )
 class DropCorrelatedFeatures(BaseSelector):
     """
-    DropCorrelatedFeatures() finds and removes correlated features. Correlation is
-    calculated with `pandas.corr()`. Features are removed on first found, first removed
-    basis, without any further insight.
+    DropCorrelatedFeatures() finds and removes correlated features. It supports the
+    correlation methods of `pandas.corr()`, and, like `pandas.corr()`, compares each
+    pair of features using the rows where both have values. Features are removed on
+    first found, first removed basis, without any further insight.
 
     DropCorrelatedFeatures() works only with numerical variables. Categorical variables
     will need to be encoded to numerical or will be excluded from the analysis.
@@ -85,16 +86,16 @@ class DropCorrelatedFeatures(BaseSelector):
     Attributes
     ----------
     features_to_drop_:
-        Set with the correlated features that will be dropped.
+        List with the correlated features that will be dropped.
 
     correlated_feature_sets_:
-        Groups of correlated features. Each list is a group of correlated features.
+        Groups of correlated features. Each set is a group of correlated features.
 
     correlated_feature_dict_: dict
         Dictionary containing the correlated feature groups. The key is the feature
         against which all other features were evaluated. The values are the features
         correlated with the key. Key + values should be the same as the set found in
-        `correlated_feature_groups`. We introduced this attribute in version 1.17.0
+        `correlated_feature_sets_`. We introduced this attribute in version 1.17.0
         because from the set, it is not easy to see which feature will be retained and
         which ones will be removed. The key is retained, the values will be dropped.
 
@@ -139,6 +140,25 @@ class DropCorrelatedFeatures(BaseSelector):
     1   2   0
     2   1   0
     3   1   1
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.selection import DropCorrelatedFeatures
+    >>> X = pl.DataFrame(dict(x1 = [1,2,1,1], x2 = [2,4,3,1], x3 = [1, 0, 0, 1]))
+    >>> dcf = DropCorrelatedFeatures(threshold=0.7)
+    >>> dcf.fit_transform(X)
+    shape: (4, 2)
+    ┌─────┬─────┐
+    │ x1  ┆ x3  │
+    │ --- ┆ --- │
+    │ i64 ┆ i64 │
+    ╞═════╪═════╡
+    │ 1   ┆ 1   │
+    │ 2   ┆ 0   │
+    │ 1   ┆ 0   │
+    │ 1   ┆ 1   │
+    └─────┴─────┘
     """
 
     def __init__(
@@ -156,7 +176,10 @@ class DropCorrelatedFeatures(BaseSelector):
                 f"Got {threshold} instead."
             )
 
-        if missing_values not in ["raise", "ignore"]:
+        if not isinstance(missing_values, str) or missing_values not in [
+            "raise",
+            "ignore",
+        ]:
             raise ValueError(
                 "`missing_values` takes only values 'raise' or 'ignore'. "
                 f"Got {missing_values} instead."
@@ -169,31 +192,26 @@ class DropCorrelatedFeatures(BaseSelector):
         self.threshold = threshold
         self.missing_values = missing_values
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Find the correlated features.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y : pandas series. Default = None
+        y: Series, default=None
             y is not needed in this transformer. You can pass y or None.
         """
-
-        # check input dataframe
-        X = check_X(X)
+        check_X(X)
 
         self.variables_ = _select_numerical_variables(
             X, self.variables, self.confirm_variables
         )
-
-        # check that there are more than 1 variable to select from
         self._check_variable_number()
 
         if self.missing_values == "raise":
-            # check if dataset contains na
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
@@ -208,7 +226,6 @@ class DropCorrelatedFeatures(BaseSelector):
         self.correlated_feature_sets_ = correlated_groups
         self.correlated_feature_dict_ = correlated_dict
 
-        # save input features
         self._get_feature_names_in(X)
 
         return self

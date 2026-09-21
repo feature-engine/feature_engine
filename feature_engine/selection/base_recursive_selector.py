@@ -1,7 +1,9 @@
 from types import GeneratorType
-from typing import List, Union
+from typing import List, Tuple, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import cross_validate
 
@@ -9,14 +11,13 @@ from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.selection.base_selection_functions import get_feature_importances
+from feature_engine.selection.base_selection_functions import (
+    _importance_series,
+    _select_numerical_variables,
+    get_feature_importances,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_numerical_variables,
-    find_numerical_variables,
-    retain_variables_if_in_df,
-)
 
 Variables = Union[None, int, str, List[Union[str, int]]]
 
@@ -81,10 +82,13 @@ class BaseRecursiveSelector(BaseSelector):
         Performance of the model trained using the original dataset.
 
     feature_importances_:
-        Pandas Series with the feature importance (comes from step 2)
+        The feature importance (comes from step 2). A pandas Series with the
+        features as index when X is a pandas dataframe, and a dictionary with the
+        features as keys otherwise.
 
     feature_importances_std_:
-        Pandas Series with the standard deviation of the feature importance.
+        The standard deviation of the feature importance, as a pandas Series or a
+        dictionary, like `feature_importances_`.
 
     features_to_drop_:
         List with the features to remove from the dataset.
@@ -116,7 +120,9 @@ class BaseRecursiveSelector(BaseSelector):
     ):
 
         if not isinstance(threshold, (int, float)):
-            raise ValueError("threshold can only be integer or float")
+            raise ValueError(
+                f"threshold must be an integer or a float. Got {threshold} instead."
+            )
 
         super().__init__(confirm_variables)
         self.variables = _check_variables_input_value(variables)
@@ -126,43 +132,45 @@ class BaseRecursiveSelector(BaseSelector):
         self.cv = cv
         self.groups = groups
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries) -> Tuple[nw.DataFrame, IntoSeries]:
         """
         Find initial model performance. Sort features by importance.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
            The input dataframe
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
+
+        Returns
+        -------
+        nw_X: narwhals dataframe
+            The input dataframe, as a narwhals dataframe.
+
+        y: Series or numpy array
+            The target, checked.
         """
+        nw_X, y = check_X_y(X, y)
 
-        # check input dataframe
-        X, y = check_X_y(X, y)
-
-        if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
-        else:
-            if self.confirm_variables is True:
-                variables_ = retain_variables_if_in_df(X, self.variables)
-                self.variables_ = check_numerical_variables(X, variables_)
-            else:
-                self.variables_ = check_numerical_variables(X, self.variables)
+        self.variables_ = _select_numerical_variables(
+            X, self.variables, self.confirm_variables
+        )
 
         self._cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
 
         # check that there are more than 1 variable to select from
         self._check_variable_number()
 
-        # save input features
         self._get_feature_names_in(X)
+
+        X_model = nw_X.select(nw.col(*self.variables_)).to_native()
 
         # train model with all features and cross-validation
         model = cross_validate(
             estimator=self.estimator,
-            X=X[self.variables_],
+            X=X_model,
             y=y,
             cv=self._cv,
             groups=self.groups,
@@ -170,40 +178,32 @@ class BaseRecursiveSelector(BaseSelector):
             return_estimator=True,
         )
 
-        # store initial model performance
         self.initial_model_performance_ = model["test_score"].mean()
 
-        # Initialize a dataframe that will contain the list of the feature/coeff
-        # importance for each cross validation fold
-        feature_importances_cv = pd.DataFrame()
-
-        # Populate the feature_importances_cv dataframe with columns containing
-        # the feature importance values for each model returned by the cross
-        # validation.
-        # There are as many columns as folds.
-        for i in range(len(model["estimator"])):
-            m = model["estimator"][i]
-
+        # one row of feature importance per cross-validation fold
+        importances = []
+        for m in model["estimator"]:
             if hasattr(m, "feature_importances_") or hasattr(m, "coef_"):
-                feature_importances_cv[i] = get_feature_importances(m)
+                importances.append(get_feature_importances(m))
             else:
                 r = permutation_importance(
                     m,
-                    X[self.variables_],
+                    X_model,
                     y,
                     n_repeats=1,
                     random_state=10,
                 )
-                feature_importances_cv[i] = r.importances_mean
+                importances.append(r.importances_mean)
+        importances_arr = np.array(importances)
 
-        # Add the variables as index to feature_importances_cv
-        feature_importances_cv.index = self.variables_
+        self.feature_importances_ = _importance_series(
+            X, self.variables_, importances_arr.mean(axis=0)
+        )
+        self.feature_importances_std_ = _importance_series(
+            X, self.variables_, importances_arr.std(axis=0, ddof=1)
+        )
 
-        # Aggregate the feature importance returned in each fold
-        self.feature_importances_ = feature_importances_cv.mean(axis=1)
-        self.feature_importances_std_ = feature_importances_cv.std(axis=1)
-
-        return X, y
+        return nw_X, y
 
     def _more_tags(self):
         tags_dict = _return_tags()

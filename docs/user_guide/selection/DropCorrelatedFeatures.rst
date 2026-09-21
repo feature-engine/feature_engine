@@ -6,12 +6,14 @@ DropCorrelatedFeatures
 ======================
 
 The :class:`DropCorrelatedFeatures()` finds and removes correlated variables from a dataframe.
-Correlation is calculated with `pandas.corr()`. All correlation methods supported by `pandas.corr()`
-can be used in the selection, including Spearman, Kendall, or Spearman. You can also pass a
-bespoke correlation function, provided it returns a value between -1 and 1.
+It supports the correlation methods of `pandas.corr()`: Pearson, Spearman, and Kendall. You can
+also pass a bespoke correlation function, provided it returns a value between -1 and 1. As in
+`pandas.corr()`, each pair of variables is compared using the rows where both have values.
+
+:class:`DropCorrelatedFeatures()` works with pandas and polars dataframes.
 
 Features are removed on first found first removed basis, without any further insight. That is,
-the first feature will be retained an all subsequent features that are correlated with this, will
+the first feature will be retained and all subsequent features that are correlated with this, will
 be removed.
 
 The transformer will examine all numerical variables automatically. Note that you could pass a
@@ -95,7 +97,7 @@ to `var_0` and will therefore be removed.
 
    {'var_0': {'var_8'}, 'var_4': {'var_6', 'var_7', 'var_9'}}
 
-Similarly, `var_4` is a key and will be retained, whereas the variables 6, 7 and 8 were
+Similarly, `var_4` is a key and will be retained, whereas the variables 6, 7 and 9 were
 found correlated to `var_4` and will therefore be removed.
 
 The features that will be removed from the dataset are stored in a different attribute
@@ -135,6 +137,50 @@ Below we see the resulting dataframe:
     2 -0.852703
     3  0.484649
     4 -0.186530
+
+
+With polars
+-----------
+
+:class:`DropCorrelatedFeatures()` works in the same way with a polars dataframe, and returns
+a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from sklearn.datasets import make_classification
+    from feature_engine.selection import DropCorrelatedFeatures
+
+    X, y = make_classification(n_samples=1000,
+                               n_features=12,
+                               n_redundant=4,
+                               n_clusters_per_class=1,
+                               weights=[0.50],
+                               class_sep=2,
+                               random_state=1)
+
+    X = pl.DataFrame(X, schema=['var_' + str(i) for i in range(12)])
+
+    tr = DropCorrelatedFeatures(threshold=0.8)
+    Xt = tr.fit_transform(X)
+
+    print(tr.features_to_drop_)
+
+The same features are found correlated as with pandas:
+
+.. code:: python
+
+    ['var_8', 'var_6', 'var_7', 'var_9']
+
+The transformed data is a polars dataframe without those features:
+
+.. code:: python
+
+    print(Xt.columns)
+
+.. code:: python
+
+    ['var_0', 'var_1', 'var_2', 'var_3', 'var_4', 'var_5', 'var_10', 'var_11']
 
 
 Additional resources
