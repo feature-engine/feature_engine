@@ -1,7 +1,9 @@
-from typing import List, Union
+from typing import Dict, List, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -29,6 +31,7 @@ from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
 
 from .base_selection_functions import (
+    _importance_series,
     _select_numerical_variables,
     find_feature_importance,
     single_feature_performance,
@@ -56,7 +59,7 @@ Variables = Union[None, int, str, List[Union[str, int]]]
 class ProbeFeatureSelection(BaseSelector):
     """
     ProbeFeatureSelection() generates one or more probe (i.e., random) features based
-    on a user-selected distribution. The distribution options are 'normal', 'binomial',
+    on a user-selected distribution. The distribution options are 'normal', 'binary',
     'uniform', 'discrete_uniform', 'poisson', or 'all'. 'all' creates `n_probes` of
     each of the five aforementioned distributions.
 
@@ -98,8 +101,8 @@ class ProbeFeatureSelection(BaseSelector):
 
     distribution: str, list, default='normal'
         The distribution used to create the probe features. The options are 'normal',
-        'binomial', 'uniform', 'discrete_uniform', 'poisson' and 'all'. 'all' creates
-        `n_probes` features per distribution type, i.e., normal, binomial,
+        'binary', 'uniform', 'discrete_uniform', 'poisson' and 'all'. 'all' creates
+        `n_probes` features per distribution type, i.e., normal, binary,
         uniform, discrete_uniform and poisson. The remaining options create
         `n_probes` features per selected distributions.
 
@@ -124,17 +127,21 @@ class ProbeFeatureSelection(BaseSelector):
     ----------
     probe_features_:
         A dataframe comprised of the pseudo-randomly generated features based
-        on the selected distribution.
+        on the selected distribution, in the same library as the input (pandas,
+        polars, ...).
 
     feature_importances_:
-        Pandas Series with the feature importance. If `collective=True`, the feature
-        importance is given by the coefficients of linear models or the importance
-        derived from tree-based models. If `collective=False`, the feature importance
-        is given by a performance metric returned by a model trained using that
-        individual feature.
+        The feature importance of the variables and the probe features. A pandas
+        Series with the features as index when X is a pandas dataframe, and a
+        dictionary with the features as keys otherwise. If `collective=True`, the
+        feature importance is given by the coefficients of linear models or the
+        importance derived from tree-based models. If `collective=False`, the feature
+        importance is given by a performance metric returned by a model trained using
+        that individual feature.
 
     feature_importances_std_:
-        Pandas Series with the standard deviation of the feature importance.
+        The standard deviation of the feature importance, as a pandas Series or a
+        dictionary, like `feature_importances_`.
 
     {features_to_drop_}
 
@@ -166,6 +173,27 @@ class ProbeFeatureSelection(BaseSelector):
     >>> from sklearn.linear_model import LogisticRegression
     >>> from feature_engine.selection import ProbeFeatureSelection
     >>> X, y = load_breast_cancer(return_X_y=True, as_frame=True)
+    >>> sel = ProbeFeatureSelection(
+    >>>     estimator=LogisticRegression(max_iter=1000000),
+    >>>     scoring="roc_auc",
+    >>>     n_probes=3,
+    >>>     distribution="normal",
+    >>>     cv=3,
+    >>>     random_state=150,
+    >>> )
+    >>> X_tr = sel.fit_transform(X, y)
+    >>> print(X.shape, X_tr.shape)
+    (569, 30) (569, 19)
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from sklearn.datasets import load_breast_cancer
+    >>> from sklearn.linear_model import LogisticRegression
+    >>> from feature_engine.selection import ProbeFeatureSelection
+    >>> data = load_breast_cancer()
+    >>> X = pl.DataFrame(data.data, schema=list(data.feature_names))
+    >>> y = pl.Series("target", data.target)
     >>> sel = ProbeFeatureSelection(
     >>>     estimator=LogisticRegression(max_iter=1000000),
     >>>     scoring="roc_auc",
@@ -254,19 +282,20 @@ class ProbeFeatureSelection(BaseSelector):
         self.threshold = threshold
         self.random_state = random_state
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Find the important features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
+            The training dataset. Can be a pandas, polars, or any other dataframe
+            supported by narwhals.
 
         y: array-like of shape (n_samples)
             Target variable. Required to train the estimator.
         """
-        # check input dataframe
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
 
         self.variables_ = _select_numerical_variables(
             X, self.variables, self.confirm_variables
@@ -275,13 +304,23 @@ class ProbeFeatureSelection(BaseSelector):
         # save input features
         self._get_feature_names_in(X)
 
-        # create probe feature distributions
-        self.probe_features_ = self._generate_probe_features(X.shape[0])
+        probes = self._generate_probe_features(nw_X.shape[0])
 
-        # required for a (train/test) split dataset
-        X.reset_index(drop=True, inplace=True)
-
-        X_new = pd.concat([X[self.variables_], self.probe_features_], axis=1)
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            pd_namespace = nw.get_native_namespace(X)
+            self.probe_features_ = pd_namespace.DataFrame(probes, copy=False)
+            # the probes have a default index: X needs the same one to align them.
+            X_new = pd_namespace.concat(
+                [X[self.variables_].reset_index(drop=True), self.probe_features_],
+                axis=1,
+            )
+        else:
+            nw_probes = nw.from_dict(probes, backend=nw.get_native_namespace(X))
+            self.probe_features_ = nw_probes.to_native()
+            X_new = nw.concat(
+                [nw_X.select(nw.col(*self.variables_)), nw_probes], how="horizontal"
+            ).to_native()
 
         if self.collective is True:
             # train model using entire dataset and derive feature importance
@@ -298,30 +337,34 @@ class ProbeFeatureSelection(BaseSelector):
 
         else:
             # trains a model per feature (single feature models)
+            features = [*self.variables_, *probes]
             f_importance_mean, f_importance_std = single_feature_performance(
                 X=X_new,
                 y=y,
-                variables=X_new.columns,
+                variables=features,
                 estimator=self.estimator,
                 cv=self.cv,
                 groups=self.groups,
                 scoring=self.scoring,
             )
-            self.feature_importances_ = pd.Series(f_importance_mean)
-            self.feature_importances_std_ = pd.Series(f_importance_std)
+            self.feature_importances_ = _importance_series(
+                X, features, np.array([f_importance_mean[f] for f in features])
+            )
+            self.feature_importances_std_ = _importance_series(
+                X, features, np.array([f_importance_std[f] for f in features])
+            )
 
         # get features with lower importance than the probe features
-        self.features_to_drop_ = self._get_features_to_drop()
+        self.features_to_drop_ = self._get_features_to_drop(list(probes))
 
         return self
 
-    def _generate_probe_features(self, n_obs: int) -> pd.DataFrame:
+    def _generate_probe_features(self, n_obs: int) -> Dict[str, np.ndarray]:
         """
-        Returns a dataframe comprised of the probe features using the
-        selected distribution.
+        Returns a dictionary with the name of the probe features as keys and their
+        values, drawn from the selected distributions, as values.
         """
-        # create dataframe
-        df = pd.DataFrame()
+        probes = {}
 
         # set random state
         np.random.seed(self.random_state)
@@ -333,58 +376,51 @@ class ProbeFeatureSelection(BaseSelector):
 
         if {"normal", "all"} & distribution:
             for i in range(self.n_probes):
-                df[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
+                probes[f"gaussian_probe_{i}"] = np.random.normal(0, 3, n_obs)
 
         if {"binary", "all"} & distribution:
             for i in range(self.n_probes):
-                df[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
+                probes[f"binary_probe_{i}"] = np.random.randint(0, 2, n_obs)
 
         if {"uniform", "all"} & distribution:
             for i in range(self.n_probes):
-                df[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
+                probes[f"uniform_probe_{i}"] = np.random.uniform(0, 1, n_obs)
 
         if {"discrete_uniform", "all"} & distribution:
             for i in range(self.n_probes):
-                df[f"discrete_uniform_probe_{i}"] = np.random.randint(
+                probes[f"discrete_uniform_probe_{i}"] = np.random.randint(
                     0, self.n_categories, n_obs
                 )
 
         if {"poisson", "all"} & distribution:
             for i in range(self.n_probes):
-                df[f"poisson_probe_{i}"] = np.random.poisson(self.n_categories, n_obs)
+                probes[f"poisson_probe_{i}"] = np.random.poisson(
+                    self.n_categories, n_obs
+                )
 
-        return df
+        return probes
 
-    def _get_features_to_drop(self):
+    def _get_features_to_drop(self, probes: List[str]) -> List[Union[str, int]]:
         """
         Identify the variables that have a lower feature importance than the average
         feature importance of all the probe features.
         """
+        probe_importance = np.array(
+            [self.feature_importances_[probe] for probe in probes]
+        )
 
         # if more than 1 probe feature, calculate threshold based on
         # probe feature importance.
-        if self.probe_features_.shape[1] > 1:
+        if len(probes) > 1:
             if self.threshold == "mean":
-                threshold = self.feature_importances_[
-                    self.probe_features_.columns
-                ].values.mean()
+                threshold = probe_importance.mean()
             elif self.threshold == "max":
-                threshold = self.feature_importances_[
-                    self.probe_features_.columns
-                ].values.max()
+                threshold = probe_importance.max()
             else:
-                threshold = (
-                    self.feature_importances_[
-                        self.probe_features_.columns
-                    ].values.mean()
-                    + 3
-                    * self.feature_importances_[
-                        self.probe_features_.columns
-                    ].values.std()
-                )
+                threshold = probe_importance.mean() + 3 * probe_importance.std()
 
         else:
-            threshold = self.feature_importances_[self.probe_features_.columns].values
+            threshold = probe_importance
 
         features_to_drop = []
 

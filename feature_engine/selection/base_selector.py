@@ -1,5 +1,7 @@
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -41,41 +43,43 @@ class BaseSelector(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         self.confirm_variables = confirm_variables
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Return dataframe with selected features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The input dataframe.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_selected_features]
-            Pandas dataframe with the selected features.
+        X_new: dataframe of shape = [n_samples, n_selected_features]
+            The dataframe with the selected features, in the same library as the
+            input.
         """
-
-        # check if fit is performed prior to transform
         check_is_fitted(self)
-
-        # check if input is a dataframe
-        X = check_X(X)
-
-        # check if number of columns in test dataset matches to train dataset
+        nw_X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        # reorder df to match train set
-        X = X[self.feature_names_in_]
+        # selecting in the train set order also restores the train column order.
+        features_to_drop = set(self.features_to_drop_)
+        features = [f for f in self.feature_names_in_ if f not in features_to_drop]
 
-        # return the dataframe with the selected features
-        return X.drop(columns=self.features_to_drop_)
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            return X[features]
+        else:
+            return nw_X.select(nw.col(*features)).to_native()
 
-    def _get_feature_names_in(self, X):
-        """Get the names and number of features in the train set. The dataframe
-        used during fit."""
+    def _get_feature_names_in(self, X: IntoDataFrame):
+        """Get the names and number of features in the train set (the dataframe
+        used during fit)."""
 
-        self.feature_names_in_ = X.columns.to_list()
+        if nwd.is_pandas_dataframe(X) is True:
+            self.feature_names_in_ = list(X.columns)
+        else:
+            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
         self.n_features_in_ = X.shape[1]
 
         return self
