@@ -104,7 +104,7 @@ the entire dataset, without shuffling, using cross-validation.
 
 .. code:: python
 
-    0.488702767247119
+    0.48870212980353145
 
 In the following sections, we'll explore some of the additional useful data stored by
 :class:`SelectByShuffling()`.
@@ -125,15 +125,15 @@ each feature:
 .. code:: python
 
     {'age': -0.0054698043007869734,
-     'sex': 0.03325633986510784,
-     'bmi': 0.184158237207512,
+     'sex': 0.03325633986510779,
+     'bmi': 0.1841582372075119,
      'bp': 0.10089894421748086,
-     's1': 0.49324432634948095,
-     's2': 0.21163252880660438,
-     's3': 0.02006839198785859,
-     's4': 0.011098050006761673,
-     's5': 0.4828781996541602,
-     's6': 0.003963360084439538}
+     's1': 0.4932443263494815,
+     's2': 0.2116325288066046,
+     's3': 0.020068391987858536,
+     's4': 0.011098050006761617,
+     's5': 0.4828781996541603,
+     's6': 0.003963360084439482}
 
 :class:`SelectByShuffling()` stores the standard deviation of the performance change:
 
@@ -146,16 +146,16 @@ shuffling:
 
 .. code:: python
 
-    {'age': 0.012788500580799392,
+    {'age': 0.012788500580799462,
      'sex': 0.040792331972680645,
-     'bmi': 0.042212436355346106,
-     'bp': 0.05397012536801143,
-     's1': 0.35198797776358015,
-     's2': 0.167636042355086,
-     's3': 0.03455158514716544,
-     's4': 0.007755675852874145,
-     's5': 0.1449579162698361,
-     's6': 0.011193022434166025}
+     'bmi': 0.04221243635534631,
+     'bp': 0.053970125368011726,
+     's1': 0.3519879777635807,
+     's2': 0.1676360423550863,
+     's3': 0.03455158514716549,
+     's4': 0.007755675852874141,
+     's5': 0.14495791626983628,
+     's6': 0.011193022434166125}
 
 We can plot the performance change together with the standard deviation to get a better
 idea of how shuffling features affect the model performance:
@@ -181,8 +181,8 @@ feature:
 
 .. figure::  ../../images/shuffle-features-std.png
 
-With this set up, features that elicited a mean performance drop greater than the mean
-performance of all features, will be removed. If, for any reason, this threshold is too
+With this set up, features that elicited a performance drop smaller than the mean
+performance drop of all features will be removed. If, for any reason, this threshold is too
 conservative or too permissive, by analysing the former barplot, you can get a better
 idea of how these features affect the predictions of the model, and select a different
 threshold.
@@ -198,7 +198,7 @@ threshold:
     tr.features_to_drop_
 
 The following features were deemed as non-important, because their performance drift is
-greater than the mean performance drift of all features:
+smaller than the mean performance drift of all features:
 
 .. code:: python
 
@@ -221,7 +221,52 @@ In the following output, we see the dataframe with the selected features:
     3 -0.011595  0.012191  0.024991  0.022688
     4 -0.036385  0.003935  0.015596 -0.031988
 
-    
+Using polars
+~~~~~~~~~~~~
+
+:class:`SelectByShuffling()` also works with polars dataframes, and returns a polars
+dataframe when the input is a polars dataframe. With the same `random_state`, the
+features are shuffled in the same way as with pandas, so the performance drifts and the
+selected features are the same.
+
+.. code:: python
+
+    import polars as pl
+
+    X_pl = pl.DataFrame(X.to_dict(orient="list"))
+    y_pl = pl.Series("target", y.to_list())
+
+    tr = SelectByShuffling(
+        estimator=LinearRegression(),
+        scoring="r2",
+        cv=3,
+        random_state=0,
+    )
+
+    Xt = tr.fit_transform(X_pl, y_pl)
+
+    print(tr.features_to_drop_)
+    print(Xt.head())
+
+In the following output, we see the features to drop and the polars dataframe with the
+selected features:
+
+.. code:: text
+
+    ['age', 'sex', 'bp', 's3', 's4', 's6']
+    shape: (5, 4)
+    ┌───────────┬───────────┬───────────┬───────────┐
+    │ bmi       ┆ s1        ┆ s2        ┆ s5        │
+    │ ---       ┆ ---       ┆ ---       ┆ ---       │
+    │ f64       ┆ f64       ┆ f64       ┆ f64       │
+    ╞═══════════╪═══════════╪═══════════╪═══════════╡
+    │ 0.061696  ┆ -0.044223 ┆ -0.034821 ┆ 0.019907  │
+    │ -0.051474 ┆ -0.008449 ┆ -0.019163 ┆ -0.068332 │
+    │ 0.044451  ┆ -0.045599 ┆ -0.034194 ┆ 0.002861  │
+    │ -0.011595 ┆ 0.012191  ┆ 0.024991  ┆ 0.022688  │
+    │ -0.036385 ┆ 0.003935  ┆ 0.015596  ┆ -0.031988 │
+    └───────────┴───────────┴───────────┴───────────┘
+
 Additional resources
 --------------------
 
