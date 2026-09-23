@@ -258,10 +258,12 @@ def test_raise_error_when_input_feature_non_permitted(df_vartypes):
     with pytest.raises(ValueError) as record:
         transformer.get_feature_names_out(input_features="var1")
     assert "list or an array" in str(record)
+    assert "Got var1 instead" in str(record.value)
 
     with pytest.raises(ValueError) as record:
         transformer.get_feature_names_out(input_features=True)
     assert "list or an array" in str(record)
+    assert "Got True instead" in str(record.value)
 
     # when input is array
     transformer.fit(df_vartypes.to_numpy())
