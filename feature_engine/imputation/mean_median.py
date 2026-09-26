@@ -4,7 +4,9 @@
 import warnings
 from typing import List, Optional, Union
 
+import numpy as np
 import pandas as pd
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -26,7 +28,7 @@ from feature_engine._docstrings.methods import (
     _transform_imputers_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_handling import (
     check_numerical_variables,
@@ -133,8 +135,8 @@ class MeanImputer(BaseImputer):
             y is not needed in this imputation. You can pass None or y.
         """
 
-        # check input dataframe
-        X = check_X(X)
+        # fit only reads X; avoid copying the full input dataframe.
+        X = check_X(X, copy=False)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -143,17 +145,40 @@ class MeanImputer(BaseImputer):
             variables_ = check_numerical_variables(X, self.variables)
 
         # find imputation parameters: mean or median
+        selected = X[variables_]
         if self.imputation_method == "mean":
-            imputer_dict_ = X[variables_].mean().to_dict()
+            imputer_dict_ = selected.mean().to_dict()
 
         elif self.imputation_method == "median":
-            imputer_dict_ = X[variables_].median().to_dict()
+            if len(variables_) and all(
+                dtype == np.dtype("float64") for dtype in selected.dtypes
+            ):
+                # NumPy may partition this owned buffer without a second copy.
+                values = selected.to_numpy(copy=True)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore", "All-NaN slice encountered", RuntimeWarning
+                    )
+                    warnings.filterwarnings(
+                        "ignore", "Mean of empty slice", RuntimeWarning
+                    )
+                    medians = np.nanmedian(values, axis=0, overwrite_input=True)
+                imputer_dict_ = dict(zip(variables_, medians.tolist()))
+            else:
+                imputer_dict_ = selected.median().to_dict()
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
         self._get_feature_names_in(X)
 
         return self
+
+    def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        # The column selection creates the output frame; reading input needs no copy.
+        check_is_fitted(self)
+        X = check_X(X, copy=False)
+        _check_X_matches_training_df(X, self.n_features_in_)
+        return X[self.feature_names_in_]
 
 
 # TODO: remove in version 2.1.0
