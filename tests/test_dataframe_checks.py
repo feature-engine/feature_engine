@@ -302,3 +302,28 @@ def test_check_X_errors():
     with pytest.raises(TypeError) as record:
         check_X("not a dataframe")
     assert record.match("X must be a numpy array or pandas dataframe")
+
+
+def test_check_X_copy_option_preserves_default_and_validates_no_copy():
+    frame = pd.DataFrame(
+        {"number": [1.0, np.nan], "label": ["a", "b"]},
+        index=pd.Index([11, 22], name="row"),
+    )
+    original = frame.copy(deep=True)
+
+    default = check_X(frame)
+    assert default is not frame
+    assert_frame_equal(default, original)
+    default.loc[11, "number"] = 99.0
+    assert_frame_equal(frame, original)
+
+    no_copy = check_X(frame, copy=False)
+    assert no_copy is frame
+    assert_frame_equal(no_copy, original)
+
+    duplicate = frame.copy()
+    duplicate.columns = ["same", "same"]
+    with pytest.raises(ValueError, match="duplicated variable names"):
+        check_X(duplicate, copy=False)
+    with pytest.raises(ValueError):
+        check_X(pd.DataFrame(), copy=False)

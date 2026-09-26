@@ -12,10 +12,12 @@ from sklearn.utils.validation import _check_y, check_consistent_length, column_o
 from feature_engine.variable_handling._variable_type_checks import is_object
 
 
-def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
+def check_X(
+    X: Union[np.generic, np.ndarray, pd.DataFrame], copy: bool = True
+) -> pd.DataFrame:
     """
-    Checks if the input is a DataFrame and then creates a copy. This is an important
-    step not to accidentally transform the original dataset entered by the user.
+    Checks if the input is a DataFrame and copies it by default. Copying avoids
+    accidental transformation of the original dataset entered by the user.
 
     If the input is a numpy array, it converts it to a pandas Dataframe. The column
     names are strings representing the column index starting at 0.
@@ -36,6 +38,10 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
     X : pandas Dataframe or numpy array.
         The input to check and copy or transform.
 
+    copy : bool, default=True
+        Whether to copy pandas DataFrame input. Set False only for callers
+        that read the validated data without mutating it.
+
     Raises
     ------
     TypeError
@@ -46,12 +52,14 @@ def check_X(X: Union[np.generic, np.ndarray, pd.DataFrame]) -> pd.DataFrame:
     Returns
     -------
     X : pandas Dataframe.
-        A copy of original DataFrame or a converted Numpy array.
+        A copy of original DataFrame by default, the original DataFrame when
+        copy=False, or a converted Numpy array.
     """
     if isinstance(X, pd.DataFrame):
         if not X.columns.is_unique:
             raise ValueError("Input data contains duplicated variable names.")
-        X = X.copy()
+        if copy:
+            X = X.copy()
 
     elif isinstance(X, (np.generic, np.ndarray)):
         # If input is scalar raise error
