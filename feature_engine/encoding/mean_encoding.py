@@ -232,7 +232,9 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             y_var = y.var(ddof=0)
         for var in variables_:
             if self.smoothing == "auto":
-                damping = y.groupby(X[var]).var(ddof=0) / y_var
+                # A constant target has identical category and global means.
+                # Avoid the undefined variance ratio 0 / 0 in this case.
+                damping = 0.0 if y_var == 0 else y.groupby(X[var]).var(ddof=0) / y_var
             else:
                 damping = self.smoothing
             counts = X[var].value_counts()
