@@ -42,6 +42,8 @@ def df_datetime_transformed(df_datetime):
         "datetime_range_hour": [0] * 4,
         "datetime_range_minute": [0] * 4,
         "datetime_range_second": [0] * 4,
+        "datetime_range_semi_month_start": [4] * 4,
+        "datetime_range_semi_month_end": [4] * 4,
         "date_obj1_month": [1, 2, 6, 5],
         "date_obj1_quarter": [1, 1, 2, 2],
         "date_obj1_semester": [1, 1, 1, 1],
@@ -62,6 +64,8 @@ def df_datetime_transformed(df_datetime):
         "date_obj1_hour": [0] * 4,
         "date_obj1_minute": [0] * 4,
         "date_obj1_second": [0] * 4,
+        "date_obj1_semi_month_start": [1, 4, 11, 10],
+        "date_obj1_semi_month_end": [1, 4, 11, 10],
         "date_obj2_month": [10, 12, 6, 3],
         "date_obj2_quarter": [4, 4, 2, 1],
         "date_obj2_semester": [2, 2, 1, 1],
@@ -82,6 +86,8 @@ def df_datetime_transformed(df_datetime):
         "date_obj2_hour": [0] * 4,
         "date_obj2_minute": [0] * 4,
         "date_obj2_second": [0] * 4,
+        "date_obj2_semi_month_start": [19, 24, 12, 6],
+        "date_obj2_semi_month_end": [19, 24, 12, 6],
         "time_obj_month": [today.month] * 4,
         "time_obj_quarter": [today.quarter] * 4,
         "time_obj_semester": [1 if today.month <= 6 else 2] * 4,
@@ -102,6 +108,10 @@ def df_datetime_transformed(df_datetime):
         "time_obj_hour": [21, 9, 12, 3],
         "time_obj_minute": [45, 15, 34, 27],
         "time_obj_second": [23, 33, 59, 2],
+        "time_obj_semi_month_start": [(today.month - 1) * 2 + 1 + int(today.day >= 15)]
+        * 4,
+        "time_obj_semi_month_end": [(today.month - 1) * 2 + 1 + int(today.day > 15)]
+        * 4,
     }
     df = df_datetime.join(pd.DataFrame(data))
     return df

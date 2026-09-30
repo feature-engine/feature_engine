@@ -90,7 +90,7 @@ from various variables simultaneously.
 
 :class:`DatetimeFeatures()` can automatically create all features supported by pandas `dt`
 and a few more, like, for example, a binary feature indicating if the event occurred on
-a weekend and also the semester.
+a weekend, the semester and the semi-month.
 
 With :class:`DatetimeFeatures()` we can choose which date and time features to extract
 from the datetime variables. We can also extract date and time features from one or more
@@ -168,6 +168,46 @@ newly created features:
      'var_date2_month_end',
      'var_date2_day_of_year']
 
+
+Extract semi-month features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The features ``semi_month_start`` and ``semi_month_end`` split each month into two
+halves, numbered from 1 to 24 within the year. They differ on the 15th:
+
+* ``semi_month_start``: days 1 to 14 form the first half; day 15 starts the second.
+* ``semi_month_end``: days 1 to 15 form the first half; day 16 starts the second.
+
+For example, February 15th belongs to semi-month 4 with ``semi_month_start`` and
+semi-month 3 with ``semi_month_end``:
+
+.. code:: python
+
+    dates = pd.DataFrame({
+        "date": pd.to_datetime([
+            "2024-01-14", "2024-01-15", "2024-01-16", "2024-02-15", "2024-12-31"
+        ])
+    })
+    dfts = DatetimeFeatures(
+        features_to_extract=["semi_month_start", "semi_month_end"]
+    )
+    print(dfts.fit_transform(dates))
+
+The resulting features are:
+
+.. code:: text
+
+       date_semi_month_start  date_semi_month_end
+    0                      1                    1
+    1                      2                    1
+    2                      2                    2
+    3                      4                    3
+    4                     24                   24
+
+These features can also be extracted from the dataframe index with
+``variables="index"``. When ``missing_values="ignore"``, missing dates produce
+missing semi-month values. Both features are included with
+``features_to_extract="all"``.
 
 Extract time features
 ~~~~~~~~~~~~~~~~~~~~~
@@ -406,7 +446,9 @@ Below the name of the variables in the resulting dataframe:
      'day_of_month',
      'hour',
      'minute',
-     'second']
+     'second',
+     'semi_month_start',
+     'semi_month_end']
 
 
 Important
@@ -628,6 +670,11 @@ Below we see the resulting dataframe with all the features supported by feature-
     0               0
     1               0
     2               0
+
+       var_dt1_semi_month_start  var_dt1_semi_month_end
+    0                        1                      1
+    1                        1                      1
+    2                        1                      1
 
 We can find the group of features extracted by the transformer in the following attribute:
 
