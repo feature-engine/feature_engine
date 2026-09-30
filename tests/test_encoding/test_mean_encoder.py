@@ -401,6 +401,39 @@ def test_auto_smoothing(df_enc):
     pd.testing.assert_frame_equal(X, transf_df[["var_A", "var_B"]])
 
 
+@pytest.mark.parametrize("target_value", [0.0, 1.0, 3.5])
+@pytest.mark.parametrize("category_dtype", ["object", "str", "category"])
+def test_auto_smoothing_constant_target(target_value, category_dtype):
+    X = pd.DataFrame(
+        {
+            "category": pd.Series(["a", "a", "b", "c"], dtype=category_dtype),
+            "other": [1, 2, 3, 4],
+        }
+    )
+    y = pd.Series([target_value] * len(X))
+    encoder = MeanEncoder(variables=["category"], smoothing="auto")
+
+    result = encoder.fit_transform(X, y)
+
+    assert encoder.encoder_dict_ == {
+        "category": {"a": target_value, "b": target_value, "c": target_value}
+    }
+    expected = X.assign(category=target_value)
+    pd.testing.assert_frame_equal(result, expected)
+
+
+@pytest.mark.parametrize("target_value", [0.0, 1.0, 3.5])
+def test_auto_smoothing_constant_target_unseen_encode(target_value):
+    X = pd.DataFrame({"category": ["a", "a", "b", "c"]})
+    encoder = MeanEncoder(variables=["category"], smoothing="auto", unseen="encode")
+    encoder.fit(X, [target_value] * len(X))
+
+    result = encoder.transform(pd.DataFrame({"category": ["a", "unseen"]}))
+
+    expected = pd.DataFrame({"category": [target_value, target_value]})
+    pd.testing.assert_frame_equal(result, expected)
+
+
 def test_value_smoothing(df_enc):
     encoder = MeanEncoder(smoothing=100)
     encoder.fit(df_enc[["var_A", "var_B"]], df_enc["target"])
