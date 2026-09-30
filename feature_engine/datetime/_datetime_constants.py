@@ -21,6 +21,8 @@ FEATURES_SUPPORTED = [
     "hour",
     "minute",
     "second",
+    "semi_month_start",
+    "semi_month_end",
 ]
 
 FEATURES_DEFAULT = [
@@ -54,6 +56,8 @@ FEATURES_SUFFIXES = {
     "hour": "_hour",
     "minute": "_minute",
     "second": "_second",
+    "semi_month_start": "_semi_month_start",
+    "semi_month_end": "_semi_month_end",
 }
 
 FEATURES_FUNCTIONS = {
@@ -77,4 +81,10 @@ FEATURES_FUNCTIONS = {
     "hour": lambda x: x.dt.hour,
     "minute": lambda x: x.dt.minute,
     "second": lambda x: x.dt.second,
+    "semi_month_start": lambda x: (
+        (x.dt.month - 1) * 2 + 1 + (x.dt.day >= 15).astype(np.int64)
+    ),
+    "semi_month_end": lambda x: (
+        (x.dt.month - 1) * 2 + 1 + (x.dt.day > 15).astype(np.int64)
+    ),
 }

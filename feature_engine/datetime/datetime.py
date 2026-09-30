@@ -83,6 +83,13 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     - "hour"
     - "minute"
     - "second"
+    - "semi_month_start"
+    - "semi_month_end"
+
+    The semi-month features number the two halves of each month from 1 to 24
+    within the year. "semi_month_start" starts the second half on the 15th,
+    whereas "semi_month_end" starts it on the 16th. For example, February 15th
+    belongs to semi-month 4 for "semi_month_start" and 3 for "semi_month_end".
 
     More details in the :ref:`User Guide <datetime_features>`.
 
@@ -273,9 +280,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
             self.variables_ = []
 
         elif self.variables is None:
-            self.variables_ = find_datetime_variables(
-                X, return_empty=self.return_empty
-            )
+            self.variables_ = find_datetime_variables(X, return_empty=self.return_empty)
 
         else:
             self.variables_ = check_datetime_variables(X, self.variables)
