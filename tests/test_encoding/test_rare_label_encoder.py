@@ -516,3 +516,68 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_big):
     enc = RareLabelEncoder().fit(df_enc_big)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_big)
+
+
+@pytest.mark.parametrize("ordered", [False, True])
+@pytest.mark.parametrize("labels", [("a", "b", "Rare"), (1, 2, 99), (1.5, 2.5, 99.5)])
+@pytest.mark.parametrize("replacement_state", ["absent", "unused", "observed"])
+def test_categorical_replacement_category(ordered, labels, replacement_state):
+    frequent, rare, replacement = labels
+    values = [frequent, frequent, frequent, rare]
+    categories = [rare, frequent]
+    if replacement_state != "absent":
+        categories.append(replacement)
+    if replacement_state == "observed":
+        values.append(replacement)
+    index = pd.Index(range(10, 10 + len(values)), name="row")
+    X = pd.DataFrame(
+        {
+            "category": pd.Categorical(values, categories=categories, ordered=ordered),
+            "untouched": range(len(values)),
+        },
+        index=index,
+    )
+    original = X.copy(deep=True)
+    encoder = RareLabelEncoder(
+        tol=0.5,
+        n_categories=1,
+        variables=["category"],
+        ignore_format=True,
+        replace_with=replacement,
+    ).fit(X)
+
+    expected_categories = [rare, frequent, replacement]
+    expected = pd.DataFrame(
+        {
+            "category": pd.Categorical(
+                [frequent, frequent, frequent] + [replacement] * (len(values) - 3),
+                categories=expected_categories,
+                ordered=ordered,
+            ),
+            "untouched": range(len(values)),
+        },
+        index=index,
+    )
+    assert encoder.encoder_dict_ == {"category": [frequent]}
+    pd.testing.assert_frame_equal(encoder.transform(X), expected)
+    pd.testing.assert_frame_equal(X, original)
+
+
+@pytest.mark.parametrize("ordered", [False, True])
+@pytest.mark.parametrize("labels", [("a", "b", "Rare"), (1, 2, 99), (1.5, 2.5, 99.5)])
+def test_repeated_categorical_transform(ordered, labels):
+    frequent, rare, replacement = labels
+    X = pd.DataFrame(
+        {"category": pd.Categorical([frequent] * 3 + [rare], ordered=ordered)}
+    )
+    encoder = RareLabelEncoder(
+        tol=0.5,
+        n_categories=1,
+        variables=["category"],
+        ignore_format=True,
+        replace_with=replacement,
+    ).fit(X)
+    first = encoder.transform(X)
+    original = first.copy(deep=True)
+    pd.testing.assert_frame_equal(encoder.transform(first), original)
+    pd.testing.assert_frame_equal(first, original)

@@ -89,7 +89,8 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         be retained and the rest grouped.
 
     replace_with: string, integer or float, default='Rare'
-        The value that will be used to replace infrequent categories.
+        The value that will be used to replace infrequent categories. For pandas
+        categorical variables, this can be a new or an existing category.
 
     {variables}
 
@@ -270,7 +271,8 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 X[num_vars] = X[num_vars].astype("O")
 
             if X[feature].dtype == "category":
-                X[feature] = X[feature].cat.add_categories(self.replace_with)
+                if self.replace_with not in X[feature].cat.categories:
+                    X[feature] = X[feature].cat.add_categories(self.replace_with)
 
             X.loc[~X[feature].isin(self.encoder_dict_[feature] + with_nan), feature] = (
                 self.replace_with
