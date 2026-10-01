@@ -13,6 +13,7 @@ from feature_engine.encoding import (
     CountFrequencyEncoder,
     DecisionTreeEncoder,
     MeanEncoder,
+    OOFMeanEncoder,
     OneHotEncoder,
     OrdinalEncoder,
     RareLabelEncoder,
@@ -34,6 +35,7 @@ _estimators = [
     # breaks with sklearn 1.4.1 - check and fix?
     # DecisionTreeEncoder(regression=False, ignore_format=True),
     MeanEncoder(ignore_format=True),
+    OOFMeanEncoder(ignore_format=True),
     OneHotEncoder(ignore_format=True),
     OrdinalEncoder(ignore_format=True),
     RareLabelEncoder(
@@ -71,6 +73,7 @@ _estimators = [
     CountFrequencyEncoder(),
     DecisionTreeEncoder(regression=False),
     MeanEncoder(),
+    OOFMeanEncoder(),
     OneHotEncoder(),
     OrdinalEncoder(),
     RareLabelEncoder(),
