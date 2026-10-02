@@ -20,6 +20,7 @@ dictionaries in the test files stay unchanged.
 
 import numpy as np
 import pandas as pd
+from scipy.sparse import issparse
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
@@ -61,6 +62,9 @@ class _SklearnCheckInputWrapper(TransformerMixin, BaseEstimator):
         """
         if hasattr(X, "iloc"):
             return X
+
+        if issparse(X):
+            raise TypeError("This transformer does not support sparse matrices.")
 
         arr = np.asarray(X)
         if arr.ndim == 0:
