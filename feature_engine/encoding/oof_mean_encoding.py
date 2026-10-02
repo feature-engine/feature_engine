@@ -185,7 +185,8 @@ class OOFMeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         if cv is not None and isinstance(cv, int) and cv < 2:
             raise ValueError(
-                f"cv must be an integer greater than 1 or a CV splitter. Got {cv} instead."
+                "cv must be an integer greater than 1 or a CV splitter. "
+                f"Got {cv} instead."
             )
         self.cv = cv
 

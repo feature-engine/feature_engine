@@ -11,7 +11,11 @@ from feature_engine.encoding import OOFMeanEncoder
 
 # test init params
 @pytest.mark.parametrize(
-    "params", [("raise", True, "auto", 3, True, 1, False), ("ignore", False, 1, 5, False, None, True)]
+    "params",
+    [
+        ("raise", True, "auto", 3, True, 1, False),
+        ("ignore", False, 1, 5, False, None, True),
+    ],
 )
 def test_init_param_assignment(params):
     enc = OOFMeanEncoder(
@@ -241,8 +245,8 @@ def test_ignore_format_numerical_variables(df_enc_numeric):
 
 
 def test_unseen_ignore_warns_when_fold_has_unseen_category():
-    # Category 'C' only exists in fold 2. With unseen='ignore', fold 2 will have NaNs for 'A',
-    # and fold 1 will have NaNs for 'C', which triggers a warning.
+    # Category 'C' only exists in fold 2. With unseen='ignore', fold 2 will have
+    # NaNs for 'A', and fold 1 will have NaNs for 'C', which triggers a warning.
     df = pd.DataFrame(
         {
             "cat": ["A", "A", "B", "B", "C", "C"],
@@ -251,7 +255,8 @@ def test_unseen_ignore_warns_when_fold_has_unseen_category():
     y = pd.Series([1, 0, 1, 0, 1, 0])
 
     encoder = OOFMeanEncoder(cv=2, shuffle=False, unseen="ignore")
-    with pytest.warns(UserWarning, match="During the encoding, NaN values were introduced"):
+    msg = "During the encoding, NaN values were introduced"
+    with pytest.warns(UserWarning, match=msg):
         X_oof = encoder.fit_transform(df, y)
     assert X_oof["cat"].isnull().any()
 
