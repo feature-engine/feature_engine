@@ -251,12 +251,13 @@ dataframe:
      'SaleType',
      'SaleCondition']
 
-Categorical features with 2 modes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Categorical features with multiple modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It is possible that one variable has more than one mode. In that case, the
-transformer will raise an error. For example, when you set the transformer to
-impute the variable ‘PoolQC` with the most frequent value:
+It is possible that one variable has more than one mode. By default, the
+transformer raises an error when ``imputation_method="frequent"`` and
+``multimodal="raise"``. For example, when you set the transformer to impute
+the variable ``PoolQC`` with the most frequent value:
 
 .. code:: python
 
@@ -267,15 +268,9 @@ impute the variable ‘PoolQC` with the most frequent value:
 
    imputer.fit(X_train)
 
-'PoolQC`  has more than 1 mode, so the transformer raises the following error:
+``PoolQC`` has more than one mode, so the transformer raises the following error:
 
 .. code:: python
-
-    196     self.imputer_dict_ = {var: mode_vals[0]}
-    198 # imputing multiple variables:
-    199 else:
-    200     # Returns a dataframe with 1 row if there is one mode per
-    201     # variable, or more rows if there are more modes:
 
     ValueError: The variable PoolQC contains multiple frequent categories.
 
@@ -293,6 +288,22 @@ We see that this variable has 3 categories with similar maximum number of observ
     1    Fa
     2    Gd
     Name: PoolQC, dtype: object
+
+Set ``multimodal="warn"`` to continue with the first mode returned by pandas and
+issue a warning. In this example, missing values in ``PoolQC`` are replaced by ``Ex``:
+
+.. code:: python
+
+    imputer = CategoricalImputer(
+        variables=['PoolQC'],
+        imputation_method="frequent",
+        multimodal="warn"
+    )
+
+    X_train = imputer.fit_transform(X_train)
+
+Set ``multimodal="ignore"`` to use the same first mode without a warning. The
+``multimodal`` parameter does not affect imputation with an arbitrary value.
 
 Considerations
 --------------
