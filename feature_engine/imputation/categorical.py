@@ -1,15 +1,16 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
+import warnings
 from typing import List, Optional, Union
 
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
-)
-from feature_engine._check_init_parameters.check_init_input_params import (
-    _check_return_empty_is_bool
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -17,12 +18,12 @@ from feature_engine._docstrings.fit_attributes import (
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
-)
-from feature_engine._docstrings.init_parameters.all_transformers import (
-    _return_empty_docstring
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
@@ -97,6 +98,12 @@ class CategoricalImputer(BaseImputer):
         type object or categorical. If True, the imputer will select all variables or
         accept all variables entered by the user, including those cast as numeric.
 
+    multimodal: str, default='raise'
+        How to handle variables with more than one most frequent category. Can be
+        'raise' to raise an error, 'warn' to issue a warning and use the first mode
+        returned by pandas, or 'ignore' to use the first mode without a warning.
+        Only used when `imputation_method='frequent'`.
+
     Attributes
     ----------
     {imputer_dict_}
@@ -145,6 +152,7 @@ class CategoricalImputer(BaseImputer):
         return_empty: bool = False,
         return_object: bool = False,
         ignore_format: bool = False,
+        multimodal: str = "raise",
     ) -> None:
         if imputation_method not in ["missing", "frequent"]:
             raise ValueError(
@@ -154,11 +162,19 @@ class CategoricalImputer(BaseImputer):
         if not isinstance(ignore_format, bool):
             raise ValueError("ignore_format takes only booleans True and False")
 
+        if not isinstance(multimodal, str) or multimodal not in [
+            "raise",
+            "warn",
+            "ignore",
+        ]:
+            raise ValueError("multimodal takes only values 'raise', 'warn' or 'ignore'")
+
         self.imputation_method = imputation_method
         self.fill_value = fill_value
         self.variables = _check_variables_input_value(variables)
         self.return_object = return_object
         self.ignore_format = ignore_format
+        self.multimodal = multimodal
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
@@ -201,9 +217,18 @@ class CategoricalImputer(BaseImputer):
 
                 # Some variables may contain more than 1 mode:
                 if len(mode_vals) > 1:
-                    raise ValueError(
+                    message = (
                         f"The variable {var} contains multiple frequent categories."
                     )
+                    if self.multimodal == "raise":
+                        raise ValueError(message)
+                    if self.multimodal == "warn":
+                        warnings.warn(
+                            message + " The first frequent category will be used for "
+                            "imputation.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
 
                 imputer_dict_ = {var: mode_vals[0]}
 
@@ -215,15 +240,24 @@ class CategoricalImputer(BaseImputer):
 
                 # Careful: some variables contain multiple modes
                 if len(mode_vals) > 1:
-                    varnames = mode_vals.dropna(axis=1).columns.to_list()
+                    varnames = mode_vals.columns[mode_vals.count() > 1].to_list()
                     if len(varnames) > 1:
-                        varnames_str = ", ".join(varnames)
+                        varnames_str = ", ".join(str(var) for var in varnames)
                     else:
                         varnames_str = varnames[0]
-                    raise ValueError(
+                    message = (
                         f"The variable(s) {varnames_str} contain(s) multiple frequent "
                         f"categories."
                     )
+                    if self.multimodal == "raise":
+                        raise ValueError(message)
+                    if self.multimodal == "warn":
+                        warnings.warn(
+                            message + " The first frequent category will be used for "
+                            "imputation.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
 
                 imputer_dict_ = mode_vals.iloc[0].to_dict()
 

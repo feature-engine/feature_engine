@@ -1,7 +1,129 @@
+import warnings
+
 import pandas as pd
 import pytest
+from sklearn.base import clone
 
 from feature_engine.imputation import CategoricalImputer
+
+
+@pytest.fixture
+def multimodal_df():
+    return pd.DataFrame(
+        {
+            "city": [
+                "London",
+                "London",
+                "Paris",
+                "Paris",
+                "Rome",
+                "Rome",
+                "Oslo",
+                None,
+                None,
+            ],
+            "country": ["UK", "UK", "UK", "FR", "FR", "FR", "DE", None, None],
+            "unique": ["a", "a", "a", "a", "b", "b", "c", None, None],
+        },
+        index=range(10, 19),
+        dtype="object",
+    )
+
+
+@pytest.mark.parametrize("multimodal", ["other", 1, True, None, ["warn"]])
+def test_invalid_multimodal(multimodal):
+    with pytest.raises(ValueError, match="multimodal"):
+        CategoricalImputer(multimodal=multimodal)
+
+
+@pytest.mark.parametrize("multimodal", ["warn", "ignore"])
+@pytest.mark.parametrize("variables", ["city", ["city", "country", "unique"]])
+@pytest.mark.parametrize("categorical", [False, True])
+def test_multimodal_imputes_first_mode(
+    multimodal_df, multimodal, variables, categorical
+):
+    X = multimodal_df.astype("category") if categorical else multimodal_df.copy()
+    X_original = X.copy(deep=True)
+    imputer = CategoricalImputer(
+        imputation_method="frequent", variables=variables, multimodal=multimodal
+    )
+
+    if multimodal == "warn":
+        with pytest.warns(UserWarning, match="first frequent category") as record:
+            result = imputer.fit_transform(X)
+        assert len(record) == 1
+        assert "city" in str(record[0].message)
+        if isinstance(variables, list):
+            assert "country" in str(record[0].message)
+            assert "unique" not in str(record[0].message)
+    else:
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always")
+            result = imputer.fit_transform(X)
+        assert len(record) == 0
+
+    expected_modes = {"city": "London"}
+    if isinstance(variables, list):
+        expected_modes.update({"country": "FR", "unique": "a"})
+    assert imputer.imputer_dict_ == expected_modes
+    assert clone(imputer).get_params()["multimodal"] == multimodal
+    pd.testing.assert_frame_equal(result, X.fillna(expected_modes).infer_objects())
+    pd.testing.assert_frame_equal(X, X_original)
+
+
+@pytest.mark.parametrize("multimodal", ["raise", "warn", "ignore"])
+def test_multimodal_with_integer_variable_names(multimodal_df, multimodal):
+    X = multimodal_df.rename(columns={"city": 0, "country": 1, "unique": 2})
+    imputer = CategoricalImputer(
+        imputation_method="frequent", variables=[0, 1, 2], multimodal=multimodal
+    )
+    message = r"0, 1 contain\(s\) multiple frequent categories"
+    if multimodal == "raise":
+        with pytest.raises(ValueError, match=message):
+            imputer.fit(X)
+        return
+    if multimodal == "warn":
+        with pytest.warns(UserWarning, match=message) as record:
+            result = imputer.fit_transform(X)
+        assert len(record) == 1
+    else:
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always")
+            result = imputer.fit_transform(X)
+        assert len(record) == 0
+    pd.testing.assert_frame_equal(
+        result, X.fillna({0: "London", 1: "FR", 2: "a"}).infer_objects()
+    )
+
+
+def test_multimodal_raise_reports_different_mode_counts(multimodal_df):
+    imputer = CategoricalImputer(imputation_method="frequent")
+    with pytest.raises(ValueError, match=r"city, country contain\(s\)"):
+        imputer.fit(multimodal_df)
+
+
+@pytest.mark.parametrize("multimodal", ["raise", "warn", "ignore"])
+def test_multimodal_does_not_warn_for_unique_mode(df_na, multimodal):
+    imputer = CategoricalImputer(
+        imputation_method="frequent", variables="City", multimodal=multimodal
+    )
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter("always")
+        result = imputer.fit_transform(df_na)
+    assert len(record) == 0
+    pd.testing.assert_series_equal(result["City"], df_na["City"].fillna("London"))
+
+
+@pytest.mark.parametrize("multimodal", ["raise", "warn", "ignore"])
+def test_multimodal_does_not_affect_missing_imputation(multimodal_df, multimodal):
+    imputer = CategoricalImputer(
+        variables=["city", "country", "unique"], multimodal=multimodal
+    )
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter("always")
+        result = imputer.fit_transform(multimodal_df)
+    assert len(record) == 0
+    pd.testing.assert_frame_equal(result, multimodal_df.fillna("Missing"))
 
 
 def test_impute_with_string_missing_and_automatically_find_variables(df_na):
