@@ -381,8 +381,9 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         # Simple Euclidean distance (approximate, best for short distances)
         # Convert to approximate km then to requested unit
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
+        # Promote before subtraction to avoid overflow with integer coordinates.
+        dlat = np.subtract(lat2, lat1, dtype=np.float64)
+        dlon = np.subtract(lon2, lon1, dtype=np.float64)
 
         # Approximate degrees to km (at equator)
         km_per_degree = 111.0
@@ -401,8 +402,9 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
     ) -> np.ndarray:
         """Calculate Manhattan (taxicab) distance in coordinate space."""
 
-        dlat = np.abs(lat2 - lat1)
-        dlon = np.abs(lon2 - lon1)
+        # Keep both the differences and their sum out of the integer dtype.
+        dlat = np.abs(np.subtract(lat2, lat1, dtype=np.float64))
+        dlon = np.abs(np.subtract(lon2, lon1, dtype=np.float64))
 
         # Approximate degrees to km (at equator)
         km_per_degree = 111.0

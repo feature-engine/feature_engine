@@ -119,6 +119,37 @@ def test_manhattan_method():
     )
 
 
+@pytest.mark.parametrize("method", ["euclidean", "manhattan"])
+@pytest.mark.parametrize(
+    "dtype, coordinates, deltas",
+    [
+        ("uint8", [1, 2, 0, 1], [1, 1]),
+        ("int8", [-80, -120, 80, 120], [160, 240]),
+        ("int8", [0, 0, 80, 80], [80, 80]),
+        ("float64", [1, 2, 0, 1], [1, 1]),
+    ],
+)
+def test_distance_does_not_overflow(method, dtype, coordinates, deltas):
+    """Integer coordinates give the same distance in both directions."""
+    X = pd.DataFrame(
+        [coordinates, coordinates[2:] + coordinates[:2]],
+        columns=["lat1", "lon1", "lat2", "lon2"],
+        dtype=dtype,
+    )
+    transformer = GeoDistanceFeatures(
+        lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", method=method
+    )
+
+    X_tr = transformer.fit_transform(X)
+
+    if method == "euclidean":
+        expected_distance = np.hypot(*deltas) * 111.0
+    else:
+        expected_distance = sum(deltas) * 111.0
+    np.testing.assert_allclose(X_tr["geo_distance"], expected_distance)
+    pd.testing.assert_frame_equal(X_tr.drop(columns="geo_distance"), X)
+
+
 def test_custom_output_column_name(df_coords):
     """Test custom output column name."""
     transformer = GeoDistanceFeatures(
