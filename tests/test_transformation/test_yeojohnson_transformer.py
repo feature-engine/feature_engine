@@ -168,3 +168,44 @@ def test_lambda_equals_lambda_equal_2():
     X_inverse = X_inverse.round(0).astype(int)
 
     pd.testing.assert_frame_equal(X, X_inverse, check_dtype=False)
+
+
+@pytest.mark.parametrize(
+    "training_values",
+    [
+        [-3.0, -1.0, 0.0, 1.0, 3.0],
+        [0.0, 0.25, 1.0, 4.0, 16.0],
+        [-16.0, -4.0, -1.0, -0.25, 0.0],
+    ],
+)
+def test_inverse_preserves_small_values_with_fitted_lambda(training_values):
+    transformer = YeoJohnsonTransformer(variables=["x"]).fit(
+        pd.DataFrame({"x": training_values, "keep": list("abcde")})
+    )
+    X = pd.DataFrame(
+        {"x": [-1e-20, -1e-10, 0.0, 1e-10, 1e-20], "keep": list("abcde")},
+        index=[4, 8, 8, 1, 9],
+    )
+    original = X.copy(deep=True)
+    transformed = transformer.transform(X)
+    transformed_before = transformed.copy(deep=True)
+
+    inverse = transformer.inverse_transform(transformed)
+
+    pd.testing.assert_frame_equal(inverse, X, rtol=3e-14, atol=0)
+    pd.testing.assert_frame_equal(X, original)
+    pd.testing.assert_frame_equal(transformed, transformed_before)
+
+
+@pytest.mark.parametrize("lmbda", [-2.0, 0.0, 0.5, 1.0, 1.5, 2.0, 4.0])
+@pytest.mark.parametrize("magnitude", [1e-20, 0.5])
+def test_inverse_precision_for_lambda_branches(lmbda, magnitude):
+    X = pd.DataFrame({"x": [-magnitude, 0.0, magnitude]}, index=[9, 2, 6])
+    transformer = YeoJohnsonTransformer().fit(
+        pd.DataFrame({"x": [-3.0, -1.0, 0.0, 1.0, 3.0]})
+    )
+    transformer.lambda_dict_["x"] = lmbda
+
+    inverse = transformer.inverse_transform(transformer.transform(X))
+
+    pd.testing.assert_frame_equal(inverse, X, rtol=3e-14, atol=0)

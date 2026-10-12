@@ -206,15 +206,15 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
 
         # when x >= 0
         if lmbda == 0:
-            x_inv[pos] = np.exp(X[pos]) - 1
+            x_inv[pos] = np.expm1(X[pos])
         else:  # lmbda != 0
-            x_inv[pos] = np.power(X[pos] * lmbda + 1, 1 / lmbda) - 1
+            x_inv[pos] = np.expm1(np.log1p(X[pos] * lmbda) / lmbda)
 
         # when x < 0
         if lmbda != 2:
-            x_inv[~pos] = 1 - np.power(-(2 - lmbda) * X[~pos] + 1, 1 / (2 - lmbda))
+            x_inv[~pos] = -np.expm1(np.log1p(-(2 - lmbda) * X[~pos]) / (2 - lmbda))
         else:  # lmbda == 2
-            x_inv[~pos] = 1 - np.exp(-X[~pos])
+            x_inv[~pos] = -np.expm1(-X[~pos])
 
         return x_inv
 
