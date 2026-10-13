@@ -15,6 +15,7 @@ estimated or arbitrary numbers.
 :class:`OrdinalEncoder()`	           √	            √    	        √         Replaces categories with an integer
 :class:`CountEncoder()`           √            √                 √              Replaces categories with their count or frequency
 :class:`MeanEncoder()`                 √	            √               x         Replaces categories with the target mean value
+:class:`OOFMeanEncoder()`              √                    √               x   Replaces categories with the out-of-fold target mean value
 :class:`WoEEncoder()`	               x	            √	            x         Replaces categories with the weight of the evidence
 :class:`DecisionTreeEncoder()`	       √	            √     	        √         Replaces categories with the predictions of a decision tree
 :class:`RareLabelEncoder()`	           √	            √     	        √         Groups infrequent categories into a single one
@@ -33,6 +34,7 @@ input.
    CountEncoder
    OrdinalEncoder
    MeanEncoder
+   OOFMeanEncoder
    WoEEncoder
    DecisionTreeEncoder
    RareLabelEncoder

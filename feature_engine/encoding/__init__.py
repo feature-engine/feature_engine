@@ -6,6 +6,7 @@ from .count_frequency import CountEncoder, CountFrequencyEncoder
 from .decision_tree import DecisionTreeEncoder
 from .mean_encoding import MeanEncoder
 from .one_hot import OneHotEncoder
+from .oof_mean_encoding import OOFMeanEncoder
 from .ordinal import OrdinalEncoder
 from .rare_label import RareLabelEncoder
 from .similarity_encoder import StringSimilarityEncoder
@@ -16,6 +17,7 @@ __all__ = [
     "CountFrequencyEncoder",
     "DecisionTreeEncoder",
     "MeanEncoder",
+    "OOFMeanEncoder",
     "OneHotEncoder",
     "OrdinalEncoder",
     "RareLabelEncoder",
