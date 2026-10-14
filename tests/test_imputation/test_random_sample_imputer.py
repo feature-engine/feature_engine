@@ -307,3 +307,45 @@ def test_variables_cast_as_category(df_na):
 
     # test transform output
     pd.testing.assert_frame_equal(X_transformed, ref, check_dtype=False)
+
+
+@pytest.mark.parametrize("seed_column", [0, 2, "seed"])
+@pytest.mark.parametrize("as_list", [False, True])
+@pytest.mark.parametrize("seeding_method", ["add", "multiply"])
+def test_observation_seed_column_label(seed_column, as_list, seeding_method):
+    X = pd.DataFrame([[1, None], [2, 1.0], [3, 2.0], [4, None]])
+    X = X.rename(columns={0: seed_column})
+    X.index = [10, 20, 30, 40]
+    original = X.copy()
+    expected = X.copy()
+    expected[1] = [2.0, 1.0, 2.0, 1.0]
+    random_state = [seed_column] if as_list else seed_column
+    imputer = RandomSampleImputer(
+        variables=[1],
+        seed="observation",
+        random_state=random_state,
+        seeding_method=seeding_method,
+    )
+
+    result = imputer.fit_transform(X)
+
+    assert imputer.random_state == [seed_column]
+    pd.testing.assert_frame_equal(result, expected)
+    pd.testing.assert_frame_equal(imputer.transform(X), expected)
+    pd.testing.assert_frame_equal(X, original)
+    pd.testing.assert_frame_equal(imputer.X_, original[[1]])
+
+
+@pytest.mark.parametrize("random_state", [None, [], ""])
+def test_empty_observation_seed_still_raises(random_state):
+    with pytest.raises(ValueError, match="the random state must take the name"):
+        RandomSampleImputer(seed="observation", random_state=random_state)
+
+
+def test_general_seed_zero():
+    X = pd.DataFrame([[1, None], [2, 1.0], [3, 2.0], [4, None]])
+    expected = X.copy()
+    expected[1] = [1.0, 1.0, 2.0, 2.0]
+    imputer = RandomSampleImputer(variables=[1], seed="general", random_state=0)
+
+    pd.testing.assert_frame_equal(imputer.fit_transform(X), expected)

@@ -6,23 +6,23 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from feature_engine._check_init_parameters.check_init_input_params import (
+    _check_return_empty_is_bool,
+)
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
-)
-from feature_engine._check_init_parameters.check_init_input_params import (
-    _check_return_empty_is_bool
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _variables_attribute_docstring,
 )
+from feature_engine._docstrings.init_parameters.all_transformers import (
+    _return_empty_docstring,
+)
 from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
     _transform_imputers_docstring,
-)
-from feature_engine._docstrings.init_parameters.all_transformers import (
-    _return_empty_docstring
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
@@ -162,7 +162,11 @@ class RandomSampleImputer(BaseImputer):
                     "if seed == 'general' then random_state must take an integer"
                 )
 
-        if seed == "observation" and not random_state:
+        if (
+            seed == "observation"
+            and not random_state
+            and not isinstance(random_state, int)
+        ):
             raise ValueError(
                 "if seed == 'observation' the random state must take the name of one "
                 "or more variables which will be used to seed the imputer"
