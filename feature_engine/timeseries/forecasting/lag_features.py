@@ -88,6 +88,16 @@ class LagFeatures(BaseForecastTransformer):
     drop_na: bool, default=False.
         Whether the NAN introduced in the lag features should be removed.
 
+    groupby: str, int or list, default=None
+        Columns whose combined values identify each independent time series.
+        Grouping columns are excluded from automatic variable selection.
+
+    sort_by: str or int, default=None
+        Column used to order observations before grouped transformations. Overrides
+        ``sort_index``. Required to be non-missing, and unique within each group.
+        Use a datetime column for time-based windows or frequency shifts. Requires
+        ``groupby``. The output follows this sorted order and preserves row indexes.
+
     Attributes
     ----------
     variables_:
@@ -147,6 +157,8 @@ class LagFeatures(BaseForecastTransformer):
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
+        groupby=None,
+        sort_by=None,
     ) -> None:
 
         if not (
@@ -172,7 +184,13 @@ class LagFeatures(BaseForecastTransformer):
             )
 
         super().__init__(
-            variables, return_empty, missing_values, drop_original, drop_na
+            variables,
+            return_empty,
+            missing_values,
+            drop_original,
+            drop_na,
+            groupby=groupby,
+            sort_by=sort_by,
         )
 
         self.periods = periods
@@ -196,6 +214,9 @@ class LagFeatures(BaseForecastTransformer):
         """
         # Common dataframe checks and setting up.
         X = self._check_transform_input_and_state(X)
+
+        if self.groupby is not None:
+            return self._transform_grouped(X, "lag")
 
         # if freq is not None, it overrides periods.
         if self.freq is not None:

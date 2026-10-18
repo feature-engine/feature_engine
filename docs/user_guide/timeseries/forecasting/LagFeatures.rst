@@ -675,3 +675,29 @@ or gradient boosting machines.
 
 By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
 the main developer of feature-engine.
+
+Independent series in one dataframe
+-----------------------------------
+
+Use ``groupby`` to identify independent series by one column or a combination of
+columns. ``sort_by`` orders observations using a column, overriding ``sort_index``::
+
+    transformer = LagFeatures(
+        variables=["sales"], groupby=["store", "product"], sort_by="date",
+        periods=[1, 2]
+    )
+    X_transformed = transformer.fit_transform(X)
+
+No lag, rolling aggregate, or expanding aggregate crosses a group boundary.
+Grouping and sorting columns are retained and excluded from automatic feature
+selection. The dataframe must retain a unique, non-missing row index; dates may
+repeat across groups when stored in the ``sort_by`` column. Within each group,
+``sort_by`` values must be unique and non-missing. Group labels must be complete.
+Use a datetime sorting column or index for time-based windows and frequency shifts.
+
+The output preserves row labels and follows the requested sorting order. With
+``sort_by=None`` and ``sort_index=False``, calculations follow input order within
+each group. ``drop_na`` removes rows with incomplete generated features, and
+``transform_x_y`` aligns the target with the retained rows. The transformer uses
+only the rows passed to ``transform``; it does not carry training history into a
+later batch. With ``groupby=None``, existing behaviour is unchanged.

@@ -101,6 +101,16 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         Whether the NAN introduced in the created features should be removed.
 
 
+    groupby: str, int or list, default=None
+        Columns whose combined values identify each independent time series.
+        Grouping columns are excluded from automatic variable selection.
+
+    sort_by: str or int, default=None
+        Column used to order observations before grouped transformations. Overrides
+        ``sort_index``. Required to be non-missing, and unique within each group.
+        Use a datetime column for time-based windows or frequency shifts. Requires
+        ``groupby``. The output follows this sorted order and preserves row indexes.
+
     Attributes
     ----------
     variables_:
@@ -164,6 +174,8 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
+        groupby=None,
+        sort_by=None,
     ) -> None:
 
         if not isinstance(functions, (str, list)) or not all(
@@ -182,7 +194,13 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
             )
 
         super().__init__(
-            variables, return_empty, missing_values, drop_original, drop_na
+            variables,
+            return_empty,
+            missing_values,
+            drop_original,
+            drop_na,
+            groupby=groupby,
+            sort_by=sort_by,
         )
 
         self.min_periods = min_periods
@@ -207,6 +225,9 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         """
         # Common dataframe checks and setting up.
         X = self._check_transform_input_and_state(X)
+
+        if self.groupby is not None:
+            return self._transform_grouped(X, "expanding")
 
         tmp = (
             X[self.variables_]

@@ -77,6 +77,8 @@ class BaseForecastTransformer(
         missing_values: str = "raise",
         drop_original: bool = False,
         drop_na: bool = False,
+        groupby=None,
+        sort_by=None,
     ) -> None:
 
         if missing_values not in ["raise", "ignore"]:
@@ -104,6 +106,12 @@ class BaseForecastTransformer(
         self.missing_values = missing_values
         self.drop_original = drop_original
         self.drop_na = drop_na
+        self.groupby = _check_variables_input_value(groupby)
+        if sort_by is not None and not isinstance(sort_by, (str, int)):
+            raise ValueError("sort_by must be a column name or None.")
+        if sort_by is not None and groupby is None:
+            raise ValueError("sort_by requires groupby.")
+        self.sort_by = sort_by
 
     def _check_index(self, X: pd.DataFrame):
         """
@@ -178,6 +186,8 @@ class BaseForecastTransformer(
         # Otherwise, when we merge the new features we will duplicate rows.
         self._check_index(X)
 
+        self._check_grouping(X)
+
         # find or check for numerical variables
         if self.variables is None:
             self.variables_ = find_numerical_variables(
@@ -185,6 +195,18 @@ class BaseForecastTransformer(
             )
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
+
+        if self.groupby is not None:
+            excluded = self._group_columns() + (
+                [] if self.sort_by is None else [self.sort_by]
+            )
+            if self.variables is not None and set(self.variables_) & set(excluded):
+                raise ValueError("Grouping and sorting columns cannot be variables.")
+            self.variables_ = [v for v in self.variables_ if v not in excluded]
+            if not self.variables_ and not self.return_empty:
+                raise ValueError(
+                    "No numerical variables remain after excluding group columns."
+                )
 
         # check if dataset contains na
         if self.missing_values == "raise":
@@ -221,6 +243,7 @@ class BaseForecastTransformer(
         # Dataframes must have unique values in the index and no missing data.
         # Otherwise, when we merge the created features we will duplicate rows.
         self._check_index(X)
+        self._check_grouping(X)
 
         # check if dataset contains na
         if self.missing_values == "raise":
@@ -229,10 +252,90 @@ class BaseForecastTransformer(
         # reorder variables to match train set
         X = X[self.feature_names_in_]
 
-        if self.sort_index is True:
+        if self.sort_by is not None:
+            X = X.sort_values(self.sort_by, kind="stable")
+        elif self.sort_index is True:
             X.sort_index(inplace=True)
 
         return X
+
+    def _group_columns(self):
+        return self.groupby if isinstance(self.groupby, list) else [self.groupby]
+
+    def _check_grouping(self, X):
+        if self.groupby is None:
+            return
+        columns = self._group_columns()
+        required = columns + ([] if self.sort_by is None else [self.sort_by])
+        if any(c not in X.columns for c in required):
+            raise ValueError("Grouping and sorting columns must be present in X.")
+        if X[required].isna().any().any():
+            raise ValueError(
+                "Grouping and sorting columns cannot contain missing values."
+            )
+        if self.sort_by is not None and X.duplicated(required).any():
+            raise ValueError("sort_by must be unique within each group.")
+
+    def _transform_grouped(self, X, kind):
+        """Compute features within groups, then align on group and time together."""
+        if not self.variables_:
+            return X
+        data = X[self.variables_].copy()
+        if self.sort_by is not None:
+            data.index = pd.Index(X[self.sort_by])
+        keys = [X[c].to_numpy() for c in self._group_columns()]
+        target_index = pd.MultiIndex.from_arrays(keys + [data.index])
+        grouped = data.groupby(keys, sort=False, observed=True)
+        levels = list(range(len(keys)))
+        parts = []
+        if kind == "lag":
+            shifts = self.freq if self.freq is not None else self.periods
+            shifts = shifts if isinstance(shifts, list) else [shifts]
+            for shift in shifts:
+                if self.freq is None:
+                    part = grouped.shift(shift, fill_value=self.fill_value)
+                    part.index = X.index
+                else:
+                    part = data.copy()
+                    part.index = pd.MultiIndex.from_arrays(
+                        keys + [data.index.shift(1, freq=shift)]
+                    )
+                    part = part.reindex(target_index)
+                    part.index = X.index
+                    if self.fill_value is not None:
+                        part = part.fillna(self.fill_value)
+                parts.append(part)
+        else:
+            windows = self.window if kind == "window" else [None]
+            windows = windows if isinstance(windows, list) else [windows]
+            for window in windows:
+                if kind == "window":
+                    part = grouped.rolling(
+                        window=window, min_periods=self.min_periods
+                    ).agg(self.functions)
+                else:
+                    part = grouped.expanding(min_periods=self.min_periods).agg(
+                        self.functions
+                    )
+                if self.freq is None:
+                    part = part.groupby(level=levels, sort=False).shift(self.periods)
+                else:
+                    arrays = [part.index.get_level_values(i) for i in levels]
+                    time = part.index.get_level_values(-1)
+                    part.index = pd.MultiIndex.from_arrays(
+                        arrays + [time.shift(self.periods, freq=self.freq)]
+                    )
+                part = part.reindex(target_index)
+                part.index = X.index
+                parts.append(part)
+        features = pd.concat(parts, axis=1)
+        features.columns = self._get_new_features_name()
+        result = pd.concat([X, features], axis=1)
+        if self.drop_original:
+            result = result.drop(columns=self.variables_)
+        if self.drop_na:
+            result = result.dropna(subset=features.columns)
+        return result
 
     def _more_tags(self):
         tags_dict = _return_tags()
