@@ -961,3 +961,32 @@ For more details about this and other feature selection methods check out these 
 Both our book and course are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
 the main developer of feature-engine.
+
+
+Missing values as a separate bin
+--------------------------------
+
+Use ``missing_values="include"`` to measure changes in missingness as well as
+changes in observed values::
+
+    selector = DropHighPSIFeatures(
+        missing_values="include", bins=5, threshold=0.25
+    )
+    selector.fit(X_train)
+    print(selector.psi_values_)
+
+Numerical bin boundaries are estimated from non-missing values in the basis
+partition only. Missing values occupy a separate bin, and all rows contribute
+to the frequency denominator. Categorical missing values also occupy their own
+bin without needing a special category string. Existing ``"raise"`` and
+``"ignore"`` modes are unchanged.
+
+If the basis partition has fewer than two distinct observed numerical values,
+there is insufficient information to estimate boundaries: all observed values
+are put in one bin and the comparison measures missingness drift only. This
+also handles an entirely missing partition without learning boundaries from
+the test partition. Infinite values are rejected.
+
+With ``threshold="auto"``, the number of populated bins in the combined
+partitions includes the missing bin when present. Empty-bin smoothing continues
+to use ``min_pct_empty_bins``.

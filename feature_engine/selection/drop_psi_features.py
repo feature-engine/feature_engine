@@ -216,6 +216,12 @@ class DropHighPSIFeatures(BaseSelector):
         Takes values 'raise' or 'ignore'. If 'ignore', missing values will be dropped
         when determining the PSI for that particular feature. If 'raise' the transformer
         will raise an error and features will not be selected.
+        With 'include', missing values form a separate bin and frequencies use all
+        rows. Numerical boundaries are learned only from observed basis values.
+        If the basis has fewer than two distinct observed values, all observed
+        values are placed in one bin, so only missingness drift can be measured.
+        The automatic threshold uses the number of populated bins across both
+        partitions, including the missing bin when present.
 
     p_value: float, default = 0.001
         The p-value to test the null hypothesis that there is no feature drift. In that
@@ -366,9 +372,9 @@ class DropHighPSIFeatures(BaseSelector):
                 f"instead."
             )
 
-        if missing_values not in ["raise", "ignore"]:
+        if missing_values not in ["raise", "ignore", "include"]:
             raise ValueError(
-                f"missing_values takes only values 'raise' or 'ignore'. Got "
+                f"missing_values takes only values 'raise', 'ignore' or 'include'. Got "
                 f"{missing_values} instead."
             )
 
@@ -430,6 +436,8 @@ class DropHighPSIFeatures(BaseSelector):
             # check if dataset contains na or inf
             _check_contains_na(X, num_variables_ + cat_variables_)
             _check_contains_inf(X, num_variables_)
+        elif self.missing_values == "include":
+            _check_contains_inf(X, num_variables_)
 
         # Split the dataframe into basis and test.
         basis_df, test_df = self._split_dataframe(X)
@@ -482,13 +490,23 @@ class DropHighPSIFeatures(BaseSelector):
         # Compute PSI for numerical features
         for feature in num_variables_:
             # Discretize feature
-            basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
-            test_discrete = bucketer.transform(test_df[[feature]].dropna())
+            if self.missing_values == "include":
+                basis_discrete, test_discrete = self._discretize_with_missing(
+                    basis_df[[feature]], test_df[[feature]], bucketer
+                )
+            else:
+                basis_discrete = bucketer.fit_transform(basis_df[[feature]].dropna())
+                test_discrete = bucketer.transform(test_df[[feature]].dropna())
 
             # Determine percentage of observations per bin
             basis_distrib, test_distrib = self._observation_frequency_per_bin(
                 basis_discrete, test_discrete
             )
+
+            if self.missing_values == "include" and self.threshold == "auto":
+                threshold_num = self._missing_bin_threshold(
+                    basis_df.shape[0], test_df.shape[0], len(basis_distrib)
+                )
 
             # Calculate the PSI value
             self.psi_values_[feature] = np.sum(
@@ -516,12 +534,15 @@ class DropHighPSIFeatures(BaseSelector):
 
             # Determine the appropriate threshold for the categorical feature
             if self.threshold == "auto":
-                n_bins_cat = X[feature].nunique()
-                threshold_cat = self._calculate_auto_threshold(
-                    basis_df.shape[0],
-                    test_df.shape[0],
-                    n_bins_cat,
-                )
+                if self.missing_values == "include":
+                    threshold_cat = self._missing_bin_threshold(
+                        basis_df.shape[0], test_df.shape[0], len(basis_distrib)
+                    )
+                else:
+                    n_bins_cat = X[feature].nunique()
+                    threshold_cat = self._calculate_auto_threshold(
+                        basis_df.shape[0], test_df.shape[0], n_bins_cat
+                    )
 
             # Assess if feature should be dropped
             if self.psi_values_[feature] > threshold_cat:
@@ -613,8 +634,9 @@ class DropHighPSIFeatures(BaseSelector):
             Test Pandas Series with percentage of observations per bin.
         """
         # Compute the feature distribution for basis and test
-        basis_distrib = basis.value_counts(normalize=True)
-        test_distrib = test.value_counts(normalize=True)
+        dropna = self.missing_values != "include"
+        basis_distrib = basis.value_counts(normalize=True, dropna=dropna)
+        test_distrib = test.value_counts(normalize=True, dropna=dropna)
 
         # Align the two distributions by merging the buckets (bins). This ensures
         # the number of bins is the same for the two distributions (in case of
@@ -633,6 +655,31 @@ class DropHighPSIFeatures(BaseSelector):
         distributions.columns = ["basis", "test"]
 
         return distributions.basis, distributions.test
+
+    def _discretize_with_missing(self, basis, test, bucketer):
+        """Learn boundaries from observed basis values; reserve -1 for missingness."""
+        observed = basis.dropna()
+        basis_codes = pd.DataFrame(-1.0, index=basis.index, columns=basis.columns)
+        test_codes = pd.DataFrame(-1.0, index=test.index, columns=test.columns)
+        if observed.iloc[:, 0].nunique() <= 1:
+            # No distribution boundaries can be estimated. Compare missingness
+            # against a single observed-value bin, without learning from test data.
+            return basis_codes.mask(basis.notna(), 0), test_codes.mask(test.notna(), 0)
+        basis_codes.iloc[np.flatnonzero(basis.iloc[:, 0].notna())] = (
+            bucketer.fit_transform(observed).to_numpy()
+        )
+        observed_test = test.dropna()
+        if not observed_test.empty:
+            test_codes.iloc[np.flatnonzero(test.iloc[:, 0].notna())] = (
+                bucketer.transform(observed_test).to_numpy()
+            )
+        return basis_codes, test_codes
+
+    def _missing_bin_threshold(self, n_basis, n_test, n_bins):
+        # A single populated bin cannot drift; chi-square with zero df is undefined.
+        if n_bins <= 1:
+            return 0.0
+        return self._calculate_auto_threshold(n_basis, n_test, n_bins)
 
     def _split_dataframe(self, X: pd.DataFrame):
         """
