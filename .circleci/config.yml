@@ -11,7 +11,7 @@ orbs:
 
 defaults: &defaults
   docker:
-    - image: cimg/python:3.10.0
+    - image: cimg/python:3.11.7
   working_directory: ~/project
 
 prepare_tox: &prepare_tox
@@ -42,31 +42,18 @@ jobs:
   # Test matrix
   # ------------------------
 
-  test_feature_engine_py39:
+  test_feature_engine_py311:
     docker:
-      - image: cimg/python:3.9.0
+      - image: cimg/python:3.11.7
     working_directory: ~/project
     steps:
       - checkout:
           path: ~/project
       - *prepare_tox
       - run:
-          name: Run tests (Python 3.9)
+          name: Run tests (Python 3.11)
           command: |
-            tox -e py39
-
-  test_feature_engine_py310:
-    docker:
-      - image: cimg/python:3.10.0
-    working_directory: ~/project
-    steps:
-      - checkout:
-          path: ~/project
-      - *prepare_tox
-      - run:
-          name: Run tests (Python 3.10)
-          command: |
-            tox -e py310
+            tox -e py311
 
   test_feature_engine_py311_sklearn150:
     docker:
@@ -166,7 +153,7 @@ jobs:
 
   test_style:
     docker:
-      - image: cimg/python:3.10.0
+      - image: cimg/python:3.11.7
     working_directory: ~/project
     steps:
       - checkout:
@@ -179,7 +166,7 @@ jobs:
 
   test_docs:
     docker:
-      - image: cimg/python:3.10.0
+      - image: cimg/python:3.11.7
     working_directory: ~/project
     steps:
       - checkout:
@@ -192,7 +179,7 @@ jobs:
 
   test_type:
     docker:
-      - image: cimg/python:3.10.0
+      - image: cimg/python:3.11.7
     working_directory: ~/project
     steps:
       - checkout:
@@ -277,8 +264,7 @@ workflows:
 
   test-all:
     jobs:
-      - test_feature_engine_py39
-      - test_feature_engine_py310
+      - test_feature_engine_py311
       - test_feature_engine_py311_sklearn150
       - test_feature_engine_py311_sklearn160
       - test_feature_engine_py311_sklearn170
@@ -298,8 +284,7 @@ workflows:
 
       - package_and_upload_to_pypi:
           requires:
-            - test_feature_engine_py39
-            - test_feature_engine_py310
+            - test_feature_engine_py311
             - test_feature_engine_py311_sklearn150
             - test_feature_engine_py311_sklearn160
             - test_feature_engine_py311_sklearn170

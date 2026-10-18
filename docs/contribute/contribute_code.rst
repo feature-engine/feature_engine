@@ -433,7 +433,7 @@ If the tests pass, the code is in optimal condition :)
 
 **A few things to note:**
 
-Tox runs our tests in Python versions 3.6, 3.7, 3.8 and 3.9. However, it will only be able to
+Tox runs our tests in Python versions 3.11, 3.12, 3.13 and 3.14. However, it will only be able to
 run the tests in the version you have installed locally. All others will fail. This is OK.
 As long as the tests in the Python version you have installed pass, you are good to go.
 

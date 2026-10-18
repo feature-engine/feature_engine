@@ -10,7 +10,7 @@ license = {text = "BSD 3 clause"}
 authors = [
     { name = "Soledad Galli", email = "solegalli@protonmail.com" }
 ]
-requires-python = ">=3.9.0"
+requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.18.2",
     "pandas>=2.2.0",
@@ -20,8 +20,6 @@ dependencies = [
 
 classifiers = [
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

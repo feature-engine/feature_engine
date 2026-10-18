@@ -12,7 +12,7 @@ data and then modify the data. They work just like any scikit-learn transformer.
 Installation
 ------------
 
-Feature-engine is a Python 3 package and works well with 3.9 or later. You can install
+Feature-engine is a Python 3 package and works well with 3.11 or later. You can install
 feature-engine with `pip`:
 
 .. code-block:: bash
