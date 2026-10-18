@@ -649,3 +649,43 @@ For more details about this and other feature selection methods check out these 
 Both our book and course are suitable for beginners and more advanced data scientists
 alike. By purchasing them you are supporting `Sole <https://linkedin.com/in/soledad-galli>`_,
 the main developer of feature-engine.
+
+
+Statistical and permutation ranking
+-----------------------------------
+
+Set ``importance_method="correlation"`` to compare absolute Pearson correlations
+of real and random features with a numeric target. No estimator is required::
+
+    selector = ProbeFeatureSelection(
+        importance_method="correlation", n_probes=5, cv=5, random_state=42
+    )
+    X_selected = selector.fit_transform(X_train, y_train)
+
+``f_classif`` and ``f_regression`` provide ANOVA F-score ranking for classification
+and regression. ``mutual_info_classif`` and ``mutual_info_regression`` provide
+mutual-information ranking. Select the variant explicitly for your target type.
+These methods compute scores on the training portion of each cross-validation
+split and expose their mean and standard deviation in the usual attributes.
+Mutual-information methods treat the original numeric features as continuous;
+use these methods for continuous predictors. Binary, discrete-uniform and
+Poisson probe columns are treated as discrete.
+
+For an estimator without embedded feature importances, use held-out permutation
+importance::
+
+    from sklearn.neighbors import KNeighborsRegressor
+
+    selector = ProbeFeatureSelection(
+        estimator=KNeighborsRegressor(), importance_method="permutation",
+        scoring="neg_mean_squared_error", cv=5, random_state=42
+    )
+
+The estimator is cloned for each fold, fitted only on training rows, and scored
+on validation rows after five permutations per column. The importance is the
+mean decrease in score. The reported standard deviation is across fold means,
+not across individual permutations. ``collective`` applies only to the default
+``importance_method="model"``. Existing calls preserve their behaviour.
+
+Fit the selector inside the training part of your evaluation pipeline. For time
+series, pass an appropriate chronological splitter through ``cv``.

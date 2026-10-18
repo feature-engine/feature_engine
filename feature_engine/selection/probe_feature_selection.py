@@ -2,6 +2,16 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.base import clone, is_classifier
+from sklearn.feature_selection import (
+    f_classif,
+    f_regression,
+    mutual_info_classif,
+    mutual_info_regression,
+    r_regression,
+)
+from sklearn.inspection import permutation_importance
+from sklearn.model_selection import check_cv
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -14,10 +24,10 @@ from feature_engine._docstrings.init_parameters.selection import (
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.selection._docstring import (
     _cv_docstring,
-    _groups_docstring,
     _features_to_drop_docstring,
     _fit_docstring,
     _get_support_docstring,
+    _groups_docstring,
     _scoring_docstring,
     _transform_docstring,
     _variables_attribute_docstring,
@@ -80,10 +90,11 @@ class ProbeFeatureSelection(BaseSelector):
 
     Parameters
     ----------
-    estimator: object
+    estimator: object, default=None
         A scikit-learn estimator for regression or classification. If `collective=True`,
         the estimator must have either a `feature_importances_` or a `coef_` attribute
         after fitting.
+        Required for ``importance_method='model'`` or ``'permutation'``.
 
     {variables}
 
@@ -119,6 +130,18 @@ class ProbeFeatureSelection(BaseSelector):
     {cv}
 
     {groups}
+
+    importance_method: str, default='model'
+        How to rank real and probe features. 'model' preserves the behaviour of
+        ``collective``. 'correlation' uses absolute Pearson correlation with a
+        numeric target. 'f_classif' and 'f_regression' use ANOVA F scores for
+        classification and regression respectively. 'mutual_info_classif' and
+        'mutual_info_regression' estimate mutual information, treating input
+        features as continuous and discrete probe distributions as discrete.
+        These statistical scores are calculated on each training fold.
+        'permutation' fits the estimator on each training fold and measures the
+        decrease in ``scoring`` on its held-out fold, averaged over five shuffles.
+        ``collective`` is used only with 'model'.
 
     Attributes
     ----------
@@ -181,7 +204,7 @@ class ProbeFeatureSelection(BaseSelector):
 
     def __init__(
         self,
-        estimator,
+        estimator=None,
         variables: Variables = None,
         collective: bool = True,
         scoring: str = "roc_auc",
@@ -193,6 +216,7 @@ class ProbeFeatureSelection(BaseSelector):
         groups=None,
         random_state: int = 0,
         confirm_variables: bool = False,
+        importance_method: str = "model",
     ):
         if not isinstance(collective, bool):
             raise ValueError(
@@ -253,6 +277,7 @@ class ProbeFeatureSelection(BaseSelector):
         self.n_probes = n_probes
         self.threshold = threshold
         self.random_state = random_state
+        self.importance_method = importance_method
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         """
@@ -267,6 +292,28 @@ class ProbeFeatureSelection(BaseSelector):
         """
         # check input dataframe
         X, y = check_X_y(X, y)
+
+        methods = [
+            "model",
+            "correlation",
+            "f_classif",
+            "f_regression",
+            "mutual_info_classif",
+            "mutual_info_regression",
+            "permutation",
+        ]
+        if (
+            not isinstance(self.importance_method, str)
+            or self.importance_method not in methods
+        ):
+            raise ValueError(f"importance_method must be one of {methods}.")
+        if (
+            self.importance_method in ["model", "permutation"]
+            and self.estimator is None
+        ):
+            raise ValueError(
+                "An estimator is required for model or permutation importance."
+            )
 
         self.variables_ = _select_numerical_variables(
             X, self.variables, self.confirm_variables
@@ -283,7 +330,9 @@ class ProbeFeatureSelection(BaseSelector):
 
         X_new = pd.concat([X[self.variables_], self.probe_features_], axis=1)
 
-        if self.collective is True:
+        if self.importance_method != "model":
+            self._rank_features(X_new, y)
+        elif self.collective is True:
             # train model using entire dataset and derive feature importance
             f_importance_mean, f_importance_std = find_feature_importance(
                 X=X_new,
@@ -314,6 +363,71 @@ class ProbeFeatureSelection(BaseSelector):
         self.features_to_drop_ = self._get_features_to_drop()
 
         return self
+
+    def _rank_features(self, X, y):
+        """Aggregate scores over folds, using held-out data for permutation."""
+        method = self.importance_method
+        classification = method in ["f_classif", "mutual_info_classif"] or (
+            method == "permutation" and is_classifier(self.estimator)
+        )
+        cv = check_cv(self.cv, y=y, classifier=classification)
+        scores = []
+        for train, test in cv.split(X, y, self.groups):
+            X_train, y_train = X.iloc[train], y.iloc[train]
+            if method == "permutation":
+                estimator = clone(self.estimator).fit(X_train, y_train)
+                score = permutation_importance(
+                    estimator,
+                    X.iloc[test],
+                    y.iloc[test],
+                    scoring=self.scoring,
+                    random_state=self.random_state,
+                ).importances_mean
+            elif method == "correlation":
+                score = np.abs(r_regression(X_train, y_train))
+            elif method in ["f_classif", "f_regression"]:
+                scorer = f_classif if method == "f_classif" else f_regression
+                score = scorer(X_train, y_train)[0]
+            else:
+                scorer = (
+                    mutual_info_classif
+                    if method == "mutual_info_classif"
+                    else mutual_info_regression
+                )
+                discrete = [False] * len(self.variables_) + [
+                    name.startswith(("binary_", "discrete_uniform_", "poisson_"))
+                    for name in self.probe_features_.columns
+                ]
+                score = scorer(
+                    X_train,
+                    y_train,
+                    discrete_features=discrete,
+                    random_state=self.random_state,
+                )
+            # Constant columns carry no signal. Some sklearn versions return inf
+            # for their correlation after floating-point centring, rather than NaN.
+            if method != "permutation":
+                score[X_train.nunique().to_numpy() <= 1] = 0.0
+                if y_train.nunique() <= 1:
+                    score[:] = 0.0
+            if method == "correlation":
+                score = np.clip(score, 0.0, 1.0)
+            # Constant variables can yield undefined F scores: they carry no signal.
+            scores.append(np.nan_to_num(score, nan=0.0))
+        if not scores:
+            raise ValueError("cv must yield at least one split.")
+        scores = np.asarray(scores)
+        # F scores may reach the largest finite float for perfect predictors.
+        # Scale before aggregation to avoid overflowing the mean or variance.
+        scale = np.max(np.abs(scores), axis=0)
+        scale[scale == 0] = 1.0
+        normalized = scores / scale
+        self.feature_importances_ = pd.Series(
+            np.mean(normalized, axis=0) * scale, index=X.columns
+        )
+        self.feature_importances_std_ = pd.Series(
+            np.std(normalized, axis=0) * scale, index=X.columns
+        )
 
     def _generate_probe_features(self, n_obs: int) -> pd.DataFrame:
         """
