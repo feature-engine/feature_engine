@@ -294,6 +294,33 @@ def test_variables_cast_as_category_frequent(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
+@pytest.mark.parametrize("ordered", [False, True])
+def test_variables_cast_as_category_with_fill_value_already_a_category(ordered):
+    categories = ["unknown", "west", "east"]
+    X = pd.DataFrame(
+        {
+            "region": pd.Categorical(
+                ["east", None, "west"], categories=categories, ordered=ordered
+            )
+        }
+    )
+
+    imputer = CategoricalImputer(fill_value="unknown", variables=["region"])
+    X_transformed = imputer.fit_transform(X)
+
+    X_reference = pd.DataFrame(
+        {
+            "region": pd.Categorical(
+                ["east", "unknown", "west"], categories=categories, ordered=ordered
+            )
+        }
+    )
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+    # transforming the imputed data again leaves it unchanged
+    pd.testing.assert_frame_equal(imputer.transform(X_transformed), X_reference)
+
+
 @pytest.mark.parametrize(
     "ignore_format",
     [22.3, 1, "HOLA", {"key1": "value1", "key2": "value2", "key3": "value3"}],
