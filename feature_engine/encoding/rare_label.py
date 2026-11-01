@@ -73,22 +73,22 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
     Parameters
     ----------
-    tol: float, default=0.05
+    tol : float, default=0.05
         The minimum frequency a label should have to be considered frequent.
         Categories with frequencies lower than tol will be grouped.
 
-    n_categories: int, default=10
+    n_categories : int, default=10
         The minimum number of categories a variable should have for the encoder
         to find frequent labels. If the variable contains less categories, all
         of them will be considered frequent.
 
-    max_n_categories: int, default=None
+    max_n_categories : int, default=None
         The maximum number of categories that should be considered frequent.
         If None, all categories with frequency above the tolerance (tol) will be
         considered frequent. If you enter 5, only the 5 most frequent categories will
         be retained and the rest grouped.
 
-    replace_with: string, integer or float, default='Rare'
+    replace_with : string, integer or float, default='Rare'
         The value that will be used to replace infrequent categories.
 
     {variables}
@@ -101,7 +101,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
     Attributes
     ----------
-    encoder_dict_:
+    encoder_dict_ :
         Dictionary with the frequent categories, i.e., those that will be kept, per
         variable.
 
@@ -192,11 +192,11 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just selected
             variables
 
-        y: None
+        y : None
             y is not required. You can pass y or None.
         """
 
@@ -242,12 +242,12 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The input samples.
 
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X : pandas dataframe of shape = [n_samples, n_features]
             The dataframe where rare categories have been grouped.
         """
 
