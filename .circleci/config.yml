@@ -57,7 +57,7 @@ jobs:
 
   test_feature_engine_py310:
     docker:
-      - image: cimg/python:3.10.0
+      - image: cimg/python:3.10.21
     working_directory: ~/project
     steps:
       - checkout:
