@@ -20,6 +20,7 @@ dictionaries in the test files stay unchanged.
 
 import numpy as np
 import pandas as pd
+from scipy.sparse import issparse
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
@@ -56,11 +57,14 @@ class _SklearnCheckInputWrapper(TransformerMixin, BaseEstimator):
     def _to_df(X):
         """Convert a numpy array into a dataframe, mirroring the old ``check_X``.
 
-        Dataframes are returned unchanged. Scalars, 1D arrays and complex data
-        raise the same errors ``check_X`` used to raise for them.
+        Dataframes are returned unchanged. Scalars, 1D arrays, sparse matrices,
+        and complex data raise the same errors ``check_X`` used to raise.
         """
         if hasattr(X, "iloc"):
             return X
+
+        if issparse(X):
+            raise TypeError("This transformer does not support sparse matrices.")
 
         arr = np.asarray(X)
         if arr.ndim == 0:
