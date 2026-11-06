@@ -178,6 +178,24 @@ def test_fit_attributes_with_autothreshold(variables, expected_psi, df):
     ]
 
 
+@pytest.mark.parametrize("bins", [2, 10])
+def test_auto_threshold_uses_realized_quantile_bins(bins):
+    X = pd.DataFrame(
+        {
+            "score": [0] * 50 + [1] * 50 + [0] * 27 + [1] * 73,
+            "stable": list(range(100)) * 2,
+        }
+    )
+    transformer = DropHighPSIFeatures(bins=bins, threshold="auto")
+    result = transformer.fit_transform(X)
+
+    # Repeated quantiles leave two bins. The PSI for score is above the
+    # one-degree-of-freedom threshold, but below the nine-degree threshold.
+    assert transformer.psi_values_["score"] == pytest.approx(0.23 * np.log(0.73 / 0.27))
+    assert transformer.features_to_drop_ == ["score"]
+    assert list(result.columns) == ["stable"]
+
+
 def test_calculation_when_strategy_equal_width(df):
     transformer = DropHighPSIFeatures(strategy="equal_width")
     transformer.fit(df)
