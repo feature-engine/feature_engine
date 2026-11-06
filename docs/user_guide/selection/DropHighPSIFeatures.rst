@@ -73,7 +73,9 @@ to the PSI value. The most commonly used thresholds are:
 - Below 10%, the variable has not experienced a significant shift.
 - Above 25%, the variable has experienced a major shift.
 - Between those two values, the shift is intermediate.
-- 'auto': the threshold will be calculated based on the size of the base and target datasets and the number of bins.
+- 'auto': the threshold is calculated from the sizes of the basis and test datasets and
+  the number of bins fitted for each feature. Repeated quantiles can lead to fewer bins
+  than requested when using the equal-frequency strategy.
 
 When 'auto', the threshold is calculated using the chi2 approximation, proposed by B. Yurdakul:
 

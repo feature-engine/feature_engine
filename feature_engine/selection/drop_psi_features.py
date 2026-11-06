@@ -460,16 +460,6 @@ class DropHighPSIFeatures(BaseSelector):
             else:
                 bucketer = EqualFrequencyDiscretiser(q=self.bins)
 
-            # Set up the threshold for numerical features
-            if self.threshold == "auto":
-                threshold_num = self._calculate_auto_threshold(
-                    basis_df.shape[0],
-                    test_df.shape[0],
-                    self.bins,
-                )
-            else:
-                threshold_num = self.threshold
-
         # Set up the generic threshold for categorical features if used
         if len(cat_variables_) > 0:
             if self.threshold != "auto":
@@ -494,6 +484,16 @@ class DropHighPSIFeatures(BaseSelector):
             self.psi_values_[feature] = np.sum(
                 (test_distrib - basis_distrib) * np.log(test_distrib / basis_distrib)
             )
+
+            if self.threshold == "auto":
+                # Equal-frequency discretization can drop duplicate boundaries.
+                threshold_num = self._calculate_auto_threshold(
+                    basis_df.shape[0],
+                    test_df.shape[0],
+                    len(bucketer.binner_dict_[feature]) - 1,
+                )
+            else:
+                threshold_num = self.threshold
 
             # Assess if feature should be dropped
             if self.psi_values_[feature] > threshold_num:
