@@ -191,6 +191,7 @@ class BaseRecursiveSelector(BaseSelector):
                     m,
                     X[self.variables_],
                     y,
+                    scoring=self.scoring,
                     n_repeats=1,
                     random_state=10,
                 )

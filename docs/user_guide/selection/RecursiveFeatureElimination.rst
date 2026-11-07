@@ -24,6 +24,8 @@ will be recursively removed. The least important features are removed first.
 
 **New**: If the machine learning model does not have the attributes `coef_` or `feature_importances_`,
 then the initial feature importance is determined by feature permutation.
+The permutation importance uses the metric specified by ``scoring``, matching the
+metric used to evaluate feature removals.
 
 In the next step, :class:`RecursiveFeatureElimination` removes the least important feature
 and trains a new machine learning model using the remaining variables. If the performance of
