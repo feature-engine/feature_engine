@@ -15,6 +15,8 @@ from decision tree-based models (`feature_importances_` attribute).
 
 If the machine learning model does not have the attributes `coef_` or `feature_importances_`,
 then the initial feature importance is determined by feature permutation.
+The permutation importance uses the metric specified by ``scoring``, matching the
+metric used to evaluate feature additions.
 
 In the next step, :class:`RecursiveFeatureAddition` trains a model only using the feature
 with the highest importance and stores this model's performance.
