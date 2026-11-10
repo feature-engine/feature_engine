@@ -459,3 +459,21 @@ def test_get_feature_names_out_raises_error_when_wrong_param(
 
     with pytest.raises(ValueError):
         transformer.get_feature_names_out(input_features=_input_features)
+
+
+def test_get_feature_names_out_drop_original_excludes_reference():
+    X = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0], "c": [5.0, 6.0]})
+    t = RelativeFeatures(
+        variables=["a"], reference=["c"], func=["add"], drop_original=True
+    )
+    t.fit(X)
+    assert t.get_feature_names_out() == ["b", "a_add_c"]
+
+def test_set_output_pandas_drop_original():
+    X = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0], "c": [5.0, 6.0]})
+    t = RelativeFeatures(
+        variables=["a"], reference=["c"], func=["add"], drop_original=True
+    )
+    t.fit(X)
+    result = t.set_output(transform="pandas").transform(X)
+    assert list(result.columns) == ["b", "a_add_c"]
