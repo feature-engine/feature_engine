@@ -378,6 +378,7 @@ def test_common_tests(estimator):
     check_drop_original_variables(estimator)
     check_return_empty(estimator)
 
+
 def test_get_feature_names_out_drop_original_excludes_reference():
     X = pd.DataFrame({"end": ["2026-01-02"], "start": ["2026-01-01"]})
     transformer = DatetimeSubtraction(
@@ -385,6 +386,7 @@ def test_get_feature_names_out_drop_original_excludes_reference():
     )
     transformer.fit(X)
     assert transformer.get_feature_names_out() == ["end_sub_start"]
+
 
 def test_set_output_pandas_drop_original():
     X = pd.DataFrame({"end": ["2026-01-02"], "start": ["2026-01-01"]})

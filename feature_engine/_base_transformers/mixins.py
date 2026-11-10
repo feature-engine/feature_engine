@@ -181,7 +181,9 @@ class GetFeatureNamesOutMixin:
                 # Remove names of variables to drop.
                 if self.drop_original is True and self.variables_ is not None:
                     cols_to_drop = list(self.variables_)
-                    ref = getattr(self, "reference_", None) or getattr(self, "reference", None)
+                    ref = getattr(self, "reference_", None) or getattr(
+                        self, "reference", None
+                    )
                     if ref is not None:
                         cols_to_drop += [r for r in ref if r not in cols_to_drop]
                     feature_names = [f for f in feature_names if f not in cols_to_drop]

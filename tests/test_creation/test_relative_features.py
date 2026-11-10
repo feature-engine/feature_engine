@@ -469,6 +469,7 @@ def test_get_feature_names_out_drop_original_excludes_reference():
     t.fit(X)
     assert t.get_feature_names_out() == ["b", "a_add_c"]
 
+
 def test_set_output_pandas_drop_original():
     X = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0], "c": [5.0, 6.0]})
     t = RelativeFeatures(
