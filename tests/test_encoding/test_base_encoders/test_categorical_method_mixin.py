@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from feature_engine.encoding import (
+    CountFrequencyEncoder,
+    DecisionTreeEncoder,
+    MeanEncoder,
+    WoEEncoder,
+)
 from feature_engine.encoding.base_encoder import CategoricalMethodsMixin
 
 
@@ -165,3 +171,35 @@ def test_inverse_transform_when_ignore_unseen():
     enc = MockClass(unseen="ignore")
     pd.testing.assert_frame_equal(enc.transform(input_df), output_df)
     pd.testing.assert_frame_equal(enc.inverse_transform(output_df), inverse_df)
+
+
+def test_inverse_transform_raises_error_when_categories_share_a_code():
+    enc = MockClass()
+    enc.encoder_dict_ = {"words": {"dog": 1, "dig": 0, "cat": 0}}
+    msg = (
+        "Cannot inverse transform words: the categories ['dig', 'cat'] were "
+        "encoded to the same value, so the original category of those rows "
+        "cannot be recovered."
+    )
+    with pytest.raises(ValueError) as record:
+        enc.inverse_transform(pd.DataFrame({"words": [1, 0, 0]}))
+    assert str(record.value) == msg
+
+
+@pytest.mark.parametrize(
+    "encoder",
+    [
+        CountFrequencyEncoder(encoding_method="count"),
+        MeanEncoder(),
+        WoEEncoder(),
+        DecisionTreeEncoder(regression=False),
+    ],
+)
+def test_inverse_transform_raises_error_for_encoders_with_shared_codes(encoder):
+    # "a" and "b" have the same count, target mean and weight of evidence, so
+    # every one of these encoders gives them the same code
+    X = pd.DataFrame({"words": ["a", "a", "b", "b", "c", "c", "c", "c"]})
+    y = pd.Series([0, 1, 0, 1, 1, 1, 0, 1])
+    X_tr = encoder.fit(X, y).transform(X)
+    with pytest.raises(ValueError, match="Cannot inverse transform words"):
+        encoder.inverse_transform(X_tr)

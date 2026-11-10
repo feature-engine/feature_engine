@@ -283,6 +283,9 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
     def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Convert the encoded variable back to the original values.
 
+        Raises a ValueError if two or more categories of a variable were encoded to
+        the same value, because the original category cannot be recovered.
+
         Parameters
         ----------
         X: pandas dataframe of shape = [n_samples, n_features].
@@ -299,7 +302,16 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
         # replace encoded categories by the original values
         for feature in self.encoder_dict_.keys():
-            inv_map = {v: k for k, v in self.encoder_dict_[feature].items()}
+            mapping = self.encoder_dict_[feature]
+            inv_map = {v: k for k, v in mapping.items()}
+            if len(inv_map) < len(mapping):
+                codes = list(mapping.values())
+                shared = [k for k, v in mapping.items() if codes.count(v) > 1]
+                raise ValueError(
+                    f"Cannot inverse transform {feature}: the categories {shared} "
+                    "were encoded to the same value, so the original category of "
+                    "those rows cannot be recovered."
+                )
             X[feature] = X[feature].map(inv_map)
 
         return X
