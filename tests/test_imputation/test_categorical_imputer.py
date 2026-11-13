@@ -264,6 +264,22 @@ def test_variables_cast_as_category_missing(df_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
+def test_variables_cast_as_category_when_fill_value_already_in_categories(df_na):
+    df_na = df_na.copy()
+    existing_cats = list(df_na["City"].dropna().unique()) + ["Missing"]
+    df_na["City"] = pd.Categorical(df_na["City"], categories=existing_cats)
+
+    imputer = CategoricalImputer(imputation_method="missing", variables="City")
+    X_transformed = imputer.fit_transform(df_na)
+
+    # set up expected output
+    X_reference = df_na.copy()
+    X_reference["City"] = X_reference["City"].fillna("Missing")
+
+    assert X_transformed["City"].isnull().sum() == 0
+    pd.testing.assert_frame_equal(X_transformed, X_reference)
+
+
 def test_variables_cast_as_category_frequent(df_na):
     df_na = df_na.copy()
     df_na["City"] = df_na["City"].astype("category")

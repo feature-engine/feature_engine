@@ -243,12 +243,13 @@ class CategoricalImputer(BaseImputer):
             X = self._transform(X)
 
             # if variable is of type category, we need to add the new
-            # category, before filling in the nan
+            # category if not already present, before filling in the nan
             for variable in self.variables_:
                 if X[variable].dtype.name == "category":
-                    X[variable] = X[variable].cat.add_categories(
-                        self.imputer_dict_[variable]
-                    )
+                    if self.imputer_dict_[variable] not in X[variable].cat.categories:
+                        X[variable] = X[variable].cat.add_categories(
+                            self.imputer_dict_[variable]
+                        )
 
             X = X.fillna(self.imputer_dict_)
 

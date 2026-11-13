@@ -441,6 +441,20 @@ def test_variables_cast_as_category(df_enc_big):
     pd.testing.assert_frame_equal(X, df, check_categorical=False)
 
 
+def test_variables_cast_as_category_when_replace_with_already_in_categories(df_enc_big):
+    encoder = RareLabelEncoder(
+        tol=0.06, n_categories=5, variables="var_B", replace_with="Rare"
+    )
+
+    df_enc_big = df_enc_big.copy()
+    existing_cats = list(df_enc_big["var_B"].unique()) + ["Rare"]
+    df_enc_big["var_B"] = pd.Categorical(df_enc_big["var_B"], categories=existing_cats)
+
+    X = encoder.fit_transform(df_enc_big)
+
+    assert "Rare" in X["var_B"].cat.categories
+
+
 def test_variables_cast_as_category_with_na_in_transform(df_enc_big):
     encoder = RareLabelEncoder(
         tol=0.06,
