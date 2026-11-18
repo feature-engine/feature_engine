@@ -234,19 +234,18 @@ class CategoricalImputer(BaseImputer):
         else:
             nw_X = self._transform(X)
 
-            if nwd.is_pandas_dataframe(X):
-                # if variable is of type category, we need to add the new
-                # category, before filling in the nan. Copy first so the
-                # in-place column reassignment doesn't mutate the caller's
-                # dataframe (BaseImputer._transform no longer returns a copy).
-                cat_vars = [
+            if nwd.is_pandas_dataframe(X) is True:
+                # pandas is faster than narwhals.
+                vars_to_extend = [
                     var
                     for var in self.variables_
                     if X[var].dtype.name == "category"
+                    and self.imputer_dict_[var] not in X[var].cat.categories
                 ]
-                if cat_vars:
+                if len(vars_to_extend) > 0:
+                    # Extending categories must preserve the caller's dtype.
                     X = X.copy()
-                    for variable in cat_vars:
+                    for variable in vars_to_extend:
                         X[variable] = X[variable].cat.add_categories(
                             self.imputer_dict_[variable]
                         )
