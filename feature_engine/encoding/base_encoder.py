@@ -290,6 +290,14 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
         nw_X = self._check_transform_input_and_state(X)
 
+        for feature, mapping in self.encoder_dict_.items():
+            if len(set(mapping.values())) < len(mapping):
+                warnings.warn(
+                    f"Some categories of {feature} were encoded to the same value. "
+                    "inverse_transform will return only one of those categories "
+                    "for all of them."
+                )
+
         # replace encoded categories by the original values. get_column()
         # rather than nw.col() again, to support pandas integer column names.
         new_series = [
