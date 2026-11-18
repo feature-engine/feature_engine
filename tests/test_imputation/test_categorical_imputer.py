@@ -331,6 +331,20 @@ def test_variables_cast_as_category_missing(data_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
+def test_missing_fill_value_already_in_pandas_categories():
+    dtype = pd.CategoricalDtype(["unknown", "west", "east"], ordered=True)
+    X = pd.DataFrame({"region": pd.Series(["east", None, "west"], dtype=dtype)})
+    original = X.copy()
+    expected = pd.DataFrame(
+        {"region": pd.Series(["east", "unknown", "west"], dtype=dtype)}
+    )
+
+    result = CategoricalImputer(fill_value="unknown").fit_transform(X)
+
+    pd.testing.assert_frame_equal(result, expected)
+    pd.testing.assert_frame_equal(X, original)
+
+
 def test_variables_cast_as_category_frequent(data_na):
     # pandas only
     df_na = pd.DataFrame(data_na)
