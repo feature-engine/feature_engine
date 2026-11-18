@@ -1,6 +1,5 @@
 from typing import List, Union
 
-import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame
 
@@ -20,6 +19,7 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine._dataframe_helpers import add_arrays, to_numpy
 from feature_engine.creation.base_creation import BaseCreation
 
 _PERMITTED_FUNCTIONS = [
@@ -229,17 +229,14 @@ class RelativeFeatures(BaseCreation):
             The input dataframe plus the new variables.
         """
 
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
 
-        nw_X = nw.from_native(X, eager_only=True)
-        # Extract each column as its own 1D array (not one batched 2D array
-        # via select().to_numpy()) so mixed int/float variables each keep
-        # their own dtype promotion, matching pandas' per-column .sub()/
-        # .div()/etc. instead of upcasting everything to a common dtype.
-        var_arrays = {var: nw_X.get_column(var).to_numpy() for var in self.variables}
-        ref_arrays = {ref: nw_X.get_column(ref).to_numpy() for ref in self.reference}
+        # One array per column, not a 2D array, so that mixed int and float
+        # variables keep their own dtype instead of being cast to a common one.
+        var_arrays = dict(zip(self.variables, to_numpy(nw_X, self.variables)))
+        ref_arrays = dict(zip(self.reference, to_numpy(nw_X, self.reference)))
 
-        new_series = []
+        new_features = {}
         for func in self.func:
             op = _NUMPY_OPS[func]
             for reference in self.reference:
@@ -269,11 +266,9 @@ class RelativeFeatures(BaseCreation):
                     else:
                         result = op(var_arrays[var], ref_arr)
 
-                    new_series.append(
-                        nw.new_series(name, result, backend=nw_X.implementation)
-                    )
+                    new_features[name] = result
 
-        nw_X = nw_X.with_columns(*new_series)
+        nw_X = add_arrays(nw_X, new_features)
         if self.drop_original is True:
             nw_X = nw_X.drop(list(set(self.variables + self.reference)))
 

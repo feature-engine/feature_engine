@@ -2,7 +2,6 @@ import itertools
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from joblib import Parallel, delayed
 from narwhals.typing import IntoDataFrame, IntoSeries
@@ -21,6 +20,7 @@ from feature_engine._check_init_parameters.check_init_input_params import (
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine._dataframe_helpers import add_arrays, select_columns
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -320,7 +320,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             check_classification_targets(y)
             self._is_binary = type_of_target(y)
 
-        _, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -342,19 +342,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             how_to_combine=self.features_to_combine, variables=variables_
         )
 
-        nw_X = nw.from_native(X, eager_only=True)
-
-        X_subs = []
-        for features in input_features:
-            # single feature models
-            if isinstance(features, (str, int)):
-                X_sub = nw_X.get_column(features).to_frame().to_native()
-            # multi feature models
-            elif nwd.is_pandas_dataframe(X) is True:
-                X_sub = X[features]
-            else:
-                X_sub = nw_X.select(features).to_native()
-            X_subs.append(X_sub)
+        X_subs = [self._get_X_sub(nw_X, features) for features in input_features]
 
         estimators_ = Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._fit_one_tree)(X_sub, y, param_grid) for X_sub in X_subs
@@ -363,10 +351,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.variables_ = variables_
         self.input_features_ = input_features
         self.estimators_ = estimators_
-        if nwd.is_pandas_dataframe(X) is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw_X.columns
+        self.feature_names_in_ = nw_X.columns
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -389,7 +374,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         # Check method fit has been called
         check_is_fitted(self)
 
-        check_X(X)
+        nw_X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
@@ -399,30 +384,13 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         _check_contains_inf(X, self.variables_)
 
         # reorder variables to match train set
-        if nwd.is_pandas_dataframe(X) is True:
-            X = X[self.feature_names_in_]
-        else:
-            X = (
-                nw.from_native(X, eager_only=True)
-                .select(self.feature_names_in_)
-                .to_native()
-            )
-        nw_X = nw.from_native(X, eager_only=True)
+        nw_X = select_columns(nw_X, self.feature_names_in_)
 
-        def get_x_sub(features):
-            if isinstance(features, (str, int)):
-                return nw_X.get_column(features).to_frame().to_native()
-            if nwd.is_pandas_dataframe(X) is True:
-                return X[features]
-            return nw_X.select(features).to_native()
-
-        new_series = []
-        new_columns = {}
+        new_features = {}
         # if regression or multiclass, we return the output of predict();
         # if binary classification, we return the probability
         for features, estimator in zip(self.input_features_, self.estimators_):
-            X_sub = get_x_sub(features)
-            col_name = f"tree({features})"
+            X_sub = self._get_X_sub(nw_X, features)
 
             if self.regression is True:
                 preds = estimator.predict(X_sub)
@@ -435,27 +403,20 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             else:
                 preds = estimator.predict(X_sub)
 
-            if nwd.is_pandas_dataframe(X) is True:
-                new_columns[col_name] = preds
-            else:
-                new_series.append(
-                    nw.new_series(col_name, preds, backend=nw_X.implementation)
-                )
+            new_features[f"tree({features})"] = preds
 
-        if nwd.is_pandas_dataframe(X) is True:
-            # assign() still inserts columns one at a time internally, so it
-            # doesn't avoid fragmentation with many feature combinations;
-            # building one DataFrame and joining it does (single insertion).
-            X = X.join(type(X)(new_columns, index=X.index))
-            if self.drop_original is True:
-                X = X.drop(columns=self.variables_)
-        else:
-            nw_X = nw.from_native(X, eager_only=True).with_columns(*new_series)
-            if self.drop_original is True:
-                nw_X = nw_X.drop(self.variables_)
-            X = nw_X.to_native()
+        nw_X = add_arrays(nw_X, new_features)
+        if self.drop_original is True:
+            nw_X = nw_X.drop(self.variables_)
 
-        return X
+        return nw_X.to_native()
+
+    def _get_X_sub(self, nw_X: nw.DataFrame, features: Any) -> IntoDataFrame:
+        """Return the dataframe with the features that one tree takes as input."""
+        # a single feature is stored as a name, not as a list
+        if isinstance(features, (str, int)):
+            features = [features]
+        return select_columns(nw_X, features).to_native()
 
     def _make_decision_tree(self, param_grid: Dict):
         """Instantiate decision tree."""

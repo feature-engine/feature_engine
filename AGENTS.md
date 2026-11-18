@@ -31,9 +31,21 @@ object that's already an instance of that module's class.
 - `check_X` and `check_X_y` return a narwhals dataframe. Bind it as
   `nw_X = check_X(X)`, pass the native `X` to the variable, NaN and feature-name
   helpers, compute on `nw_X`, and return `.to_native()`.
-- When pandas keeps a native fast path, branch with
-  `if nwd.is_pandas_dataframe(X):`, comment it with
-  `# pandas is faster than narwhals.` and put the narwhals code in `else`.
+- Transformers don't check which library the dataframe comes from. Code that
+  depends on the library lives in `feature_engine/_dataframe_helpers.py`, and
+  transformers call those helpers. Modules that still branch on pandas are
+  being converted one at a time: don't add new branches to them.
+- Compute numeric features with numpy: take the columns with
+  `to_numpy(nw_X, variables)`, compute, and add the results with
+  `add_arrays(nw_X, arrays)`. Reorder or subset columns with
+  `select_columns(nw_X, variables)`.
+- Work on missing data, categories and strings stays in the dataframe library,
+  written once with narwhals.
+- When pandas keeps a native fast path, it goes inside a helper, never in a
+  transformer. Branch with `if nwd.is_pandas_dataframe(X) is True:`, comment it
+  with `# pandas is faster than narwhals.` and put the narwhals code in `else`.
+- Add a helper in the PR that first needs it, with tests on both backends in
+  `tests/test_dataframe_helpers.py`.
 - To use the target together with `X`, call `add_target_to_X(nw_X, y)` from
   `feature_engine/encoding/_helper_functions.py` and read it with `TARGET_NAME`.
   It works for series, list and array targets, and with pandas the column takes
@@ -130,6 +142,11 @@ Benchmark a range of data sizes, but base the decision mainly on the sizes
 each backend is typically used with: 10k to 500k rows for pandas, and 500k
 rows and more for polars. Smaller and larger sizes are worth measuring, but
 they weigh less in the decision.
+
+Also benchmark a wide dataframe, of about 1,000 columns. With pandas, narwhals'
+`with_columns` and `select` take time for every column of the dataframe, so a
+transform that is fast on 30 columns can be several times slower than pandas
+on 1,000.
 
 ## Tests
 

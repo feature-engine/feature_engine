@@ -21,6 +21,7 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine._dataframe_helpers import add_arrays
 from feature_engine.creation.base_creation import BaseCreation
 
 
@@ -279,7 +280,8 @@ class MathFeatures(BaseCreation):
         X_new: dataframe, shape = [n_samples, n_features + n_operations]
             The input dataframe plus the new variables.
         """
-        X = self._check_transform_input_and_state(X)
+        nw_X = self._check_transform_input_and_state(X)
+        X = nw_X.to_native()
 
         new_variable_names = self._get_new_features_name()
 
@@ -293,7 +295,6 @@ class MathFeatures(BaseCreation):
         functions = func if isinstance(func, list) else [func]
         reducers = [_get_numpy_reducer(fun) for fun in functions]
 
-        nw_X = nw.from_native(X, eager_only=True)
         if nwd.is_pandas_dataframe(X) is True:
             values = X[self.variables].to_numpy()
         else:
@@ -302,18 +303,15 @@ class MathFeatures(BaseCreation):
         # Nullable extension dtypes produce object arrays. Keep those, custom
         # callables, and less common aggregations on the fallback path below.
         if reducers and values.dtype.kind in "biuf" and all(reducers):
-            new_series = []
+            new_features = {}
             for (reducer, kwargs), name in zip(reducers, new_variable_names):
                 # pandas' named reductions do not warn for empty/all-missing rows.
                 # NumPy returns the same values but emits RuntimeWarning for some
                 # reducers, so silence only those warnings on this equivalent path.
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", RuntimeWarning)
-                    result = reducer(values, axis=1, **kwargs)
-                new_series.append(
-                    nw.new_series(name, result, backend=nw_X.implementation)
-                )
-            nw_X = nw_X.with_columns(*new_series)
+                    new_features[name] = reducer(values, axis=1, **kwargs)
+            nw_X = add_arrays(nw_X, new_features)
             if self.drop_original is True:
                 nw_X = nw_X.drop(self.variables)
             X = nw_X.to_native()

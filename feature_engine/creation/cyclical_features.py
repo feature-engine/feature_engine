@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional, Union
 
-import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
@@ -19,6 +18,7 @@ from feature_engine._check_init_parameters.check_input_dictionary import (
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine._dataframe_helpers import add_arrays, to_numpy
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -181,16 +181,11 @@ class CyclicalFeatures(
         """
         if self.max_values is None:
             nw_X, variables_ = self._fit_setup(X)
-            if len(variables_) == 0:
-                # return_empty=True can leave variables_ empty; narwhals'
-                # select([]) collapses row count too, so .to_numpy().max()
-                # would fail on a genuinely empty selection.
-                max_values_: dict = {}
-            else:
-                max_arr = nw_X.select(nw.col(variables_)).to_numpy().max(axis=0)
-                # .tolist() converts numpy scalars to plain Python int/float,
-                # matching the dtype .to_dict() used to return.
-                max_values_ = dict(zip(variables_, max_arr.tolist()))
+            # .item() returns a plain Python int or float, not a numpy scalar
+            max_values_: dict = {
+                var: values.max().item()
+                for var, values in zip(variables_, to_numpy(nw_X, variables_))
+            }
         else:
             _, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values
@@ -217,12 +212,13 @@ class CyclicalFeatures(
         """
         nw_X = self._check_transform_input_and_state(X)
 
-        new_cols = []
-        for variable in self.variables_:
-            scaled = nw.col(variable) * (2.0 * np.pi / self.max_values_[variable])
-            new_cols.append(scaled.sin().alias(f"{variable}_sin"))
-            new_cols.append(scaled.cos().alias(f"{variable}_cos"))
-        nw_X = nw_X.with_columns(*new_cols)
+        new_features = {}
+        arrays = to_numpy(nw_X, self.variables_)
+        for variable, values in zip(self.variables_, arrays):
+            scaled = values * (2.0 * np.pi / self.max_values_[variable])
+            new_features[f"{variable}_sin"] = np.sin(scaled)
+            new_features[f"{variable}_cos"] = np.cos(scaled)
+        nw_X = add_arrays(nw_X, new_features)
         if self.drop_original is True:
             nw_X = nw_X.drop(self.variables_)
         X = nw_X.to_native()
