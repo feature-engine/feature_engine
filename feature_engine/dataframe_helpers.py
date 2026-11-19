@@ -32,21 +32,12 @@ def to_numpy(X: DataFrame, variables: Sequence[Union[str, int]]) -> List[np.ndar
     Returns
     -------
     arrays : list
-        One 1D numpy array per variable, in the order of `variables`, with NaN for
-        missing values. The arrays can share memory with the dataframe, so they
-        must not be modified in place.
+        One 1D numpy array per variable, in the order of `variables`. The arrays
+        can share memory with the dataframe, so they must not be modified in place.
     """
     # pandas is faster than narwhals.
     if nwd.is_pandas_dataframe(X) is True:
-        arrays = []
-        for var in variables:
-            col = X[var]
-            # nullable dtypes, like Int64, return pd.NA in an object array otherwise
-            if isinstance(col.dtype, np.dtype) is False and col.hasnans is True:
-                arrays.append(col.to_numpy(dtype="float64", na_value=np.nan))
-            else:
-                arrays.append(col.to_numpy())
-        return arrays
+        return [X[var].to_numpy() for var in variables]
     else:
         return [X.get_column(var).to_numpy() for var in variables]
 

@@ -64,24 +64,6 @@ def test_to_numpy_with_pandas_integer_column_names():
     np.testing.assert_array_equal(arrays[1], [1, 2])
 
 
-def test_to_numpy_with_pandas_nullable_dtypes():
-    X = check_X(
-        pd.DataFrame(
-            {
-                "var_a": pd.Series([1, pd.NA, 3], dtype="Int64"),
-                "var_b": pd.Series([1, 2, 3], dtype="Int64"),
-            }
-        )
-    )
-
-    arrays = to_numpy(X, ["var_a", "var_b"])
-
-    assert arrays[0].dtype.kind == "f"
-    np.testing.assert_array_equal(arrays[0], [1, np.nan, 3])
-    assert arrays[1].dtype.kind == "i"
-    np.testing.assert_array_equal(arrays[1], [1, 2, 3])
-
-
 # ------------------------
 # add_arrays_to_df
 # ------------------------
