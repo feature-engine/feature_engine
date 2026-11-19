@@ -26,19 +26,39 @@ the object already in hand (`.loc`, `.columns`, `.index`, `.select_dtypes`,
 to reference the module itself (`pd.something`), not to call methods on an
 object that's already an instance of that module's class.
 
+For pandas functions that are not dataframe methods, like `concat`, use
+`nwd.get_pandas()`: it returns the pandas module already loaded by the user,
+without importing it.
+
 ## Transformer code
 
-- `check_X` and `check_X_y` return a narwhals dataframe. Bind it as
-  `nw_X = check_X(X)`, pass the native `X` to the variable, NaN and feature-name
-  helpers, compute on `nw_X`, and return `.to_native()`.
+- `check_X` and `check_X_y` return the user's pandas dataframe as is, and a
+  narwhals dataframe for any other library. Bind it as `nw_X = check_X(X)`, pass
+  the native `X` to the variable, NaN and feature-name helpers, work on `nw_X`
+  through the dataframe helpers, and return
+  `nw.to_native(nw_X, pass_through=True)`.
+- With pandas, `nw_X` is the user's dataframe, so never write into it: no
+  assignments, `.loc` writes or `inplace=True`, and don't write into the arrays
+  from `to_numpy`. Build new dataframes instead, as the helpers do. pandas 2.3,
+  which is still supported, has no copy-on-write, so a shallow copy doesn't
+  protect the user's data from in-place writes.
 - Transformers don't check which library the dataframe comes from. Code that
   depends on the library lives in `feature_engine/dataframe_helpers.py`, and
   transformers call those helpers. Modules that still branch on pandas are
   being converted one at a time: don't add new branches to them.
+- The helpers take and return the dataframe from `check_X`, a pandas or a
+  narwhals dataframe, so they never wrap or unwrap it again.
 - Compute numeric features with numpy: take the columns with
-  `to_numpy(nw_X, variables)`, compute, and add the results with
-  `add_arrays(nw_X, arrays)`. Reorder or subset columns with
-  `select_columns(nw_X, variables)`.
+  `to_numpy(nw_X, variables)`, compute, and add the results as new columns with
+  `add_columns_to_df(nw_X, arrays)`. Reorder or subset columns with
+  `subset_df(nw_X, variables)`, and remove them with
+  `drop_variables_from_df(nw_X, variables)`.
+- Adding new columns and replacing existing ones are separate helpers. Replacing
+  columns, as discretisers and encoders do, needs its own helper
+  (`replace_columns_in_df`), added by the first PR that needs it.
+- Add many columns to a pandas dataframe in one go, never one at a time: it
+  fragments the dataframe, which users have reported. Keep the tests that check
+  for pandas' `PerformanceWarning`.
 - Work on missing data, categories and strings stays in the dataframe library,
   written once with narwhals.
 - When pandas keeps a native fast path, it goes inside a helper, never in a
@@ -110,6 +130,8 @@ ask — don't guess and defensively code around it.
 - Narwhals' `.columns` is already `list[str]` — don't wrap it in `list()`.
 - pandas' `.columns` is an `Index`, not a list — `list()` is required there
   (an `Index == list` comparison is elementwise, not a clean bool).
+- The dataframe from `check_X` can be pandas, so wrap `nw_X.columns` in `list()`
+  when you need a list, for example for `feature_names_in_`.
 
 ## Keep tests passing when you change a function or class
 
@@ -147,6 +169,10 @@ Also benchmark a wide dataframe, of about 1,000 columns. With pandas, narwhals'
 `with_columns` and `select` take time for every column of the dataframe, so a
 transform that is fast on 30 columns can be several times slower than pandas
 on 1,000.
+
+CI runs pandas 2.3 and 3. When a change touches copies or concatenation, check
+it on both: for example, `concat` copies the whole dataframe on pandas 2.3 but
+not on 3.
 
 ## Tests
 
