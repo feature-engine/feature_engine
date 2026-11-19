@@ -1,3 +1,5 @@
+import re
+
 import narwhals as nw
 import numpy as np
 import pandas as pd
@@ -22,33 +24,28 @@ from feature_engine.dataframe_checks import (
 # ------------------------
 
 
-@pytest.mark.parametrize(
-    "make_df, assert_equal_fn",
-    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
-)
-def test_check_X_returns_df_unchanged(make_df, assert_equal_fn):
-    df = make_df({"a": [1, 2, 3], "b": [4.0, 5.0, 6.0]})
-    X = check_X(df)
-    assert isinstance(X, nw.DataFrame)
-    assert_equal_fn(X.to_native(), df)
+DATA_NUMERIC = {"a": [1, 2, 3], "b": [4.0, 5.0, 6.0]}
+DATA_MIXED = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+    "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
+}
 
 
-@pytest.mark.parametrize(
-    "make_df, assert_equal_fn",
-    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
-)
-def test_check_X_returns_df_with_mixed_dtypes(make_df, assert_equal_fn):
-    data = {
-        "Name": ["tom", "nick", "krish", "jack"],
-        "City": ["London", "Manchester", "Liverpool", "Bristol"],
-        "Age": [20, 21, 19, 18],
-        "Marks": [0.9, 0.8, 0.7, 0.6],
-        "dob": pd.date_range("2020-02-24", periods=4, freq="min"),
-    }
-    df = make_df(data)
+@pytest.mark.parametrize("data", [DATA_NUMERIC, DATA_MIXED])
+def test_check_X_returns_the_same_pandas_df(data):
+    df = pd.DataFrame(data)
+    assert check_X(df) is df
+
+
+@pytest.mark.parametrize("data", [DATA_NUMERIC, DATA_MIXED])
+def test_check_X_returns_narwhals_df_for_other_libraries(data):
+    df = pl.DataFrame(data)
     X = check_X(df)
     assert isinstance(X, nw.DataFrame)
-    assert_equal_fn(X.to_native(), df)
+    pl_assert_frame_equal(X.to_native(), df)
 
 
 @pytest.mark.parametrize(
@@ -85,8 +82,8 @@ def test_check_X_raises_error_on_duplicated_column_names():
         }
     )
     df.columns = ["var_A", "var_A", "var_B", "var_C"]
-    msg = "Expected unique column names"
-    with pytest.raises(ValueError, match=msg):
+    msg = "Expected unique column names, got: ['var_A']."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         check_X(df)
 
 
@@ -256,39 +253,59 @@ def test_check_y_raises_none_error():
 
 
 @pytest.mark.parametrize(
-    "make_df, assert_frame_fn, make_series, assert_series_fn",
+    "make_df, X_type, assert_frame_fn, make_series, assert_series_fn",
     [
-        (pd.DataFrame, assert_frame_equal, pd.Series, assert_series_equal),
-        (pl.DataFrame, pl_assert_frame_equal, pl.Series, pl_assert_series_equal),
+        (
+            pd.DataFrame,
+            pd.DataFrame,
+            assert_frame_equal,
+            pd.Series,
+            assert_series_equal,
+        ),
+        (
+            pl.DataFrame,
+            nw.DataFrame,
+            pl_assert_frame_equal,
+            pl.Series,
+            pl_assert_series_equal,
+        ),
     ],
 )
 def test_check_X_y_returns_df_and_series_unchanged(
-    make_df, assert_frame_fn, make_series, assert_series_fn
+    make_df, X_type, assert_frame_fn, make_series, assert_series_fn
 ):
     df = make_df({"a": [1, 2, 3], "b": [4, 5, 6]})
     s = make_series([0, 1, 2])
     X, y = check_X_y(df, s)
-    assert isinstance(X, nw.DataFrame) and isinstance(y, type(s))
-    assert_frame_fn(X.to_native(), df)
+    assert isinstance(X, X_type) and isinstance(y, type(s))
+    assert_frame_fn(nw.to_native(X, pass_through=True), df)
     assert_series_fn(y, s)
 
 
 @pytest.mark.parametrize(
-    "make_df, assert_frame_fn",
-    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+    "make_df, X_type, assert_frame_fn",
+    [
+        (pd.DataFrame, pd.DataFrame, assert_frame_equal),
+        (pl.DataFrame, nw.DataFrame, pl_assert_frame_equal),
+    ],
 )
-def test_check_X_y_returns_df_and_multioutput_y_unchanged(make_df, assert_frame_fn):
+def test_check_X_y_returns_df_and_multioutput_y_unchanged(
+    make_df, X_type, assert_frame_fn
+):
     df = make_df({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]})
     d = make_df({"t1": [1, 2, 3, 4], "t2": [5, 6, 7, 8]})
     X, y = check_X_y(df, d)
-    assert isinstance(X, nw.DataFrame)
-    assert_frame_fn(X.to_native(), df)
+    assert isinstance(X, X_type)
+    assert_frame_fn(nw.to_native(X, pass_through=True), df)
     assert_frame_fn(y, d)
 
 
 @pytest.mark.parametrize(
-    "make_df, assert_frame_fn",
-    [(pd.DataFrame, assert_frame_equal), (pl.DataFrame, pl_assert_frame_equal)],
+    "make_df, X_type, assert_frame_fn",
+    [
+        (pd.DataFrame, pd.DataFrame, assert_frame_equal),
+        (pl.DataFrame, nw.DataFrame, pl_assert_frame_equal),
+    ],
 )
 @pytest.mark.parametrize(
     "y",
@@ -299,12 +316,12 @@ def test_check_X_y_returns_df_and_multioutput_y_unchanged(make_df, assert_frame_
     ],
 )
 def test_check_X_y_with_array_like_y_returns_check_y_output(
-    make_df, assert_frame_fn, y
+    make_df, X_type, assert_frame_fn, y
 ):
     df = make_df({"a": [1, 2, 3], "b": [4, 5, 6]})
     X, y_out = check_X_y(df, y)
-    assert isinstance(X, nw.DataFrame)
-    assert_frame_fn(X.to_native(), df)
+    assert isinstance(X, X_type)
+    assert_frame_fn(nw.to_native(X, pass_through=True), df)
     np.testing.assert_array_equal(y_out, check_y(y))
 
 
@@ -313,8 +330,7 @@ def test_check_X_y_returns_pandas_with_non_typical_index():
     df = pd.DataFrame({"0": [1, 2, 3, 4], "1": [5, 6, 7, 8]}, index=[22, 99, 101, 212])
     s = pd.Series([1, 2, 3, 4], index=[22, 99, 101, 212])
     x, y = check_X_y(df, s)
-    assert isinstance(x, nw.DataFrame)
-    assert_frame_equal(df, x.to_native())
+    assert x is df
     assert_series_equal(s, y)
 
 
