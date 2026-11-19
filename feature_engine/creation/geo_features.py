@@ -14,7 +14,7 @@ from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
 )
 from feature_engine.dataframe_helpers import (
-    add_arrays_to_df,
+    add_columns_to_df,
     drop_variables_from_df,
     subset_df,
     to_numpy,
@@ -360,7 +360,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         else:  # manhattan
             distances = self._manhattan_distance(lat1, lon1, lat2, lon2)
 
-        nw_X = add_arrays_to_df(nw_X, {self.output_col: distances})
+        nw_X = add_columns_to_df(nw_X, {self.output_col: distances})
         if self.drop_original is True:
             nw_X = drop_variables_from_df(nw_X, self.variables_)
 

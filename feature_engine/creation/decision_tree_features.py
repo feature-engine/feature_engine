@@ -21,7 +21,7 @@ from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine.dataframe_helpers import (
-    add_arrays_to_df,
+    add_columns_to_df,
     drop_variables_from_df,
     subset_df,
 )
@@ -409,7 +409,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
 
             new_features[f"tree({features})"] = preds
 
-        nw_X = add_arrays_to_df(nw_X, new_features)
+        nw_X = add_columns_to_df(nw_X, new_features)
         if self.drop_original is True:
             nw_X = drop_variables_from_df(nw_X, self.variables_)
 

@@ -27,7 +27,7 @@ from feature_engine.dataframe_checks import (
     check_X,
 )
 from feature_engine.dataframe_helpers import (
-    add_arrays_to_df,
+    add_columns_to_df,
     drop_variables_from_df,
     subset_df,
     to_numpy,
@@ -238,7 +238,7 @@ class CyclicalFeatures(
             scaled = values * (2.0 * np.pi / self.max_values_[variable])
             new_features[f"{variable}_sin"] = np.sin(scaled)
             new_features[f"{variable}_cos"] = np.cos(scaled)
-        nw_X = add_arrays_to_df(nw_X, new_features)
+        nw_X = add_columns_to_df(nw_X, new_features)
         if self.drop_original is True:
             nw_X = drop_variables_from_df(nw_X, self.variables_)
 

@@ -42,10 +42,9 @@ def to_numpy(X: DataFrame, variables: Sequence[Union[str, int]]) -> List[np.ndar
         return [X.get_column(var).to_numpy() for var in variables]
 
 
-def add_arrays_to_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
+def add_columns_to_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
     """
-    Adds numpy arrays to the dataframe as columns. An array named after a column
-    of the dataframe replaces that column. New columns go at the end.
+    Adds numpy arrays to the end of the dataframe as new columns.
 
     Parameters
     ----------
@@ -53,26 +52,18 @@ def add_arrays_to_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
         The dataframe returned by `check_X`.
 
     arrays : dict
-        The column names and the 1D numpy array with the values of each column.
+        The names of the new columns and the 1D numpy array with the values of
+        each column.
 
     Returns
     -------
     X : pandas or narwhals dataframe
-        The dataframe with the arrays as columns. The input is not modified.
+        The dataframe with the new columns. The input is not modified.
     """
     # pandas is faster than narwhals.
     if nwd.is_pandas_dataframe(X) is True:
-        X = X.copy(deep=False)
-        new_columns = {}
-        for name, values in arrays.items():
-            if name in X.columns:
-                X[name] = values
-            else:
-                new_columns[name] = values
-        if len(new_columns) == 0:
-            return X
-        # adding the new columns one by one fragments the dataframe
-        new_X = type(X)(new_columns, index=X.index)
+        # adding the columns one by one fragments the dataframe
+        new_X = type(X)(arrays, index=X.index)
         return nwd.get_pandas().concat([X, new_X], axis=1)
     else:
         return X.with_columns(

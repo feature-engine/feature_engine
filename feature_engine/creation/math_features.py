@@ -22,7 +22,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_helpers import (
-    add_arrays_to_df,
+    add_columns_to_df,
     drop_variables_from_df,
     subset_df,
 )
@@ -312,7 +312,7 @@ class MathFeatures(BaseCreation):
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", RuntimeWarning)
                     new_features[name] = reducer(values, axis=1, **kwargs)
-            nw_X = add_arrays_to_df(nw_X, new_features)
+            nw_X = add_columns_to_df(nw_X, new_features)
             if self.drop_original is True:
                 nw_X = drop_variables_from_df(nw_X, self.variables)
             X = nw.to_native(nw_X, pass_through=True)
