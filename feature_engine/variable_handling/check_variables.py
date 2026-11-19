@@ -48,14 +48,18 @@ def check_numerical_variables(
     >>> var_
     ['var_num']
     """
-
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X) is True:
+    if nwd.is_pandas_dataframe(X):
         not_numerical = len(X[variables].select_dtypes(exclude="number").columns) > 0
+
     else:
-        sub_X = nw.from_native(X, eager_only=True).select(variables)
+        if isinstance(X, nw.DataFrame):
+            sub_X = X.select(variables)
+        else:
+            sub_X = nw.from_native(X, eager_only=True).select(variables)
+
         not_numerical = len(sub_X.select(nw.selectors.numeric()).columns) != len(
             sub_X.columns
         )
@@ -111,11 +115,10 @@ def check_categorical_variables(
     >>> var_
     ['var_cat']
     """
-
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X) is True:
+    if nwd.is_pandas_dataframe(X):
         not_categorical = (
             len(
                 X[variables]
@@ -125,7 +128,11 @@ def check_categorical_variables(
             > 0
         )
     else:
-        sub_X = nw.from_native(X, eager_only=True).select(variables)
+        if isinstance(X, nw.DataFrame):
+            sub_X = X.select(variables)
+        else:
+            sub_X = nw.from_native(X, eager_only=True).select(variables)
+
         not_categorical = len(
             sub_X.select(
                 nw.selectors.categorical() | nw.selectors.enum() | nw.selectors.string()
@@ -184,11 +191,10 @@ def check_datetime_variables(
     >>> var_date
     ['var_date']
     """
-
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X) is True:
+    if nwd.is_pandas_dataframe(X):
         sub_X = X[variables]
         candidates = sub_X.select_dtypes(exclude=["datetime", "datetimetz"]).columns
         numeric_cols = set(sub_X.select_dtypes(include="number").columns)
@@ -199,7 +205,11 @@ def check_datetime_variables(
             for column in candidates
         )
     else:
-        sub_X = nw.from_native(X, eager_only=True).select(variables)
+        if isinstance(X, nw.DataFrame):
+            sub_X = X.select(variables)
+        else:
+            sub_X = nw.from_native(X, eager_only=True).select(variables)
+
         candidates = sub_X.select(~nw.selectors.by_dtype(nw.Date, nw.Datetime)).columns
         numeric_cols = set(sub_X.select(nw.selectors.numeric()).columns)
         non_datetime = any(
@@ -252,7 +262,9 @@ def check_all_variables(
     >>> vars_all
     ['var_num', 'var_cat', 'var_date']
     """
-    if nwd.is_pandas_dataframe(X) is True:
+    if nwd.is_pandas_dataframe(X):
+        columns = set(X.columns)
+    elif isinstance(X, nw.DataFrame):
         columns = set(X.columns)
     else:
         columns = set(nw.from_native(X, eager_only=True).columns)
