@@ -169,7 +169,7 @@ def check_X_y(
     y = check_y(y, y_numeric=y_numeric)
     check_consistent_length(X, y)
 
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):  # if pandas df
         if nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y):
             if X.index.equals(y.index) is False:
                 raise ValueError("The indexes of X and y do not match.")
@@ -245,18 +245,17 @@ def _check_contains_na(
 
 def _contains_na(X: IntoDataFrame, variables: List[Union[str, int]]) -> bool:
     # pandas is faster than narwhals.
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):
         return bool(X[variables].isna().to_numpy().any())
     else:
-        nw_X = nw.from_native(X, eager_only=True)
         # polars stores the null count, so check it before scanning floats for NaN.
-        if sum(nw_X.select(nw.col(variables).null_count()).row(0)) > 0:
+        if sum(X.select(nw.col(variables).null_count()).row(0)) > 0:
             return True
-        schema = nw_X.schema
+        schema = X.schema
         floats = [var for var in variables if schema[var].is_float() is True]
         if len(floats) == 0:
             return False
-        return True in nw_X.select(nw.col(floats).is_nan().any()).row(0)
+        return True in X.select(nw.col(floats).is_nan().any()).row(0)
 
 
 def _check_contains_inf(X: IntoDataFrame, variables: List[Union[str, int]]) -> None:
@@ -278,7 +277,11 @@ def _check_contains_inf(X: IntoDataFrame, variables: List[Union[str, int]]) -> N
     if len(variables) == 0:
         return None
 
-    values = nw.from_native(X, eager_only=True).select(nw.col(variables)).to_numpy()
+    if not isinstance(X, nw.DataFrame):  # if pandas df
+        values = X[variables].to_numpy()
+    else:
+        values = X.select(variables).to_numpy()
+
     if np.isinf(values.astype(float)).any():
         raise ValueError(
             "Some of the variables to transform contain inf values. Check and "

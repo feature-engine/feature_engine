@@ -370,7 +370,7 @@ def test_check_x_y_raises_error_when_inconsistent_length(make_df, make_series):
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_check_X_matches_training_df_passes_when_columns_match(make_df):
     df = make_df({"a": [1, 2], "b": [3, 4]})
-    assert _check_X_matches_training_df(df, 2) is None
+    assert _check_X_matches_training_df(check_X(df), 2) is None
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -378,7 +378,7 @@ def test_check_X_matches_training_df_raises_error_when_columns_dont_match(make_d
     msg = "The number of columns in this dataset is different from"
     df = make_df({"a": [1, 2], "b": [3, 4]})
     with pytest.raises(ValueError, match=msg):
-        _check_X_matches_training_df(df, 3)
+        _check_X_matches_training_df(check_X(df), 3)
 
 
 # -------------------------
@@ -400,22 +400,22 @@ def test_contains_na_raises_when_nan(make_df):
 
     df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
     with pytest.raises(ValueError, match=msg1):
-        _check_contains_na(df, ["Name", "City"])
+        _check_contains_na(check_X(df), ["Name", "City"])
 
     with pytest.raises(ValueError, match=msg2):
-        _check_contains_na(df, ["Name", "City"], error_msg="other")
+        _check_contains_na(check_X(df), ["Name", "City"], error_msg="other")
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_contains_na_passes_when_no_nan(make_df):
     df = make_df({"Name": ["tom", "nick"], "City": ["London", "Manchester"]})
-    assert _check_contains_na(df, ["Name", "City"]) is None
+    assert _check_contains_na(check_X(df), ["Name", "City"]) is None
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_contains_na_ignores_columns_not_in_variables(make_df):
     df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
-    assert _check_contains_na(df, ["City"]) is None
+    assert _check_contains_na(check_X(df), ["City"]) is None
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -428,7 +428,7 @@ def test_contains_na_raises_for_explicit_nan_in_numeric_column(make_df):
     )
     df = make_df({"Age": [20.0, float("nan"), 19.0], "City": ["a", "b", "c"]})
     with pytest.raises(ValueError, match=msg):
-        _check_contains_na(df, ["Age", "City"])
+        _check_contains_na(check_X(df), ["Age", "City"])
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -442,7 +442,7 @@ def test_contains_na_raises_for_mix_of_null_and_nan_across_dtypes(make_df):
     )
     df = make_df({"Age": [20.0, float("nan"), 19.0], "City": ["a", None, "c"]})
     with pytest.raises(ValueError, match=msg):
-        _check_contains_na(df, ["Age", "City"])
+        _check_contains_na(check_X(df), ["Age", "City"])
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
@@ -450,7 +450,7 @@ def test_contains_na_no_ops_when_variables_is_empty(make_df):
     # on the narwhals/polars backend, nw.col([]) raises a TypeError, so an
     # empty `variables` list must short-circuit before any column selection
     df = make_df({"Name": ["tom", None], "City": ["London", "Manchester"]})
-    assert _check_contains_na(df, []) is None
+    assert _check_contains_na(check_X(df), []) is None
 
 
 # --------------------------
@@ -466,16 +466,16 @@ def test_contains_inf_raises_on_inf(make_df):
     )
     df = make_df({"A": [1.1, np.inf, 3.3]})
     with pytest.raises(ValueError, match=msg):
-        _check_contains_inf(df, ["A"])
+        _check_contains_inf(check_X(df), ["A"])
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_contains_inf_passes_without_inf(make_df):
     df = make_df({"A": [1.1, 2.2, 3.3]})
-    assert _check_contains_inf(df, ["A"]) is None
+    assert _check_contains_inf(check_X(df), ["A"]) is None
 
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 def test_contains_inf_ignores_columns_not_in_variables(make_df):
     df = make_df({"A": [1.1, float("inf"), 3.3], "B": [1.0, 2.0, 3.0]})
-    assert _check_contains_inf(df, ["B"]) is None
+    assert _check_contains_inf(check_X(df), ["B"]) is None
