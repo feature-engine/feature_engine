@@ -36,7 +36,7 @@ def to_numpy(X: DataFrame, variables: Sequence[Union[str, int]]) -> List[np.ndar
         can share memory with the dataframe, so they must not be modified in place.
     """
     # pandas is faster than narwhals.
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):
         return [X[var].to_numpy() for var in variables]
     else:
         return [X.get_column(var).to_numpy() for var in variables]
@@ -61,7 +61,7 @@ def add_columns_to_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
         The dataframe with the new columns. The input is not modified.
     """
     # pandas is faster than narwhals.
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):
         # adding the columns one by one fragments the dataframe
         new_X = type(X)(arrays, index=X.index)
         return nwd.get_pandas().concat([X, new_X], axis=1)
@@ -90,7 +90,7 @@ def subset_df(X: DataFrame, variables: Sequence[Union[str, int]]) -> DataFrame:
         The dataframe with only the variables.
     """
     # pandas is faster than narwhals.
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):
         return X[list(variables)]
     else:
         return X.select(list(variables))
@@ -116,7 +116,7 @@ def drop_variables_from_df(
         The dataframe without the variables.
     """
     # pandas is faster than narwhals.
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):
         return X.drop(columns=list(variables))
     else:
         return X.drop(list(variables))
