@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import narwhals as nw
 from narwhals.typing import IntoDataFrame, IntoSeries
@@ -10,7 +10,7 @@ from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
 )
-from feature_engine._dataframe_helpers import select_columns
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -72,14 +72,16 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # save input features
-        self.feature_names_in_ = nw_X.columns
+        self.feature_names_in_ = list(nw_X.columns)
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _check_transform_input_and_state(self, X: IntoDataFrame) -> nw.DataFrame:
+    def _check_transform_input_and_state(
+        self, X: IntoDataFrame
+    ) -> Union[IntoDataFrame, nw.DataFrame]:
         """
         Common input and transformer checks.
 
@@ -90,9 +92,9 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        nw_X: narwhals dataframe
-            The dataframe entered by the user, as a narwhals dataframe, with the
-            variables in the same order as in the train set.
+        nw_X: pandas or narwhals dataframe
+            The dataframe returned by `check_X`, with the variables in the same
+            order as in the train set.
         """
 
         # Check method fit has been called
@@ -112,7 +114,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # reorder variables to match train set
-        return select_columns(nw_X, self.feature_names_in_)
+        return subset_df(nw_X, self.feature_names_in_)
 
     def _more_tags(self):
         tags_dict = _return_tags()

@@ -21,7 +21,11 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._dataframe_helpers import add_arrays
+from feature_engine.dataframe_helpers import (
+    add_arrays_to_df,
+    drop_variables_from_df,
+    subset_df,
+)
 from feature_engine.creation.base_creation import BaseCreation
 
 
@@ -281,7 +285,7 @@ class MathFeatures(BaseCreation):
             The input dataframe plus the new variables.
         """
         nw_X = self._check_transform_input_and_state(X)
-        X = nw_X.to_native()
+        X = nw.to_native(nw_X, pass_through=True)
 
         new_variable_names = self._get_new_features_name()
 
@@ -295,10 +299,7 @@ class MathFeatures(BaseCreation):
         functions = func if isinstance(func, list) else [func]
         reducers = [_get_numpy_reducer(fun) for fun in functions]
 
-        if nwd.is_pandas_dataframe(X) is True:
-            values = X[self.variables].to_numpy()
-        else:
-            values = nw_X.select(self.variables).to_numpy()
+        values = subset_df(nw_X, self.variables).to_numpy()
 
         # Nullable extension dtypes produce object arrays. Keep those, custom
         # callables, and less common aggregations on the fallback path below.
@@ -311,10 +312,10 @@ class MathFeatures(BaseCreation):
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", RuntimeWarning)
                     new_features[name] = reducer(values, axis=1, **kwargs)
-            nw_X = add_arrays(nw_X, new_features)
+            nw_X = add_arrays_to_df(nw_X, new_features)
             if self.drop_original is True:
-                nw_X = nw_X.drop(self.variables)
-            X = nw_X.to_native()
+                nw_X = drop_variables_from_df(nw_X, self.variables)
+            X = nw.to_native(nw_X, pass_through=True)
         elif nwd.is_pandas_dataframe(X) is True:
             result = X[self.variables].agg(func, axis=1)
             if len(new_variable_names) == 1:

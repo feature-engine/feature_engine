@@ -1,7 +1,9 @@
 from typing import Dict, List, Optional, Union
 
+import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
+from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import (
@@ -18,7 +20,18 @@ from feature_engine._check_init_parameters.check_input_dictionary import (
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine._dataframe_helpers import add_arrays, to_numpy
+from feature_engine.dataframe_checks import (
+    _check_contains_inf,
+    _check_contains_na,
+    _check_X_matches_training_df,
+    check_X,
+)
+from feature_engine.dataframe_helpers import (
+    add_arrays_to_df,
+    drop_variables_from_df,
+    subset_df,
+    to_numpy,
+)
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _n_features_in_docstring,
@@ -210,7 +223,14 @@ class CyclicalFeatures(
         X_new: dataframe.
             The original dataframe plus the additional features.
         """
-        nw_X = self._check_transform_input_and_state(X)
+        # not the parent's checks: BaseNumericalTransformer still returns
+        # narwhals for pandas, which makes the helpers take the slow path.
+        check_is_fitted(self)
+        nw_X = check_X(X)
+        _check_X_matches_training_df(X, self.n_features_in_)
+        _check_contains_na(X, self.variables_)
+        _check_contains_inf(X, self.variables_)
+        nw_X = subset_df(nw_X, self.feature_names_in_)
 
         new_features = {}
         arrays = to_numpy(nw_X, self.variables_)
@@ -218,12 +238,11 @@ class CyclicalFeatures(
             scaled = values * (2.0 * np.pi / self.max_values_[variable])
             new_features[f"{variable}_sin"] = np.sin(scaled)
             new_features[f"{variable}_cos"] = np.cos(scaled)
-        nw_X = add_arrays(nw_X, new_features)
+        nw_X = add_arrays_to_df(nw_X, new_features)
         if self.drop_original is True:
-            nw_X = nw_X.drop(self.variables_)
-        X = nw_X.to_native()
+            nw_X = drop_variables_from_df(nw_X, self.variables_)
 
-        return X
+        return nw.to_native(nw_X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

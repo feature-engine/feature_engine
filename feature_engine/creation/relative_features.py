@@ -1,5 +1,6 @@
 from typing import List, Union
 
+import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame
 
@@ -19,7 +20,11 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine._dataframe_helpers import add_arrays, to_numpy
+from feature_engine.dataframe_helpers import (
+    add_arrays_to_df,
+    drop_variables_from_df,
+    to_numpy,
+)
 from feature_engine.creation.base_creation import BaseCreation
 
 _PERMITTED_FUNCTIONS = [
@@ -268,11 +273,13 @@ class RelativeFeatures(BaseCreation):
 
                     new_features[name] = result
 
-        nw_X = add_arrays(nw_X, new_features)
+        nw_X = add_arrays_to_df(nw_X, new_features)
         if self.drop_original is True:
-            nw_X = nw_X.drop(list(set(self.variables + self.reference)))
+            nw_X = drop_variables_from_df(
+                nw_X, list(set(self.variables + self.reference))
+            )
 
-        return nw_X.to_native()
+        return nw.to_native(nw_X, pass_through=True)
 
     def _raise_error_when_zero_in_denominator(self):
         raise ValueError(

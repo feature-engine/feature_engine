@@ -13,7 +13,12 @@ from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
 )
-from feature_engine._dataframe_helpers import add_arrays, select_columns, to_numpy
+from feature_engine.dataframe_helpers import (
+    add_arrays_to_df,
+    drop_variables_from_df,
+    subset_df,
+    to_numpy,
+)
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
@@ -293,14 +298,16 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         self.variables_ = variables
 
         # save input features
-        self.feature_names_in_ = nw_X.columns
+        self.feature_names_in_ = list(nw_X.columns)
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _validate_coordinate_ranges(self, nw_X: nw.DataFrame) -> None:
+    def _validate_coordinate_ranges(
+        self, nw_X: Union[IntoDataFrame, nw.DataFrame]
+    ) -> None:
         """Raise if any latitude/longitude value falls outside its valid range."""
         lat_cols = [self.lat1, self.lat2]
         for lat_col, values in zip(lat_cols, to_numpy(nw_X, lat_cols)):
@@ -342,7 +349,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         _check_contains_na(X, self.variables_)
 
         # reorder variables to match train set
-        nw_X = select_columns(nw_X, self.feature_names_in_)
+        nw_X = subset_df(nw_X, self.feature_names_in_)
         lat1, lon1, lat2, lon2 = to_numpy(nw_X, self.variables_)
 
         # Calculate distance based on method
@@ -353,11 +360,11 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         else:  # manhattan
             distances = self._manhattan_distance(lat1, lon1, lat2, lon2)
 
-        nw_X = add_arrays(nw_X, {self.output_col: distances})
+        nw_X = add_arrays_to_df(nw_X, {self.output_col: distances})
         if self.drop_original is True:
-            nw_X = nw_X.drop(self.variables_)
+            nw_X = drop_variables_from_df(nw_X, self.variables_)
 
-        return nw_X.to_native()
+        return nw.to_native(nw_X, pass_through=True)
 
     def _haversine_distance(
         self,
