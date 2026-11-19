@@ -32,7 +32,7 @@ object that's already an instance of that module's class.
   `nw_X = check_X(X)`, pass the native `X` to the variable, NaN and feature-name
   helpers, compute on `nw_X`, and return `.to_native()`.
 - Transformers don't check which library the dataframe comes from. Code that
-  depends on the library lives in `feature_engine/_dataframe_helpers.py`, and
+  depends on the library lives in `feature_engine/dataframe_helpers.py`, and
   transformers call those helpers. Modules that still branch on pandas are
   being converted one at a time: don't add new branches to them.
 - Compute numeric features with numpy: take the columns with
