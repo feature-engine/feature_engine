@@ -74,9 +74,7 @@ def add_columns_to_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
 
 def subset_df(X: DataFrame, variables: Sequence[Union[str, int]]) -> DataFrame:
     """
-    Returns the dataframe with the variables in the order of `variables`.
-    Used in transform methods to ensure the output has the same order
-    of columns as the train set.
+    Returns the dataframe with only the variables, in the order of `variables`.
 
     Parameters
     ----------

@@ -42,37 +42,43 @@ without importing it.
   which is still supported, has no copy-on-write, so a shallow copy doesn't
   protect the user's data from in-place writes.
 - Transformers don't check which library the dataframe comes from. Code that
-  depends on the library lives in `feature_engine/dataframe_helpers.py`, and
-  transformers call those helpers. Modules that still branch on pandas are
-  being converted one at a time: don't add new branches to them.
+  depends on the library lives in `feature_engine/dataframe_helpers.py`, or in
+  the module's own helpers file when only that module needs it (for example
+  `feature_engine/datetime/_datetime_helpers.py`), and transformers call those
+  helpers. Modules that still branch on pandas are being converted one at a
+  time: don't add new branches to them.
 - The helpers take and return the dataframe from `check_X`, a pandas or a
   narwhals dataframe, so they never wrap or unwrap it again.
 - Compute numeric features with numpy: take the columns with
   `to_numpy(X, variables)`, compute, and add the results as new columns with
-  `add_columns_to_df(X, arrays)`. Reorder or subset columns with
+  `add_columns_to_df(X, arrays)`, or replace existing columns with
+  `replace_columns_in_df(X, arrays)`. Reorder or subset columns with
   `subset_df(X, variables)`, and remove them with
   `drop_variables_from_df(X, variables)`.
-- Adding new columns and replacing existing ones are separate helpers. Replacing
-  columns, as discretisers and encoders do, needs its own helper
-  (`replace_columns_in_df`), added by the first PR that needs it.
+- `transform` returns the columns in the order of the train set: call
+  `subset_df(X, self.feature_names_in_)` after the input checks, and test it
+  with the columns in a different order.
 - Add many columns to a pandas dataframe in one go, never one at a time: it
   fragments the dataframe, which users have reported. Keep the tests that check
   for pandas' `PerformanceWarning`.
 - Work on missing data, categories and strings stays in the dataframe library,
-  written once with narwhals.
+  written once with narwhals. Wrap the dataframe from `check_X` once with
+  `nw.from_native(X, eager_only=True)` for that code.
 - When pandas keeps a native fast path, it goes inside a helper, never in a
   transformer. On the dataframe from `check_X`, branch with
   `if not isinstance(X, nw.DataFrame):` (anything that is not narwhals is pandas
   there), comment it with `# pandas is faster than narwhals.` and put the
   narwhals code in `else`. Don't call `nwd.is_pandas_dataframe` on it: it warns
   the user when it receives a narwhals dataframe.
-- The shared variable and NaN checks also receive native polars dataframes from
-  modules not converted yet, so there "not narwhals" doesn't mean pandas. They
-  branch with
-  `if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X) is True:`.
+- The variable checks in `feature_engine/variable_handling` also receive native
+  polars dataframes from modules not converted yet, so there "not narwhals"
+  doesn't mean pandas. They branch with
+  `if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):`.
 - Add a helper in the PR that first needs it, with tests on both backends in
-  `tests/test_dataframe_helpers.py`.
-- To use the target together with `X`, call `add_target_to_X(X, y)` from
+  `tests/test_dataframe_helpers.py`, or in the module's tests for a module's
+  own helpers.
+- To use the target together with `X`, call
+  `add_target_to_X(nw.from_native(X, eager_only=True), y)` from
   `feature_engine/encoding/_helper_functions.py` and read it with `TARGET_NAME`.
   It works for series, list and array targets, and with pandas the column takes
   the index of `X`. Don't write this pairing again in a transformer.
@@ -136,7 +142,7 @@ ask — don't guess and defensively code around it.
 - Narwhals' `.columns` is already `list[str]` — don't wrap it in `list()`.
 - pandas' `.columns` is an `Index`, not a list — `list()` is required there
   (an `Index == list` comparison is elementwise, not a clean bool).
-- The dataframe from `check_X` can be pandas, so use `get_column_names(X)` when
+- The dataframe from `check_X` can be pandas, so use `list(X.columns)` when
   you need its columns as a list.
 
 ## Keep tests passing when you change a function or class
