@@ -1,5 +1,3 @@
-# Authors: dodoarg <eargiolas96@gmail.com>
-
 from typing import List, Optional, Union
 
 import narwhals as nw
