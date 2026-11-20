@@ -194,12 +194,6 @@ def map_categories_in_df(
                     values = values.astype("float")
             if default is not None:
                 values = values.fillna(default)
-                # the missing values made the column float; integers come back.
-                integers = [*mapping.values(), default]
-                if values.dtype.kind == "f" and all(
-                    isinstance(v, (int, np.integer)) for v in integers
-                ):
-                    values = values.astype("int64")
             new_columns[var] = values.to_numpy()
         return replace_columns_in_df(X, new_columns)
     else:

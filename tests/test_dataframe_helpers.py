@@ -321,11 +321,3 @@ def test_add_category_to_df_returns_the_same_dataframe_without_pandas_categories
     X = check_X(make_df(DATA))
 
     assert add_category_to_df(X, ["var_c"], "Rare") is X
-
-
-def test_map_categories_in_df_keeps_pandas_integers_when_default_is_integer():
-    X = pd.DataFrame({"var_c": ["x", "w", "y"]})
-
-    Xt = map_categories_in_df(check_X(X), {"var_c": {"x": 1, "y": 2}}, default=-1)
-
-    pd.testing.assert_frame_equal(Xt, pd.DataFrame({"var_c": [1, -1, 2]}))
