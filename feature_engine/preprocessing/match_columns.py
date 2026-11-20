@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -225,20 +224,20 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         y: None
             y is not needed for this transformer. You can pass y or None.
         """
-        nw_X = check_X(X)
+        X = check_X(X)
 
         if self.missing_values == "raise":
-            _check_contains_na(X, nw_X.columns)
+            _check_contains_na(X, list(X.columns))
 
-        self.feature_names_in_: List[Union[str, int]] = nw_X.columns
-        self.n_features_in_ = nw_X.shape[1]
+        self.feature_names_in_: List[Union[str, int]] = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         if self.match_dtypes is True:
             # narwhals dtypes don't carry the categories of pandas categoricals.
-            if nwd.is_pandas_dataframe(X) is True:
+            if not isinstance(X, nw.DataFrame):
                 self._dtype_dict: Dict = X.dtypes.to_dict()
             else:
-                self._dtype_dict = dict(nw_X.schema)
+                self._dtype_dict = dict(X.schema)
 
         return self
 
@@ -260,8 +259,8 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         """
         check_is_fitted(self)
 
-        nw_X = check_X(X)
-        columns = set(nw_X.columns)
+        X = check_X(X)
+        columns = set(X.columns)
 
         if self.missing_values == "raise":
             # Variables from the train set may be missing from X.
@@ -271,7 +270,7 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         train_columns = set(self.feature_names_in_)
         _columns_to_add = [var for var in self.feature_names_in_ if var not in columns]
-        _columns_to_drop = [var for var in nw_X.columns if var not in train_columns]
+        _columns_to_drop = [var for var in X.columns if var not in train_columns]
 
         if self.verbose is True:
             if len(_columns_to_add) > 0:
@@ -285,8 +284,10 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                     f"{_columns_to_drop}"
                 )
 
-        if nwd.is_pandas_dataframe(X) is True:
-            # pandas is faster than narwhals.
+        # pandas is faster than narwhals.
+        if not isinstance(X, nw.DataFrame):
+            # reindex returns a new dataframe, so _match_dtypes_pandas doesn't
+            # modify the user's data.
             X = X.reindex(columns=self.feature_names_in_, fill_value=self.fill_value)
             if self.match_dtypes is True:
                 X = self._match_dtypes_pandas(X)
@@ -294,13 +295,13 @@ class MatchVariables(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         if len(_columns_to_add) > 0:
             fill_value = self._fill_value_expression()
-            nw_X = nw_X.with_columns(fill_value.alias(var) for var in _columns_to_add)
-        nw_X = nw_X.select(self.feature_names_in_)
+            X = X.with_columns(fill_value.alias(var) for var in _columns_to_add)
+        X = X.select(self.feature_names_in_)
 
         if self.match_dtypes is True:
-            nw_X = self._match_dtypes_narwhals(nw_X)
+            X = self._match_dtypes_narwhals(X)
 
-        return nw_X.to_native()
+        return X.to_native()
 
     def _fill_value_expression(self) -> nw.Expr:
         if isinstance(self.fill_value, float) and np.isnan(self.fill_value):

@@ -28,6 +28,7 @@ from feature_engine._docstrings.methods import (
     _inverse_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 
 
 @Substitution(
@@ -154,21 +155,17 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        nw_X, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
-        if len(variables_) == 0:
-            # return_empty=True can leave variables_ empty; narwhals' select([])
-            # collapses row count too, so .to_numpy() would reduce over 0 rows.
-            mean_: dict = {}
-            range_: dict = {}
-        else:
-            values = nw_X.select(nw.col(variables_)).to_numpy()
-            mean_arr = values.mean(axis=0)
-            range_arr = values.max(axis=0) - values.min(axis=0)
-            # .tolist() converts numpy scalars to plain Python int/float,
-            # matching the dtype the old pandas .to_dict() used to return.
-            mean_ = dict(zip(variables_, mean_arr.tolist()))
-            range_ = dict(zip(variables_, range_arr.tolist()))
+        arrays = to_numpy(X, variables_)
+        # .item() returns plain Python numbers, not numpy scalars.
+        mean_: dict = {
+            var: values.mean().item() for var, values in zip(variables_, arrays)
+        }
+        range_: dict = {
+            var: (values.max() - values.min()).item()
+            for var, values in zip(variables_, arrays)
+        }
 
         # check for constant columns
         constant_columns = [col for col, value in range_.items() if value == 0]
@@ -181,7 +178,8 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
         self.variables_ = variables_
         self.mean_ = mean_
         self.range_ = range_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -200,20 +198,16 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        nw_X = self._check_transform_input_and_state(X)
-
-        # transformation
-        new_series = [
-            nw.new_series(
-                var,
-                (nw_X.get_column(var).to_numpy() - self.mean_[var]) / self.range_[var],
-                backend=nw_X.implementation,
-            )
-            for var in self.variables_
-        ]
-        nw_X = nw_X.with_columns(*new_series)
-
-        return nw_X.to_native()
+        X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
+        X = replace_columns_in_df(
+            X,
+            {
+                var: (values - self.mean_[var]) / self.range_[var]
+                for var, values in zip(self.variables_, arrays)
+            },
+        )
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -230,20 +224,16 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
             The dataframe with the transformed variables.
         """
 
-        nw_X = self._check_transform_input_and_state(X)
-
-        # inverse transform
-        new_series = [
-            nw.new_series(
-                var,
-                nw_X.get_column(var).to_numpy() * self.range_[var] + self.mean_[var],
-                backend=nw_X.implementation,
-            )
-            for var in self.variables_
-        ]
-        nw_X = nw_X.with_columns(*new_series)
-
-        return nw_X.to_native()
+        X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
+        X = replace_columns_in_df(
+            X,
+            {
+                var: values * self.range_[var] + self.mean_[var]
+                for var, values in zip(self.variables_, arrays)
+            },
+        )
+        return nw.to_native(X, pass_through=True)
 
 
 # TODO: remove in version 2.1.0
