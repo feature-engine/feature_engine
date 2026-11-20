@@ -36,7 +36,6 @@ without importing it.
   narwhals dataframe for any other library. Bind it as `X = check_X(X)`, use
   that `X` everywhere after (the variable and NaN checks accept it), and return
   `nw.to_native(X, pass_through=True)`.
-- Store the training columns with `self.feature_names_in_ = get_column_names(X)`.
 - With pandas, `X` is the user's dataframe, so never write into it: no
   assignments, `.loc` writes or `inplace=True`, and don't write into the arrays
   from `to_numpy`. Build new dataframes instead, as the helpers do. pandas 2.3,
