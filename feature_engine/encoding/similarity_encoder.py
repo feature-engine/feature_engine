@@ -4,7 +4,6 @@ from typing import List, Optional, Union
 import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -19,6 +18,7 @@ from feature_engine._docstrings.init_parameters.encoders import _ignore_format_d
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine.dataframe_helpers import add_columns_to_df, drop_variables_from_df
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixin,
     CategoricalMethodsMixin,
@@ -259,7 +259,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             Target. It is not needed in this encoder. You can pass y or None.
         """
 
-        nw_X = check_X(X)
+        X = check_X(X)
         variables_ = self._check_or_select_variables(X)
 
         if self.keywords and not all(
@@ -282,6 +282,7 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         else:
             cols_to_iterate = variables_
 
+        nw_X = nw.from_native(X, eager_only=True)
         # cast(nw.String) keeps nulls as nulls, unlike pandas' astype(str)
         for var in cols_to_iterate:
             col = nw_X.get_column(var)
@@ -322,17 +323,18 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             original categorical ones.
         """
 
-        check_is_fitted(self)
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
         if len(self.variables_) == 0:
-            return nw_X.to_native()
+            return nw.to_native(X, pass_through=True)
+
+        nw_X = nw.from_native(X, eager_only=True)
 
         # difflib has no vectorised equivalent, so similarities are computed in numpy
         # once per unique value, then mapped back to the rows
-        new_series = []
+        new_columns = {}
         for var in self.variables_:
             col = nw_X.get_column(var)
             categories = self.encoder_dict_[var]
@@ -363,13 +365,12 @@ class StringSimilarityEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
             for j, category in enumerate(categories):
                 name = f"{var}_nan" if category == "" else f"{var}_{category}"
-                new_series.append(
-                    nw.new_series(name, encoded[:, j], backend=nw_X.implementation)
-                )
+                new_columns[name] = encoded[:, j]
 
-        nw_X = nw_X.with_columns(*new_series).drop(self.variables_)
+        X = add_columns_to_df(X, new_columns)
+        X = drop_variables_from_df(X, self.variables_)
 
-        return nw_X.to_native()
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List[str]:
         """Return names of the created features."""

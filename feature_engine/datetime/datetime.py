@@ -30,7 +30,11 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.dataframe_helpers import add_columns_to_df, drop_variables_from_df
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    subset_df,
+)
 from feature_engine.datetime._datetime_constants import (
     FEATURES_DEFAULT,
     FEATURES_FUNCTIONS,
@@ -330,6 +334,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         check_is_fitted(self)
         X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
+        X = subset_df(X, self.feature_names_in_)
 
         if self.variables == "index":
             index = index_to_datetime_numpy(

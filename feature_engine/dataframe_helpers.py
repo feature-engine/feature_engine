@@ -155,3 +155,90 @@ def replace_columns_in_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFr
             nw.new_series(name, values, backend=X.implementation)
             for name, values in arrays.items()
         )
+
+
+def map_categories_in_df(
+    X: DataFrame, mappings: Dict[Any, Dict[Any, Any]], default: Any = None
+) -> DataFrame:
+    """
+    Replaces the categories of existing columns with the values in a mapping.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    mappings : dict
+        The names of the columns to replace and, for each column, a dictionary
+        with the categories as keys and their new values.
+
+    default : default=None
+        The value for categories that are not in the mapping, and for missing
+        values. If None, they become missing values.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        A new dataframe with the replaced columns, in the original column order.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        new_columns = {}
+        for var, mapping in mappings.items():
+            values = X[var].map(mapping)
+            # a categorical column stays categorical after map().
+            if values.dtype.name == "category":
+                if all(isinstance(x, int) for x in values):
+                    values = values.astype("int")
+                else:
+                    values = values.astype("float")
+            if default is not None:
+                values = values.fillna(default)
+                # the missing values made the column float; integers come back.
+                integers = [*mapping.values(), default]
+                if values.dtype.kind == "f" and all(
+                    isinstance(v, (int, np.integer)) for v in integers
+                ):
+                    values = values.astype("int64")
+            new_columns[var] = values.to_numpy()
+        return replace_columns_in_df(X, new_columns)
+    else:
+        return X.with_columns(
+            X.get_column(var).replace_strict(mapping, default=default)
+            for var, mapping in mappings.items()
+        )
+
+
+def add_category_to_df(
+    X: DataFrame, variables: Sequence[Union[str, int]], category: Any
+) -> DataFrame:
+    """
+    Adds a category to the categorical variables, so that their values can be
+    replaced by it. Only pandas categorical columns need this: the other columns,
+    and the other libraries, take the new value as is.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the variables that will take the new category.
+
+    category :
+        The new category.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        The dataframe with the new category in its pandas categorical variables.
+    """
+    if not isinstance(X, nw.DataFrame):
+        new_columns = {
+            var: X[var].cat.add_categories(category)
+            for var in variables
+            if X[var].dtype.name == "category"
+        }
+        if len(new_columns) > 0:
+            return replace_columns_in_df(X, new_columns)
+    return X
