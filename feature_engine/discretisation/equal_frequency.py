@@ -33,6 +33,7 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import to_numpy
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
@@ -170,7 +171,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
             y is not needed in this encoder. You can pass y or None.
         """
 
-        nw_X, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
         quantiles = np.linspace(0, 1, self.q + 1)
         # pandas.qcut nudges each quantile that isn't exactly representable in
         # base 2 up via nextafter, to round up rather than to nearest (verified
@@ -184,13 +185,12 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
 
         binner_dict_ = {}
 
-        for var in variables_:
+        for var, values in zip(variables_, to_numpy(X, variables_)):
             # _fit_setup() already rejects NaN in variables_, so no NaN-masking
             # is needed here. np.quantile replicates pandas.qcut's own quantile
             # computation (verified bit-exact against real pd.qcut(retbins=True)
             # output); np.unique both sorts and drops duplicate edges, matching
             # qcut(duplicates="drop").
-            values = nw_X.get_column(var).to_numpy()
             bins = np.unique(np.quantile(values, quantiles, method="linear"))
 
             # Prepend/Append infinities to accommodate outliers
@@ -201,6 +201,7 @@ class EqualFrequencyDiscretiser(BaseDiscretiser):
 
         self.binner_dict_ = binner_dict_
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self

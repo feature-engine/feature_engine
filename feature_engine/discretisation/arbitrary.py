@@ -5,7 +5,6 @@ import warnings
 from typing import Dict, List, Optional, Union
 
 import narwhals as nw
-import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.mixins import FitFromDictMixin
@@ -26,6 +25,7 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.tags import _return_tags
 
@@ -174,12 +174,13 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         y: None
             y is not needed in this transformer. You can pass y or None.
         """
-        _, variables_ = super()._fit_from_dict(X, self.binning_dict)
+        X, variables_ = super()._fit_from_dict(X, self.binning_dict)
 
         self.variables_ = variables_
         # for consistency with the rest of the discretisers, we add this attribute
         self.binner_dict_ = self.binning_dict
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -198,27 +199,18 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
             The transformed data with the discrete variables.
         """
 
-        X = super().transform(X)
+        X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
 
-        # check if NaN values were introduced by the discretisation procedure.
-        nw_X = nw.from_native(X, eager_only=True)
-        if self.return_boundaries is True:
-            # missing labels are set to None by _bin_labels()
-            nan_columns = [
-                var
-                for var in self.variables_
-                if nw_X.get_column(var).is_null().any()
-            ]
-        else:
-            # codes are numeric; when return_object=True they're boxed as
-            # python floats in an Object column, where polars' is_null()/
-            # is_nan() can't see NaN - a numpy float cast is reliable on
-            # both backends.
-            nan_columns = [
-                var
-                for var in self.variables_
-                if np.isnan(nw_X.get_column(var).to_numpy().astype(float)).any()
-            ]
+        # values outside the interval limits are returned as NaN.
+        nan_columns = [
+            var
+            for var, values in zip(self.variables_, arrays)
+            if (
+                (values < self.binner_dict_[var][0])
+                | (values > self.binner_dict_[var][-1])
+            ).any()
+        ]
 
         if len(nan_columns) > 0:
             if len(nan_columns) > 1:
@@ -238,7 +230,8 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
                     f"the feature(s) {nan_columns_str}."
                 )
 
-        return X
+        X = replace_columns_in_df(X, self._discretise(arrays))
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

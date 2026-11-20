@@ -1,21 +1,22 @@
 # Authors: Morgan Sell <morganpsell@gmail.com>
 # License: BSD 3 clause
 
-from typing import List
+from typing import Any, Dict, List
 
 import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 
 
 class BaseDiscretiser(BaseNumericalTransformer):
     """
     Shared set-up checks and methods across numerical discretisers.
 
-    Important: inherits _fit_setup(), _get_feature_names_in() and tags from
-    BaseNumericalTransformer. Subclasses implement fit() themselves.
+    Important: inherits _fit_setup() and tags from BaseNumericalTransformer.
+    Subclasses implement fit() themselves.
     """
 
     def __init__(
@@ -59,48 +60,22 @@ class BaseDiscretiser(BaseNumericalTransformer):
             The transformed data with the discrete variables.
         """
 
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
+        X = replace_columns_in_df(X, self._discretise(arrays))
+        return nw.to_native(X, pass_through=True)
 
-        # bin edges are already fixed by fit(), so sorting values into them is a
-        # plain numpy searchsorted - vectorizable identically for every backend,
-        # no pandas/polars-specific path needed.
-        native_namespace = nw_X.__native_namespace__()
-
+    def _discretise(self, arrays: List[np.ndarray]) -> Dict[Any, np.ndarray]:
+        """Sort the values of each variable into its intervals."""
         if self.return_boundaries is True:
-            new_columns = [
-                nw.new_series(
-                    feature,
-                    self._bin_labels(
-                        nw_X.get_column(feature).to_numpy(),
-                        self.binner_dict_[feature],
-                        self.precision,
-                    ),
-                    backend=native_namespace,
-                )
-                for feature in self.variables_
-            ]
-        else:
-            # nw.Object mirrors the pandas "O" dtype astype() used to produce,
-            # and is what feature-engine's categorical encoders detect on
-            # every narwhals-supported backend (see variable_handling).
-            dtype = nw.Object if self.return_object is True else None
-            new_columns = [
-                nw.new_series(
-                    feature,
-                    self._bin_codes(
-                        nw_X.get_column(feature).to_numpy(),
-                        self.binner_dict_[feature],
-                        self.return_object,
-                    ),
-                    dtype=dtype,
-                    backend=native_namespace,
-                )
-                for feature in self.variables_
-            ]
-
-        X = nw_X.with_columns(*new_columns).to_native()
-
-        return X
+            return {
+                var: self._bin_labels(values, self.binner_dict_[var], self.precision)
+                for var, values in zip(self.variables_, arrays)
+            }
+        return {
+            var: self._bin_codes(values, self.binner_dict_[var], self.return_object)
+            for var, values in zip(self.variables_, arrays)
+        }
 
     def _digitize(self, values: np.ndarray, bins_arr: np.ndarray):
         """0-based bin index per value, right-closed intervals with the lowest edge

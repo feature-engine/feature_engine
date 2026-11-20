@@ -3,8 +3,6 @@
 
 from typing import List, Optional, Union
 
-import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
@@ -35,6 +33,7 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import to_numpy
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
@@ -181,25 +180,17 @@ class EqualWidthDiscretiser(BaseDiscretiser):
             y is not needed in this encoder. You can pass y or None.
         """
 
-        nw_X, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
-        # fit
-        binner_dict_ = {}
-
-        if len(variables_) > 0:
-            # one call for all variables; pandas is faster than narwhals here
-            if nwd.is_pandas_dataframe(X) is True:
-                arr = X[variables_].to_numpy()
-            else:
-                arr = nw_X.select(nw.col(variables_)).to_numpy()
-            mins = arr.min(axis=0)
-            maxs = arr.max(axis=0)
-            for var, mn, mx in zip(variables_, mins, maxs):
-                binner_dict_[var] = self._equal_width_edges(mn, mx, self.bins)
+        binner_dict_ = {
+            var: self._equal_width_edges(values.min(), values.max(), self.bins)
+            for var, values in zip(variables_, to_numpy(X, variables_))
+        }
 
         self.binner_dict_ = binner_dict_
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
