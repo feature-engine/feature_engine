@@ -8,6 +8,7 @@ from sklearn.utils.estimator_checks import check_estimator
 
 from feature_engine.preprocessing import MatchCategories, MatchVariables
 from feature_engine.tags import _return_tags
+from tests.backend_helpers import frame_to_dict
 from tests.estimator_checks.estimator_checks import (
     check_feature_engine_estimator,
     test_df,
@@ -78,3 +79,24 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+_REORDER_DATA = {
+    "var_A": ["a", "b", "c", "a"],
+    "var_B": ["x", "y", "x", "y"],
+    "num": [1.0, 2.0, 3.0, 4.0],
+}
+
+
+@pytest.mark.parametrize("transformer", [MatchCategories(), MatchVariables()])
+def test_transform_reorders_columns_as_in_train_set(make_df, transformer):
+    X = make_df(_REORDER_DATA)
+    expected = transformer.fit(X).transform(X)
+
+    reordered = ["num", "var_B", "var_A"]
+    X_reordered = make_df({var: _REORDER_DATA[var] for var in reordered})
+    Xt = transformer.transform(X_reordered)
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == list(expected.columns)
+    assert frame_to_dict(Xt) == frame_to_dict(expected)
