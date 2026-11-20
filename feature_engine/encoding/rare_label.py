@@ -24,6 +24,7 @@ from feature_engine._docstrings.init_parameters.encoders import _ignore_format_d
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X
+from feature_engine.dataframe_helpers import add_category_to_df
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -222,9 +223,10 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             y is not required. You can pass y or None.
         """
 
-        nw_X = check_X(X)
+        X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
+        nw_X = nw.from_native(X, eager_only=True)
 
         self.encoder_dict_ = {}
 
@@ -281,22 +283,13 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             The dataframe where rare categories have been grouped.
         """
 
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
 
-        # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
-        # pandas categorical columns need replace_with added to their categories;
-        # work on a copy so the user's dataframe is not changed
-        if nw_X.implementation.is_pandas():
-            native_X = nw_X.to_native().copy()
-            for feature in self.variables_:
-                if native_X[feature].dtype == "category":
-                    native_X[feature] = native_X[feature].cat.add_categories(
-                        self.replace_with
-                    )
-            nw_X = nw.from_native(native_X, eager_only=True)
+        X = add_category_to_df(X, self.variables_, self.replace_with)
+        nw_X = nw.from_native(X, eager_only=True)
 
         # narwhals resolves the dtype when mixing each column with replace_with;
         # series from get_column() also work with pandas integer column names
@@ -312,9 +305,7 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 )
             )
 
-        X = nw_X.with_columns(*new_columns).to_native()
-
-        return X
+        return nw.to_native(nw_X.with_columns(*new_columns))
 
     def inverse_transform(self, X: IntoDataFrame):
         """inverse_transform is not implemented for this transformer."""

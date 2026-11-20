@@ -31,7 +31,11 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.dataframe_helpers import add_columns_to_df, drop_variables_from_df
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    subset_df,
+)
 from feature_engine.datetime._datetime_helpers import datetime_to_numpy
 from feature_engine.variable_handling.check_variables import check_datetime_variables
 from feature_engine.variable_handling.find_variables import find_datetime_variables
@@ -311,6 +315,7 @@ class DatetimeSubtraction(BaseCreation):
         check_is_fitted(self)
         X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
+        X = subset_df(X, self.feature_names_in_)
 
         variables = list(set(self.variables_ + self.reference_))
         if self.missing_values == "raise":

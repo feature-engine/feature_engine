@@ -3,11 +3,14 @@ import warnings
 import narwhals as nw
 import numpy as np
 import pandas as pd
+import pytest
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine.dataframe_helpers import (
+    add_category_to_df,
     add_columns_to_df,
     drop_variables_from_df,
+    map_categories_in_df,
     replace_columns_in_df,
     subset_df,
     to_numpy,
@@ -232,3 +235,89 @@ def test_replace_columns_in_df_does_not_fragment_pandas_dataframe():
 
     assert list(Xt.columns) == list(X.columns)
     assert Xt["var_0"].tolist() == [4, 5, 6]
+
+
+# ------------------------
+# map_categories_in_df
+# ------------------------
+
+
+def test_map_categories_in_df_replaces_categories_and_keeps_column_order(make_df):
+    X = make_df(DATA)
+
+    Xt = to_native(
+        map_categories_in_df(check_X(X), {"var_c": {"x": 1, "y": 2, "z": 3}})
+    )
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == ["var_a", "var_b", "var_c"]
+    assert frame_to_dict(Xt) == {**DATA, "var_c": [1, 2, 3]}
+    assert frame_to_dict(X) == DATA
+
+
+@pytest.mark.parametrize(
+    "default, expected", [(None, [1, None, None]), (-1, [1, -1, -1])]
+)
+def test_map_categories_in_df_with_unseen_categories_and_nulls(
+    make_df, default, expected
+):
+    X = make_df({"var_c": ["x", "w", None]})
+
+    Xt = to_native(
+        map_categories_in_df(check_X(X), {"var_c": {"x": 1, "y": 2}}, default=default)
+    )
+
+    assert frame_to_dict(Xt) == {"var_c": expected}
+
+
+def test_map_categories_in_df_returns_numbers_for_pandas_categorical_columns():
+    X = pd.DataFrame(
+        {"var_c": pd.Categorical(["x", "y", "x"]), "var_d": pd.Categorical(["x"] * 3)},
+        index=[10, 10, 30],
+    )
+
+    Xt = map_categories_in_df(
+        check_X(X), {"var_c": {"x": 1, "y": 2}, "var_d": {"x": 0.5}}
+    )
+
+    expected = pd.DataFrame(
+        {"var_c": [1, 2, 1], "var_d": [0.5, 0.5, 0.5]}, index=[10, 10, 30]
+    )
+    pd.testing.assert_frame_equal(Xt, expected)
+
+
+def test_map_categories_in_df_does_not_fragment_pandas_dataframe():
+    X = pd.DataFrame({f"var_{i}": ["x", "y", "x"] for i in range(150)})
+    mappings = {f"var_{i}": {"x": 0, "y": 1} for i in range(150)}
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", pd.errors.PerformanceWarning)
+        Xt = map_categories_in_df(check_X(X), mappings)
+
+    assert list(Xt.columns) == list(X.columns)
+    assert Xt["var_0"].tolist() == [0, 1, 0]
+
+
+# ------------------------
+# add_category_to_df
+# ------------------------
+
+
+def test_add_category_to_df_adds_category_to_pandas_categorical_columns():
+    X = pd.DataFrame(
+        {"var_c": pd.Categorical(["x", "y"]), "var_d": ["x", "y"]}, index=[10, 10]
+    )
+
+    Xt = add_category_to_df(check_X(X), ["var_c", "var_d"], "Rare")
+
+    assert list(Xt["var_c"].cat.categories) == ["x", "y", "Rare"]
+    assert Xt["var_d"].tolist() == ["x", "y"]
+    assert list(X["var_c"].cat.categories) == ["x", "y"]
+
+
+def test_add_category_to_df_returns_the_same_dataframe_without_pandas_categories(
+    make_df,
+):
+    X = check_X(make_df(DATA))
+
+    assert add_category_to_df(X, ["var_c"], "Rare") is X

@@ -308,7 +308,7 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             The target variable. Required to train the decision tree and for
             ordered ordinal encoding.
         """
-        nw_X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y)
 
         # confirm model type and target variables are compatible.
         if self.regression is True:
@@ -350,7 +350,10 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             random_state=self.random_state,
             n_jobs=self.n_jobs,
         )
-        Xt = Pipeline([("encoder", encoder), ("tree", tree)]).fit_transform(X, y)
+        Xt = Pipeline([("encoder", encoder), ("tree", tree)]).fit_transform(
+            nw.to_native(X, pass_through=True), y
+        )
+        nw_X = nw.from_native(X, eager_only=True)
         nw_Xt = nw.from_native(Xt, eager_only=True)
 
         # map each category to the prediction of its tree
@@ -390,11 +393,9 @@ class DecisionTreeEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         X_new: dataframe of shape = [n_samples, n_features].
             Dataframe with variables encoded with decision tree predictions.
         """
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        X = self._encode(nw_X)
-
-        return X
+        return self._encode(X)
 
     def _assign_param_grid(self):
         if self.param_grid:

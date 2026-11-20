@@ -4,6 +4,7 @@
 import warnings
 from typing import List, Optional, Union
 
+import narwhals as nw
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -219,9 +220,10 @@ class CountEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         y: Series, default = None
             y is not needed in this encoder. You can pass y or None.
         """
-        nw_X = check_X(X)
+        X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
+        nw_X = nw.from_native(X, eager_only=True)
 
         normalize = self.encoding_method == "frequency"
 

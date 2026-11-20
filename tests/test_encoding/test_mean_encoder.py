@@ -396,3 +396,15 @@ def test_inverse_transform_raises_non_fitted_error(make_df):
     # Test when fit is not called prior to transform.
     with pytest.raises(NotFittedError, match=re.escape(msg)):
         enc.inverse_transform(df1_na)
+
+
+def test_encodes_pandas_integer_column_names():
+    X = pd.DataFrame({0: ["a", "a", "b", "b"], 1: [1, 2, 3, 4]})
+    y = pd.Series([1, 0, 1, 1])
+
+    encoder = MeanEncoder(variables=[0]).fit(X, y)
+
+    assert encoder.encoder_dict_ == {0: {"a": 0.5, "b": 1.0}}
+    pd.testing.assert_frame_equal(
+        encoder.transform(X), pd.DataFrame({0: [0.5, 0.5, 1.0, 1.0], 1: [1, 2, 3, 4]})
+    )
