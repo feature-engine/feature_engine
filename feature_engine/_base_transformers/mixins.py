@@ -52,7 +52,7 @@ class TransformXyMixin:
             row_index_col = "__feature_engine_row_index__"
             nw_X = X.with_row_index(row_index_col)
             # the tag makes X one column wider than in fit, so widen the reference
-            # while transform() runs, and keep the tag when it reorders columns.
+            # while transform() runs.
             feature_names_in = self.feature_names_in_
             self.n_features_in_ += 1
             self.feature_names_in_ = feature_names_in + [row_index_col]
