@@ -42,7 +42,6 @@ class TransformXyMixin:
             as many rows as those left in X_new.
         """
         check_is_fitted(self)
-        # pandas comes back as is and other libraries as narwhals; y stays native.
         X, y = check_X_y(X, y)
 
         if not isinstance(X, nw.DataFrame):

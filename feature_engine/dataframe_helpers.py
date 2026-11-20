@@ -4,7 +4,7 @@ Transformers call these functions instead of handling each dataframe library
 themselves. A library-specific fast path, if one is needed, lives here.
 
 All functions take the dataframe returned by `check_X`: a pandas dataframe, or a
-narwhals dataframe for the other libraries. They return the same kind.
+narwhals dataframe for the other libraries.
 """
 
 from typing import Any, Dict, List, Sequence, Union
@@ -32,8 +32,8 @@ def to_numpy(X: DataFrame, variables: Sequence[Union[str, int]]) -> List[np.ndar
     Returns
     -------
     arrays : list
-        One 1D numpy array per variable, in the order of `variables`. The arrays
-        can share memory with the dataframe, so they must not be modified in place.
+        One 1D numpy array per variable, in the order of `variables`. Needed
+        to preserve dtype.
     """
     # pandas is faster than narwhals.
     if not isinstance(X, nw.DataFrame):
@@ -58,11 +58,11 @@ def add_columns_to_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
     Returns
     -------
     X : pandas or narwhals dataframe
-        The dataframe with the new columns. The input is not modified.
+        The dataframe with the new columns.
     """
     # pandas is faster than narwhals.
     if not isinstance(X, nw.DataFrame):
-        # adding the columns one by one fragments the dataframe
+        # add all columns at once to avoid fragmentation warning
         new_X = type(X)(arrays, index=X.index)
         return nwd.get_pandas().concat([X, new_X], axis=1)
     else:
@@ -74,7 +74,9 @@ def add_columns_to_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
 
 def subset_df(X: DataFrame, variables: Sequence[Union[str, int]]) -> DataFrame:
     """
-    Returns the dataframe with only the variables, in the order of `variables`.
+    Returns the dataframe with the variables in the order of `variables`.
+    Used in transform methods to ensure the output has the same order
+    of columns as the train set.
 
     Parameters
     ----------
@@ -82,7 +84,7 @@ def subset_df(X: DataFrame, variables: Sequence[Union[str, int]]) -> DataFrame:
         The dataframe returned by `check_X`.
 
     variables : list
-        The names of the variables to keep.
+        The names of the variables.
 
     Returns
     -------

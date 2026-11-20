@@ -35,7 +35,6 @@ def test_transform_x_y_single_target(make_df, make_series):
     assert len(Xt) == 4
     assert len(yt) == 4
     assert nw.from_native(yt, series_only=True).to_list() == [0, 1, 3, 5]
-    # the reference is widened for the row tag only while transform() runs
     assert transformer.n_features_in_ == 2
 
 
