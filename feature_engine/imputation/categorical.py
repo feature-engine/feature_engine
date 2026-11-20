@@ -72,31 +72,6 @@ def _column_modes(
         ]
 
 
-def _cast_to_object(X: DataFrame, variables: Sequence[Union[str, int]]) -> DataFrame:
-    """
-    Casts the variables to the object dtype. Only pandas has this dtype: the
-    other libraries return the dataframe as is.
-
-    Parameters
-    ----------
-    X : pandas or narwhals dataframe
-        The dataframe returned by `check_X`.
-
-    variables : list
-        The names of the variables.
-
-    Returns
-    -------
-    X : pandas or narwhals dataframe
-        The dataframe with the variables cast as object in pandas.
-    """
-    if not isinstance(X, nw.DataFrame):
-        return replace_columns_in_df(
-            X, {var: X[var].astype("O") for var in variables}
-        )
-    return X
-
-
 @Substitution(
     imputer_dict_=_imputer_dict_docstring,
     variables_=_variables_attribute_docstring,
@@ -289,8 +264,11 @@ class CategoricalImputer(BaseImputer):
             # pandas categorical variables need the fill value as a category.
             X = add_category_to_df(X, self.variables_, self.fill_value)
         X = fill_missing_in_df(X, self.imputer_dict_)
-        if self.return_object is True:
-            X = _cast_to_object(X, self.variables_)
+        # only pandas has the object dtype: other libraries keep their dtypes.
+        if self.return_object is True and not isinstance(X, nw.DataFrame):
+            X = replace_columns_in_df(
+                X, {var: X[var].astype("O") for var in self.variables_}
+            )
         return nw.to_native(X, pass_through=True)
 
     # Get docstring from BaseClass
