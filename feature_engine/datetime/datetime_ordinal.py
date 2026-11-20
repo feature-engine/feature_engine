@@ -2,7 +2,6 @@ import datetime
 from typing import List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from dateutil.parser import parse as _parse_datetime
 from narwhals.typing import IntoDataFrame, IntoSeries
@@ -33,14 +32,14 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.dataframe_helpers import add_columns_to_df, drop_variables_from_df
+from feature_engine.datetime._datetime_helpers import datetime_to_numpy
 from feature_engine.variable_handling.check_variables import check_datetime_variables
 from feature_engine.variable_handling.find_variables import find_datetime_variables
 
-# datetime.date(1970, 1, 1).toordinal() - the proleptic Gregorian ordinal of the
-# Unix epoch, used to convert epoch-based timestamps into the same "days since
-# January 1, 0001" ordinal that datetime.date.toordinal() returns.
+# datetime.date(1970, 1, 1).toordinal(): numpy counts days from 1970-01-01, and
+# toordinal() from January 1, 0001.
 _UNIX_EPOCH_ORDINAL = 719_163
-_MICROSECONDS_PER_DAY = 86_400_000_000
 
 
 @Substitution(
@@ -194,8 +193,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             It is not needed in this transformer. You can pass y or None.
 
         """
-        # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # parse the user-provided start_date into its ordinal representation.
         # datetime.datetime is a subclass of datetime.date, so both are handled
@@ -221,17 +219,11 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         else:
             self.variables_ = check_datetime_variables(X, self.variables)
 
-        # check if datetime variables contains na
-        # nw.col([]) errors on the polars backend, so skip when there's
-        # nothing to check (happens when return_empty=True found no variables).
-        if self.missing_values == "raise" and len(self.variables_) > 0:
+        if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
-        # save input features
-        self.feature_names_in_ = nw_X.columns
-
-        # save train set shape
-        self.n_features_in_ = nw_X.shape[1]
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -250,86 +242,34 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         X_new: dataframe, shape = [n_samples, n_features x n_df_features]
             The dataframe with the original variables plus the new features.
         """
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
-        nw_X = check_X(X)
-
-        # Check if input data contains same number of columns as dataframe used to fit.
+        X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
 
         if len(self.variables_) == 0:
-            return X
+            return nw.to_native(X, pass_through=True)
 
-        # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
-        # variables can be native Date/Datetime columns, or string/categorical
-        # columns holding parseable date values - the latter need parsing into
-        # a real datetime dtype before the ordinal can be computed.
-        schema = nw_X.schema
-        to_parse = [
-            var
-            for var in self.variables_
-            if not isinstance(schema[var], (nw.Date, nw.Datetime))
-        ]
-        if len(to_parse) > 0:
-            nw_X = nw_X.with_columns(
-                nw.col(var).cast(nw.String).str.to_datetime() for var in to_parse
-            )
-
-        if nwd.is_pandas_dataframe(X):
-            return self._transform_pandas(nw_X.to_native())
-        return self._transform_narwhals(nw_X)
-
-    def _transform_pandas(self, X):
-        """Vectorized ordinal computation via numpy datetime64[D] arithmetic.
-
-        Benchmarked ~3.5-12x faster than the narwhals-generic dt.timestamp path
-        at 10k-100k rows x 1-10 columns (the gap widens with more columns), so
-        pandas keeps its own numpy fast path here.
-        """
-        new_columns = {}
-        for var in self.variables_:
-            days = X[var].to_numpy().astype("datetime64[D]")
+        new_features = {}
+        for var, values in zip(self.variables_, datetime_to_numpy(X, self.variables_)):
+            days: np.ndarray = values.astype("datetime64[D]")
             na_mask = np.isnat(days)
-            ordinal = days.astype("int64") + _UNIX_EPOCH_ORDINAL
+            ordinal: np.ndarray = days.astype("int64") + _UNIX_EPOCH_ORDINAL
             if self.start_date_ordinal_ is not None:
                 ordinal = ordinal - self.start_date_ordinal_ + 1
-            if na_mask.any():
-                # int64 arithmetic on the NaT sentinel can wrap around, but that's
-                # harmless - the masked slots are overwritten with NaN right after.
+            if bool(na_mask.any()) is True:
+                # NaT becomes a large negative integer; it's replaced by NaN.
                 ordinal = ordinal.astype("float64")
                 ordinal[na_mask] = np.nan
-            new_columns[str(var) + "_ordinal"] = ordinal
+            new_features[str(var) + "_ordinal"] = ordinal
 
-        # assign() still inserts columns one at a time internally, so it doesn't
-        # avoid fragmentation with many variables; building one DataFrame and
-        # joining it does (single insertion), same pattern as DecisionTreeFeatures.
-        X = X.join(type(X)(new_columns, index=X.index))
+        X = add_columns_to_df(X, new_features)
         if self.drop_original is True:
-            X = X.drop(columns=self.variables_)
-        return X
+            X = drop_variables_from_df(X, self.variables_)
 
-    def _transform_narwhals(self, nw_X):
-        """Ordinal computation via narwhals' dt.timestamp, already vectorized and
-        fast enough on polars that a numpy round-trip wouldn't pay for itself."""
-        exprs = []
-        for var in self.variables_:
-            ordinal_expr = (
-                nw.col(var).dt.timestamp("us") // _MICROSECONDS_PER_DAY
-                + _UNIX_EPOCH_ORDINAL
-            )
-            if self.start_date_ordinal_ is not None:
-                ordinal_expr = ordinal_expr - self.start_date_ordinal_ + 1
-            exprs.append(ordinal_expr.alias(str(var) + "_ordinal"))
-
-        nw_X = nw_X.with_columns(*exprs)
-        if self.drop_original is True:
-            nw_X = nw_X.drop(self.variables_)
-        return nw_X.to_native()
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """create the names for the new features."""
