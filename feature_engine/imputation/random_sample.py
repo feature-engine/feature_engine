@@ -2,11 +2,12 @@
 # License: BSD 3 clause
 
 import hashlib
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast
 
-import narwhals.dependencies as nwd
+import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
+from sklearn.utils import check_random_state
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -28,6 +29,11 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import (
+    fill_positions_from_df,
+    missing_values_mask,
+    subset_df,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
@@ -224,7 +230,7 @@ class RandomSampleImputer(BaseImputer):
         """
 
         # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # find variables to impute
         if self.variables is None:
@@ -233,10 +239,7 @@ class RandomSampleImputer(BaseImputer):
             variables_ = check_all_variables(X, self.variables)
 
         # take a copy of the selected variables
-        if nwd.is_pandas_dataframe(X):
-            X_ = X[variables_].copy()
-        else:
-            X_ = nw_X.select(variables_)
+        X_ = subset_df(X, variables_)
 
         # check the variables assigned to the random state
         if self.seed == "observation":
@@ -254,7 +257,8 @@ class RandomSampleImputer(BaseImputer):
 
         self.variables_ = variables_
         self.X_ = X_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -274,102 +278,43 @@ class RandomSampleImputer(BaseImputer):
             The dataframe without missing values in the transformed variables.
         """
 
-        nw_X = self._transform(X)
+        X = self._transform(X)
 
-        if nwd.is_pandas_dataframe(X):
-            X = self._transform_pandas(X)
-        else:
-            X = self._transform_narwhals(nw_X)
+        # without variables to derive the seeds from, nothing is imputed.
+        if self.seed == "observation" and not self.random_state:
+            return nw.to_native(X, pass_through=True)
 
-        return X
+        if self.seed == "observation":
+            # seeds come from the values before any variable is imputed; fit()
+            # stores the seed variables as a list.
+            seed_variables = cast(List[Union[str, int]], self.random_state)
+            seeds = _hash_seeds(subset_df(X, seed_variables).to_numpy())
 
-    def _transform_pandas(self, X):
-        # copy first: the .loc assignments below fill NaNs in place, and
-        # BaseImputer._transform no longer returns a copy (#1002), so without
-        # this the caller's dataframe (and self.X_ when it is the same object)
-        # would be mutated.
-        X = X.copy()
+        is_missing = missing_values_mask(X, self.variables_)
+        is_missing_train = missing_values_mask(self.X_, self.variables_)
 
-        # random sampling with a general seed
-        if self.seed == "general":
-            for feature in self.variables_:
-                if X[feature].isnull().sum() > 0:
-                    # determine number of data points to extract at random
-                    n_samples = X[feature].isnull().sum()
-
-                    # extract values
-                    random_sample = (
-                        self.X_[feature]
-                        .dropna()
-                        .sample(n_samples, replace=True, random_state=self.random_state)
-                    )
-                    # re-index: pandas needs this to add the values to the right
-                    # observations
-                    random_sample.index = X[X[feature].isnull()].index
-
-                    # replace na
-                    X.loc[X[feature].isnull(), feature] = random_sample
-
-        # random sampling observation per observation
-        elif self.seed == "observation" and self.random_state:
-            # seeds come from the values before any variable is imputed; rows are
-            # addressed by position, so duplicated index labels don't matter
-            seeds = _hash_seeds(X[self.random_state].to_numpy())
-            for feature in self.variables_:
-                is_null = X[feature].isnull().to_numpy()
-                if is_null.any():
-                    pool = self.X_[feature].dropna()
-                    positions = np.flatnonzero(is_null)
-                    random_values = [
-                        pool.sample(
-                            1, replace=True, random_state=int(seeds[pos])
-                        ).iloc[0]
+        fills = {}
+        for i, feature in enumerate(self.variables_):
+            positions = np.flatnonzero(is_missing[:, i])
+            if len(positions) == 0:
+                continue
+            # the rows of the train set with values to sample from
+            pool = np.flatnonzero(~is_missing_train[:, i])
+            # numpy's choice() draws the same values as pandas' sample().
+            if self.seed == "general":
+                random_state = check_random_state(self.random_state)
+                idx = random_state.choice(len(pool), size=len(positions))
+            else:
+                idx = np.concatenate(
+                    [
+                        np.random.RandomState(int(seeds[pos])).choice(len(pool), 1)
                         for pos in positions
                     ]
-                    X.iloc[positions, X.columns.get_loc(feature)] = random_values
-        return X
+                )
+            fills[feature] = (positions, pool[idx])
 
-    def _transform_narwhals(self, X):
-
-        if self.seed == "general":
-            for feature in self.variables_:
-                col = X[feature]
-                null_mask = col.is_null()
-                n_samples = int(null_mask.sum())
-                if n_samples > 0:
-                    positions = null_mask.arg_true()
-                    random_sample = (
-                        self.X_[feature]
-                        .drop_nulls()
-                        .sample(
-                            n_samples, with_replacement=True, seed=self.random_state
-                        )
-                    )
-                    # reassign X so each variable's imputation is carried over
-                    # to the next iteration
-                    X = X.with_columns(col.scatter(positions, random_sample))
-
-        elif self.seed == "observation" and self.random_state:
-            # seeds come from the values before any variable is imputed
-            internal_seeds = _hash_seeds(X.select(self.random_state).to_numpy())
-
-            for feature in self.variables_:
-                col = X[feature]
-                null_mask = col.is_null()
-                if int(null_mask.sum()) > 0:
-                    positions = null_mask.arg_true().to_list()
-                    pool = self.X_[feature].drop_nulls()
-                    random_values = [
-                        pool.sample(
-                            1, with_replacement=True, seed=int(internal_seeds[pos])
-                        ).item()
-                        for pos in positions
-                    ]
-                    # reassign X so each variable's imputation is carried over
-                    # to the next iteration
-                    X = X.with_columns(col.scatter(positions, random_values))
-
-        return X.to_native()
+        X = fill_positions_from_df(X, self.X_, fills)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

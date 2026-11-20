@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 import warnings
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -24,6 +23,10 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import (
+    add_missing_indicators_to_df,
+    missing_values_count,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
@@ -167,7 +170,7 @@ class MissingIndicator(BaseImputer):
         """
 
         # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # find variables for which indicator should be added
         if self.variables is None:
@@ -176,24 +179,12 @@ class MissingIndicator(BaseImputer):
             variables_ = check_all_variables(X, self.variables)
 
         if self.missing_only is True:
-            # Benchmarked: a per-column isnull().sum() loop is ~2-5x faster
-            # than narwhals' single null_count() call on pandas input (the
-            # loop calls straight into pandas' C implementation with no
-            # narwhals overhead), so pandas keeps its own fast path here.
-            if nwd.is_pandas_dataframe(X):
-                variables_ = [
-                    var for var in variables_ if X[var].isnull().sum() > 0
-                ]
-            else:
-                null_counts = nw_X.select(variables_).null_count().row(0)
-                variables_ = [
-                    var
-                    for var, count in zip(variables_, null_counts)
-                    if count > 0
-                ]
+            counts = missing_values_count(X, variables_)
+            variables_ = [var for var, count in zip(variables_, counts) if count > 0]
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -214,28 +205,11 @@ class MissingIndicator(BaseImputer):
             The dataframe containing the additional binary variables.
         """
 
-        nw_X = self._transform(X)
-
-        # Benchmarked: building a separate indicator frame and concatenating
-        # it (pandas-native) is ~2-5x faster than narwhals' with_columns
-        # equivalent on pandas input, so pandas keeps its own fast path here.
-        if nwd.is_pandas_dataframe(X):
-            pd = nw.from_native(X, eager_only=True).__native_namespace__()
-            X_indicators = (
-                X[self.variables_]
-                .isna()
-                .astype("int8")
-                .add_suffix("_na")
-            )
-            X = pd.concat([X, X_indicators], axis=1)
-        else:
-            nw_X = nw_X.with_columns(
-                nw.col(var).is_null().cast(nw.Int8).alias(f"{var}_na")
-                for var in self.variables_
-            )
-            X = nw_X.to_native()
-
-        return X
+        X = self._transform(X)
+        X = add_missing_indicators_to_df(
+            X, {var: f"{var}_na" for var in self.variables_}
+        )
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

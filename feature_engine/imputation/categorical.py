@@ -4,7 +4,6 @@
 from typing import List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -28,6 +27,12 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import (
+    add_category_to_df,
+    cast_to_object,
+    column_modes,
+    fill_missing_in_df,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
@@ -192,7 +197,7 @@ class CategoricalImputer(BaseImputer):
         """
 
         # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # select variables to encode
         if self.ignore_format is True:
@@ -210,82 +215,29 @@ class CategoricalImputer(BaseImputer):
             imputer_dict_ = {var: self.fill_value for var in variables_}
 
         elif self.imputation_method == "frequent":
-            imputer_dict_ = {}
-            for var in variables_:
-                # polars' mode() keeps nulls (unlike pandas' default), so drop
-                # them first. When a variable has several equally-frequent
-                # categories, sort and take the smallest so fit() is
-                # reproducible and pandas and polars agree.
-                modes = sorted(nw_X[var].drop_nulls().mode(keep="all").to_list())
-                imputer_dict_[var] = modes[0]
+            # When a variable has several equally-frequent categories, take the
+            # smallest so fit() is reproducible and pandas and polars agree.
+            imputer_dict_ = {
+                var: sorted(modes)[0]
+                for var, modes in zip(variables_, column_modes(X, variables_))
+            }
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
-        # Frequent category imputation
-        if self.imputation_method == "frequent":
-            X = super().transform(X)
-
-        # Imputation with string
-        else:
-            nw_X = self._transform(X)
-
-            if nwd.is_pandas_dataframe(X):
-                # if variable is of type category, we need to add the new
-                # category, before filling in the nan. Copy first so the
-                # in-place column reassignment doesn't mutate the caller's
-                # dataframe (BaseImputer._transform no longer returns a copy).
-                cat_vars = [
-                    var
-                    for var in self.variables_
-                    if X[var].dtype.name == "category"
-                ]
-                if cat_vars:
-                    X = X.copy()
-                    for variable in cat_vars:
-                        X[variable] = X[variable].cat.add_categories(
-                            self.imputer_dict_[variable]
-                        )
-
-                X = X.fillna(self.imputer_dict_)
-            else:
-                schema = nw_X.schema
-                for variable in self.variables_:
-                    dtype = schema[variable]
-                    fill_value = self.imputer_dict_[variable]
-                    # polars' Categorical widens itself on fill_null, but its
-                    # Enum has a fixed category set and silently fills with
-                    # null (no error) if fill_value isn't already a member.
-                    if isinstance(dtype, nw.Enum) and (
-                        fill_value not in dtype.categories
-                    ):
-                        raise ValueError(
-                            f"Cannot fill variable '{variable}' with "
-                            f"'{fill_value}': it is a polars Enum with fixed "
-                            f"categories {dtype.categories} that do not include "
-                            "the fill value. Cast the column to Categorical or "
-                            "String before imputing."
-                        )
-
-                nw_X = nw_X.with_columns(
-                    nw.col(var).fill_null(value)
-                    for var, value in self.imputer_dict_.items()
-                )
-                X = nw_X.to_native()
-
-        # add additional step to return variables cast as object
+        X = self._transform(X)
+        if self.imputation_method == "missing":
+            # pandas categorical variables need the fill value as a category.
+            X = add_category_to_df(X, self.variables_, self.fill_value)
+        X = fill_missing_in_df(X, self.imputer_dict_)
         if self.return_object is True:
-            if nwd.is_pandas_dataframe(X):
-                X[self.variables_] = X[self.variables_].astype("O")
-            # polars/narwhals backends never silently upcast a string-typed
-            # column back to numeric (unlike pandas' fillna+infer_objects),
-            # so there is nothing to recast there.
-
-        return X
+            X = cast_to_object(X, self.variables_)
+        return nw.to_native(X, pass_through=True)
 
     # Get docstring from BaseClass
     transform.__doc__ = BaseImputer.transform.__doc__

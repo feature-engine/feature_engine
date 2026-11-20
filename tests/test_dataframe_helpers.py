@@ -1,17 +1,29 @@
+import re
 import warnings
 
 import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine.dataframe_helpers import (
     add_category_to_df,
     add_columns_to_df,
+    add_missing_indicators_to_df,
+    aggregate_columns,
+    cast_to_object,
+    column_modes,
     drop_variables_from_df,
+    fill_missing_in_df,
+    fill_positions_from_df,
+    filter_rows,
     map_categories_in_df,
+    missing_values_count,
+    missing_values_mask,
     replace_columns_in_df,
+    rows_with_missing_values,
     subset_df,
     to_numpy,
 )
@@ -321,3 +333,254 @@ def test_add_category_to_df_returns_the_same_dataframe_without_pandas_categories
     X = check_X(make_df(DATA))
 
     assert add_category_to_df(X, ["var_c"], "Rare") is X
+
+
+DATA_NA = {
+    "var_a": [1.0, None, 3.0, 4.0],
+    "var_b": ["x", None, "x", "y"],
+    "var_c": [1, 2, 3, 4],
+}
+
+
+# ------------------------
+# missing_values_mask
+# ------------------------
+
+
+def test_missing_values_mask_returns_one_column_per_variable(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    mask = missing_values_mask(X, ["var_b", "var_c", "var_a"])
+
+    assert mask.tolist() == [
+        [False, False, False],
+        [True, False, True],
+        [False, False, False],
+        [False, False, False],
+    ]
+
+
+def test_missing_values_mask_with_empty_variables(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    assert missing_values_mask(X, []).shape == (4, 0)
+
+
+# ------------------------
+# missing_values_count
+# ------------------------
+
+
+def test_missing_values_count_returns_one_count_per_variable(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    assert missing_values_count(X, ["var_c", "var_b", "var_a"]) == [0, 1, 1]
+    assert missing_values_count(X, []) == []
+
+
+# ------------------------
+# rows_with_missing_values
+# ------------------------
+
+
+def test_rows_with_missing_values_flags_rows_with_any_missing_value(make_df):
+    X = check_X(make_df({"var_a": [1.0, None, 3.0], "var_b": ["x", "y", None]}))
+
+    mask = rows_with_missing_values(X, ["var_a", "var_b"])
+
+    assert mask.tolist() == [False, True, True]
+
+
+# ------------------------
+# add_missing_indicators_to_df
+# ------------------------
+
+
+def test_add_missing_indicators_to_df_adds_int8_columns(make_df):
+    X = make_df(DATA_NA)
+
+    Xt = to_native(
+        add_missing_indicators_to_df(
+            check_X(X), {"var_b": "var_b_na", "var_c": "var_c_na"}
+        )
+    )
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        **DATA_NA,
+        "var_b_na": [0, 1, 0, 0],
+        "var_c_na": [0, 0, 0, 0],
+    }
+    assert str(nw.from_native(Xt).schema["var_b_na"]) == "Int8"
+    assert frame_to_dict(X) == DATA_NA
+
+
+def test_add_missing_indicators_to_df_does_not_fragment_pandas_dataframe():
+    # pandas warns when many columns are inserted one at a time
+    X = pd.DataFrame({f"var_{i}": [1.0, None, 3.0] for i in range(150)})
+    names = {f"var_{i}": f"var_{i}_na" for i in range(150)}
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", pd.errors.PerformanceWarning)
+        Xt = add_missing_indicators_to_df(check_X(X), names)
+
+    assert Xt.shape == (3, 300)
+
+
+# ------------------------
+# aggregate_columns
+# ------------------------
+
+
+@pytest.mark.parametrize(
+    "method, quantile, expected",
+    [
+        ("mean", None, {"var_a": 8 / 3, "var_c": 2.5}),
+        ("median", None, {"var_a": 3.0, "var_c": 2.5}),
+        ("max", None, {"var_a": 4.0, "var_c": 4}),
+        ("std", None, {"var_a": 1.5275252316519468, "var_c": 1.2909944487358056}),
+        ("quantile", 0.25, {"var_a": 2.0, "var_c": 1.75}),
+    ],
+)
+def test_aggregate_columns_ignores_missing_values(make_df, method, quantile, expected):
+    X = check_X(make_df(DATA_NA))
+
+    statistics = aggregate_columns(X, ["var_a", "var_c"], method, quantile)
+
+    assert statistics == pytest.approx(expected)
+
+
+def test_aggregate_columns_with_empty_variables(make_df):
+    assert aggregate_columns(check_X(make_df(DATA_NA)), [], "mean") == {}
+
+
+# ------------------------
+# column_modes
+# ------------------------
+
+
+def test_column_modes_returns_all_modes_without_missing_values(make_df):
+    X = check_X(make_df({"var_a": ["x", None, None, "y"], "var_b": [1, 1, 2, 3]}))
+
+    modes = column_modes(X, ["var_a", "var_b"])
+
+    assert [sorted(values) for values in modes] == [["x", "y"], [1]]
+
+
+# ------------------------
+# fill_missing_in_df
+# ------------------------
+
+
+def test_fill_missing_in_df_fills_the_variables(make_df):
+    X = make_df(DATA_NA)
+
+    Xt = to_native(fill_missing_in_df(check_X(X), {"var_a": 0.0, "var_b": "M"}))
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_a": [1.0, 0.0, 3.0, 4.0],
+        "var_b": ["x", "M", "x", "y"],
+        "var_c": [1, 2, 3, 4],
+    }
+    assert frame_to_dict(X) == DATA_NA
+
+
+def test_fill_missing_in_df_raises_error_with_polars_enum_without_the_value():
+    X = pl.DataFrame({"var_b": ["x", None]}, schema={"var_b": pl.Enum(["x", "y"])})
+    msg = (
+        "Cannot fill variable 'var_b' with 'M': it is a polars Enum with fixed "
+        "categories ('x', 'y') that do not include the fill value. Cast the "
+        "column to Categorical or String before imputing."
+    )
+
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        fill_missing_in_df(check_X(X), {"var_b": "M"})
+
+
+# ------------------------
+# filter_rows
+# ------------------------
+
+
+def test_filter_rows_keeps_the_rows_where_mask_is_true(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    Xt = to_native(filter_rows(X, np.array([True, False, False, True])))
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_a": [1.0, 4.0],
+        "var_b": ["x", "y"],
+        "var_c": [1, 4],
+    }
+
+
+def test_filter_rows_keeps_pandas_index():
+    X = pd.DataFrame({"var_a": [1, 2, 3]}, index=[10, 10, 30])
+
+    Xt = filter_rows(check_X(X), np.array([False, True, True]))
+
+    expected = pd.DataFrame({"var_a": [2, 3]}, index=[10, 30])
+    pd.testing.assert_frame_equal(Xt, expected)
+
+
+# ------------------------
+# fill_positions_from_df
+# ------------------------
+
+
+def test_fill_positions_from_df_copies_values_from_the_source_rows(make_df):
+    X = make_df(DATA_NA)
+    source = check_X(make_df({"var_a": [7.0, 8.0], "var_b": ["u", "v"]}))
+    rows = {
+        "var_a": (np.array([1]), np.array([1])),
+        "var_b": (np.array([1, 3]), np.array([0, 0])),
+    }
+
+    Xt = to_native(fill_positions_from_df(check_X(X), source, rows))
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_a": [1.0, 8.0, 3.0, 4.0],
+        "var_b": ["x", "u", "x", "u"],
+        "var_c": [1, 2, 3, 4],
+    }
+    assert frame_to_dict(X) == DATA_NA
+
+
+def test_fill_positions_from_df_keeps_pandas_categories_and_uses_positions():
+    X = pd.DataFrame(
+        {0: pd.Categorical(["x", None, "y"]), 1: [1.0, 2.0, 3.0]}, index=[5, 5, 7]
+    )
+    source = pd.DataFrame({0: pd.Categorical(["x", "y"])}, index=[1, 0])
+
+    Xt = fill_positions_from_df(
+        check_X(X), source, {0: (np.array([1]), np.array([1]))}
+    )
+
+    expected = pd.DataFrame(
+        {0: pd.Categorical(["x", "y", "y"]), 1: [1.0, 2.0, 3.0]}, index=[5, 5, 7]
+    )
+    pd.testing.assert_frame_equal(Xt, expected)
+
+
+# ------------------------
+# cast_to_object
+# ------------------------
+
+
+def test_cast_to_object_casts_pandas_variables():
+    X = pd.DataFrame({"var_a": [1, 2], "var_b": ["x", "y"]})
+
+    Xt = cast_to_object(check_X(X), ["var_a"])
+
+    assert Xt["var_a"].dtype == object
+    assert Xt["var_a"].tolist() == [1, 2]
+    assert Xt["var_b"].dtype == X["var_b"].dtype
+
+
+def test_cast_to_object_returns_other_libraries_as_is():
+    X = check_X(pl.DataFrame({"var_a": [1, 2]}))
+
+    assert cast_to_object(X, ["var_a"]) is X

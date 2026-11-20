@@ -182,7 +182,7 @@ class ArbitraryImputer(BaseImputer):
         """
 
         # check input dataframe
-        check_X(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         # create the imputer dictionary
@@ -200,7 +200,8 @@ class ArbitraryImputer(BaseImputer):
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 

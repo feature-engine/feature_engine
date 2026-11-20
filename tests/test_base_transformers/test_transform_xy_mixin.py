@@ -15,11 +15,13 @@ BACKENDS = [(pd.DataFrame, pd.Series), (pl.DataFrame, pl.Series)]
 class MockTransformer(TransformXyMixin, BaseEstimator):
     def fit(self, X):
         self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = list(X.columns)
         return self
 
     def transform(self, X):
-        # drops rows at positions 2 and 4, backend-agnostic
-        nw_X = nw.from_native(X, eager_only=True)
+        # reorders columns as in fit, as transformers do, and drops rows at
+        # positions 2 and 4, backend-agnostic
+        nw_X = nw.from_native(X, eager_only=True).select(self.feature_names_in_)
         keep = [i for i in range(len(nw_X)) if i not in (2, 4)]
         return nw_X[keep].to_native()
 
