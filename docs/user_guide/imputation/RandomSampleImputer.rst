@@ -58,8 +58,7 @@ With polars
 -----------
 
 :class:`RandomSampleImputer()` also accepts polars dataframes as input to `fit()` and
-`transform()`. With the same data and `random_state`, it imputes the same values as
-with pandas.
+`transform()`.
 
 .. code:: python
 
