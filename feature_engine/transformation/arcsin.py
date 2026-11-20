@@ -8,6 +8,7 @@ import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -156,19 +157,19 @@ class ArcsinTransformer(BaseNumericalTransformer):
         y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
-        nw_X, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
         # check if the variables are in the correct range
-        values = nw_X.select(nw.col(variables_)).to_numpy()
-        if np.any((values < 0) | (values > 1)):
+        if any(np.any((v < 0) | (v > 1)) for v in to_numpy(X, variables_)):
             raise ValueError(
                 "Some variables contain values outside the possible range 0-1. "
                 "Can't apply the arcsin transformation. "
             )
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -186,26 +187,23 @@ class ArcsinTransformer(BaseNumericalTransformer):
         X_new: dataframe
             The dataframe with the transformed variables.
         """
-
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy()
+        X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
 
         # check if the variables are in the correct range
-        if np.any((values < 0) | (values > 1)):
+        if any(np.any((v < 0) | (v > 1)) for v in arrays):
             raise ValueError(
                 "Some variables contain values outside the possible range 0-1. "
                 "Can't apply the arcsin transformation."
             )
 
-        # transform
-        result = np.arcsin(np.sqrt(values))
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
+        new_columns = {
+            var: np.arcsin(np.sqrt(values))
+            for var, values in zip(self.variables_, arrays)
+        }
 
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -221,18 +219,15 @@ class ArcsinTransformer(BaseNumericalTransformer):
         X_tr: dataframe
             The dataframe with the transformed variables.
         """
-        nw_X = nw.from_native(X, eager_only=True)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy()
+        X = self._check_transform_input_and_state(X)
 
-        # inverse_transform
-        result = np.sin(values) ** 2
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
+        new_columns = {
+            var: np.sin(values) ** 2
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

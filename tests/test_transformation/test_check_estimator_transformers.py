@@ -14,6 +14,7 @@ from feature_engine.transformation import (
     ReciprocalTransformer,
     YeoJohnsonTransformer,
 )
+from tests.backend_helpers import frame_to_dict
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
@@ -129,3 +130,37 @@ def test_integer_column_names(estimator):
 
     pd.testing.assert_frame_equal(Xt, expected.set_axis([0, 1], axis=1))
     pd.testing.assert_frame_equal(transformer.inverse_transform(Xt), X)
+
+
+_REORDER_DATA = {
+    "a": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+    "b": [0.9, 0.7, 0.5, 0.3, 0.2, 0.1],
+    "s": ["x", "y", "z", "x", "y", "z"],
+}
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    [
+        ArcsinTransformer(),
+        ArcSinhTransformer(),
+        BoxCoxTransformer(),
+        LogTransformer(),
+        PowerTransformer(),
+        ReciprocalTransformer(),
+        YeoJohnsonTransformer(),
+    ],
+)
+def test_transform_reorders_columns_as_in_train_set(make_df, transformer):
+    X = make_df(_REORDER_DATA)
+    transformer.fit(X)
+    reordered = ["s", "b", "a"]
+    X_reordered = make_df({var: _REORDER_DATA[var] for var in reordered})
+
+    for method in [transformer.transform, transformer.inverse_transform]:
+        expected = method(X)
+        Xt = method(X_reordered)
+
+        assert isinstance(Xt, make_df)
+        assert list(Xt.columns) == list(expected.columns)
+        assert frame_to_dict(Xt) == frame_to_dict(expected)

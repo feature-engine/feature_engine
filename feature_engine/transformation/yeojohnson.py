@@ -9,6 +9,7 @@ import scipy.stats as stats
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -163,21 +164,17 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
+        X, variables_ = self._fit_setup(X)
 
-        nw_X, variables_ = self._fit_setup(X)
-
-        values = nw_X.select(nw.col(variables_)).to_numpy()
-        values = values.astype(float)
-
-        # scipy searches the optimal lambda one column at a time, there is no
-        # vectorized multi-column form of the search.
         lambda_dict_ = {}
-        for i, var in enumerate(variables_):
-            _, lambda_dict_[var] = stats.yeojohnson(values[:, i])
+        for var, values in zip(variables_, to_numpy(X, variables_)):
+            _, lambda_dict_[var] = stats.yeojohnson(values.astype(float))
 
         self.variables_ = variables_
         self.lambda_dict_ = lambda_dict_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -195,22 +192,15 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         X_new: dataframe
             The dataframe with the transformed variables.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
+        new_columns = {
+            var: stats.yeojohnson(values.astype(float), lmbda=self.lambda_dict_[var])
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        # transform
-        result = np.empty_like(values)
-        for i, var in enumerate(self.variables_):
-            result[:, i] = stats.yeojohnson(values[:, i], lmbda=self.lambda_dict_[var])
-
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -226,23 +216,17 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         X_tr: dataframe
             The dataframe with the transformed variables.
         """
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
+        X = self._check_transform_input_and_state(X)
 
-        # inverse_transform
-        result = np.empty_like(values)
-        for i, var in enumerate(self.variables_):
-            result[:, i] = self._inverse_transform_array(
-                values[:, i], lmbda=self.lambda_dict_[var]
+        new_columns = {
+            var: self._inverse_transform_array(
+                values.astype(float), lmbda=self.lambda_dict_[var]
             )
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def _inverse_transform_array(self, X: np.ndarray, lmbda: float) -> np.ndarray:
         x_inv = np.zeros_like(X)

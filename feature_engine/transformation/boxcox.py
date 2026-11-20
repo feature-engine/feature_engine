@@ -10,6 +10,7 @@ import scipy.stats as stats
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -171,19 +172,17 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
-        nw_X, variables_ = self._fit_setup(X)
-        values = nw_X.select(nw.col(variables_)).to_numpy().astype(float)
+        X, variables_ = self._fit_setup(X)
 
         lambda_dict_ = {}
-        # lambda search is per-column and not vectorizable across columns,
-        # unlike transform()'s elementwise application once lambdas are known
-        for i, var in enumerate(variables_):
-            _, lambda_dict_[var] = stats.boxcox(values[:, i])
+        for var, values in zip(variables_, to_numpy(X, variables_)):
+            _, lambda_dict_[var] = stats.boxcox(values.astype(float))
 
         self.variables_ = variables_
         self.lambda_dict_ = lambda_dict_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -201,24 +200,21 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         X_new: dataframe
             The dataframe with the transformed variables.
         """
+        X = self._check_transform_input_and_state(X)
+        arrays: List[np.ndarray] = [
+            v.astype(float) for v in to_numpy(X, self.variables_)
+        ]
 
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
-
-        # check contains zero or negative values
-        if (values <= 0).any():
+        if any(np.any(values <= 0) for values in arrays):
             raise ValueError("Data must be positive.")
 
-        # transform
-        lmbdas = np.array([self.lambda_dict_[var] for var in self.variables_])
-        result = spsp.boxcox(values, lmbdas)
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
+        new_columns = {
+            var: spsp.boxcox(values, self.lambda_dict_[var])
+            for var, values in zip(self.variables_, arrays)
+        }
 
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -234,20 +230,15 @@ class BoxCoxTransformer(BaseNumericalTransformer):
         X_new: dataframe
             The dataframe with the original variables.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
+        new_columns = {
+            var: spsp.inv_boxcox(values.astype(float), self.lambda_dict_[var])
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        # inverse transform
-        lmbdas = np.array([self.lambda_dict_[var] for var in self.variables_])
-        result = spsp.inv_boxcox(values, lmbdas)
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()
