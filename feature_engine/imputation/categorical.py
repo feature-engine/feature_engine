@@ -1,7 +1,7 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import narwhals as nw
 from narwhals.typing import IntoDataFrame, IntoSeries
@@ -28,10 +28,10 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.dataframe_helpers import (
+    DataFrame,
     add_category_to_df,
-    cast_to_object,
-    column_modes,
     fill_missing_in_df,
+    replace_columns_in_df,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
@@ -41,6 +41,60 @@ from feature_engine.variable_handling import (
     find_all_variables,
     find_categorical_variables,
 )
+
+
+def _column_modes(
+    X: DataFrame, variables: Sequence[Union[str, int]]
+) -> List[List[Any]]:
+    """
+    Returns the most frequent values of each variable, ignoring missing values.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the variables.
+
+    Returns
+    -------
+    modes : list
+        One list per variable, with all the values that are the most frequent.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return [X[var].mode().tolist() for var in variables]
+    else:
+        return [
+            X.get_column(var).drop_nulls().mode(keep="all").to_list()
+            for var in variables
+        ]
+
+
+def _cast_to_object(X: DataFrame, variables: Sequence[Union[str, int]]) -> DataFrame:
+    """
+    Casts the variables to the object dtype. Only pandas has this dtype: the
+    other libraries return the dataframe as is.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the variables.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        The dataframe with the variables cast as object in pandas.
+    """
+    if not isinstance(X, nw.DataFrame):
+        return replace_columns_in_df(
+            X, {var: X[var].astype("O") for var in variables}
+        )
+    return X
 
 
 @Substitution(
@@ -219,7 +273,7 @@ class CategoricalImputer(BaseImputer):
             # smallest so fit() is reproducible and pandas and polars agree.
             imputer_dict_ = {
                 var: sorted(modes)[0]
-                for var, modes in zip(variables_, column_modes(X, variables_))
+                for var, modes in zip(variables_, _column_modes(X, variables_))
             }
 
         self.variables_ = variables_
@@ -236,7 +290,7 @@ class CategoricalImputer(BaseImputer):
             X = add_category_to_df(X, self.variables_, self.fill_value)
         X = fill_missing_in_df(X, self.imputer_dict_)
         if self.return_object is True:
-            X = cast_to_object(X, self.variables_)
+            X = _cast_to_object(X, self.variables_)
         return nw.to_native(X, pass_through=True)
 
     # Get docstring from BaseClass

@@ -2,7 +2,7 @@
 # License: BSD 3 clause
 
 import hashlib
-from typing import List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import narwhals as nw
 import numpy as np
@@ -30,8 +30,9 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.dataframe_helpers import (
-    fill_positions_from_df,
+    DataFrame,
     missing_values_mask,
+    replace_columns_in_df,
     subset_df,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
@@ -60,6 +61,49 @@ def _hash_seeds(values) -> np.ndarray:
         ],
         dtype=np.int64,
     )
+
+
+def _fill_positions_from_df(
+    X: DataFrame,
+    source: DataFrame,
+    rows: Dict[Any, Tuple[np.ndarray, np.ndarray]],
+) -> DataFrame:
+    """
+    Replaces the values of existing columns at some row positions with the values
+    of the same columns of another dataframe, at other row positions.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    source : pandas or narwhals dataframe
+        The dataframe with the new values, from the same library as X.
+
+    rows : dict
+        The names of the columns and, for each column, the row positions to
+        replace in X and the row positions of the new values in `source`.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        A new dataframe with the new values.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        new_columns = {}
+        for var, (positions, source_rows) in rows.items():
+            column = X[var].copy()
+            column.iloc[positions] = source[var].iloc[source_rows].to_numpy()
+            new_columns[var] = column
+        return replace_columns_in_df(X, new_columns)
+    else:
+        return X.with_columns(
+            X.get_column(var).scatter(
+                positions, source.get_column(var)[source_rows]
+            )
+            for var, (positions, source_rows) in rows.items()
+        )
 
 
 @Substitution(
@@ -313,7 +357,7 @@ class RandomSampleImputer(BaseImputer):
                 )
             fills[feature] = (positions, pool[idx])
 
-        X = fill_positions_from_df(X, self.X_, fills)
+        X = _fill_positions_from_df(X, self.X_, fills)
         return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):

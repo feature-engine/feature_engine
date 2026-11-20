@@ -1,10 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 import warnings
 
 import narwhals as nw
+import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -23,13 +24,40 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
-from feature_engine.dataframe_helpers import (
-    add_missing_indicators_to_df,
-    missing_values_count,
-)
+from feature_engine.dataframe_helpers import DataFrame, missing_values_count
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
+
+
+def _add_missing_indicators(X: DataFrame, names: Dict[Any, Any]) -> DataFrame:
+    """
+    Adds binary columns to the end of the dataframe, with 1 where the variables
+    have missing values and 0 otherwise.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    names : dict
+        The names of the variables and the name of their indicator column.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        The dataframe with the int8 indicator columns.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        indicators = X[list(names)].isna().astype("int8")
+        indicators = indicators.set_axis(list(names.values()), axis=1)
+        return nwd.get_pandas().concat([X, indicators], axis=1)
+    else:
+        return X.with_columns(
+            nw.col(var).is_null().cast(nw.Int8).alias(name)
+            for var, name in names.items()
+        )
 
 
 @Substitution(
@@ -206,7 +234,7 @@ class MissingIndicator(BaseImputer):
         """
 
         X = self._transform(X)
-        X = add_missing_indicators_to_df(
+        X = _add_missing_indicators(
             X, {var: f"{var}_na" for var in self.variables_}
         )
         return nw.to_native(X, pass_through=True)

@@ -261,7 +261,6 @@ def missing_values_mask(
     if not isinstance(X, nw.DataFrame):
         return X[list(variables)].isna().to_numpy()
     elif len(variables) == 0:
-        # an empty select returns 0 rows, not n_samples.
         return np.zeros((X.shape[0], 0), dtype=bool)
     else:
         return X.select(nw.col(var).is_null() for var in variables).to_numpy()
@@ -293,65 +292,6 @@ def missing_values_count(
         return []
     else:
         return list(X.select(variables).null_count().row(0))
-
-
-def rows_with_missing_values(
-    X: DataFrame, variables: Sequence[Union[str, int]]
-) -> np.ndarray:
-    """
-    Returns which rows have missing values in any of the variables.
-
-    Parameters
-    ----------
-    X : pandas or narwhals dataframe
-        The dataframe returned by `check_X`.
-
-    variables : list
-        The names of the variables.
-
-    Returns
-    -------
-    mask : numpy array of shape = [n_samples]
-        True for the rows with at least one missing value.
-    """
-    # pandas is faster than narwhals.
-    if not isinstance(X, nw.DataFrame):
-        return X[list(variables)].isna().to_numpy().any(axis=1)
-    else:
-        is_missing = nw.any_horizontal(
-            (nw.col(var).is_null() for var in variables), ignore_nulls=True
-        )
-        return X.select(is_missing).to_numpy()[:, 0]
-
-
-def add_missing_indicators_to_df(X: DataFrame, names: Dict[Any, Any]) -> DataFrame:
-    """
-    Adds binary columns to the end of the dataframe, with 1 where the variables
-    have missing values and 0 otherwise.
-
-    Parameters
-    ----------
-    X : pandas or narwhals dataframe
-        The dataframe returned by `check_X`.
-
-    names : dict
-        The names of the variables and the name of their indicator column.
-
-    Returns
-    -------
-    X : pandas or narwhals dataframe
-        The dataframe with the int8 indicator columns.
-    """
-    # pandas is faster than narwhals.
-    if not isinstance(X, nw.DataFrame):
-        indicators = X[list(names)].isna().astype("int8")
-        indicators = indicators.set_axis(list(names.values()), axis=1)
-        return nwd.get_pandas().concat([X, indicators], axis=1)
-    else:
-        return X.with_columns(
-            nw.col(var).is_null().cast(nw.Int8).alias(name)
-            for var, name in names.items()
-        )
 
 
 def aggregate_columns(
@@ -395,35 +335,6 @@ def aggregate_columns(
         )
         statistics = statistics.to_dict(as_series=False)
         return {var: values[0] for var, values in statistics.items()}
-
-
-def column_modes(
-    X: DataFrame, variables: Sequence[Union[str, int]]
-) -> List[List[Any]]:
-    """
-    Returns the most frequent values of each variable, ignoring missing values.
-
-    Parameters
-    ----------
-    X : pandas or narwhals dataframe
-        The dataframe returned by `check_X`.
-
-    variables : list
-        The names of the variables.
-
-    Returns
-    -------
-    modes : list
-        One list per variable, with all the values that are the most frequent.
-    """
-    # pandas is faster than narwhals.
-    if not isinstance(X, nw.DataFrame):
-        return [X[var].mode().tolist() for var in variables]
-    else:
-        return [
-            X.get_column(var).drop_nulls().mode(keep="all").to_list()
-            for var in variables
-        ]
 
 
 def fill_missing_in_df(X: DataFrame, values: Dict[Any, Any]) -> DataFrame:
@@ -488,71 +399,3 @@ def filter_rows(X: DataFrame, mask: np.ndarray) -> DataFrame:
         return X[mask]
     else:
         return X.filter(nw.new_series("__mask__", mask, backend=X.implementation))
-
-
-def fill_positions_from_df(
-    X: DataFrame,
-    source: DataFrame,
-    rows: Dict[Any, Tuple[np.ndarray, np.ndarray]],
-) -> DataFrame:
-    """
-    Replaces the values of existing columns at some row positions with the values
-    of the same columns of another dataframe, at other row positions.
-
-    Parameters
-    ----------
-    X : pandas or narwhals dataframe
-        The dataframe returned by `check_X`.
-
-    source : pandas or narwhals dataframe
-        The dataframe with the new values, from the same library as X.
-
-    rows : dict
-        The names of the columns and, for each column, the row positions to
-        replace in X and the row positions of the new values in `source`.
-
-    Returns
-    -------
-    X : pandas or narwhals dataframe
-        A new dataframe with the new values.
-    """
-    # pandas is faster than narwhals.
-    if not isinstance(X, nw.DataFrame):
-        new_columns = {}
-        for var, (positions, source_rows) in rows.items():
-            column = X[var].copy()
-            column.iloc[positions] = source[var].iloc[source_rows].to_numpy()
-            new_columns[var] = column
-        return replace_columns_in_df(X, new_columns)
-    else:
-        return X.with_columns(
-            X.get_column(var).scatter(
-                positions, source.get_column(var)[source_rows]
-            )
-            for var, (positions, source_rows) in rows.items()
-        )
-
-
-def cast_to_object(X: DataFrame, variables: Sequence[Union[str, int]]) -> DataFrame:
-    """
-    Casts the variables to the object dtype. Only pandas has this dtype: the
-    other libraries return the dataframe as is.
-
-    Parameters
-    ----------
-    X : pandas or narwhals dataframe
-        The dataframe returned by `check_X`.
-
-    variables : list
-        The names of the variables.
-
-    Returns
-    -------
-    X : pandas or narwhals dataframe
-        The dataframe with the variables cast as object in pandas.
-    """
-    if not isinstance(X, nw.DataFrame):
-        return replace_columns_in_df(
-            X, {var: X[var].astype("O") for var in variables}
-        )
-    return X
