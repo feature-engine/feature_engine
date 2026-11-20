@@ -1,7 +1,6 @@
-from typing import List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -20,6 +19,7 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.dataframe_helpers import replace_columns_in_df, subset_df, to_numpy
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
     check_numerical_variables,
@@ -30,7 +30,9 @@ from feature_engine.variable_handling import (
 class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across outlier transformers"""
 
-    def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
+    def _check_transform_input_and_state(
+        self, X: IntoDataFrame
+    ) -> Union[IntoDataFrame, nw.DataFrame]:
         """Checks that the input is a dataframe and of the same size as the one used
         in the fit method. Checks absence of NA.
 
@@ -47,30 +49,19 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        nw_X: narwhals dataframe
-            The narwhalified version of the dataframe entered by the user, with
-            the variables in the same order as in the train set.
+        X: pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise, with the variables in the same order as in the train set.
         """
-        # check if class was fitted
         check_is_fitted(self)
-
-        # check that input is a dataframe
-        nw_X = check_X(X)
-
-        # Check that the dataframe contains the same number of columns
-        # than the dataframe used to fit the transformer.
+        X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
 
         if self.missing_values == "raise":
-            # check if dataset contains na
             _check_contains_na(X, self.variables_)
             _check_contains_inf(X, self.variables_)
 
-        # reorder to match training set. pandas selects by label, which also
-        # supports integer column names.
-        if nwd.is_pandas_dataframe(X):
-            return nw.from_native(X[self.feature_names_in_], eager_only=True)
-        return nw_X.select(nw.col(*self.feature_names_in_))
+        return subset_df(X, self.feature_names_in_)
 
     def _transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -88,54 +79,28 @@ class BaseOutlier(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         """
 
         # check if class was fitted
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
+        capped = self._cap(dict(zip(self.variables_, to_numpy(X, self.variables_))))
+        if len(capped) > 0:
+            X = replace_columns_in_df(X, capped)
 
+        return nw.to_native(X, pass_through=True)
+
+    def _cap(self, arrays: Dict[Any, np.ndarray]) -> Dict[Any, np.ndarray]:
+        """Returns the capped values of the variables that have a finite cap."""
         # infinite limits don't cap, and clipping to them turns integers into floats
         right = {v: c for v, c in self.right_tail_caps_.items() if np.isfinite(c)}
         left = {v: c for v, c in self.left_tail_caps_.items() if np.isfinite(c)}
 
-        both = [var for var in self.variables_ if var in right and var in left]
-        right_only = [
-            var for var in self.variables_ if var in right and var not in left
-        ]
-        left_only = [var for var in self.variables_ if var in left and var not in right]
-
-        # Grouping columns by which bound(s) apply turns the per-column .clip()
-        # loop into up to 3 vectorized numpy calls (benchmarked 2-6x faster than
-        # pandas-native at 10k-100k rows). Using np.clip/minimum/maximum only with
-        # the bounds that actually apply (never an inf sentinel for a missing
-        # side) keeps int-dtype columns int, matching pandas .clip() exactly.
-        new_series = []
-        if len(both) > 0:
-            values = nw_X.select(nw.col(*both)).to_numpy()
-            lower = np.array([left[var] for var in both])
-            upper = np.array([right[var] for var in both])
-            clipped = np.clip(values, lower, upper)
-            new_series += [
-                nw.new_series(var, clipped[:, i], backend=nw_X.implementation)
-                for i, var in enumerate(both)
-            ]
-        if len(right_only) > 0:
-            values = nw_X.select(nw.col(*right_only)).to_numpy()
-            upper = np.array([right[var] for var in right_only])
-            clipped = np.minimum(values, upper)
-            new_series += [
-                nw.new_series(var, clipped[:, i], backend=nw_X.implementation)
-                for i, var in enumerate(right_only)
-            ]
-        if len(left_only) > 0:
-            values = nw_X.select(nw.col(*left_only)).to_numpy()
-            lower = np.array([left[var] for var in left_only])
-            clipped = np.maximum(values, lower)
-            new_series += [
-                nw.new_series(var, clipped[:, i], backend=nw_X.implementation)
-                for i, var in enumerate(left_only)
-            ]
-
-        if len(new_series) > 0:
-            nw_X = nw_X.with_columns(*new_series)
-
-        return nw_X.to_native()
+        capped = {}
+        for var, values in arrays.items():
+            if var in left and var in right:
+                capped[var] = np.clip(values, left[var], right[var])
+            elif var in right:
+                capped[var] = np.minimum(values, right[var])
+            elif var in left:
+                capped[var] = np.maximum(values, left[var])
+        return capped
 
     def _more_tags(self):
         tags_dict = _return_tags()
@@ -262,7 +227,7 @@ class WinsorizerBase(BaseOutlier):
         """
 
         # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -285,7 +250,13 @@ class WinsorizerBase(BaseOutlier):
         else:
             self.fold_ = self.fold
 
-        values = nw_X.select(nw.col(*self.variables_)).to_numpy()
+        arrays = to_numpy(X, self.variables_)
+        if len(arrays) > 0:
+            # transposing keeps each variable contiguous in memory, which makes the
+            # reductions per variable faster than with np.column_stack().
+            values = np.array(arrays).T
+        else:
+            values = np.empty((len(X), 0))
 
         # nan-aware reductions: with missing_values="ignore", values may contain
         # NaN, and pandas' mean/std/quantile/median skip NaN by default.
@@ -293,12 +264,11 @@ class WinsorizerBase(BaseOutlier):
             bias = np.nanmean(values, axis=0)
             scale = np.nanstd(values, axis=0, ddof=0)
         elif self.capping_method == "iqr":
-            q75 = np.nanquantile(values, 0.75, axis=0)
-            q25 = np.nanquantile(values, 0.25, axis=0)
+            # one call for both quantiles sorts each variable once
+            q25, q75 = np.nanquantile(values, [0.25, 0.75], axis=0)
             scale = q75 - q25
         elif self.capping_method == "quantiles":
-            q_hi = np.nanquantile(values, 1 - self.fold_, axis=0)
-            q_lo = np.nanquantile(values, self.fold_, axis=0)
+            q_lo, q_hi = np.nanquantile(values, [self.fold_, 1 - self.fold_], axis=0)
             scale = q_hi - q_lo
         elif self.capping_method == "mad":
             bias = np.nanmedian(values, axis=0)
@@ -350,10 +320,8 @@ class WinsorizerBase(BaseOutlier):
                 if var in self.left_tail_caps_:
                     self.left_tail_caps_[var] = float("-inf")
 
-        # list() normalises both a narwhals `.columns` (already a list) and a
-        # pandas Index to a plain list.
-        self.feature_names_in_ = list(nw_X.columns)
-        self.n_features_in_ = nw_X.shape[1]
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
