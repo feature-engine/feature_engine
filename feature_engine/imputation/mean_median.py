@@ -4,7 +4,6 @@
 import warnings
 from typing import List, Optional, Union
 
-import narwhals as nw
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -28,6 +27,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import aggregate_columns
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_handling import (
     check_numerical_variables,
@@ -166,7 +166,7 @@ class MeanImputer(BaseImputer):
         """
 
         # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -174,21 +174,12 @@ class MeanImputer(BaseImputer):
         else:
             variables_ = check_numerical_variables(X, self.variables)
 
-        # find imputation parameters: mean or median
-        if len(variables_) == 0:
-            imputer_dict_ = {}
-        else:
-            stats = nw_X.select(
-                *[
-                    getattr(nw.col(var), self.imputation_method)()
-                    for var in variables_
-                ]
-            )
-            imputer_dict_ = stats.rows(named=True)[0]
+        imputer_dict_ = aggregate_columns(X, variables_, self.imputation_method)
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 

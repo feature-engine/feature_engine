@@ -1,16 +1,23 @@
+import re
 import warnings
 
 import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine.dataframe_helpers import (
     add_category_to_df,
     add_columns_to_df,
+    aggregate_columns,
     drop_variables_from_df,
+    fill_missing_in_df,
+    filter_rows,
     map_categories_in_df,
+    missing_values_count,
+    missing_values_mask,
     replace_columns_in_df,
     subset_df,
     to_numpy,
@@ -321,3 +328,131 @@ def test_add_category_to_df_returns_the_same_dataframe_without_pandas_categories
     X = check_X(make_df(DATA))
 
     assert add_category_to_df(X, ["var_c"], "Rare") is X
+
+
+DATA_NA = {
+    "var_a": [1.0, None, 3.0, 4.0],
+    "var_b": ["x", None, "x", "y"],
+    "var_c": [1, 2, 3, 4],
+}
+
+
+# ------------------------
+# missing_values_mask
+# ------------------------
+
+
+def test_missing_values_mask_returns_one_column_per_variable(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    mask = missing_values_mask(X, ["var_b", "var_c", "var_a"])
+
+    assert mask.tolist() == [
+        [False, False, False],
+        [True, False, True],
+        [False, False, False],
+        [False, False, False],
+    ]
+
+
+def test_missing_values_mask_with_empty_variables(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    assert missing_values_mask(X, []).shape == (4, 0)
+
+
+# ------------------------
+# missing_values_count
+# ------------------------
+
+
+def test_missing_values_count_returns_one_count_per_variable(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    assert missing_values_count(X, ["var_c", "var_b", "var_a"]) == [0, 1, 1]
+    assert missing_values_count(X, []) == []
+
+
+# ------------------------
+# aggregate_columns
+# ------------------------
+
+
+@pytest.mark.parametrize(
+    "method, quantile, expected",
+    [
+        ("mean", None, {"var_a": 8 / 3, "var_c": 2.5}),
+        ("median", None, {"var_a": 3.0, "var_c": 2.5}),
+        ("max", None, {"var_a": 4.0, "var_c": 4}),
+        ("std", None, {"var_a": 1.5275252316519468, "var_c": 1.2909944487358056}),
+        ("quantile", 0.25, {"var_a": 2.0, "var_c": 1.75}),
+    ],
+)
+def test_aggregate_columns_ignores_missing_values(make_df, method, quantile, expected):
+    X = check_X(make_df(DATA_NA))
+
+    statistics = aggregate_columns(X, ["var_a", "var_c"], method, quantile)
+
+    assert statistics == pytest.approx(expected)
+
+
+def test_aggregate_columns_with_empty_variables(make_df):
+    assert aggregate_columns(check_X(make_df(DATA_NA)), [], "mean") == {}
+
+
+# ------------------------
+# fill_missing_in_df
+# ------------------------
+
+
+def test_fill_missing_in_df_fills_the_variables(make_df):
+    X = make_df(DATA_NA)
+
+    Xt = to_native(fill_missing_in_df(check_X(X), {"var_a": 0.0, "var_b": "M"}))
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_a": [1.0, 0.0, 3.0, 4.0],
+        "var_b": ["x", "M", "x", "y"],
+        "var_c": [1, 2, 3, 4],
+    }
+    assert frame_to_dict(X) == DATA_NA
+
+
+def test_fill_missing_in_df_raises_error_with_polars_enum_without_the_value():
+    X = pl.DataFrame({"var_b": ["x", None]}, schema={"var_b": pl.Enum(["x", "y"])})
+    msg = (
+        "Cannot fill variable 'var_b' with 'M': it is a polars Enum with fixed "
+        "categories ('x', 'y') that do not include the fill value. Cast the "
+        "column to Categorical or String before imputing."
+    )
+
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        fill_missing_in_df(check_X(X), {"var_b": "M"})
+
+
+# ------------------------
+# filter_rows
+# ------------------------
+
+
+def test_filter_rows_keeps_the_rows_where_mask_is_true(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    Xt = to_native(filter_rows(X, np.array([True, False, False, True])))
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "var_a": [1.0, 4.0],
+        "var_b": ["x", "y"],
+        "var_c": [1, 4],
+    }
+
+
+def test_filter_rows_keeps_pandas_index():
+    X = pd.DataFrame({"var_a": [1, 2, 3]}, index=[10, 10, 30])
+
+    Xt = filter_rows(check_X(X), np.array([False, True, True]))
+
+    expected = pd.DataFrame({"var_a": [2, 3]}, index=[10, 30])
+    pd.testing.assert_frame_equal(Xt, expected)

@@ -7,7 +7,7 @@ All functions take the dataframe returned by `check_X`: a pandas dataframe, or a
 narwhals dataframe for the other libraries.
 """
 
-from typing import Any, Dict, List, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import narwhals as nw
 import narwhals.dependencies as nwd
@@ -236,3 +236,166 @@ def add_category_to_df(
         if len(new_columns) > 0:
             return replace_columns_in_df(X, new_columns)
     return X
+
+
+def missing_values_mask(
+    X: DataFrame, variables: Sequence[Union[str, int]]
+) -> np.ndarray:
+    """
+    Returns where the variables have missing values.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the variables.
+
+    Returns
+    -------
+    mask : numpy array of shape = [n_samples, len(variables)]
+        True where the value is missing.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return X[list(variables)].isna().to_numpy()
+    elif len(variables) == 0:
+        return np.zeros((X.shape[0], 0), dtype=bool)
+    else:
+        return X.select(nw.col(var).is_null() for var in variables).to_numpy()
+
+
+def missing_values_count(
+    X: DataFrame, variables: Sequence[Union[str, int]]
+) -> List[int]:
+    """
+    Returns the number of missing values of each variable.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the variables.
+
+    Returns
+    -------
+    counts : list
+        The number of missing values, in the order of `variables`.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return X[list(variables)].isna().sum().tolist()
+    elif len(variables) == 0:
+        return []
+    else:
+        return list(X.select(variables).null_count().row(0))
+
+
+def aggregate_columns(
+    X: DataFrame,
+    variables: Sequence[Union[str, int]],
+    method: str,
+    quantile: Optional[float] = None,
+) -> Dict[Any, Any]:
+    """
+    Returns a statistic of each variable, ignoring missing values.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the numerical variables.
+
+    method : str
+        The statistic: "mean", "median", "std", "max" or "quantile".
+
+    quantile : float, default=None
+        The quantile to compute, with linear interpolation, when method is
+        "quantile".
+
+    Returns
+    -------
+    statistics : dict
+        The variable names and their statistic.
+    """
+    args: Tuple[Any, ...] = () if quantile is None else (quantile,)
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return getattr(X[list(variables)], method)(*args).to_dict()
+    else:
+        if quantile is not None:
+            args = (quantile, "linear")
+        statistics = X.select(
+            getattr(nw.col(var), method)(*args) for var in variables
+        )
+        statistics = statistics.to_dict(as_series=False)
+        return {var: values[0] for var, values in statistics.items()}
+
+
+def fill_missing_in_df(X: DataFrame, values: Dict[Any, Any]) -> DataFrame:
+    """
+    Replaces the missing values of each variable with a value.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    values : dict
+        The names of the variables and the value that replaces their missing
+        values.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        A new dataframe without missing values in the variables.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return X.fillna(value=values).infer_objects()
+    else:
+        schema = X.schema
+        for var, value in values.items():
+            # a polars Enum can't take new categories: fill_null would leave
+            # the value missing without raising.
+            if isinstance(schema[var], nw.Enum) and (
+                value not in schema[var].categories
+            ):
+                raise ValueError(
+                    f"Cannot fill variable '{var}' with '{value}': it is a "
+                    f"polars Enum with fixed categories {schema[var].categories} "
+                    "that do not include the fill value. Cast the column to "
+                    "Categorical or String before imputing."
+                )
+        return X.with_columns(
+            nw.col(var).fill_null(value) for var, value in values.items()
+        )
+
+
+def filter_rows(X: DataFrame, mask: np.ndarray) -> DataFrame:
+    """
+    Returns the rows of the dataframe where the mask is True.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    mask : numpy array of shape = [n_samples]
+        Boolean array, True for the rows to keep.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        The dataframe with the selected rows.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return X[mask]
+    else:
+        return X.filter(nw.new_series("__mask__", mask, backend=X.implementation))

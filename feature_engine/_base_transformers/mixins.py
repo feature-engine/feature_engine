@@ -53,11 +53,14 @@ class TransformXyMixin:
             nw_X = X.with_row_index(row_index_col)
             # the tag makes X one column wider than in fit, so widen the reference
             # while transform() runs.
+            feature_names_in = self.feature_names_in_
             self.n_features_in_ += 1
+            self.feature_names_in_ = feature_names_in + [row_index_col]
             try:
                 X = self.transform(nw_X.to_native())
             finally:
                 self.n_features_in_ -= 1
+                self.feature_names_in_ = feature_names_in
 
             nw_X = nw.from_native(X, eager_only=True)
             row_positions = nw_X.get_column(row_index_col).to_list()

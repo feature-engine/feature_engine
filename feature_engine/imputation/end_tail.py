@@ -1,9 +1,8 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
-import narwhals as nw
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -27,6 +26,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import aggregate_columns
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_handling import (
     check_numerical_variables,
@@ -212,7 +212,7 @@ class EndTailImputer(BaseImputer):
             y is not needed in this imputation. You can pass None or y.
         """
         # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -220,33 +220,32 @@ class EndTailImputer(BaseImputer):
         else:
             variables_ = check_numerical_variables(X, self.variables)
 
-        # Narwhals aggregation matches/beats pandas-native on pandas and is
-        # 3-10x faster on polars (benchmarked), so one path serves both backends.
-        exprs = [self._end_value_expr(v) for v in variables_]
-        agg = nw_X.select(*exprs)
-        imputer_dict_ = {k: v[0] for k, v in agg.to_dict(as_series=False).items()}
+        imputer_dict_ = self._end_values(X, variables_)
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _end_value_expr(self, variable: Union[str, int]) -> nw.Expr:
-        """Build the narwhals expression that computes the end-of-distribution
-        replacement value for one variable, per `imputation_method` and `tail`."""
-        col = nw.col(variable)
-
+    def _end_values(self, X, variables: List[Union[str, int]]) -> Dict:
+        """Compute the end-of-distribution replacement value of each variable, per
+        `imputation_method` and `tail`."""
         if self.imputation_method == "max":
-            return (col.max() * self.fold).alias(variable)
+            maxs = aggregate_columns(X, variables, "max")
+            return {var: maxs[var] * self.fold for var in variables}
 
         if self.imputation_method == "gaussian":
+            means = aggregate_columns(X, variables, "mean")
+            stds = aggregate_columns(X, variables, "std")
             if self.tail == "right":
-                return (col.mean() + self.fold * col.std()).alias(variable)
-            return (col.mean() - self.fold * col.std()).alias(variable)
+                return {var: means[var] + self.fold * stds[var] for var in variables}
+            return {var: means[var] - self.fold * stds[var] for var in variables}
 
         # imputation_method == "iqr"
-        iqr = col.quantile(0.75, "linear") - col.quantile(0.25, "linear")
+        q1 = aggregate_columns(X, variables, "quantile", 0.25)
+        q3 = aggregate_columns(X, variables, "quantile", 0.75)
         if self.tail == "right":
-            return (col.quantile(0.75, "linear") + self.fold * iqr).alias(variable)
-        return (col.quantile(0.25, "linear") - self.fold * iqr).alias(variable)
+            return {var: q3[var] + self.fold * (q3[var] - q1[var]) for var in variables}
+        return {var: q1[var] - self.fold * (q3[var] - q1[var]) for var in variables}

@@ -285,6 +285,24 @@ def test_seed_per_observation_with_duplicated_index():
     assert frame_to_dict(imputer.transform(X))["City"] == expected
 
 
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"random_state": 0},
+        {"random_state": ["Age", "Marks"], "seed": "observation"},
+    ],
+)
+def test_transform_does_not_modify_the_input(make_df, params):
+    imputer = RandomSampleImputer(variables=["City"], **params)
+    imputer.fit(make_df(DATA_SEED_TRAIN))
+    X = make_df(DATA_SEED_TEST)
+
+    Xt = imputer.transform(X)
+
+    assert null_count(Xt, "City") == 0
+    assert frame_to_dict(X) == DATA_SEED_TEST
+
+
 def test_error_if_random_state_variables_not_in_dataframe(make_df, data_na):
     imputer = RandomSampleImputer(seed="observation", random_state="arbitrary")
     msg = (

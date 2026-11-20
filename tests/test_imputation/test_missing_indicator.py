@@ -1,6 +1,7 @@
 import re
 import warnings
 
+import narwhals as nw
 import numpy as np
 import pandas as pd
 import pytest
@@ -82,6 +83,20 @@ def test_add_indicators_to_one_variable(make_df, data_na_dob, indicator_cls):
     result = frame_to_dict(X_transformed)
     assert "Name_na" in result
     assert sum(result["Name_na"]) == 2
+
+
+def test_indicators_are_int8_and_input_is_not_modified(make_df):
+    data = {"var_a": [1.0, None, 3.0], "var_b": ["x", "y", None]}
+    X = make_df(data)
+
+    Xt = MissingIndicator().fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {**data, "var_a_na": [0, 1, 0], "var_b_na": [0, 0, 1]}
+    schema = nw.from_native(Xt, eager_only=True).schema
+    assert schema["var_a_na"] == nw.Int8
+    assert schema["var_b_na"] == nw.Int8
+    assert frame_to_dict(X) == data
 
 
 @pytest.mark.parametrize("indicator_cls", INDICATORS)
