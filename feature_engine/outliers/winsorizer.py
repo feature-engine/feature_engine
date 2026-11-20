@@ -5,7 +5,6 @@ import warnings
 from typing import List, Literal, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
@@ -27,6 +26,11 @@ from feature_engine._docstrings.init_parameters.outliers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    replace_columns_in_df,
+    to_numpy,
+)
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
@@ -212,58 +216,25 @@ class Winsoriser(WinsorizerBase):
             to 'n_features', otherwise, will have an additional indicator column
             per processed feature for each tail.
         """
-        X_out = super()._transform(X)
+        X = self._check_transform_input_and_state(X)
+        original = dict(zip(self.variables_, to_numpy(X, self.variables_)))
+        capped = self._cap(original)
+        if len(capped) > 0:
+            X = replace_columns_in_df(X, capped)
 
         if self.add_indicators is True:
-            # pandas is faster than narwhals.
-            if nwd.is_pandas_dataframe(X_out) is True:
-                pd = nw.from_native(X_out, eager_only=True).__native_namespace__()
-                X_orig_filtered = X[self.variables_]
-                X_out_filtered = X_out[self.variables_]
-
+            indicators = {}
+            for var, values in original.items():
+                new_values = capped.get(var, values)
                 if self.tail in ["left", "both"]:
-                    X_left = X_out_filtered > X_orig_filtered
-                    X_left.columns = [str(cl) + "_left" for cl in self.variables_]
+                    indicators[f"{var}_left"] = (new_values > values).astype("float64")
                 if self.tail in ["right", "both"]:
-                    X_right = X_out_filtered < X_orig_filtered
-                    X_right.columns = [str(cl) + "_right" for cl in self.variables_]
-                if self.tail == "left":
-                    X_out = pd.concat([X_out, X_left.astype("float64")], axis=1)
-                elif self.tail == "right":
-                    X_out = pd.concat([X_out, X_right.astype("float64")], axis=1)
-                else:
-                    X_both = pd.concat([X_left, X_right], axis=1).astype("float64")
-                    X_both = X_both[
-                        [
-                            cl1
-                            for cl2 in zip(
-                                X_left.columns.values, X_right.columns.values
-                            )
-                            for cl1 in cl2
-                        ]
-                    ]
-                    X_out = pd.concat([X_out, X_both], axis=1)
-            else:
-                nw_orig = nw.from_native(X, eager_only=True)
-                nw_out = nw.from_native(X_out, eager_only=True)
+                    indicators[f"{var}_right"] = (new_values < values).astype(
+                        "float64"
+                    )
+            X = add_columns_to_df(X, indicators)
 
-                new_cols = []
-                for var in self.variables_:
-                    if self.tail in ["left", "both"]:
-                        new_cols.append(
-                            (nw_out[var] > nw_orig[var])
-                            .cast(nw.Float64)
-                            .alias(f"{var}_left")
-                        )
-                    if self.tail in ["right", "both"]:
-                        new_cols.append(
-                            (nw_out[var] < nw_orig[var])
-                            .cast(nw.Float64)
-                            .alias(f"{var}_right")
-                        )
-                X_out = nw_out.with_columns(*new_cols).to_native()
-
-        return X_out
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""
