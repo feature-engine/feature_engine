@@ -52,7 +52,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # check variables are numerical
         if self.variables is None:
@@ -72,9 +72,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # save input features
-        self.feature_names_in_ = list(nw_X.columns)
-
-        # save train set shape
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -92,15 +90,14 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        nw_X: pandas or narwhals dataframe
-            The dataframe returned by `check_X`, with the variables in the same
-            order as in the train set.
+        X: pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise, with the variables in the same order as in the train set.
         """
 
         # Check method fit has been called
         check_is_fitted(self)
-
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
@@ -114,7 +111,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # reorder variables to match train set
-        return subset_df(nw_X, self.feature_names_in_)
+        return subset_df(X, self.feature_names_in_)
 
     def _more_tags(self):
         tags_dict = _return_tags()

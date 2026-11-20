@@ -267,7 +267,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
             The fitted transformer.
         """
 
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # Coordinate variables
         variables: List[Union[str, int]] = [
@@ -278,8 +278,8 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         ]
 
         # Check all coordinate columns exist
-        missing = set(variables) - set(nw_X.columns)
-        if missing:
+        missing = set(variables) - set(X.columns)
+        if len(missing) > 0:
             raise ValueError(
                 f"Coordinate columns {missing} are not present in the dataframe."
             )
@@ -292,13 +292,13 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
 
         # Validate coordinate ranges if enabled
         if self.validate_ranges is True:
-            self._validate_coordinate_ranges(nw_X)
+            self._validate_coordinate_ranges(X)
 
         # save coordinate variables
         self.variables_ = variables
 
         # save input features
-        self.feature_names_in_ = list(nw_X.columns)
+        self.feature_names_in_ = list(X.columns)
 
         # save train set shape
         self.n_features_in_ = X.shape[1]
@@ -306,17 +306,17 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         return self
 
     def _validate_coordinate_ranges(
-        self, nw_X: Union[IntoDataFrame, nw.DataFrame]
+        self, X: Union[IntoDataFrame, nw.DataFrame]
     ) -> None:
         """Raise if any latitude/longitude value falls outside its valid range."""
         lat_cols = [self.lat1, self.lat2]
-        for lat_col, values in zip(lat_cols, to_numpy(nw_X, lat_cols)):
+        for lat_col, values in zip(lat_cols, to_numpy(X, lat_cols)):
             if (np.abs(values) > 90).any():
                 raise ValueError(
                     f"Latitude values in '{lat_col}' must be between -90 and 90."
                 )
         lon_cols = [self.lon1, self.lon2]
-        for lon_col, values in zip(lon_cols, to_numpy(nw_X, lon_cols)):
+        for lon_col, values in zip(lon_cols, to_numpy(X, lon_cols)):
             if (np.abs(values) > 180).any():
                 raise ValueError(
                     f"Longitude values in '{lon_col}' must be between -180 and 180."
@@ -340,7 +340,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         # Check method fit has been called
         check_is_fitted(self)
 
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
@@ -349,8 +349,8 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         _check_contains_na(X, self.variables_)
 
         # reorder variables to match train set
-        nw_X = subset_df(nw_X, self.feature_names_in_)
-        lat1, lon1, lat2, lon2 = to_numpy(nw_X, self.variables_)
+        X = subset_df(X, self.feature_names_in_)
+        lat1, lon1, lat2, lon2 = to_numpy(X, self.variables_)
 
         # Calculate distance based on method
         if self.method == "haversine":
@@ -360,11 +360,11 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         else:  # manhattan
             distances = self._manhattan_distance(lat1, lon1, lat2, lon2)
 
-        nw_X = add_columns_to_df(nw_X, {self.output_col: distances})
+        X = add_columns_to_df(X, {self.output_col: distances})
         if self.drop_original is True:
-            nw_X = drop_variables_from_df(nw_X, self.variables_)
+            X = drop_variables_from_df(X, self.variables_)
 
-        return nw.to_native(nw_X, pass_through=True)
+        return nw.to_native(X, pass_through=True)
 
     def _haversine_distance(
         self,
@@ -438,7 +438,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         conversion = EARTH_RADIUS[self.output_unit] / EARTH_RADIUS["km"]
         return distance_km * conversion
 
-    def get_feature_names_out(self, input_features=None) -> List[str]:
+    def get_feature_names_out(self, input_features=None) -> List[Union[str, int]]:
         """
         Get output feature names for transformation.
 
@@ -454,7 +454,7 @@ class GeoDistanceFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMix
         """
         check_is_fitted(self)
 
-        if self.drop_original:
+        if self.drop_original is True:
             feature_names = [
                 f for f in self.feature_names_in_ if f not in self.variables_
             ]

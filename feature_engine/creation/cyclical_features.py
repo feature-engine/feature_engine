@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, Union
 import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
-from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import (
@@ -20,16 +19,9 @@ from feature_engine._check_init_parameters.check_input_dictionary import (
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine.dataframe_checks import (
-    _check_contains_inf,
-    _check_contains_na,
-    _check_X_matches_training_df,
-    check_X,
-)
 from feature_engine.dataframe_helpers import (
     add_columns_to_df,
     drop_variables_from_df,
-    subset_df,
     to_numpy,
 )
 from feature_engine._docstrings.fit_attributes import (
@@ -193,19 +185,20 @@ class CyclicalFeatures(
             It is not needed in this transformer. You can pass y or None.
         """
         if self.max_values is None:
-            nw_X, variables_ = self._fit_setup(X)
+            X, variables_ = self._fit_setup(X)
             # .item() returns a plain Python int or float, not a numpy scalar
             max_values_: dict = {
                 var: values.max().item()
-                for var, values in zip(variables_, to_numpy(nw_X, variables_))
+                for var, values in zip(variables_, to_numpy(X, variables_))
             }
         else:
-            _, variables_ = super()._fit_from_dict(X, self.max_values)
+            X, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values
 
         self.variables_ = variables_
         self.max_values_ = max_values_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -223,26 +216,19 @@ class CyclicalFeatures(
         X_new: dataframe.
             The original dataframe plus the additional features.
         """
-        # not the parent's checks: BaseNumericalTransformer still returns
-        # narwhals for pandas, which makes the helpers take the slow path.
-        check_is_fitted(self)
-        nw_X = check_X(X)
-        _check_X_matches_training_df(X, self.n_features_in_)
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
-        nw_X = subset_df(nw_X, self.feature_names_in_)
+        X = self._check_transform_input_and_state(X)
 
         new_features = {}
-        arrays = to_numpy(nw_X, self.variables_)
+        arrays = to_numpy(X, self.variables_)
         for variable, values in zip(self.variables_, arrays):
             scaled = values * (2.0 * np.pi / self.max_values_[variable])
             new_features[f"{variable}_sin"] = np.sin(scaled)
             new_features[f"{variable}_cos"] = np.cos(scaled)
-        nw_X = add_columns_to_df(nw_X, new_features)
+        X = add_columns_to_df(X, new_features)
         if self.drop_original is True:
-            nw_X = drop_variables_from_df(nw_X, self.variables_)
+            X = drop_variables_from_df(X, self.variables_)
 
-        return nw.to_native(nw_X, pass_through=True)
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

@@ -18,7 +18,7 @@ def _find_nw_categoricals(
     variables: Optional[List[Union[str, int]]] = None,
     exclude_datetime: bool = True,
 ) -> List[Union[str, int]]:
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         sub_X = X if variables is None else X[variables]
         candidates = list(
             sub_X.select_dtypes(include=["object", "category", "string"]).columns
@@ -55,7 +55,7 @@ def _find_numericals(
     X: IntoDataFrame,
     variables: Optional[List[Union[str, int]]] = None,
 ) -> List[Union[str, int]]:
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         sub_X = X if variables is None else X[variables]
         return list(sub_X.select_dtypes(include="number").columns)
     else:
@@ -249,7 +249,7 @@ def find_datetime_variables(
     >>> var_date
     ['var_date']
     """
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         non_numeric = X.select_dtypes(exclude="number").columns
         datetime_cols = set(X.select_dtypes(include=["datetime", "datetimetz"]).columns)
         nw_X = nw.from_native(X, eager_only=True)
@@ -333,7 +333,7 @@ def find_all_variables(
     >>> vars_all
     ['var_num', 'var_cat', 'var_date']
     """
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         if exclude_datetime is True:
             variables = X.select_dtypes(exclude=["datetime", "datetimetz"]).columns
             numeric_cols = set(X.select_dtypes(include="number").columns)

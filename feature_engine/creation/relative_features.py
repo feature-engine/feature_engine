@@ -234,12 +234,12 @@ class RelativeFeatures(BaseCreation):
             The input dataframe plus the new variables.
         """
 
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
 
         # One array per column, not a 2D array, so that mixed int and float
         # variables keep their own dtype instead of being cast to a common one.
-        var_arrays = dict(zip(self.variables, to_numpy(nw_X, self.variables)))
-        ref_arrays = dict(zip(self.reference, to_numpy(nw_X, self.reference)))
+        var_arrays = dict(zip(self.variables, to_numpy(X, self.variables)))
+        ref_arrays = dict(zip(self.reference, to_numpy(X, self.reference)))
 
         new_features = {}
         for func in self.func:
@@ -273,13 +273,13 @@ class RelativeFeatures(BaseCreation):
 
                     new_features[name] = result
 
-        nw_X = add_columns_to_df(nw_X, new_features)
+        X = add_columns_to_df(X, new_features)
         if self.drop_original is True:
-            nw_X = drop_variables_from_df(
-                nw_X, list(set(self.variables + self.reference))
+            X = drop_variables_from_df(
+                X, list(set(self.variables + self.reference))
             )
 
-        return nw.to_native(nw_X, pass_through=True)
+        return nw.to_native(X, pass_through=True)
 
     def _raise_error_when_zero_in_denominator(self):
         raise ValueError(

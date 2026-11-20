@@ -324,7 +324,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             check_classification_targets(y)
             self._is_binary = type_of_target(y)
 
-        nw_X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y)
 
         # find or check for numerical variables
         if self.variables is None:
@@ -346,7 +346,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
             how_to_combine=self.features_to_combine, variables=variables_
         )
 
-        X_subs = [self._get_X_sub(nw_X, features) for features in input_features]
+        X_subs = [self._get_X_sub(X, features) for features in input_features]
 
         estimators_ = Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._fit_one_tree)(X_sub, y, param_grid) for X_sub in X_subs
@@ -355,7 +355,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         self.variables_ = variables_
         self.input_features_ = input_features
         self.estimators_ = estimators_
-        self.feature_names_in_ = list(nw_X.columns)
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
@@ -377,8 +377,7 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         """
         # Check method fit has been called
         check_is_fitted(self)
-
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
@@ -388,13 +387,13 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
         _check_contains_inf(X, self.variables_)
 
         # reorder variables to match train set
-        nw_X = subset_df(nw_X, self.feature_names_in_)
+        X = subset_df(X, self.feature_names_in_)
 
         new_features = {}
         # if regression or multiclass, we return the output of predict();
         # if binary classification, we return the probability
         for features, estimator in zip(self.input_features_, self.estimators_):
-            X_sub = self._get_X_sub(nw_X, features)
+            X_sub = self._get_X_sub(X, features)
 
             if self.regression is True:
                 preds = estimator.predict(X_sub)
@@ -409,20 +408,20 @@ class DecisionTreeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMi
 
             new_features[f"tree({features})"] = preds
 
-        nw_X = add_columns_to_df(nw_X, new_features)
+        X = add_columns_to_df(X, new_features)
         if self.drop_original is True:
-            nw_X = drop_variables_from_df(nw_X, self.variables_)
+            X = drop_variables_from_df(X, self.variables_)
 
-        return nw.to_native(nw_X, pass_through=True)
+        return nw.to_native(X, pass_through=True)
 
     def _get_X_sub(
-        self, nw_X: Union[IntoDataFrame, nw.DataFrame], features: Any
+        self, X: Union[IntoDataFrame, nw.DataFrame], features: Any
     ) -> IntoDataFrame:
         """Return the dataframe with the features that one tree takes as input."""
         # a single feature is stored as a name, not as a list
         if isinstance(features, (str, int)):
             features = [features]
-        return nw.to_native(subset_df(nw_X, features), pass_through=True)
+        return nw.to_native(subset_df(X, features), pass_through=True)
 
     def _make_decision_tree(self, param_grid: Dict):
         """Instantiate decision tree."""

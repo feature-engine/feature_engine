@@ -33,11 +33,11 @@ without importing it.
 ## Transformer code
 
 - `check_X` and `check_X_y` return the user's pandas dataframe as is, and a
-  narwhals dataframe for any other library. Bind it as `nw_X = check_X(X)`, pass
-  the native `X` to the variable, NaN and feature-name helpers, work on `nw_X`
-  through the dataframe helpers, and return
-  `nw.to_native(nw_X, pass_through=True)`.
-- With pandas, `nw_X` is the user's dataframe, so never write into it: no
+  narwhals dataframe for any other library. Bind it as `X = check_X(X)`, use
+  that `X` everywhere after (the variable and NaN checks accept it), and return
+  `nw.to_native(X, pass_through=True)`.
+- Store the training columns with `self.feature_names_in_ = get_column_names(X)`.
+- With pandas, `X` is the user's dataframe, so never write into it: no
   assignments, `.loc` writes or `inplace=True`, and don't write into the arrays
   from `to_numpy`. Build new dataframes instead, as the helpers do. pandas 2.3,
   which is still supported, has no copy-on-write, so a shallow copy doesn't
@@ -49,10 +49,10 @@ without importing it.
 - The helpers take and return the dataframe from `check_X`, a pandas or a
   narwhals dataframe, so they never wrap or unwrap it again.
 - Compute numeric features with numpy: take the columns with
-  `to_numpy(nw_X, variables)`, compute, and add the results as new columns with
-  `add_columns_to_df(nw_X, arrays)`. Reorder or subset columns with
-  `subset_df(nw_X, variables)`, and remove them with
-  `drop_variables_from_df(nw_X, variables)`.
+  `to_numpy(X, variables)`, compute, and add the results as new columns with
+  `add_columns_to_df(X, arrays)`. Reorder or subset columns with
+  `subset_df(X, variables)`, and remove them with
+  `drop_variables_from_df(X, variables)`.
 - Adding new columns and replacing existing ones are separate helpers. Replacing
   columns, as discretisers and encoders do, needs its own helper
   (`replace_columns_in_df`), added by the first PR that needs it.
@@ -62,11 +62,18 @@ without importing it.
 - Work on missing data, categories and strings stays in the dataframe library,
   written once with narwhals.
 - When pandas keeps a native fast path, it goes inside a helper, never in a
-  transformer. Branch with `if nwd.is_pandas_dataframe(X) is True:`, comment it
-  with `# pandas is faster than narwhals.` and put the narwhals code in `else`.
+  transformer. On the dataframe from `check_X`, branch with
+  `if not isinstance(X, nw.DataFrame):` (anything that is not narwhals is pandas
+  there), comment it with `# pandas is faster than narwhals.` and put the
+  narwhals code in `else`. Don't call `nwd.is_pandas_dataframe` on it: it warns
+  the user when it receives a narwhals dataframe.
+- The shared variable and NaN checks also receive native polars dataframes from
+  modules not converted yet, so there "not narwhals" doesn't mean pandas. They
+  branch with
+  `if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X) is True:`.
 - Add a helper in the PR that first needs it, with tests on both backends in
   `tests/test_dataframe_helpers.py`.
-- To use the target together with `X`, call `add_target_to_X(nw_X, y)` from
+- To use the target together with `X`, call `add_target_to_X(X, y)` from
   `feature_engine/encoding/_helper_functions.py` and read it with `TARGET_NAME`.
   It works for series, list and array targets, and with pandas the column takes
   the index of `X`. Don't write this pairing again in a transformer.
@@ -130,8 +137,8 @@ ask — don't guess and defensively code around it.
 - Narwhals' `.columns` is already `list[str]` — don't wrap it in `list()`.
 - pandas' `.columns` is an `Index`, not a list — `list()` is required there
   (an `Index == list` comparison is elementwise, not a clean bool).
-- The dataframe from `check_X` can be pandas, so wrap `nw_X.columns` in `list()`
-  when you need a list, for example for `feature_names_in_`.
+- The dataframe from `check_X` can be pandas, so use `get_column_names(X)` when
+  you need its columns as a list.
 
 ## Keep tests passing when you change a function or class
 

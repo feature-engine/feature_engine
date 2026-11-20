@@ -51,7 +51,7 @@ def check_numerical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         not_numerical = len(X[variables].select_dtypes(exclude="number").columns) > 0
 
     else:
@@ -118,7 +118,7 @@ def check_categorical_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         not_categorical = (
             len(
                 X[variables]
@@ -194,7 +194,7 @@ def check_datetime_variables(
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         sub_X = X[variables]
         candidates = sub_X.select_dtypes(exclude=["datetime", "datetimetz"]).columns
         numeric_cols = set(sub_X.select_dtypes(include="number").columns)
@@ -262,7 +262,7 @@ def check_all_variables(
     >>> vars_all
     ['var_num', 'var_cat', 'var_date']
     """
-    if nwd.is_pandas_dataframe(X):
+    if not isinstance(X, nw.DataFrame) and nwd.is_pandas_dataframe(X):
         columns = set(X.columns)
     elif isinstance(X, nw.DataFrame):
         columns = set(X.columns)
