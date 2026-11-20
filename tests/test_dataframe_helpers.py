@@ -8,6 +8,7 @@ from feature_engine.dataframe_checks import check_X
 from feature_engine.dataframe_helpers import (
     add_columns_to_df,
     drop_variables_from_df,
+    replace_columns_in_df,
     subset_df,
     to_numpy,
 )
@@ -172,3 +173,62 @@ def test_drop_variables_from_df_keeps_pandas_index_and_integer_column_names():
 
     expected = pd.DataFrame({1: [0.5, 1.5, 2.5]}, index=[10, 20, 30])
     pd.testing.assert_frame_equal(Xt, expected)
+
+
+# ------------------------
+# replace_columns_in_df
+# ------------------------
+
+
+def test_replace_columns_in_df_replaces_values_and_keeps_column_order(make_df):
+    X = check_X(make_df(DATA))
+
+    Xt = to_native(
+        replace_columns_in_df(
+            X, {"var_b": np.array([7, 8, 9]), "var_a": np.array([0.1, 0.2, 0.3])}
+        )
+    )
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == ["var_a", "var_b", "var_c"]
+    assert frame_to_dict(Xt) == {
+        "var_a": [0.1, 0.2, 0.3],
+        "var_b": [7, 8, 9],
+        "var_c": ["x", "y", "z"],
+    }
+
+
+def test_replace_columns_in_df_does_not_modify_the_input(make_df):
+    X = make_df(DATA)
+
+    replace_columns_in_df(check_X(X), {"var_a": np.array([7, 8, 9])})
+
+    assert frame_to_dict(X) == DATA
+
+
+def test_replace_columns_in_df_keeps_pandas_index_and_integer_column_names():
+    X = pd.DataFrame(
+        {0: [1, 2, 3], "var_c": ["x", "y", "z"], 1: [0.5, 1.5, 2.5]},
+        index=[10, 10, 30],
+    )
+
+    Xt = replace_columns_in_df(check_X(X), {0: np.array([7.0, 8.0, 9.0])})
+
+    expected = pd.DataFrame(
+        {0: [7.0, 8.0, 9.0], "var_c": ["x", "y", "z"], 1: [0.5, 1.5, 2.5]},
+        index=[10, 10, 30],
+    )
+    pd.testing.assert_frame_equal(Xt, expected)
+
+
+def test_replace_columns_in_df_does_not_fragment_pandas_dataframe():
+    # pandas warns when many columns are inserted one at a time
+    X = pd.DataFrame({f"var_{i}": [1.0, 2.0, 3.0] for i in range(150)})
+    arrays = {f"var_{i}": np.array([4, 5, 6]) for i in range(150)}
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", pd.errors.PerformanceWarning)
+        Xt = replace_columns_in_df(check_X(X), arrays)
+
+    assert list(Xt.columns) == list(X.columns)
+    assert Xt["var_0"].tolist() == [4, 5, 6]

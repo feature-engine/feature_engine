@@ -122,3 +122,36 @@ def drop_variables_from_df(
         return X.drop(columns=list(variables))
     else:
         return X.drop(list(variables))
+
+
+def replace_columns_in_df(X: DataFrame, arrays: Dict[Any, np.ndarray]) -> DataFrame:
+    """
+    Replaces the values of existing columns with numpy arrays.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    arrays : dict
+        The names of the columns to replace and the 1D numpy array with the new
+        values of each column.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        A new dataframe with the replaced columns, in the original column order.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        # replace all columns at once to avoid fragmentation warning
+        new_X = type(X)(arrays, index=X.index)
+        X_new = nwd.get_pandas().concat(
+            [X.drop(columns=list(arrays)), new_X], axis=1
+        )
+        return X_new[X.columns]
+    else:
+        return X.with_columns(
+            nw.new_series(name, values, backend=X.implementation)
+            for name, values in arrays.items()
+        )
