@@ -9,6 +9,7 @@ from sklearn.utils.validation import check_is_fitted
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
+from feature_engine._prediction._prediction_helpers import target_mean_per_code
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -149,22 +150,19 @@ class BaseTargetMeanEstimator(BaseEstimator):
             discretiser = self._make_discretiser(variables_numerical_)
             discretiser.fit(nw.to_native(X, pass_through=True))
             binner_dict_ = discretiser.binner_dict_
-            target_values = target.to_numpy().astype(float)
             arrays = to_numpy(X, variables_numerical_)
             for var, values in zip(variables_numerical_, arrays):
                 edges = np.asarray(binner_dict_[var], dtype=float)
                 codes, _ = discretiser._digitize(values, edges)
-                n_bins = len(edges) - 1
-                counts = np.bincount(codes, minlength=n_bins)
-                sums = np.bincount(codes, weights=target_values, minlength=n_bins)
+                bins_seen, means = target_mean_per_code(target, codes)
                 # NaN marks the bins without training observations, which _predict
                 # treats as unseen values.
-                with np.errstate(invalid="ignore"):
-                    bin_means[var] = sums / counts
+                bin_means[var] = np.full(len(edges) - 1, np.nan)
+                bin_means[var][bins_seen] = means
                 labels = discretiser._format_bin_labels(edges, discretiser.precision)
                 encoder_dict_[var] = {
-                    labels[code]: bin_means[var][code].item()
-                    for code in np.flatnonzero(counts)
+                    labels[code]: mean
+                    for code, mean in zip(bins_seen.tolist(), means.tolist())
                 }
             self._discretiser = discretiser
 
