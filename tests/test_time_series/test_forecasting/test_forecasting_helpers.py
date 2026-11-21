@@ -1,11 +1,13 @@
 import re
 
+import narwhals as nw
 import pandas as pd
 import polars as pl
 import pytest
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine.timeseries.forecasting._forecasting_helpers import (
+    add_lag_features,
     check_index,
     sort_by_index,
 )
@@ -67,3 +69,37 @@ def test_sort_by_index_sorts_pandas_rows_by_the_index():
 def test_sort_by_index_keeps_the_row_order_with_polars():
     X = check_X(pl.DataFrame({"a": [3, 1, 2]}))
     assert frame_to_dict(sort_by_index(X).to_native()) == {"a": [3, 1, 2]}
+
+
+def test_add_lag_features(make_df):
+    X = check_X(make_df({"a": [1.0, 2.0, 3.0], "b": [4.0, 5.0, 6.0]}))
+    Xt = add_lag_features(X, ["a", "b"], [1, 2], None, None, ["a1", "b1", "a2", "b2"])
+
+    assert frame_to_dict(nw.to_native(Xt, pass_through=True)) == {
+        "a": [1.0, 2.0, 3.0],
+        "b": [4.0, 5.0, 6.0],
+        "a1": [None, 1.0, 2.0],
+        "b1": [None, 4.0, 5.0],
+        "a2": [None, None, 1.0],
+        "b2": [None, None, 4.0],
+    }
+
+
+@pytest.mark.parametrize("backend", ["pandas", "polars", "narwhals"])
+def test_add_lag_features_with_fill_value(backend):
+    # a pandas dataframe in narwhals takes the path of the libraries other than
+    # pandas and polars
+    data = {"a": [1.0, None, 3.0]}
+    X = {
+        "pandas": check_X(pd.DataFrame(data)),
+        "polars": check_X(pl.DataFrame(data)),
+        "narwhals": nw.from_native(pd.DataFrame(data), eager_only=True),
+    }[backend]
+    Xt = add_lag_features(X, ["a"], [1], None, 0, ["a_lag"])
+
+    # the missing value of a is lagged, not filled
+    assert frame_to_dict(nw.to_native(Xt, pass_through=True))["a_lag"] == [
+        0,
+        1.0,
+        None,
+    ]

@@ -1,10 +1,9 @@
 # Authors: Pradumna Suryawanshi <pradumnasuryawanshi@gmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Union
 
 import narwhals as nw
-import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.mixins import TransformXyMixin
@@ -25,43 +24,14 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
 from feature_engine.dataframe_helpers import (
-    DataFrame,
     filter_rows,
     missing_values_count,
     missing_values_mask,
+    rows_with_missing_values,
 )
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
-
-
-def _rows_with_missing_values(
-    X: DataFrame, variables: Sequence[Union[str, int]]
-) -> np.ndarray:
-    """
-    Returns which rows have missing values in any of the variables.
-
-    Parameters
-    ----------
-    X : pandas or narwhals dataframe
-        The dataframe returned by `check_X`.
-
-    variables : list
-        The names of the variables.
-
-    Returns
-    -------
-    mask : numpy array of shape = [n_samples]
-        True for the rows with at least one missing value.
-    """
-    # pandas is faster than narwhals.
-    if not isinstance(X, nw.DataFrame):
-        return X[list(variables)].isna().to_numpy().any(axis=1)
-    else:
-        is_missing = nw.any_horizontal(
-            (nw.col(var).is_null() for var in variables), ignore_nulls=True
-        )
-        return X.select(is_missing).to_numpy()[:, 0]
 
 
 @Substitution(
@@ -293,7 +263,7 @@ class DropMissingData(BaseImputer, TransformXyMixin):
             non_null_count = (~is_missing).sum(axis=1)
             mask = non_null_count >= len(self.variables_) * self.threshold
         else:
-            mask = ~_rows_with_missing_values(X, self.variables_)
+            mask = ~rows_with_missing_values(X, self.variables_)
         if keep is False:
             mask = ~mask
         return nw.to_native(filter_rows(X, mask), pass_through=True)
