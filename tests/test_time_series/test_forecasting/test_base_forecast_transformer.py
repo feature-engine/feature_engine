@@ -54,15 +54,17 @@ class MockLag(BaseForecastTransformer):
         self.freq = freq
         self.sort_index = sort_index
 
-    def _add_features(self, X):
-        # returns the kind of dataframe it gets, as the subclasses must
+    def transform(self, X):
+        X = self._check_transform_input_and_state(X)
         nw_X = nw.from_native(X, eager_only=True)
         # get_column also works with the integer column names of pandas
         nw_X = nw_X.with_columns(
             nw_X.get_column(var).shift(1).alias(name)
             for var, name in zip(self.variables_, self._get_new_features_name())
         )
-        return nw_X if isinstance(X, nw.DataFrame) else nw_X.to_native()
+        if self.drop_na is True:
+            nw_X = nw_X.drop_nulls(subset=self._get_new_features_name())
+        return nw_X.to_native()
 
     def _get_new_features_name(self):
         return [f"{var}_lag_1" for var in self.variables_]
@@ -189,47 +191,6 @@ def test_transform_reorders_columns_to_match_fit(make_df):
     assert list(Xt.columns) == ["a", "b", "c", "a_lag_1", "b_lag_1"]
 
 
-def test_drop_original(make_df):
-    X = make_df(DATA)
-    Xt = MockLag(drop_original=True).fit(X).transform(X)
-
-    assert isinstance(Xt, make_df)
-    assert frame_to_dict(Xt) == {
-        "c": ["w", "x", "y", "z"],
-        "a_lag_1": [None, 1.0, 2.0, 3.0],
-        "b_lag_1": [None, 10, 20, 30],
-    }
-
-
-def test_drop_na(make_df):
-    X = make_df({**DATA, "a": [1.0, 2.0, None, 4.0]})
-    transformer = MockLag(missing_values="ignore", drop_na=True).fit(X)
-    Xt = transformer.transform(X)
-
-    assert isinstance(Xt, make_df)
-    # only missing data in the new features removes a row
-    assert frame_to_dict(Xt) == {
-        "a": [2.0, None],
-        "b": [20, 30],
-        "c": ["x", "y"],
-        "a_lag_1": [1.0, 2.0],
-        "b_lag_1": [10, 20],
-    }
-
-
-def test_drop_na_without_variables_keeps_all_rows(make_df):
-    X = make_df({"c": DATA["c"]})
-    transformer = MockLag(return_empty=True, drop_na=True).fit(X)
-    y = make_series(make_df, [1, 2, 3, 4])
-
-    Xt, yt = transformer.transform_x_y(X, y)
-
-    assert isinstance(Xt, make_df)
-    assert frame_to_dict(transformer.transform(X)) == {"c": DATA["c"]}
-    assert frame_to_dict(Xt) == {"c": DATA["c"]}
-    assert list(yt) == [1, 2, 3, 4]
-
-
 def test_transform_raises_error_if_different_number_of_columns(make_df):
     transformer = MockLag().fit(make_df(DATA))
     msg = (
@@ -336,14 +297,17 @@ def test_error_if_index_incomplete_or_duplicated_with_pandas(index, msg):
 
 def test_integer_column_names_with_pandas():
     X = pd.DataFrame({0: [1.0, 2.0, 3.0], 1: [4, 5, 6], "c": ["x", "y", "z"]})
-    transformer = MockLag(drop_original=True, drop_na=True).fit(X)
-    Xt = transformer.transform(X[["c", 1, 0]])
+    Xt = MockLag().fit(X).transform(X[["c", 1, 0]])
 
     expected = pd.DataFrame(
-        {"c": ["y", "z"], "0_lag_1": [1.0, 2.0], "1_lag_1": [4.0, 5.0]}, index=[1, 2]
+        {
+            0: [1.0, 2.0, 3.0],
+            1: [4, 5, 6],
+            "c": ["x", "y", "z"],
+            "0_lag_1": [np.nan, 1.0, 2.0],
+            "1_lag_1": [np.nan, 4.0, 5.0],
+        }
     )
-    # the columns started as a mix of integers and strings
-    expected.columns = expected.columns.astype(object)
     pd.testing.assert_frame_equal(Xt, expected)
 
 

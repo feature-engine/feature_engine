@@ -1,6 +1,5 @@
 from typing import List, Optional, Union
 
-import narwhals as nw
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -31,12 +30,7 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
-from feature_engine.dataframe_helpers import (
-    drop_variables_from_df,
-    filter_rows,
-    missing_values_mask,
-    subset_df,
-)
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.tags import _return_tags
 from feature_engine.timeseries.forecasting._forecasting_helpers import (
     check_index,
@@ -64,8 +58,7 @@ class BaseForecastTransformer(
     With pandas, the rows are ordered in time by the dataframe's index. Other
     dataframes, like polars, have no index: their rows are taken in the order given.
 
-    Subclasses define the parameters `freq` and `sort_index`, and the methods
-    `_add_features()` and `_get_new_features_name()`.
+    Subclasses define the parameters `freq` and `sort_index`.
 
     Parameters
     ----------
@@ -125,47 +118,6 @@ class BaseForecastTransformer(
         self.drop_original = drop_original
         self.drop_na = drop_na
 
-    def _check_index(self, X: IntoDataFrame):
-        """
-        Checks that the rows of the dataframe can be ordered in time.
-
-        Parameters
-        ----------
-        X: dataframe of shape = [n_samples, n_features]
-            The dataset.
-        """
-        check_index(X, self.freq)
-
-        return self
-
-    def _check_na_and_inf(self, X: IntoDataFrame):
-        """
-        Checks that the dataframe does not contain NaN or Infinite values.
-
-        Parameters
-        ----------
-        X: dataframe of shape = [n_samples, n_features]
-            The dataset for training or transformation.
-        """
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
-
-        return self
-
-    def _get_feature_names_in(self, X: IntoDataFrame):
-        """
-        Finds the number and name of the features in the training set.
-
-        Parameters
-        ----------
-        X: dataframe of shape = [n_samples, n_features]
-            The dataset for training or transformation.
-        """
-        self.feature_names_in_ = list(X.columns)
-        self.n_features_in_ = X.shape[1]
-
-        return self
-
     def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn parameters.
@@ -182,7 +134,7 @@ class BaseForecastTransformer(
 
         # We need the dataframes to have unique values in the index and no missing data.
         # Otherwise, when we merge the new features we will duplicate rows.
-        self._check_index(X)
+        check_index(X, self.freq)
 
         if self.variables is None:
             self.variables_ = find_numerical_variables(
@@ -192,9 +144,11 @@ class BaseForecastTransformer(
             self.variables_ = check_numerical_variables(X, self.variables)
 
         if self.missing_values == "raise":
-            self._check_na_and_inf(X)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -217,54 +171,17 @@ class BaseForecastTransformer(
         check_is_fitted(self)
         X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
-        self._check_index(X)
+        check_index(X, self.freq)
 
         if self.missing_values == "raise":
-            self._check_na_and_inf(X)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
         X = subset_df(X, self.feature_names_in_)
         if self.sort_index is True:
             X = sort_by_index(X)
 
         return X
-
-    def _add_features(self, X: IntoDataFrame) -> IntoDataFrame:
-        """
-        Adds the new features, named as `_get_new_features_name()` returns, after
-        the columns of `X`. Rows must keep their order.
-
-        Parameters
-        ----------
-        X: pandas or narwhals dataframe of shape = [n_samples, n_features]
-            The data returned by `_check_transform_input_and_state()`.
-        """
-        raise NotImplementedError
-
-    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
-        """
-        Adds the new features.
-
-        Parameters
-        ----------
-        X: dataframe of shape = [n_samples, n_features]
-            The data to transform.
-
-        Returns
-        -------
-        X_new: dataframe of shape = [n_samples, n_features + new_features]
-            The dataframe with the original plus the new variables. If
-            `drop_na=True`, rows with missing data in the new features are removed.
-        """
-        X = self._add_features(self._check_transform_input_and_state(X))
-
-        if self.drop_original is True:
-            X = drop_variables_from_df(X, self.variables_)
-
-        if self.drop_na is True:
-            mask = missing_values_mask(X, self._get_new_features_name())
-            X = filter_rows(X, ~mask.any(axis=1))
-
-        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()
