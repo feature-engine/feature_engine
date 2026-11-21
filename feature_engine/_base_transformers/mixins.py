@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple, Union
 import narwhals as nw
 import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
+import numpy as np
 from numpy import ndarray
 from numpy.typing import ArrayLike
 from sklearn.utils.validation import check_is_fitted
@@ -13,6 +14,7 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
+from feature_engine.dataframe_helpers import add_columns_to_df
 from feature_engine.variable_handling import check_numerical_variables
 
 
@@ -44,31 +46,26 @@ class TransformXyMixin:
         check_is_fitted(self)
         X, y = check_X_y(X, y)
 
-        if not isinstance(X, nw.DataFrame):
-            X = self.transform(X)
-            y = y.loc[X.index]
-        else:
-            # other libraries have no row labels, so tag each row with its position.
-            row_index_col = "__feature_engine_row_index__"
-            nw_X = X.with_row_index(row_index_col)
-            # the tag makes X one column wider than in fit, so widen the reference
-            # while transform() runs.
-            feature_names_in = self.feature_names_in_
-            self.n_features_in_ += 1
-            self.feature_names_in_ = feature_names_in + [row_index_col]
-            try:
-                X = self.transform(nw_X.to_native())
-            finally:
-                self.n_features_in_ -= 1
-                self.feature_names_in_ = feature_names_in
+        # tag each row with its position: a pandas index can have duplicates, and
+        # the other libraries have no index.
+        row_index_col = "__feature_engine_row_index__"
+        X = add_columns_to_df(X, {row_index_col: np.arange(len(X))})
+        # the tag makes X one column wider than in fit, so widen the reference
+        # while transform() runs.
+        feature_names_in = self.feature_names_in_
+        self.n_features_in_ += 1
+        self.feature_names_in_ = feature_names_in + [row_index_col]
+        try:
+            X = self.transform(nw.to_native(X, pass_through=True))
+        finally:
+            self.n_features_in_ -= 1
+            self.feature_names_in_ = feature_names_in
 
-            nw_X = nw.from_native(X, eager_only=True)
-            row_positions = nw_X.get_column(row_index_col).to_list()
-            X = nw_X.drop(row_index_col).to_native()
-            if nwd.is_into_series(y):
-                y = nw.from_native(y, series_only=True)[row_positions].to_native()
-            else:
-                y = nw.from_native(y, eager_only=True)[row_positions].to_native()
+        # not check_X: transform() can remove all the rows.
+        nw_X = nw.from_native(X, eager_only=True)
+        row_positions = nw_X.get_column(row_index_col).to_numpy()
+        X = nw_X.drop(row_index_col).to_native()
+        y = nw.from_native(y, allow_series=True)[row_positions].to_native()
 
         return X, y
 

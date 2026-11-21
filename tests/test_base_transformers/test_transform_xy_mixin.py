@@ -60,6 +60,7 @@ def test_transform_x_y_pandas_index_alignment(df_vartypes):
     class DropFirstAndLast(TransformXyMixin, BaseEstimator):
         def fit(self, X):
             self.n_features_in_ = X.shape[1]
+            self.feature_names_in_ = list(X.columns)
             return self
 
         def transform(self, X):
@@ -73,6 +74,34 @@ def test_transform_x_y_pandas_index_alignment(df_vartypes):
     assert len(Xt) != len(df_vartypes)
     assert (Xt.index == yt.index).all()
     assert (Xt.index == [1, 2]).all()
+
+
+def test_transform_x_y_with_duplicated_pandas_index():
+    X = pd.DataFrame({"a": range(6), "b": range(10, 16)}, index=[0, 0, 1, 1, 2, 2])
+    y = pd.Series(range(6), index=X.index)
+
+    Xt, yt = MockTransformer().fit(X).transform_x_y(X, y)
+
+    pd.testing.assert_frame_equal(Xt, X.iloc[[0, 1, 3, 5]])
+    pd.testing.assert_series_equal(yt, y.iloc[[0, 1, 3, 5]])
+
+
+@pytest.mark.parametrize("make_df, make_series", BACKENDS)
+def test_transform_x_y_when_transform_removes_all_rows(make_df, make_series):
+    class DropAllRows(MockTransformer):
+        def transform(self, X):
+            nw_X = nw.from_native(X, eager_only=True).select(self.feature_names_in_)
+            return nw_X.head(0).to_native()
+
+    X = make_df({"a": [0, 1], "b": [10, 11]})
+    y = make_series([0, 1])
+
+    Xt, yt = DropAllRows().fit(X).transform_x_y(X, y)
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == ["a", "b"]
+    assert len(Xt) == 0
+    assert len(yt) == 0
 
 
 @pytest.mark.parametrize("make_df, make_series", BACKENDS)

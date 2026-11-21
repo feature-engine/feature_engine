@@ -5,8 +5,9 @@ from typing import Union
 
 import narwhals as nw
 import numpy as np
-from narwhals.typing import IntoDataFrame, IntoSeries
+from narwhals.typing import IntoDataFrame
 
+from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
     _left_tail_caps_docstring,
@@ -26,7 +27,6 @@ from feature_engine._docstrings.init_parameters.outliers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X_y
 from feature_engine.dataframe_helpers import filter_rows, to_numpy
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
@@ -46,7 +46,7 @@ from feature_engine.outliers.base_outlier import WinsorizerBase
     n_features_in_=_n_features_in_docstring,
     fit_transform=_fit_transform_docstring,
 )
-class OutlierTrimmer(WinsorizerBase):
+class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
     """The OutlierTrimmer() removes observations with outliers from the dataset.
 
     The OutlierTrimmer() first calculates the maximum and/or minimum values
@@ -196,37 +196,6 @@ class OutlierTrimmer(WinsorizerBase):
         X = self._check_transform_input_and_state(X)
         X = filter_rows(X, self._rows_without_outliers(X))
         return nw.to_native(X, pass_through=True)
-
-    def transform_x_y(self, X: IntoDataFrame, y: IntoSeries):
-        """
-        Remove observations with outliers from the dataframe and the target.
-
-        Parameters
-        ----------
-        X: dataframe of shape = [n_samples, n_features]
-            The dataframe to transform.
-
-        y: Series or Dataframe of length = n_samples
-            The target variable to transform. Can be multi-output.
-
-        Returns
-        -------
-        X_new: dataframe
-            The dataframe without outlier observations. It may contain less rows
-            than the original dataset.
-
-        y_new: Series or DataFrame
-            The target variable, with as many rows as those left in X_new.
-        """
-        _, y = check_X_y(X, y)
-
-        X = self._check_transform_input_and_state(X)
-        mask = self._rows_without_outliers(X)
-        X = filter_rows(X, mask)
-        # positions, not labels, so the target keeps the pandas index of X
-        y = nw.from_native(y, allow_series=True)[np.flatnonzero(mask)]
-
-        return nw.to_native(X, pass_through=True), nw.to_native(y)
 
     def _rows_without_outliers(
         self, X: Union[IntoDataFrame, nw.DataFrame]
