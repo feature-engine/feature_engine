@@ -421,12 +421,12 @@ def test_rows_are_used_in_the_order_given_with_polars():
 
 
 def test_error_if_function_not_supported_with_polars():
-    X = pl.DataFrame(DATA)
-    transformer = ExpandingWindowFeatures(functions=["mean", "skew", "sem"]).fit(X)
     msg = (
-        "With dataframes other than pandas, ExpandingWindowFeatures supports the "
-        "functions ['count', 'sum', 'mean', 'median', 'min', 'max', 'std', 'var']. "
-        "Got ['skew', 'sem'] instead."
+        "With dataframes other than pandas, functions takes only "
+        "['count', 'max', 'mean', 'median', 'min', 'std', 'sum', 'var']. "
+        "Got ['mean', 'skew', 'sem'] instead."
     )
     with pytest.raises(NotImplementedError, match=re.escape(msg)):
-        transformer.transform(X)
+        ExpandingWindowFeatures(functions=["mean", "skew", "sem"]).fit(
+            pl.DataFrame(DATA)
+        )

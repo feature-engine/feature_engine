@@ -6,8 +6,7 @@ from __future__ import annotations
 from typing import List
 
 import narwhals as nw
-import narwhals.dependencies as nwd
-from narwhals.typing import IntoDataFrame
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -24,6 +23,16 @@ from feature_engine._docstrings.methods import (
     _fit_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import (
+    drop_variables_from_df,
+    filter_rows,
+    rows_with_missing_values,
+)
+from feature_engine.timeseries.forecasting._forecasting_helpers import (
+    add_expanding_window_features,
+    check_functions_supported,
+)
 from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     BaseForecastTransformer,
 )
@@ -233,6 +242,22 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         self.freq = freq
         self.sort_index = sort_index
 
+    def fit(self, X: IntoDataFrame, y: IntoSeries | None = None):
+        """
+        This transformer does not learn parameters.
+
+        Parameters
+        ----------
+        X: dataframe of shape = [n_samples, n_features]
+            The training dataset.
+
+        y: Series, default=None
+            y is not needed in this transformer. You can pass None or y.
+        """
+        super().fit(X, y)
+        check_functions_supported(check_X(X), self.functions, _FUNCTIONS)
+        return self
+
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Adds expanding window features.
@@ -245,82 +270,31 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         Returns
         -------
         X_new: dataframe of shape = [n_samples, n_features + window_features]
-            The dataframe with the original plus the new variables.
+            The dataframe with the original plus the new variables. If
+            `drop_na=True`, rows with missing data in the new features are removed.
         """
-        return super().transform(X)
+        X = self._check_transform_input_and_state(X)
 
-    def _add_features(self, nw_X: nw.DataFrame) -> nw.DataFrame:
-        """Add the expanding window features after the columns of nw_X."""
-        X = nw_X.to_native()
-        if nwd.is_pandas_dataframe(X) is True:
-            # pandas is faster than narwhals, and freq shifts the pandas index.
-            tmp = (
-                X[self.variables_]
-                .expanding(min_periods=self.min_periods)
-                .agg(self.functions)
-                .shift(periods=self.periods, freq=self.freq)
-            )
-            tmp.columns = self._get_new_features_name()
-            X = X.merge(tmp, left_index=True, right_index=True, how="left")
-            return nw.from_native(X, eager_only=True)
-
-        functions = self._functions_list()
-        unsupported = [func for func in functions if func not in _FUNCTIONS]
-        if len(unsupported) > 0:
-            raise NotImplementedError(
-                "With dataframes other than pandas, ExpandingWindowFeatures supports "
-                f"the functions {_FUNCTIONS}. Got {unsupported} instead."
+        new_features = self._get_new_features_name()
+        if len(self.variables_) > 0:
+            X = add_expanding_window_features(
+                X,
+                self.variables_,
+                self.functions,
+                self.min_periods,
+                self.periods,
+                self.freq,
+                self.missing_values == "ignore",
+                new_features,
             )
 
-        # pandas treats min_periods=None as 0. narwhals' rolling functions need at
-        # least 1, and 0 only changes the sum, done below.
-        min_periods = 0 if self.min_periods is None else self.min_periods
-        min_samples = max(min_periods, 1)
-        # a rolling window as long as the dataframe is an expanding window.
-        window = max(len(nw_X), min_samples)
+        if self.drop_original is True:
+            X = drop_variables_from_df(X, self.variables_)
 
-        new_features = []
-        for var in self.variables_:
-            # pandas computes in float and treats NaN as missing data, and inf too,
-            # except when counting.
-            x = nw.col(var).cast(nw.Float64)
-            if self.missing_values == "ignore":
-                n_values = x.fill_nan(None).cum_count()
-                x = nw.when(x.is_finite()).then(x)
-            else:
-                n_values = x.cum_count()
-            count = x.cum_count()
-            for func in functions:
-                if func == "count":
-                    # pandas compares min_periods with the number of rows for count.
-                    feature = nw.when(x.is_null().cum_count() >= min_periods).then(
-                        n_values.cast(nw.Float64)
-                    )
-                elif func in ("min", "max"):
-                    # cumulative min and max are faster than rolling ones, but
-                    # they are null in the rows with missing data.
-                    cum = x.cum_min() if func == "min" else x.cum_max()
-                    feature = nw.when(count >= min_samples).then(
-                        cum.fill_null(strategy="forward")
-                    )
-                elif func == "median":
-                    # narwhals has no rolling median: use the polars series.
-                    values = nw_X.select(x).get_column(var).to_native()
-                    feature = nw.from_native(
-                        values.rolling_median(window, min_samples=min_samples),
-                        series_only=True,
-                    )
-                else:
-                    feature = getattr(x, f"rolling_{func}")(
-                        window, min_samples=min_samples
-                    )
-                    if func == "sum" and min_periods == 0:
-                        feature = feature.fill_null(0)
-                new_features.append(
-                    feature.shift(self.periods).alias(f"{var}_expanding_{func}")
-                )
+        if self.drop_na is True:
+            X = filter_rows(X, ~rows_with_missing_values(X, new_features))
 
-        return nw_X.with_columns(new_features)
+        return nw.to_native(X, pass_through=True)
 
     def _functions_list(self) -> List[str]:
         """Return the functions as a list."""
