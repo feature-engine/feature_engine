@@ -1,0 +1,264 @@
+Version 2.0.X
+=============
+
+Version 2.0.0
+-------------
+
+Deployed: TBD
+
+Contributors
+~~~~~~~~~~~~
+
+- `Aditya Nikam <https://github.com/adityaanikam>`_
+- `Ankit Hemant Lade <https://github.com/ankitlade12>`_
+- `Coro <https://github.com/AlejandroCoronadoN>`_
+- `Direk Kakkar <https://github.com/direkkakkar319-ops>`_
+- `favour <https://github.com/favourone>`_
+- `Jordi Pastor <https://github.com/PastorJordi>`_
+- `Matias Loiseau <https://github.com/MatiasLoiseau>`_
+- `Maulik Patel <https://github.com/maupatel>`_
+- `Míriam Méndez <https://github.com/miriam-mendez>`_
+- `Muhammad Aniq Ramzan <https://github.com/aniq63>`_
+- `Ojas Sharma <https://github.com/ojassharma7>`_
+- `Soledad Galli <https://github.com/solegalli>`_
+- `Sudais Khan <https://github.com/khan-sudais>`_
+- `Temidayo Akindahunsi <https://github.com/TemidayoA>`_
+- `Venish Paneliya <https://github.com/VenishPaneliya>`_
+
+Feature-engine 2.0.0 is our biggest release so far.
+
+**The big news**: Feature-engine is no longer tied to pandas. Most transformers now work
+with pandas and polars dataframes, and return the same type of dataframe they receive.
+Under the hood, Feature-engine uses `narwhals <https://narwhals-dev.github.io/narwhals/>`_,
+a lightweight library that lets the same code run on different dataframe libraries.
+pandas is no longer a required dependency.
+
+**Fewer errors**: when a transformer can't find variables of the type it needs, you can
+now ask it to carry on with an empty list, with the new parameter `return_empty`. Several
+transformers that used to stop with an error now handle the situation and let you
+proceed. See the section "Transformers that no longer raise errors" below.
+
+**Better names**: we renamed several transformers to shorter or more consistent names.
+The old names still work, but they raise a `FutureWarning` and will be removed in
+version 2.1.0.
+
+**Faster**: many transformers are faster, some of them by orders of magnitude, like
+`MathFeatures()` and `DatetimeOrdinal()`.
+
+This release also brings breaking changes: Feature-engine no longer accepts numpy
+arrays, requires Python 3.11 or newer and scikit-learn 1.7 or newer, and two parameters
+were removed. Please read the section "Breaking changes" before you upgrade.
+
+Special thanks to `Ojas Sharma <https://github.com/ojassharma7>`_ for migrating the
+scaling module, and to `Jordi Pastor <https://github.com/PastorJordi>`_ and
+`Míriam Méndez <https://github.com/miriam-mendez>`_ for adding `return_empty` to the
+transformers. Thanks also to everyone who renamed transformers, fixed bugs and improved
+our tests, and to all who raised issues.
+
+Check out the full release changelog below.
+
+Support for polars
+~~~~~~~~~~~~~~~~~~
+
+The following transformers now work with pandas and polars dataframes: they learn the
+same parameters and return the same values with both. (`Soledad Galli <https://github.com/solegalli>`_)
+
+- **Creation**: `CyclicalFeatures()`, `DecisionTreeFeatures()`, `GeoDistanceFeatures()`,
+  `MathFeatures()` and `RelativeFeatures()`.
+- **Datetime**: `DatetimeFeatures()`, `DatetimeOrdinal()` and `DatetimeSubtraction()`.
+- **Discretisation**: `ArbitraryDiscretiser()`, `DecisionTreeDiscretiser()`,
+  `EqualFrequencyDiscretiser()`, `EqualWidthDiscretiser()` and `GeometricWidthDiscretiser()`.
+- **Encoding**: `CountEncoder()`, `DecisionTreeEncoder()`, `MeanEncoder()`, `OneHotEncoder()`,
+  `OrdinalEncoder()`, `RareLabelEncoder()`, `StringSimilarityEncoder()` and `WoEEncoder()`.
+- **Imputation**: `MeanImputer()`, `ArbitraryImputer()`, `CategoricalImputer()`,
+  `EndTailImputer()`, `RandomSampleImputer()`, `MissingIndicator()` and `DropMissingData()`.
+- **Outliers**: `Winsoriser()`, `ArbitraryOutlierCapper()` and `OutlierTrimmer()`.
+- **Scaling**: `MeanNormalisationScaler()` (`Ojas Sharma <https://github.com/ojassharma7>`_).
+- **Transformation**: `ArcsinTransformer()`, `ArcSinhTransformer()`, `BoxCoxTransformer()`,
+  `LogTransformer()`, `PowerTransformer()`, `ReciprocalTransformer()` and `YeoJohnsonTransformer()`.
+- **Variable handling**: all the functions of the `variable_handling` module.
+
+The deprecated names of these transformers work with polars too.
+
+The feature selection, time series forecasting, preprocessing, text and wrappers modules
+still work with pandas only, and need pandas installed.
+
+With polars, a few features depend on pandas-only concepts and behave differently:
+
+- `DatetimeFeatures(variables="index")` works with pandas only, because polars dataframes
+  have no index. With polars, it raises an error.
+- In `MathFeatures()`, custom functions receive each row as a tuple with polars, and as a
+  pandas Series with pandas. Use functions that work with both, like `max(row)` instead of
+  `row.max()`. Aggregation names that only pandas understands, like `"sem"`, raise an
+  error with polars.
+
+Variable handling
+~~~~~~~~~~~~~~~~~
+
+- All functions of the `variable_handling` module, like `find_numerical_variables()` or
+  `check_categorical_variables()`, now accept pandas and polars dataframes. (`Soledad Galli <https://github.com/solegalli>`_)
+- polars `Categorical` and `Enum` variables are recognised as categorical, and `Date` and
+  `Datetime` variables as datetime. (`Soledad Galli <https://github.com/solegalli>`_)
+- `find_categorical_variables()` and `find_categorical_and_numerical_variables()` have a
+  new parameter, `exclude_datetime`. It defaults to `True`, which keeps the previous
+  behaviour: variables whose values can be parsed as dates are not returned as
+  categorical. Set it to `False` to return them. (`Soledad Galli <https://github.com/solegalli>`_)
+
+New parameters
+~~~~~~~~~~~~~~
+
+- `return_empty`: all transformers that find variables automatically have this new
+  parameter. If `return_empty=True` and the transformer finds no variables of the type it
+  works with, it raises a warning instead of an error, and returns the data unchanged. This is useful in
+  pipelines that run on datasets with different variable types. It is only used when
+  `variables=None`, and it defaults to `False`, which keeps the previous behaviour.
+  (`Jordi Pastor <https://github.com/PastorJordi>`_, `Míriam Méndez <https://github.com/miriam-mendez>`_, `Soledad Galli <https://github.com/solegalli>`_)
+- `C` in `LogTransformer()`: a constant added to the variables before applying the
+  logarithm, so you can now transform variables with zero or negative values.
+  `C="auto"` finds the constant automatically, like `LogCpTransformer()` did. It defaults
+  to `0`, which keeps the previous behaviour. (`Aditya Nikam <https://github.com/adityaanikam>`_)
+- `n_jobs` in `DecisionTreeDiscretiser()`, `DecisionTreeEncoder()` and
+  `DecisionTreeFeatures()`: the number of jobs to run in parallel to train the decision
+  trees. It defaults to `None`, which trains the trees one after the other, as before.
+  (`Soledad Galli <https://github.com/solegalli>`_)
+
+Transformers that no longer raise errors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following situations used to stop the transformers with an error. Now, the
+transformers handle them and let you proceed:
+
+- **No variables of the right type**: with `return_empty=True`, transformers carry on when
+  the dataframe has no variables of the type they work with (see "New parameters" above).
+  (`Jordi Pastor <https://github.com/PastorJordi>`_, `Míriam Méndez <https://github.com/miriam-mendez>`_, `Soledad Galli <https://github.com/solegalli>`_)
+- **WoEEncoder()**: the weight of evidence is not defined for categories with no positive
+  or no negative cases. The encoder used to raise an error, unless you set `fill_value`.
+  Now, it replaces the zero count by 0.5 and lists the affected variables in the new
+  attribute `variables_with_zero_counts_`. (`Soledad Galli <https://github.com/solegalli>`_)
+- **Winsoriser() and OutlierTrimmer()**: when most values of a variable are the same, the
+  capping method may find a spread of 0, for example, an IQR of 0 when more than half of
+  the values are 0. The transformers used to raise an error. Now, the variable has no
+  outliers: its limits are set to infinity in `right_tail_caps_` and `left_tail_caps_`,
+  and the variable is left untouched. (`Soledad Galli <https://github.com/solegalli>`_)
+- **RandomSampleImputer()**: with `seed="observation"`, negative or very large values in
+  the variables used for the seed no longer raise an error. (`Soledad Galli <https://github.com/solegalli>`_)
+- **DatetimeFeatures()**: extracting `week` or `days_in_month` from variables with
+  missing values with `missing_values="ignore"` failed. Now, those features are missing
+  for the rows with missing dates, like the other features. (`Coro <https://github.com/AlejandroCoronadoN>`_)
+- **DecisionTreeFeatures()**: combining single features failed when the dataframe had
+  integer column names. (`Soledad Galli <https://github.com/solegalli>`_)
+- **ArbitraryOutlierCapper()**: passing an empty `min_capping_dict` together with a
+  `max_capping_dict`, or the other way round, failed in `fit()`. (`Soledad Galli <https://github.com/solegalli>`_)
+
+Renamed transformers
+~~~~~~~~~~~~~~~~~~~~
+
+We renamed the following transformers. The old names still work, but they raise a
+`FutureWarning` and will be removed in version 2.1.0. To silence the warning, use the new
+names:
+
+- `AddMissingIndicator()` is now `MissingIndicator()`. (`Muhammad Aniq Ramzan <https://github.com/aniq63>`_)
+- `ArbitraryNumberImputer()` is now `ArbitraryImputer()`. (`Muhammad Aniq Ramzan <https://github.com/aniq63>`_)
+- `CountFrequencyEncoder()` is now `CountEncoder()`. (`Soledad Galli <https://github.com/solegalli>`_)
+- `MeanMedianImputer()` is now `MeanImputer()`. (`Ojas Sharma <https://github.com/ojassharma7>`_)
+- `MeanNormalizationScaler()` is now `MeanNormalisationScaler()`. (`favour <https://github.com/favourone>`_)
+- `SelectByTargetMeanPerformance()` is now `SelectByTargetEncoding()`. (`Soledad Galli <https://github.com/solegalli>`_)
+- `SklearnTransformerWrapper()` is now `SklearnWrapper()`. (`Soledad Galli <https://github.com/solegalli>`_)
+- `Winsorizer()` is now `Winsoriser()`. (`favour <https://github.com/favourone>`_)
+
+Deprecations
+~~~~~~~~~~~~
+
+- `LogCpTransformer()` is deprecated in favour of `LogTransformer(C="auto")`, and will be
+  removed in version 2.1.0. (`Aditya Nikam <https://github.com/adityaanikam>`_)
+- The default value of `return_empty` will change from `False` to `True` in version 2.1.0,
+  in the transformers and in the variable handling functions. To keep the current
+  behaviour, set `return_empty=False` explicitly.
+- The old names of the renamed transformers (see above) will be removed in version 2.1.0.
+
+Breaking changes
+~~~~~~~~~~~~~~~~
+
+- **Dataframes only**: transformers no longer accept numpy arrays as `X`. Pass a pandas or
+  polars dataframe instead. The target `y` can still be a Series, list or numpy array.
+  (`Soledad Galli <https://github.com/solegalli>`_)
+- **Dependencies**: Feature-engine now requires Python 3.11 or newer, and scikit-learn 1.7
+  or newer. pandas is no longer a required dependency: install pandas, polars, or both.
+  narwhals and python-dateutil are new dependencies, and statsmodels is no longer a
+  dependency. (`Soledad Galli <https://github.com/solegalli>`_, `Matias Loiseau <https://github.com/MatiasLoiseau>`_)
+- **Position of the parameters**: `return_empty` is placed right after `variables` in all
+  transformers. If you pass the parameters that come after `variables` by position, pass
+  them by name instead.
+- **WoEEncoder()**: the parameter `fill_value` was removed. Categories with no positive or
+  no negative cases are now handled automatically (see above). (`Soledad Galli <https://github.com/solegalli>`_)
+- **RandomSampleImputer()**: with `seed="observation"`, the seed of each observation is now
+  calculated from the values of the variables in `random_state` with a hash, instead of
+  their sum or product. Observations with the same values in those variables receive the
+  same imputation, wherever they are in the dataframe. As a result, the imputed values
+  differ from previous versions, and the parameter `seeding_method` was removed.
+  (`Soledad Galli <https://github.com/solegalli>`_)
+- **DatetimeOrdinal()**: missing values in the output are now `NaN` in a float column with
+  pandas, and null in an integer column with polars. Before, they were `pd.NA` in an
+  object column. (`Soledad Galli <https://github.com/solegalli>`_)
+- **TextFeatures()**: `lexical_diversity` now returns the number of unique words divided by
+  the total number of words, as documented. Before, it returned the inverse.
+  (`Venish Paneliya <https://github.com/VenishPaneliya>`_)
+
+Bug fixes
+~~~~~~~~~
+
+- `WindowFeatures()` ignored the parameter `min_periods`. It now uses it to calculate the
+  window features. (`Venish Paneliya <https://github.com/VenishPaneliya>`_)
+- Imputers and discretisers now set their learned attributes only after `fit()` finishes
+  successfully. Before, an error in the middle of `fit()` left them partially fitted, and
+  `transform()` did not raise a `NotFittedError`. (`Direk Kakkar <https://github.com/direkkakkar319-ops>`_)
+- The error message of `get_feature_names_out()` in the encoders now shows the features
+  it received. (`Soledad Galli <https://github.com/solegalli>`_)
+
+Performance
+~~~~~~~~~~~
+
+- `MathFeatures()` calculates sums, means, standard deviations, minimum and maximum values,
+  and other common aggregations much faster. (`Sudais Khan <https://github.com/khan-sudais>`_)
+- `DatetimeOrdinal()` is between 27 and more than 200 times faster.
+  (`Soledad Galli <https://github.com/solegalli>`_)
+- The discretisers are faster when they return the interval limits
+  (`return_boundaries=True`), and `EqualFrequencyDiscretiser()` and
+  `EqualWidthDiscretiser()` learn the intervals faster. (`Soledad Galli <https://github.com/solegalli>`_)
+- `LogTransformer()`, `PowerTransformer()`, `ReciprocalTransformer()` and
+  `YeoJohnsonTransformer()` transform pandas dataframes faster.
+  (`Soledad Galli <https://github.com/solegalli>`_)
+- On large datasets, polars is often faster than pandas.
+
+Code maintenance
+~~~~~~~~~~~~~~~~
+
+- Added performance benchmarks with CodSpeed, which run on every pull request.
+  (`Soledad Galli <https://github.com/solegalli>`_)
+- Removed code needed to support scikit-learn 1.6 and older. (`Soledad Galli <https://github.com/solegalli>`_)
+- The tests now check that `transform()`, `inverse_transform()` and
+  `get_feature_names_out()` raise a `NotFittedError` before `fit()`.
+  (`Temidayo Akindahunsi <https://github.com/TemidayoA>`_, `Ojas Sharma <https://github.com/ojassharma7>`_)
+- The tests run with pandas and polars dataframes. (`Soledad Galli <https://github.com/solegalli>`_)
+- Added an `AGENTS.md` file with the conventions for contributing code, tests and
+  documentation. (`Soledad Galli <https://github.com/solegalli>`_)
+
+Documentation
+~~~~~~~~~~~~~
+
+- Rewrote the homepage, the quickstart and the user guides of the creation, encoding,
+  imputation, outliers, scaling and transformation modules, and reorganised the user guide
+  and the API. (`Soledad Galli <https://github.com/solegalli>`_)
+- Added examples with polars to the user guides and docstrings. (`Soledad Galli <https://github.com/solegalli>`_)
+- Added a note on `return_empty` to the user guide of all transformers.
+  (`Soledad Galli <https://github.com/solegalli>`_)
+- Corrected outputs in the examples of several user guides and docstrings that no longer
+  matched what the code returns. (`Soledad Galli <https://github.com/solegalli>`_)
+- Fixed the user guide and API documentation of `DatetimeOrdinal()`.
+  (`Ankit Hemant Lade <https://github.com/ankitlade12>`_)
+- Fixed the `precision` example in the `GeometricWidthDiscretiser()` documentation.
+  (`Maulik Patel <https://github.com/maupatel>`_)
+- The return values now render in the API documentation. (`Venish Paneliya <https://github.com/VenishPaneliya>`_)
+- Replaced the logo with one with a transparent background.
+  (`Míriam Méndez <https://github.com/miriam-mendez>`_)
+- Fixed spelling and grammar across the documentation. (`Soledad Galli <https://github.com/solegalli>`_)
