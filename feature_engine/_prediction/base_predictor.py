@@ -1,7 +1,6 @@
 from typing import List, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator
@@ -16,6 +15,11 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
     check_X_y,
+)
+from feature_engine.dataframe_helpers import (
+    map_categories_in_df,
+    subset_df,
+    to_numpy,
 )
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
@@ -120,7 +124,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         y: Series, numpy array or list of shape = [n_samples,]
             The target variable.
         """
-        nw_X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y)
 
         (
             variables_categorical_,
@@ -130,71 +134,60 @@ class BaseTargetMeanEstimator(BaseEstimator):
         _check_contains_na(X, variables_numerical_ + variables_categorical_)
         _check_contains_inf(X, variables_numerical_)
 
-        nw_Xy = add_target_to_X(nw_X, y)
-        if nwd.is_pandas_dataframe(X) is True:
-            y_pd = nw_Xy.get_column(TARGET_NAME).to_native()
+        # adding a column to a wide pandas dataframe is slow, so take the variables.
+        nw_Xy = add_target_to_X(
+            nw.from_native(subset_df(X, variables_categorical_), eager_only=True), y
+        )
+        target = nw_Xy.get_column(TARGET_NAME)
 
         encoder_dict_ = {}
+        binner_dict_ = {}
         bin_means = {}
 
         if len(variables_numerical_) > 0:
-            discretiser = self._make_discretiser(variables_numerical_).fit(X)
+            # the discretiser checks X again, and expects the user's dataframe.
+            discretiser = self._make_discretiser(variables_numerical_)
+            discretiser.fit(nw.to_native(X, pass_through=True))
             binner_dict_ = discretiser.binner_dict_
-            for var in variables_numerical_:
+            target_values = target.to_numpy().astype(float)
+            arrays = to_numpy(X, variables_numerical_)
+            for var, values in zip(variables_numerical_, arrays):
                 edges = np.asarray(binner_dict_[var], dtype=float)
-                codes, _ = discretiser._digitize(nw_X.get_column(var).to_numpy(), edges)
-                # pandas is faster than narwhals.
-                if nwd.is_pandas_dataframe(X) is True:
-                    means_per_bin = y_pd.groupby(codes).mean()
-                    bins_seen = means_per_bin.index.to_numpy()
-                    means = means_per_bin.to_numpy()
-                else:
-                    stats = (
-                        nw_Xy.select(TARGET_NAME)
-                        .with_columns(
-                            nw.new_series("__bin__", codes, backend=nw_X.implementation)
-                        )
-                        .group_by("__bin__")
-                        .agg(nw.col(TARGET_NAME).mean())
-                        .sort("__bin__")
-                    )
-                    bins_seen = stats.get_column("__bin__").to_numpy()
-                    means = stats.get_column(TARGET_NAME).to_numpy()
+                codes, _ = discretiser._digitize(values, edges)
+                n_bins = len(edges) - 1
+                counts = np.bincount(codes, minlength=n_bins)
+                sums = np.bincount(codes, weights=target_values, minlength=n_bins)
                 # NaN marks the bins without training observations, which _predict
                 # treats as unseen values.
-                bin_means[var] = np.full(len(edges) - 1, np.nan)
-                bin_means[var][bins_seen] = means
+                with np.errstate(invalid="ignore"):
+                    bin_means[var] = sums / counts
                 labels = discretiser._format_bin_labels(edges, discretiser.precision)
                 encoder_dict_[var] = {
-                    labels[code]: mean
-                    for code, mean in zip(bins_seen.tolist(), means.tolist())
+                    labels[code]: bin_means[var][code].item()
+                    for code in np.flatnonzero(counts)
                 }
             self._discretiser = discretiser
-        else:
-            binner_dict_ = {}
 
         for var in variables_categorical_:
-            # pandas is faster than narwhals.
-            if nwd.is_pandas_dataframe(X) is True:
-                encoder_dict_[var] = (
-                    y_pd.groupby(X[var], observed=True, dropna=False).mean().to_dict()
-                )
-            else:
-                stats = nw_Xy.group_by(var).agg(nw.col(TARGET_NAME).mean())
-                encoder_dict_[var] = dict(
-                    zip(
-                        stats.get_column(var).to_list(),
-                        stats.get_column(TARGET_NAME).to_list(),
-                    )
-                )
+            # group_by() needs string names; pandas columns can be integers.
+            category = nw_Xy.get_column(var).alias("__category__")
+            stats = (
+                category.to_frame()
+                .with_columns(target)
+                .group_by("__category__")
+                .agg(nw.col(TARGET_NAME).mean())
+            )
+            encoder_dict_[var] = dict(
+                zip(stats["__category__"].to_list(), stats[TARGET_NAME].to_list())
+            )
 
         self.variables_categorical_ = variables_categorical_
         self.variables_numerical_ = variables_numerical_
         self.binner_dict_ = binner_dict_
         self.encoder_dict_ = encoder_dict_
         self._bin_means = bin_means
-        self.feature_names_in_ = nw_X.columns
-        self.n_features_in_ = nw_X.shape[1]
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -224,18 +217,18 @@ class BaseTargetMeanEstimator(BaseEstimator):
             The mean target value per observation.
         """
         check_is_fitted(self)
-        nw_X = check_X(X)
+        X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
         _check_contains_na(X, self.variables_numerical_ + self.variables_categorical_)
         _check_contains_inf(X, self.variables_numerical_)
 
-        predictions = np.zeros(nw_X.shape[0])
+        predictions = np.zeros(X.shape[0])
 
         unseen = []
-        for var in self.variables_numerical_:
+        arrays = to_numpy(X, self.variables_numerical_)
+        for var, values in zip(self.variables_numerical_, arrays):
             codes, _ = self._discretiser._digitize(
-                nw_X.get_column(var).to_numpy(),
-                np.asarray(self.binner_dict_[var], dtype=float),
+                values, np.asarray(self.binner_dict_[var], dtype=float)
             )
             encoded = self._bin_means[var][codes]
             if np.isnan(encoded).any():
@@ -243,22 +236,17 @@ class BaseTargetMeanEstimator(BaseEstimator):
             predictions += encoded
         self._raise_if_unseen(unseen)
 
-        for var in self.variables_categorical_:
-            mapping = self.encoder_dict_[var]
-            # pandas is faster than narwhals.
-            if nwd.is_pandas_dataframe(X) is True:
-                codes, categories = X[var].factorize(use_na_sentinel=False)
-                encoded = np.array([mapping.get(c, np.nan) for c in categories])[codes]
-            else:
-                encoded = (
-                    nw_X.get_column(var)
-                    .replace_strict(mapping, default=None, return_dtype=nw.Float64)
-                    .to_numpy()
-                )
-            if np.isnan(encoded).any():
-                unseen.append(var)
-            predictions += encoded
-        self._raise_if_unseen(unseen)
+        if len(self.variables_categorical_) > 0:
+            X_encoded = map_categories_in_df(
+                subset_df(X, self.variables_categorical_),
+                {var: self.encoder_dict_[var] for var in self.variables_categorical_},
+            )
+            arrays = to_numpy(X_encoded, self.variables_categorical_)
+            for var, encoded in zip(self.variables_categorical_, arrays):
+                if np.isnan(encoded).any():
+                    unseen.append(var)
+                predictions += encoded
+            self._raise_if_unseen(unseen)
 
         return predictions / (
             len(self.variables_numerical_) + len(self.variables_categorical_)

@@ -1,4 +1,5 @@
 import re
+import warnings
 from datetime import datetime
 
 import numpy as np
@@ -110,6 +111,15 @@ def test_predict(make_df, strategy):
 
     assert isinstance(y_pred, np.ndarray)
     assert y_pred.tolist() == pytest.approx(PREDICTIONS[strategy])
+
+
+def test_fit_and_predict_do_not_warn(make_df):
+    X = make_df(DATA)
+    y = make_series(make_df, TARGET)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        BaseTargetMeanEstimator(bins=2).fit(X, y)._predict(X)
 
 
 @pytest.mark.parametrize("to_target", [list, np.array])
