@@ -154,15 +154,14 @@ def test_feature_importances_type(make_df, data_classification):
     assert list(selector.feature_importances_.keys()) == VARIABLES
 
 
-def test_fit_returns_narwhals_frame_and_target(make_df, data_classification):
+def test_fit_returns_the_checked_dataframe_and_target(make_df, data_classification):
     X, y = _split_target(make_df, data_classification)
     selector = BaseRecursiveSelector(
         LogisticRegression(), scoring="roc_auc", cv=3, variables=VARIABLES
     )
-    nw_X, y_ = selector.fit(X, y)
+    X_, y_ = selector.fit(X, y)
 
-    assert isinstance(nw_X, nw.DataFrame)
-    assert nw_X.to_native() is X
+    assert nw.to_native(X_, pass_through=True) is X
     assert isinstance(y_, type(y))
 
 

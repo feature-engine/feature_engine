@@ -8,6 +8,7 @@ from narwhals.typing import IntoDataFrame
 from scipy.stats import kendalltau, rankdata
 from sklearn.model_selection import cross_validate
 
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.variable_handling import (
     check_all_variables,
     check_numerical_variables,
@@ -45,9 +46,11 @@ def _importance_series(X: IntoDataFrame, features, values: np.ndarray):
     features when X is a pandas dataframe, or as a dictionary with the features as
     keys otherwise.
     """
-    if nwd.is_pandas_dataframe(X) is True:
-        return nw.get_native_namespace(X).Series(values, index=features)
-    return dict(zip(features, values.tolist()))
+    # pandas users keep getting a Series; other libraries have no index for it.
+    if not isinstance(X, nw.DataFrame):
+        return nwd.get_pandas().Series(values, index=features)
+    else:
+        return dict(zip(features, values.tolist()))
 
 
 def _select_all_variables(
@@ -164,10 +167,11 @@ def _correlation_matrix(X: IntoDataFrame, variables: list, method) -> np.ndarray
     variables is compared on the rows where both have finite values. Only the
     values above the diagonal are used.
     """
-    if nwd.is_pandas_dataframe(X) is True:
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
         values = X[variables].to_numpy(dtype=float, na_value=np.nan)
     else:
-        nw_X = nw.from_native(X, eager_only=True).select(nw.col(*variables))
+        nw_X = subset_df(X, variables)
         values = nw_X.to_numpy().astype(float)
     finite = np.isfinite(values)
 
@@ -179,12 +183,13 @@ def _correlation_matrix(X: IntoDataFrame, variables: list, method) -> np.ndarray
 
     if method == "spearman" and finite.all():
         # scipy ranks faster than pandas, and polars faster than scipy.
-        if nwd.is_pandas_dataframe(X) is True:
+        if not isinstance(X, nw.DataFrame):
             return _corrcoef(rankdata(values, axis=0))
-        return _corrcoef(nw_X.select(nw.all().rank("average")).to_numpy())
+        else:
+            return _corrcoef(nw_X.select(nw.all().rank("average")).to_numpy())
 
     # pandas is faster than narwhals.
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):
         return X[variables].corr(method=method).to_numpy()
 
     if method == "spearman":
@@ -326,13 +331,12 @@ def single_feature_performance(
     feature_performance_std = {}
 
     cv = list(cv) if isinstance(cv, GeneratorType) else cv
-    nw_X = nw.from_native(X, eager_only=True)
 
     # train a model for every feature and store the performance
     for feature in variables:
         model = cross_validate(
             estimator,
-            nw_X.get_column(feature).to_frame().to_native(),
+            nw.to_native(subset_df(X, [feature]), pass_through=True),
             y,
             cv=cv,
             groups=groups,
@@ -398,7 +402,7 @@ def find_feature_importance(
 
     model = cross_validate(
         estimator,
-        X,
+        nw.to_native(X, pass_through=True),
         y,
         cv=cv,
         groups=groups,
@@ -409,11 +413,7 @@ def find_feature_importance(
     importances = np.array([get_feature_importances(m) for m in model["estimator"]])
 
     # pandas keeps the columns index, with its name and dtype.
-    if nwd.is_pandas_dataframe(X) is True:
-        features = X.columns
-    else:
-        features = nw.from_native(X, eager_only=True).columns
-
+    features = X.columns
     feature_importances_ = _importance_series(X, features, importances.mean(axis=0))
     feature_importances_std_ = _importance_series(
         X, features, importances.std(axis=0, ddof=1)

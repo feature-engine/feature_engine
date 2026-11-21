@@ -11,6 +11,7 @@ from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine.dataframe_checks import check_X_y
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.selection.base_selection_functions import (
     _importance_series,
     _select_numerical_variables,
@@ -132,7 +133,9 @@ class BaseRecursiveSelector(BaseSelector):
         self.cv = cv
         self.groups = groups
 
-    def fit(self, X: IntoDataFrame, y: IntoSeries) -> Tuple[nw.DataFrame, IntoSeries]:
+    def fit(
+        self, X: IntoDataFrame, y: IntoSeries
+    ) -> Tuple[Union[IntoDataFrame, nw.DataFrame], IntoSeries]:
         """
         Find initial model performance. Sort features by importance.
 
@@ -146,13 +149,14 @@ class BaseRecursiveSelector(BaseSelector):
 
         Returns
         -------
-        nw_X: narwhals dataframe
-            The input dataframe, as a narwhals dataframe.
+        X: pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise.
 
         y: Series or numpy array
             The target, checked.
         """
-        nw_X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y)
 
         self.variables_ = _select_numerical_variables(
             X, self.variables, self.confirm_variables
@@ -165,7 +169,7 @@ class BaseRecursiveSelector(BaseSelector):
 
         self._get_feature_names_in(X)
 
-        X_model = nw_X.select(nw.col(*self.variables_)).to_native()
+        X_model = nw.to_native(subset_df(X, self.variables_), pass_through=True)
 
         # train model with all features and cross-validation
         model = cross_validate(
@@ -203,7 +207,7 @@ class BaseRecursiveSelector(BaseSelector):
             X, self.variables_, importances_arr.std(axis=0, ddof=1)
         )
 
-        return nw_X, y
+        return X, y
 
     def _more_tags(self):
         tags_dict = _return_tags()

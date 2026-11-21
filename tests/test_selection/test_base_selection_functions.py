@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.model_selection import GroupKFold, StratifiedKFold
 
+from feature_engine.dataframe_checks import check_X
 from feature_engine.selection.base_selection_functions import (
     _select_all_variables,
     _select_numerical_variables,
@@ -164,13 +165,15 @@ def test_find_correlated_features(make_df, variables, expected):
             "d": [0, 0, 0, 0, 1, -1],
         }
     )
-    assert find_correlated_features(X, variables, "pearson", 0.7) == expected
+    assert find_correlated_features(check_X(X), variables, "pearson", 0.7) == expected
 
 
 @pytest.mark.parametrize("method", ["pearson", "spearman", "kendall", _pearson])
 def test_find_correlated_features_methods(make_df, method):
     X = make_df(DATA_CORR)
-    groups, drop, dict_ = find_correlated_features(X, list(DATA_CORR), method, 0.5)
+    groups, drop, dict_ = find_correlated_features(
+        check_X(X), list(DATA_CORR), method, 0.5
+    )
     assert groups == [{"b", "c", "d"}]
     assert drop == ["c", "d"]
     assert dict_ == {"b": {"c", "d"}}
@@ -194,14 +197,14 @@ def test_find_correlated_features_skips_missing_values(make_df, method, expected
         "d": [0, 0, 0, 0, 1, -1, 1],
     }
     X = make_df(data)
-    assert find_correlated_features(X, list(data), method, 0.6) == expected
+    assert find_correlated_features(check_X(X), list(data), method, 0.6) == expected
 
 
 @pytest.mark.parametrize("method", ["pearson", "spearman", "kendall"])
 def test_find_correlated_features_ignores_constant_variables(make_df, method):
     X = make_df({**DATA_CORR, "e": [1] * 7})
     groups, drop, dict_ = find_correlated_features(
-        X, ["e", *DATA_CORR], method, 0.5
+        check_X(X), ["e", *DATA_CORR], method, 0.5
     )
     assert groups == [{"b", "c", "d"}]
     assert drop == ["c", "d"]
@@ -210,7 +213,9 @@ def test_find_correlated_features_ignores_constant_variables(make_df, method):
 
 def test_find_correlated_features_with_integer_column_names():
     X = pd.DataFrame({i: values for i, values in enumerate(DATA_CORR.values())})
-    groups, drop, dict_ = find_correlated_features(X, [0, 1, 2, 3], "pearson", 0.5)
+    groups, drop, dict_ = find_correlated_features(
+        check_X(X), [0, 1, 2, 3], "pearson", 0.5
+    )
     assert groups == [{1, 2, 3}]
     assert drop == [2, 3]
     assert dict_ == {1: {2, 3}}
@@ -221,7 +226,7 @@ def test_single_feature_performance(make_df, data_classification):
     rf = RandomForestClassifier(n_estimators=5, random_state=1)
 
     mean_, std_ = single_feature_performance(
-        X=X,
+        X=check_X(X),
         y=y,
         variables=list(EXPECTED_MEAN),
         estimator=rf,
@@ -243,7 +248,12 @@ def test_single_feature_performance_with_cv_splitter(
         cv = cv.split(X, y)
 
     mean_, _ = single_feature_performance(
-        X=X, y=y, variables=list(EXPECTED_MEAN), estimator=rf, cv=cv, scoring="roc_auc"
+        X=check_X(X),
+        y=y,
+        variables=list(EXPECTED_MEAN),
+        estimator=rf,
+        cv=cv,
+        scoring="roc_auc",
     )
     assert mean_ == pytest.approx(EXPECTED_MEAN)
 
@@ -257,7 +267,12 @@ def test_single_feature_performance_with_list_and_array_target(
     rf = RandomForestClassifier(n_estimators=5, random_state=1)
 
     mean_, _ = single_feature_performance(
-        X=X, y=y, variables=["var_0", "var_4"], estimator=rf, cv=3, scoring="roc_auc"
+        X=check_X(X),
+        y=y,
+        variables=["var_0", "var_4"],
+        estimator=rf,
+        cv=3,
+        scoring="roc_auc",
     )
     assert mean_ == pytest.approx(
         {"var_0": EXPECTED_MEAN["var_0"], "var_4": EXPECTED_MEAN["var_4"]}
@@ -272,7 +287,7 @@ def test_single_feature_performance_with_groups(make_df, data_with_groups):
     cv = GroupKFold(n_splits=3)
 
     expected_mean_, expected_std_ = single_feature_performance(
-        X=X,
+        X=check_X(X),
         y=y,
         variables=variables,
         estimator=rf,
@@ -280,7 +295,7 @@ def test_single_feature_performance_with_groups(make_df, data_with_groups):
         scoring="neg_mean_absolute_error",
     )
     mean_, std_ = single_feature_performance(
-        X=X,
+        X=check_X(X),
         y=y,
         variables=variables,
         estimator=rf,
@@ -301,7 +316,7 @@ def test_find_feature_importance(make_df, data_classification, cv_type):
         cv = cv.split(X, y)
 
     mean_, std_ = find_feature_importance(
-        X=X, y=y, estimator=rf, cv=cv, scoring="recall"
+        X=check_X(X), y=y, estimator=rf, cv=cv, scoring="recall"
     )
 
     importance_type = pd.Series if make_df is pd.DataFrame else dict
@@ -318,14 +333,14 @@ def test_find_feature_importance_with_groups(make_df, data_with_groups):
     cv = GroupKFold(n_splits=3)
 
     expected_mean_, expected_std_ = find_feature_importance(
-        X=X,
+        X=check_X(X),
         y=y,
         estimator=rf,
         cv=cv.split(X=X, y=y, groups=groups),
         scoring="neg_mean_absolute_error",
     )
     mean_, std_ = find_feature_importance(
-        X=X,
+        X=check_X(X),
         y=y,
         estimator=rf,
         cv=cv,
@@ -342,7 +357,7 @@ def test_find_feature_importance_returns_series_indexed_by_columns():
     y = pd.Series([1.0, 2, 3, 4, 5, 6])
 
     mean_, std_ = find_feature_importance(
-        X=X, y=y, estimator=Lasso(alpha=0.01), cv=2, scoring="r2"
+        X=check_X(X), y=y, estimator=Lasso(alpha=0.01), cv=2, scoring="r2"
     )
     assert list(mean_.index) == ["a", "b"]
     assert mean_.index.name == "features"

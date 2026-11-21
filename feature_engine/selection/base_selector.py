@@ -1,5 +1,4 @@
 import narwhals as nw
-import narwhals.dependencies as nwd
 import numpy as np
 from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -7,6 +6,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.dataframe_helpers import drop_variables_from_df, subset_df
 from feature_engine.tags import _return_tags
 
 
@@ -59,31 +59,17 @@ class BaseSelector(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             input.
         """
         check_is_fitted(self)
-        nw_X = check_X(X)
+        X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
-
-        # selecting in the train set order also restores the train column order.
-        features_to_drop = set(self.features_to_drop_)
-        features = [f for f in self.feature_names_in_ if f not in features_to_drop]
-
-        # pandas is faster than narwhals.
-        if nwd.is_pandas_dataframe(X) is True:
-            return X[features]
-        else:
-            if len(features) == 0:
-                # nw.col() needs at least one name. polars frames without columns
-                # have no rows either.
-                return nw_X.select([]).to_native()
-            return nw_X.select(nw.col(*features)).to_native()
+        X = subset_df(X, self.feature_names_in_)
+        X = drop_variables_from_df(X, self.features_to_drop_)
+        return nw.to_native(X, pass_through=True)
 
     def _get_feature_names_in(self, X: IntoDataFrame):
         """Get the names and number of features in the train set (the dataframe
         used during fit)."""
 
-        if nwd.is_pandas_dataframe(X) is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
