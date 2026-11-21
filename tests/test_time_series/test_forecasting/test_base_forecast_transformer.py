@@ -1,5 +1,6 @@
 import re
 
+import narwhals as nw
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -53,12 +54,15 @@ class MockLag(BaseForecastTransformer):
         self.freq = freq
         self.sort_index = sort_index
 
-    def _add_features(self, nw_X):
+    def _add_features(self, X):
+        # returns the kind of dataframe it gets, as the subclasses must
+        nw_X = nw.from_native(X, eager_only=True)
         # get_column also works with the integer column names of pandas
-        return nw_X.with_columns(
+        nw_X = nw_X.with_columns(
             nw_X.get_column(var).shift(1).alias(name)
             for var, name in zip(self.variables_, self._get_new_features_name())
         )
+        return nw_X if isinstance(X, nw.DataFrame) else nw_X.to_native()
 
     def _get_new_features_name(self):
         return [f"{var}_lag_1" for var in self.variables_]
