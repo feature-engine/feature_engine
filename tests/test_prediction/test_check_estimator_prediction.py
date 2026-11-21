@@ -11,6 +11,7 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
+from feature_engine.encoding import MeanEncoder
 from tests.estimator_checks.dataframe_for_checks import test_df
 from tests.estimator_checks.fit_functionality_checks import check_error_if_y_not_passed
 
@@ -212,9 +213,19 @@ def test_attributes_upon_fitting(_strategy, _bins, estimator):
     assert transformer.strategy == _strategy
 
     if _strategy == "equal_width":
-        assert type(transformer._discretiser) is EqualWidthDiscretiser
+        assert (
+            type(transformer._pipeline.named_steps["discretiser"])
+            is EqualWidthDiscretiser
+        )
     else:
-        assert type(transformer._discretiser) is EqualFrequencyDiscretiser
+        assert (
+            type(transformer._pipeline.named_steps["discretiser"])
+            is EqualFrequencyDiscretiser
+        )
+
+    assert type(transformer._pipeline.named_steps["encoder_num"]) is MeanEncoder
+
+    assert type(transformer._pipeline.named_steps["encoder_cat"]) is MeanEncoder
 
 
 @pytest.mark.parametrize("estimator", _estimators)

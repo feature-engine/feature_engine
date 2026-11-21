@@ -4,12 +4,12 @@ import narwhals as nw
 import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator
+from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
-from feature_engine._prediction._prediction_helpers import target_mean_per_code
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -17,16 +17,12 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
-from feature_engine.dataframe_helpers import (
-    map_categories_in_df,
-    subset_df,
-    to_numpy,
-)
+from feature_engine.dataframe_helpers import subset_df, to_numpy
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
-from feature_engine.encoding._helper_functions import TARGET_NAME, add_target_to_X
+from feature_engine.encoding import MeanEncoder
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import find_categorical_and_numerical_variables
 
@@ -135,68 +131,60 @@ class BaseTargetMeanEstimator(BaseEstimator):
         _check_contains_na(X, variables_numerical_ + variables_categorical_)
         _check_contains_inf(X, variables_numerical_)
 
-        # adding a column to a wide pandas dataframe is slow, so take the variables.
-        nw_Xy = add_target_to_X(
-            nw.from_native(subset_df(X, variables_categorical_), eager_only=True), y
-        )
-        target = nw_Xy.get_column(TARGET_NAME)
+        pipeline = self._make_pipeline(variables_numerical_, variables_categorical_)
+        # the pipeline checks X again, and expects the user's dataframe.
+        pipeline.fit(nw.to_native(X, pass_through=True), y)
 
-        encoder_dict_ = {}
+        steps = pipeline.named_steps
         binner_dict_ = {}
-        bin_means = {}
-
+        encoder_dict_ = {}
         if len(variables_numerical_) > 0:
-            # the discretiser checks X again, and expects the user's dataframe.
-            discretiser = self._make_discretiser(variables_numerical_)
-            discretiser.fit(nw.to_native(X, pass_through=True))
-            binner_dict_ = discretiser.binner_dict_
-            arrays = to_numpy(X, variables_numerical_)
-            for var, values in zip(variables_numerical_, arrays):
-                edges = np.asarray(binner_dict_[var], dtype=float)
-                codes, _ = discretiser._digitize(values, edges)
-                bins_seen, means = target_mean_per_code(target, codes)
-                # NaN marks the bins without training observations, which _predict
-                # treats as unseen values.
-                bin_means[var] = np.full(len(edges) - 1, np.nan)
-                bin_means[var][bins_seen] = means
-                labels = discretiser._format_bin_labels(edges, discretiser.precision)
-                encoder_dict_[var] = {
-                    labels[code]: mean
-                    for code, mean in zip(bins_seen.tolist(), means.tolist())
-                }
-            self._discretiser = discretiser
-
-        for var in variables_categorical_:
-            # group_by() needs string names; pandas columns can be integers.
-            category = nw_Xy.get_column(var).alias("__category__")
-            stats = (
-                category.to_frame()
-                .with_columns(target)
-                .group_by("__category__")
-                .agg(nw.col(TARGET_NAME).mean())
-            )
-            encoder_dict_[var] = dict(
-                zip(stats["__category__"].to_list(), stats[TARGET_NAME].to_list())
-            )
+            binner_dict_ = dict(steps["discretiser"].binner_dict_)
+            encoder_dict_.update(steps["encoder_num"].encoder_dict_)
+        if len(variables_categorical_) > 0:
+            encoder_dict_.update(steps["encoder_cat"].encoder_dict_)
 
         self.variables_categorical_ = variables_categorical_
         self.variables_numerical_ = variables_numerical_
         self.binner_dict_ = binner_dict_
         self.encoder_dict_ = encoder_dict_
-        self._bin_means = bin_means
+        self._pipeline = pipeline
         self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
+
+    def _make_pipeline(
+        self,
+        variables_numerical: List[Union[str, int]],
+        variables_categorical: List[Union[str, int]],
+    ) -> Pipeline:
+        """
+        Sort the numerical variables into bins, and replace bins and categories by
+        the mean target value.
+        """
+        steps = []
+        if len(variables_numerical) > 0:
+            steps.append(("discretiser", self._make_discretiser(variables_numerical)))
+            encoder = MeanEncoder(variables=variables_numerical, unseen="raise")
+            steps.append(("encoder_num", encoder))
+        if len(variables_categorical) > 0:
+            encoder = MeanEncoder(variables=variables_categorical, unseen="raise")
+            steps.append(("encoder_cat", encoder))
+        return Pipeline(steps)
 
     def _make_discretiser(self, variables: List[Union[str, int]]):
         """
         Instantiate the EqualWidthDiscretiser or EqualFrequencyDiscretiser.
         """
         if self.strategy == "equal_width":
-            discretiser = EqualWidthDiscretiser(bins=self.bins, variables=variables)
+            discretiser = EqualWidthDiscretiser(
+                bins=self.bins, variables=variables, return_boundaries=True
+            )
         else:
-            discretiser = EqualFrequencyDiscretiser(q=self.bins, variables=variables)
+            discretiser = EqualFrequencyDiscretiser(
+                q=self.bins, variables=variables, return_boundaries=True
+            )
 
         return discretiser
 
@@ -219,43 +207,15 @@ class BaseTargetMeanEstimator(BaseEstimator):
         _check_X_matches_training_df(X, self.n_features_in_)
         _check_contains_na(X, self.variables_numerical_ + self.variables_categorical_)
         _check_contains_inf(X, self.variables_numerical_)
+        X = subset_df(X, self.feature_names_in_)
 
-        predictions = np.zeros(X.shape[0])
-
-        unseen = []
-        arrays = to_numpy(X, self.variables_numerical_)
-        for var, values in zip(self.variables_numerical_, arrays):
-            codes, _ = self._discretiser._digitize(
-                values, np.asarray(self.binner_dict_[var], dtype=float)
-            )
-            encoded = self._bin_means[var][codes]
-            if np.isnan(encoded).any():
-                unseen.append(var)
-            predictions += encoded
-        self._raise_if_unseen(unseen)
-
-        if len(self.variables_categorical_) > 0:
-            X_encoded = map_categories_in_df(
-                subset_df(X, self.variables_categorical_),
-                {var: self.encoder_dict_[var] for var in self.variables_categorical_},
-            )
-            arrays = to_numpy(X_encoded, self.variables_categorical_)
-            for var, encoded in zip(self.variables_categorical_, arrays):
-                if np.isnan(encoded).any():
-                    unseen.append(var)
-                predictions += encoded
-            self._raise_if_unseen(unseen)
-
-        return predictions / (
-            len(self.variables_numerical_) + len(self.variables_categorical_)
-        )
-
-    def _raise_if_unseen(self, variables: List[Union[str, int]]):
-        if len(variables) > 0:
-            raise ValueError(
-                "During the encoding, NaN values were introduced in the feature(s) "
-                f"{', '.join(str(var) for var in variables)}."
-            )
+        X_tr = check_X(self._pipeline.transform(nw.to_native(X, pass_through=True)))
+        variables = self.variables_numerical_ + self.variables_categorical_
+        # summing in order gives the same values as pandas' mean(axis=1).
+        predictions = np.zeros(X_tr.shape[0])
+        for values in to_numpy(X_tr, variables):
+            predictions += values
+        return predictions / len(variables)
 
     def _more_tags(self):
         return _return_tags()
