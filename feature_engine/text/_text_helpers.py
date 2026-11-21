@@ -14,7 +14,11 @@ from typing import Any, List, Sequence, Union
 import narwhals as nw
 from narwhals.typing import IntoDataFrame
 
-from feature_engine.dataframe_helpers import add_columns_to_df
+from feature_engine.dataframe_helpers import (
+    add_category_to_df,
+    add_columns_to_df,
+    missing_values_count,
+)
 
 DataFrame = Union[IntoDataFrame, nw.DataFrame]
 
@@ -247,7 +251,11 @@ def add_text_features(
     # pandas is faster than narwhals, which can't split strings without pyarrow.
     if not isinstance(X, nw.DataFrame):
         if fill_missing is True:
-            X = X.fillna({var: "" for var in variables})
+            counts = missing_values_count(X, variables)
+            with_na = [var for var, n in zip(variables, counts) if n > 0]
+            # pandas categorical columns only take values that are categories
+            X = add_category_to_df(X, with_na, "")
+            X = X.fillna({var: "" for var in with_na})
         new_features = {}
         for var in variables:
             statistics = _PandasText(X[var], nw.get_native_namespace(X))

@@ -322,6 +322,17 @@ def test_add_category_to_df_adds_category_to_pandas_categorical_columns():
     assert list(X["var_c"].cat.categories) == ["x", "y"]
 
 
+def test_add_category_to_df_skips_columns_that_have_the_category():
+    X = pd.DataFrame(
+        {"var_a": pd.Categorical(["x", "Rare"]), "var_b": pd.Categorical(["x", "y"])}
+    )
+
+    Xt = add_category_to_df(check_X(X), ["var_a", "var_b"], "Rare")
+
+    assert list(Xt["var_a"].cat.categories) == ["Rare", "x"]
+    assert list(Xt["var_b"].cat.categories) == ["x", "y", "Rare"]
+
+
 def test_add_category_to_df_returns_the_same_dataframe_without_pandas_categories(
     make_df,
 ):

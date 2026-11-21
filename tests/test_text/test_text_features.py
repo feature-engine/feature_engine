@@ -277,6 +277,27 @@ def test_categorical_variables_with_string_categories(make_df):
     }
 
 
+def test_pandas_categorical_variables_with_missing_values():
+    X = pd.DataFrame(
+        {
+            "a": pd.Categorical(["Hello World", None]),
+            "b": pd.Categorical(["Hi", None], categories=["", "Hi"]),
+        }
+    )
+    transformer = TextFeatures(variables=["a", "b"], features=["word_count"])
+    Xt = transformer.fit_transform(X)
+
+    expected = pd.DataFrame(
+        {
+            "a": pd.Categorical(["Hello World", ""], categories=["Hello World", ""]),
+            "b": pd.Categorical(["Hi", ""], categories=["", "Hi"]),
+            "a_word_count": [2, 0],
+            "b_word_count": [1, 0],
+        }
+    )
+    pd.testing.assert_frame_equal(Xt, expected)
+
+
 def test_error_if_categories_are_not_strings():
     # polars categories are always strings
     X = pd.DataFrame({"text": pd.Series([1, 2], dtype="category")})

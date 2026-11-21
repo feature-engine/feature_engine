@@ -205,9 +205,9 @@ def add_category_to_df(
     X: DataFrame, variables: Sequence[Union[str, int]], category: Any
 ) -> DataFrame:
     """
-    Adds a category to the categorical variables, so that their values can be
-    replaced by it. Only pandas categorical columns need this: the other columns,
-    and the other libraries, take the new value as is.
+    Adds a category to the categorical variables that don't have it, so that their
+    values can be replaced by it. Only pandas categorical columns need this: the
+    other columns, and the other libraries, take the new value as is.
 
     Parameters
     ----------
@@ -230,6 +230,7 @@ def add_category_to_df(
             var: X[var].cat.add_categories(category)
             for var in variables
             if X[var].dtype.name == "category"
+            and category not in X[var].cat.categories
         }
         if len(new_columns) > 0:
             return replace_columns_in_df(X, new_columns)
