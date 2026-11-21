@@ -328,8 +328,3 @@ def test_error_if_freq_with_polars():
     )
     with pytest.raises(NotImplementedError, match=re.escape(msg)):
         MockLag(freq="1D").fit(X)
-
-    # a transformer fitted on pandas can't transform polars with freq either
-    transformer = MockLag(freq="1D").fit(pd.DataFrame(DATA, index=DATES))
-    with pytest.raises(NotImplementedError, match=re.escape(msg)):
-        transformer.transform(X)

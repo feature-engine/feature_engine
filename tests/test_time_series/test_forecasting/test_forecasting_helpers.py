@@ -39,12 +39,12 @@ def test_check_index_raises_error_if_pandas_index_incomplete_or_duplicated(
 ):
     X = check_X(pd.DataFrame({"a": [1, 2, 3]}, index=index))
     with pytest.raises(NotImplementedError, match=re.escape(msg)):
-        check_index(X, None)
+        check_index(X)
 
 
 def test_check_index_raises_error_if_freq_with_polars():
     X = check_X(pl.DataFrame({"a": [1, 2, 3]}))
-    check_index(X, None)
+    check_index(X)
 
     msg = (
         "freq is only supported with pandas dataframes, because it uses the "

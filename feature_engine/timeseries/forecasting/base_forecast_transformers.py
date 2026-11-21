@@ -171,7 +171,7 @@ class BaseForecastTransformer(
         check_is_fitted(self)
         X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
-        check_index(X, self.freq)
+        check_index(X)
 
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)

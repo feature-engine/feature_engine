@@ -17,7 +17,7 @@ from narwhals.typing import IntoDataFrame
 DataFrame = Union[IntoDataFrame, nw.DataFrame]
 
 
-def check_index(X: DataFrame, freq: Any) -> None:
+def check_index(X: DataFrame, freq: Any = None) -> None:
     """
     Checks that the rows of the dataframe can be ordered in time. With pandas, the
     index must be unique and not contain missing data. Other dataframes have no
@@ -28,8 +28,8 @@ def check_index(X: DataFrame, freq: Any) -> None:
     X : pandas or narwhals dataframe
         The dataframe returned by `check_X`.
 
-    freq : str, list or None
-        The `freq` parameter of the transformer.
+    freq : str, list or None, default=None
+        The `freq` parameter of the transformer. Only needed in fit.
     """
     # only pandas has an index.
     if not isinstance(X, nw.DataFrame):
