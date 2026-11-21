@@ -139,8 +139,14 @@ class BaseTargetMeanEstimator(BaseEstimator):
         binner_dict_ = {}
         encoder_dict_ = {}
         if len(variables_numerical_) > 0:
-            binner_dict_ = dict(steps["discretiser"].binner_dict_)
-            encoder_dict_.update(steps["encoder_num"].encoder_dict_)
+            discretiser = steps["discretiser"]
+            binner_dict_ = dict(discretiser.binner_dict_)
+            # the encoder learns the bin numbers; show the intervals instead.
+            for var, means in steps["encoder_num"].encoder_dict_.items():
+                labels = discretiser._format_bin_labels(
+                    np.asarray(binner_dict_[var], dtype=float), discretiser.precision
+                )
+                encoder_dict_[var] = {labels[code]: m for code, m in means.items()}
         if len(variables_categorical_) > 0:
             encoder_dict_.update(steps["encoder_cat"].encoder_dict_)
 
@@ -166,7 +172,10 @@ class BaseTargetMeanEstimator(BaseEstimator):
         steps = []
         if len(variables_numerical) > 0:
             steps.append(("discretiser", self._make_discretiser(variables_numerical)))
-            encoder = MeanEncoder(variables=variables_numerical, unseen="raise")
+            # bin numbers are faster to encode than interval labels.
+            encoder = MeanEncoder(
+                variables=variables_numerical, ignore_format=True, unseen="raise"
+            )
             steps.append(("encoder_num", encoder))
         if len(variables_categorical) > 0:
             encoder = MeanEncoder(variables=variables_categorical, unseen="raise")
@@ -178,13 +187,9 @@ class BaseTargetMeanEstimator(BaseEstimator):
         Instantiate the EqualWidthDiscretiser or EqualFrequencyDiscretiser.
         """
         if self.strategy == "equal_width":
-            discretiser = EqualWidthDiscretiser(
-                bins=self.bins, variables=variables, return_boundaries=True
-            )
+            discretiser = EqualWidthDiscretiser(bins=self.bins, variables=variables)
         else:
-            discretiser = EqualFrequencyDiscretiser(
-                q=self.bins, variables=variables, return_boundaries=True
-            )
+            discretiser = EqualFrequencyDiscretiser(q=self.bins, variables=variables)
 
         return discretiser
 
