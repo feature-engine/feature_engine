@@ -33,7 +33,7 @@ by executing:
 
 .. code:: python
 
-    X[["var_1", "var_2"].rolling(window=3).agg(["max", "mean"])
+    X[["var_1", "var_2"]].rolling(window=3).agg(["max", "mean"])
 
 With the previous command, we create 2 window features for each variable, `var_1` and
 `var_2`, by taking the maximum and average value of the current and 2 previous rows of data.
@@ -43,7 +43,7 @@ algorithms, we also need to shift the window forward with pandas method `shift`:
 
 .. code:: python
 
-    X[["var_1", "var_2"].rolling(window=3).agg(["max", "mean"]).shift(period=1)
+    X[["var_1", "var_2"]].rolling(window=3).agg(["max", "mean"]).shift(periods=1)
 
 Shifting is important to ensure that we are using values strictly in the past, with
 respect to the point that we want to forecast.
@@ -72,15 +72,15 @@ weeks data, leaving a gap of a window in between the window feature and the fore
 WindowFeatures: under the hood
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`WindowFeatures` works on top of `pandas.rolling`, `pandas.aggregate` and
+With pandas, :class:`WindowFeatures` works on top of `pandas.rolling` and
 `pandas.shift`. With `pandas.rolling`, :class:`WindowFeatures` determines the size
 of the windows for the operations. With `pandas.rolling` we can specify the window size
 with an integer, a string or a function. With :class:`WindowFeatures`, in addition, we
 can pass a list of integers, strings or functions, to perform computations over multiple
 window sizes.
 
-:class:`WindowFeatures` uses `pandas.aggregate` to perform the mathematical operations
-over the windows. Therefore, you can use any operation supported
+:class:`WindowFeatures` performs the mathematical operations over the windows with the
+methods of `pandas.rolling`. Therefore, you can use any operation supported
 by pandas. For supported aggregation functions, see Rolling Window
 `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
@@ -94,8 +94,10 @@ forward the value 2 weeks forward.
 original dataframe. It also has the methods `fit()` and `transform()` that make it
 compatible with the scikit-learn's `Pipeline` and cross-validation functions.
 
-Note that, in the current implementation, :class:`WindowFeatures` only works with dataframes whose index,
-containing the time series timestamp, contains unique values and no NaN.
+:class:`WindowFeatures` works with pandas and polars dataframes. With pandas, the rows are
+ordered in time by the dataframe's index, which should contain the time series timestamp,
+with unique values and no NaN. Polars dataframes have no index, so the rows are used in the
+order given. See :ref:`Window features with polars <window_features_polars>` below.
 
 .. attention::
 
@@ -504,7 +506,7 @@ This is the resulting output:
     2020-05-15 13:15:00    32.50
     2020-05-15 13:30:00    32.52
     2020-05-15 13:45:00    32.68
-    Freq: 15T, Name: ambient_temp, dtype: float64
+    Freq: 15min, Name: ambient_temp, dtype: float64
 
 We can use :class:`WindowFeatures` to create, for example, 2 new window features by finding
 the mean and maximum value within a 45 minute windows of a pandas Series if we convert it
@@ -603,6 +605,89 @@ We obtain the names of the original variables plus the new window features:
      'ambient_temp_window_3_mean',
      'module_temp_window_3_mean',
      'irradiation_window_3_mean']
+
+.. _window_features_polars:
+
+Window features with polars
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:class:`WindowFeatures` also creates window features from polars dataframes. Polars
+dataframes have no index, so the rows are used in the order given: make sure they are
+sorted in time before creating the features. For the same reason, with polars:
+
+- `window` takes the number of rows in each window, as an integer or a list of integers.
+  Time spans, like `"30min"`, are not supported.
+- `freq` is not supported: the window features are shifted by `periods` rows.
+- `functions` takes `"count"`, `"kurt"`, `"max"`, `"mean"`, `"median"`, `"min"`,
+  `"skew"`, `"std"`, `"sum"` and `"var"`.
+- `min_periods` must be greater than 0.
+- `sort_index` does not apply.
+
+Let's create a polars dataframe with the ambient temperature and irradiation of our
+previous example, which were recorded every 15 minutes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.timeseries.forecasting import WindowFeatures
+
+    X = pl.DataFrame({
+        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68],
+        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56],
+    })
+
+Windows of 2 and 4 rows cover 30 and 60 minutes of data:
+
+.. code:: python
+
+    win_f = WindowFeatures(window=[2, 4], functions="mean")
+
+    X_tr = win_f.fit_transform(X)
+
+    print(X_tr)
+
+We see the window features on the right of the dataframe. The first rows, which don't
+have enough past data to fill the window, contain null values:
+
+.. code:: text
+
+    shape: (8, 6)
+    ┌──────────────┬─────────────┬─────────────────┬─────────────────┬────────────────┬────────────────┐
+    │ ambient_temp ┆ irradiation ┆ ambient_temp_wi ┆ irradiation_win ┆ ambient_temp_w ┆ irradiation_wi │
+    │ ---          ┆ ---         ┆ ndow_2_mean     ┆ dow_2_mean      ┆ indow_4_mean   ┆ ndow_4_mean    │
+    │ f64          ┆ f64         ┆ ---             ┆ ---             ┆ ---            ┆ ---            │
+    │              ┆             ┆ f64             ┆ f64             ┆ f64            ┆ f64            │
+    ╞══════════════╪═════════════╪═════════════════╪═════════════════╪════════════════╪════════════════╡
+    │ 31.31        ┆ 0.51        ┆ null            ┆ null            ┆ null           ┆ null           │
+    │ 31.51        ┆ 0.79        ┆ null            ┆ null            ┆ null           ┆ null           │
+    │ 32.15        ┆ 0.65        ┆ 31.41           ┆ 0.65            ┆ null           ┆ null           │
+    │ 32.39        ┆ 0.76        ┆ 31.83           ┆ 0.72            ┆ null           ┆ null           │
+    │ 32.62        ┆ 0.42        ┆ 32.27           ┆ 0.705           ┆ 31.84          ┆ 0.6775         │
+    │ 32.5         ┆ 0.49        ┆ 32.505          ┆ 0.59            ┆ 32.1675        ┆ 0.655          │
+    │ 32.52        ┆ 0.57        ┆ 32.56           ┆ 0.455           ┆ 32.415         ┆ 0.58           │
+    │ 32.68        ┆ 0.56        ┆ 32.51           ┆ 0.53            ┆ 32.5075        ┆ 0.56           │
+    └──────────────┴─────────────┴─────────────────┴─────────────────┴────────────────┴────────────────┘
+
+To take windows with fewer rows at the start of the series, set `min_periods`.
+
+We can also drop the rows with null values in the window features from the dataframe and
+the target:
+
+.. code:: python
+
+    y = pl.Series("y", [1, 2, 3, 4, 5, 6, 7, 8])
+
+    win_f = WindowFeatures(window=[2, 4], functions=["mean", "max"], drop_na=True)
+
+    X_tr, y_tr = win_f.fit(X).transform_x_y(X, y)
+
+    print(X.shape, y.shape, X_tr.shape, y_tr.shape)
+
+The first 4 rows were removed from both:
+
+.. code:: python
+
+    (8, 2) (8,) (4, 10) (4,)
 
 
 Windows from the target vs windows from predictor variables
