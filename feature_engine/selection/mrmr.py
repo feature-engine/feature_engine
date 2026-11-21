@@ -1,10 +1,10 @@
-import copy
-
 from types import GeneratorType
 from typing import List, Optional, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_selection import (
     f_classif,
@@ -40,13 +40,12 @@ from feature_engine.selection._selection_constants import (
     _CLASSIFICATION_METRICS,
     _REGRESSION_METRICS,
 )
+from feature_engine.selection.base_selection_functions import (
+    _correlation_matrix,
+    _select_numerical_variables,
+)
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
-from feature_engine.variable_handling import (
-    check_numerical_variables,
-    find_numerical_variables,
-    retain_variables_if_in_df,
-)
 
 _cv_docstring = _cv_docstring + """ Only used when `method = 'RFCQ'`."""
 
@@ -153,7 +152,7 @@ class MRMR(BaseSelector):
         will optimize the 'max_depth' over `[1, 2, 3, 4]`. Only used when `method` is
         `'RFCQ'`.
 
-    regression: boolean, default=True
+    regression: boolean, default=False
         Indicates whether the target is one for regression or a classification.
 
     {confirm_variables}
@@ -216,6 +215,31 @@ class MRMR(BaseSelector):
     2  7.2574  2.802260
     3  5.6431  2.547945
     4  3.8462  2.181467
+
+    With polars
+
+    >>> import polars as pl
+    >>> from sklearn.datasets import fetch_california_housing
+    >>> from feature_engine.selection import MRMR
+    >>> data = fetch_california_housing()
+    >>> X = pl.DataFrame(data.data, schema=data.feature_names, orient="row")
+    >>> X = X.drop("Latitude", "Longitude")
+    >>> y = pl.Series("MedHouseVal", data.target)
+    >>> mrmr_sel = MRMR(method="MIQ", regression=True, random_state=3)
+    >>> X_t = mrmr_sel.fit_transform(X, y)
+    >>> print(X_t.head())
+    shape: (5, 2)
+    ┌────────┬──────────┐
+    │ MedInc ┆ AveOccup │
+    │ ---    ┆ ---      │
+    │ f64    ┆ f64      │
+    ╞════════╪══════════╡
+    │ 8.3252 ┆ 2.555556 │
+    │ 8.3014 ┆ 2.109842 │
+    │ 7.2574 ┆ 2.80226  │
+    │ 5.6431 ┆ 2.547945 │
+    │ 3.8462 ┆ 2.181467 │
+    └────────┴──────────┘
     """
 
     def __init__(
@@ -284,7 +308,7 @@ class MRMR(BaseSelector):
             and scoring not in _CLASSIFICATION_METRICS
         ):
             raise ValueError(
-                f"The metric {scoring} is not suitable for classification. Set the"
+                f"The metric {scoring} is not suitable for classification. Set the "
                 "parameter regression to True or choose a different performance "
                 "metric."
             )
@@ -302,87 +326,96 @@ class MRMR(BaseSelector):
         self.random_state = random_state
         self.n_jobs = n_jobs
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Find the important features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
            The input dataframe.
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
         """
-        # check input dataframe
-        X, y = check_X_y(X, y)
+        nw_X, y = check_X_y(X, y)
 
-        if self.variables is None:
-            self.variables_ = find_numerical_variables(X)
-        else:
-            if self.confirm_variables is True:
-                variables_ = retain_variables_if_in_df(X, self.variables)
-                self.variables_ = check_numerical_variables(X, variables_)
-            else:
-                self.variables_ = check_numerical_variables(X, self.variables)
+        self.variables_ = _select_numerical_variables(
+            X, self.variables, self.confirm_variables
+        )
 
-        # check that there are more than 1 variable to select from
         self._check_variable_number()
-
-        # save input features
         self._get_feature_names_in(X)
 
-        # start the search
-        self.relevance_ = self._calculate_relevance(X[self.variables_], y)
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            X_vars = X[self.variables_]
+        else:
+            nw_X_vars = nw_X.select(nw.col(*self.variables_))
+            X_vars = nw_X_vars.to_native()
 
-        # select most relevant feature
-        relevance = self.relevance_
-        n = relevance.argmax()  # most relevant feature
-        relevance = np.delete(relevance, n)
+        # scikit-learn's f_regression fails with polars series.
+        if nwd.is_into_series(y) is True and nwd.is_pandas_series(y) is False:
+            y = nw.from_native(y, series_only=True).to_numpy()
 
-        remaining = copy.deepcopy(self.variables_)  # all variables to examine
-        feature = remaining[n]  # most important feature so far
-        selected = [feature]  # selected feature so far
-        remaining.remove(feature)  # remaining features to examine
+        self.relevance_ = self._calculate_relevance(X_vars, y)
 
-        # calculate redundance
-        redundance = self._calculate_redundance(X[remaining], X[feature])
-
-        # find feature with highest mrmr
-        mrmr = self._calculate_mrmr(relevance, redundance)
+        if self.method in ["FCD", "FCQ", "RFCQ"]:
+            # one matrix product for all pairs is much faster than correlating the
+            # remaining features at each iteration.
+            corr = np.triu(_correlation_matrix(X, self.variables_, "pearson"), 1)
+            corr = np.absolute(corr + corr.T)
+        else:
+            # pandas is faster than narwhals.
+            if nwd.is_pandas_dataframe(X) is True:
+                values = X_vars.to_numpy(dtype=float, na_value=np.nan)
+            else:
+                values = nw_X_vars.to_numpy()
 
         if self.max_features is None:
-            iter = int(0.2 * len(self.variables_)) - 2
+            n_features = int(0.2 * len(self.variables_))
         else:
-            iter = self.max_features - 2
+            n_features = self.max_features
 
-        for i in range(iter):
-            # find feature with maximum relevance and minimum redundancy
-            n = mrmr.argmax()
+        remaining: np.ndarray = np.ones(len(self.variables_), dtype=bool)
+        selected = [self.relevance_.argmax()]
+        redundance_sum = np.zeros(len(self.variables_))
 
-            # adjust feature lists
-            feature = remaining[n]
-            selected.append(feature)
-            remaining.remove(feature)
+        # at least 2 features are selected, also when max_features is 1.
+        while len(selected) < max(n_features, 2):
+            feature = selected[-1]
+            remaining[feature] = False
+            to_examine = np.flatnonzero(remaining)
 
-            relevance = np.delete(relevance, n)
-            if i == 0:
-                redundance = np.delete(redundance, n)
+            if self.method in ["FCD", "FCQ", "RFCQ"]:
+                redundance = corr[to_examine, feature]
             else:
-                redundance = np.delete(redundance, n, axis=1)
+                redundance = self._mutual_information(
+                    values[:, to_examine], self._feature_values(X, nw_X, feature)
+                )
 
-            new_redundance = self._calculate_redundance(X[remaining], X[feature])
-            redundance = np.vstack([redundance, new_redundance])
-            mean_redundance = redundance.mean(axis=0)
+            # summing row by row and dividing gives the same values as the mean
+            # of the redundance to all the selected features.
+            redundance_sum[to_examine] += redundance
+            mrmr = self._calculate_mrmr(
+                self.relevance_[to_examine],
+                redundance_sum[to_examine] / len(selected),
+            )
+            selected.append(to_examine[mrmr.argmax()])
 
-            mrmr = self._calculate_mrmr(relevance, mean_redundance)
-
-        n = mrmr.argmax()
-        selected.append(remaining[n])
-
-        self.features_to_drop_ = [f for f in self.variables_ if f not in selected]
+        selected_features = {self.variables_[i] for i in selected}
+        self.features_to_drop_ = [
+            f for f in self.variables_ if f not in selected_features
+        ]
 
         return self
+
+    def _feature_values(self, X: IntoDataFrame, nw_X: nw.DataFrame, i) -> np.ndarray:
+        """Values of the i-th variable, in its own dtype."""
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            return X[self.variables_[i]].to_numpy()
+        return nw_X.get_column(self.variables_[i]).to_numpy()
 
     def _calculate_relevance(self, X, y):
 
@@ -424,10 +457,10 @@ class MRMR(BaseSelector):
                     n_jobs=self.n_jobs,
                 )
 
-            if self.param_grid:
-                param_grid = self.param_grid
-            else:
+            if self.param_grid is None or len(self.param_grid) == 0:
                 param_grid = {"max_depth": [1, 2, 3, 4]}
+            else:
+                param_grid = self.param_grid
 
             cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
 
@@ -441,22 +474,17 @@ class MRMR(BaseSelector):
 
         return relevance
 
-    def _calculate_redundance(self, X, y):
-
-        if self.method in ["FCD", "FCQ", "RFCQ"]:
-            redundance = X.corrwith(y).values
-            redundance = np.absolute(redundance)
-
-        else:
-            redundance = mutual_info_regression(
-                X=X,
-                y=y,
-                n_neighbors=self.n_neighbors,
-                random_state=self.random_state,
-                n_jobs=self.n_jobs,
-            )
-
-        return redundance
+    def _mutual_information(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """Mutual information between each column of X and the feature y."""
+        # X is a copy made by the caller, so scikit-learn doesn't need to copy it.
+        return mutual_info_regression(
+            X=X,
+            y=y,
+            n_neighbors=self.n_neighbors,
+            copy=False,
+            random_state=self.random_state,
+            n_jobs=self.n_jobs,
+        )
 
     def _calculate_mrmr(self, relevance, redundance):
         if self.method in ["MID", "FCD"]:
