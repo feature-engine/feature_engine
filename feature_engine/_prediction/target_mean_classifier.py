@@ -163,9 +163,9 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
                 "The target has more than 2 unique values."
             )
 
-        # Other labels are mapped to 0 and 1, so that the target means are
-        # probabilities.
-        if any(label not in [0, 1] for label in self.classes_) is True:
+        # if target has values other than 0 and 1, we need to remap the values,
+        # to be able to compute meaningful averages.
+        if any(x for x in self.classes_ if x not in [0, 1]):
             y = np.where(np.asarray(y) == self.classes_[0], 0, 1)
 
         return super().fit(X, y)
