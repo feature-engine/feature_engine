@@ -1,6 +1,5 @@
 import re
 from datetime import datetime
-from types import SimpleNamespace
 
 import narwhals as nw
 import numpy as np
@@ -9,7 +8,11 @@ import polars as pl
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from feature_engine.text import TextFeatures, text_features
+from feature_engine.text import TextFeatures
+from feature_engine.text._text_helpers import (
+    _add_features_with_expressions,
+    _NarwhalsText,
+)
 from feature_engine.text.text_features import TEXT_FEATURES
 from tests.backend_helpers import frame_to_dict, make_series
 
@@ -440,17 +443,14 @@ def test_feature_values_on_edge_cases(make_df, feature):
 
 
 @pytest.mark.parametrize("feature", list(TEXT_FEATURES.keys()))
-def test_feature_values_on_other_backends(monkeypatch, feature):
-    # makes polars take the path used by backends other than pandas and polars
-    backend_checks = SimpleNamespace(
-        is_pandas_dataframe=lambda X: False, is_polars_dataframe=lambda X: False
+def test_feature_values_on_other_backends(feature):
+    # polars has its own path, so this runs on polars the code of the other backends
+    X = nw.from_native(pl.DataFrame({"text": TEXT_EDGE_CASES}), eager_only=True)
+    Xt = _add_features_with_expressions(
+        X, ["text"], [feature], True, nw, _NarwhalsText
     )
-    monkeypatch.setattr(text_features, "nwd", backend_checks)
-    X = pl.DataFrame({"text": TEXT_EDGE_CASES})
-    Xt = TextFeatures(variables=["text"], features=[feature]).fit_transform(X)
 
-    assert isinstance(Xt, pl.DataFrame)
-    assert frame_to_dict(Xt)[f"text_{feature}"] == pytest.approx(
+    assert frame_to_dict(Xt.to_native())[f"text_{feature}"] == pytest.approx(
         EXPECTED_EDGE_CASES[feature]
     )
 
