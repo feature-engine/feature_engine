@@ -657,6 +657,21 @@ def test_pandas_integer_column_names():
     wrapper = SklearnWrapper(transformer=VarianceThreshold(threshold=2))
     pd.testing.assert_frame_equal(wrapper.fit_transform(X), X[[1, 2]])
 
+    # scikit-learn names the new columns x0_a, ... because the names are not strings
+    wrapper = SklearnWrapper(
+        transformer=OneHotEncoder(sparse_output=False), variables=[2]
+    )
+    expected = pd.DataFrame(
+        {
+            0: [1, 2, 3, 4],
+            1: [2.0, 4.0, 6.0, 8.0],
+            "x0_a": [1.0, 0.0, 1.0, 0.0],
+            "x0_b": [0.0, 1.0, 0.0, 0.0],
+            "x0_c": [0.0, 0.0, 0.0, 1.0],
+        }
+    )
+    pd.testing.assert_frame_equal(wrapper.fit_transform(X), expected)
+
 
 @pytest.mark.parametrize(
     "transformer, expected",
