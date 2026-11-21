@@ -19,6 +19,7 @@ from feature_engine.dataframe_helpers import (
     missing_values_count,
     missing_values_mask,
     replace_columns_in_df,
+    rows_with_missing_values,
     subset_df,
     to_numpy,
 )
@@ -370,6 +371,29 @@ def test_missing_values_mask_with_empty_variables(make_df):
     X = check_X(make_df(DATA_NA))
 
     assert missing_values_mask(X, []).shape == (4, 0)
+
+
+# ------------------------
+# rows_with_missing_values
+# ------------------------
+
+
+def test_rows_with_missing_values(make_df):
+    X = check_X(make_df({**DATA_NA, "var_d": [None, 1.0, 2.0, 3.0]}))
+
+    assert rows_with_missing_values(X, ["var_a", "var_d"]).tolist() == [
+        True,
+        True,
+        False,
+        False,
+    ]
+    assert rows_with_missing_values(X, ["var_c"]).tolist() == [False] * 4
+
+
+def test_rows_with_missing_values_with_empty_variables(make_df):
+    X = check_X(make_df(DATA_NA))
+
+    assert rows_with_missing_values(X, []).tolist() == [False] * 4
 
 
 # ------------------------
