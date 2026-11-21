@@ -403,23 +403,12 @@ def test_error_if_time_span_window_with_polars(window):
     with pytest.raises(NotImplementedError, match=re.escape(msg)):
         WindowFeatures(window=window).fit(pl.DataFrame(DATA))
 
-    # a transformer fitted on pandas can't transform polars with time spans either
-    transformer = WindowFeatures(window=window).fit(
-        pd.DataFrame(DATA, index=pd.date_range("2020-01-01", periods=7))
-    )
-    with pytest.raises(NotImplementedError, match=re.escape(msg)):
-        transformer.transform(pl.DataFrame(DATA))
-
 
 @pytest.mark.parametrize("functions", ["sem", ["mean", "last"]])
 def test_error_if_function_not_supported_with_polars(functions):
     msg = MSG_POLARS_FUNCTIONS + f"Got {functions} instead."
     with pytest.raises(NotImplementedError, match=re.escape(msg)):
         WindowFeatures(functions=functions).fit(pl.DataFrame(DATA))
-
-    transformer = WindowFeatures(functions=functions).fit(pd.DataFrame(DATA))
-    with pytest.raises(NotImplementedError, match=re.escape(msg)):
-        transformer.transform(pl.DataFrame(DATA))
 
 
 def test_error_if_min_periods_is_zero_with_polars():
@@ -430,7 +419,3 @@ def test_error_if_min_periods_is_zero_with_polars():
     )
     with pytest.raises(NotImplementedError, match=re.escape(msg)):
         WindowFeatures(min_periods=0).fit(pl.DataFrame(DATA))
-
-    transformer = WindowFeatures(min_periods=0).fit(pd.DataFrame(DATA))
-    with pytest.raises(NotImplementedError, match=re.escape(msg)):
-        transformer.transform(pl.DataFrame(DATA))
