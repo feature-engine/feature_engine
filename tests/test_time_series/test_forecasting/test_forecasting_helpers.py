@@ -8,7 +8,9 @@ import pytest
 from feature_engine.dataframe_checks import check_X
 from feature_engine.timeseries.forecasting._forecasting_helpers import (
     add_lag_features,
+    add_window_features,
     check_index,
+    check_window_parameters,
     sort_by_index,
 )
 from tests.backend_helpers import frame_to_dict
@@ -103,3 +105,30 @@ def test_add_lag_features_with_fill_value(backend):
         1.0,
         None,
     ]
+
+
+def test_add_window_features(make_df):
+    X = check_X(make_df({"a": [1.0, 2.0, 3.0, 4.0], "b": [4.0, 3.0, 2.0, 1.0]}))
+    names = ["a_max", "a_mean", "b_max", "b_mean"]
+    Xt = add_window_features(X, ["a", "b"], [2], ["max", "mean"], None, 1, None, names)
+
+    # max and mean come from different libraries with polars, in the order of names
+    assert frame_to_dict(nw.to_native(Xt, pass_through=True)) == {
+        "a": [1.0, 2.0, 3.0, 4.0],
+        "b": [4.0, 3.0, 2.0, 1.0],
+        "a_max": [None, None, 2.0, 3.0],
+        "a_mean": [None, None, 1.5, 2.5],
+        "b_max": [None, None, 4.0, 3.0],
+        "b_mean": [None, None, 3.5, 2.5],
+    }
+
+
+@pytest.mark.parametrize(
+    "window, functions, min_periods",
+    [("3D", "mean", None), (3, ["sem"], None), (3, "mean", 0)],
+)
+def test_check_window_parameters_accepts_everything_with_pandas(
+    window, functions, min_periods
+):
+    X = check_X(pd.DataFrame({"a": [1, 2, 3]}, index=DATES))
+    check_window_parameters(X, window, functions, min_periods)
