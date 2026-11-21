@@ -1,9 +1,8 @@
 import pandas as pd
 import pytest
-import sklearn
+from sklearn.base import clone
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.fixes import parse_version
 
 from feature_engine.transformation import (
     ArcsinTransformer,
@@ -15,6 +14,7 @@ from feature_engine.transformation import (
     ReciprocalTransformer,
     YeoJohnsonTransformer,
 )
+from tests.backend_helpers import frame_to_dict
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
@@ -32,53 +32,45 @@ _estimators = [
     YeoJohnsonTransformer(),
 ]
 
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
+checks_with_negative_values = [
+    "check_readonly_memmap_input",
+    "check_fit_score_takes_y",
+    "check_dont_overwrite_parameters",
+    "check_estimators_nan_inf",
+    "check_f_contiguous_array_estimator",
+    "check_fit2d_1feature",
+    "check_fit2d_1sample",
+    "check_dict_unchanged",
+    "check_fit_check_is_fitted",
+    "check_n_features_in",
+    "check_positive_only_tag_during_fit",
+    "check_methods_subset_invariance",
+]
+estimators_not_supporting_negative_values = [
+    "BoxCoxTransformer",
+    "LogTransformer",
+    "ArcsinTransformer",
+]
+extra_failing_checks = {
+    estimator_name: dict.fromkeys(
+        checks_with_negative_values,
+        "this checks passes a negative value which is not supported by "
+        "the transformer",
+    )
+    for estimator_name in estimators_not_supporting_negative_values
+}
 
-if sklearn_version < parse_version("1.6"):
 
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(estimator)
-
-else:
-    checks_with_negative_values = [
-        "check_readonly_memmap_input",
-        "check_fit_score_takes_y",
-        "check_dont_overwrite_parameters",
-        "check_estimators_nan_inf",
-        "check_f_contiguous_array_estimator",
-        "check_fit2d_1feature",
-        "check_fit2d_1sample",
-        "check_dict_unchanged",
-        "check_fit_check_is_fitted",
-        "check_n_features_in",
-        "check_positive_only_tag_during_fit",
-        "check_methods_subset_invariance",
-    ]
-    estimators_not_supporting_negative_values = [
-        "BoxCoxTransformer",
-        "LogTransformer",
-        "ArcsinTransformer",
-    ]
-    extra_failing_checks = {
-        estimator_name: dict.fromkeys(
-            checks_with_negative_values,
-            "this checks passes a negative value which is not supported by "
-            "the transformer",
-        )
-        for estimator_name in estimators_not_supporting_negative_values
-    }
-
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        expected_failed_checks = estimator._more_tags()["_xfail_checks"]
-        expected_failed_checks.update(
-            extra_failing_checks.get(estimator.__class__.__name__, {})
-        )
-        return check_estimator(
-            estimator=wrap_for_check_estimator(estimator),
-            expected_failed_checks=expected_failed_checks,
-        )
+@pytest.mark.parametrize("estimator", _estimators)
+def test_check_estimator_from_sklearn(estimator):
+    expected_failed_checks = estimator._more_tags()["_xfail_checks"]
+    expected_failed_checks.update(
+        extra_failing_checks.get(estimator.__class__.__name__, {})
+    )
+    return check_estimator(
+        estimator=wrap_for_check_estimator(estimator),
+        expected_failed_checks=expected_failed_checks,
+    )
 
 
 @pytest.mark.parametrize("estimator", _estimators[4:])
@@ -126,3 +118,49 @@ def test_raises_non_fitted_error_when_error_during_fit(estimator):
         X = pd.DataFrame({"cat1": ["a", "b", "c", "a", "b"]})
 
     check_raises_non_fitted_error_when_fit_fails(estimator, X)
+
+
+@pytest.mark.parametrize("estimator", _estimators)
+def test_integer_column_names(estimator):
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: [0.1, 0.3, 0.5, 0.9], 1: [0.2, 0.4, 0.6, 0.8]})
+    transformer = clone(estimator)
+    Xt = transformer.fit_transform(X)
+    expected = clone(estimator).fit_transform(X.rename(columns=str))
+
+    pd.testing.assert_frame_equal(Xt, expected.set_axis([0, 1], axis=1))
+    pd.testing.assert_frame_equal(transformer.inverse_transform(Xt), X)
+
+
+_REORDER_DATA = {
+    "a": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+    "b": [0.9, 0.7, 0.5, 0.3, 0.2, 0.1],
+    "s": ["x", "y", "z", "x", "y", "z"],
+}
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    [
+        ArcsinTransformer(),
+        ArcSinhTransformer(),
+        BoxCoxTransformer(),
+        LogTransformer(),
+        PowerTransformer(),
+        ReciprocalTransformer(),
+        YeoJohnsonTransformer(),
+    ],
+)
+def test_transform_reorders_columns_as_in_train_set(make_df, transformer):
+    X = make_df(_REORDER_DATA)
+    transformer.fit(X)
+    reordered = ["s", "b", "a"]
+    X_reordered = make_df({var: _REORDER_DATA[var] for var in reordered})
+
+    for method in [transformer.transform, transformer.inverse_transform]:
+        expected = method(X)
+        Xt = method(X_reordered)
+
+        assert isinstance(Xt, make_df)
+        assert list(Xt.columns) == list(expected.columns)
+        assert frame_to_dict(Xt) == frame_to_dict(expected)

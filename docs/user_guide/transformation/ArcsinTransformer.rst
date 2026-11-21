@@ -134,6 +134,42 @@ shape after the transformation:
 .. image:: ../../images/breast_cancer_arcsin.png
 
 
+With polars
+-----------
+
+:class:`ArcsinTransformer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import ArcsinTransformer
+
+    df = pl.DataFrame({
+        "proportion_1": [0.1, 0.2, 0.3, 0.4, 0.5],
+        "proportion_2": [0.9, 0.8, 0.7, 0.6, 0.5],
+    })
+
+    tf = ArcsinTransformer(variables=None)
+    tf.fit(df)
+    Xt = tf.transform(df)
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌──────────────┬──────────────┐
+    │ proportion_1 ┆ proportion_2 │
+    │ ---          ┆ ---          │
+    │ f64          ┆ f64          │
+    ╞══════════════╪══════════════╡
+    │ 0.321751     ┆ 1.249046     │
+    │ 0.463648     ┆ 1.107149     │
+    │ 0.57964      ┆ 0.991157     │
+    │ 0.684719     ┆ 0.886077     │
+    │ 0.785398     ┆ 0.785398     │
+    └──────────────┴──────────────┘
+
 
 Additional resources
 --------------------

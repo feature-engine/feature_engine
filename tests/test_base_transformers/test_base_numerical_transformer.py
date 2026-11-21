@@ -1,75 +1,140 @@
+import re
+
+import narwhals as nw
+import pandas as pd
+import polars as pl
 import pytest
-from numpy import inf
-from pandas.testing import assert_frame_equal
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from tests.backend_helpers import frame_to_dict
 from tests.estimator_checks.non_fitted_error_checks import check_raises_non_fitted_error
+
+DATA = {
+    "Name": ["tom", "nick", "krish", "jack"],
+    "City": ["London", "Manchester", "Liverpool", "Bristol"],
+    "Age": [20, 21, 19, 18],
+    "Marks": [0.9, 0.8, 0.7, 0.6],
+}
+
+MSG_NA = (
+    "Some of the variables in the dataset contain NaN. Check and "
+    "remove those before using this transformer."
+)
+MSG_INF = (
+    "Some of the variables to transform contain inf values. Check and "
+    "remove those before using this transformer."
+)
 
 
 class MockClass(BaseNumericalTransformer):
-    def __init__(self):
-        self.variables = None
-        self.return_empty = False
+    def __init__(self, variables=None, return_empty=False):
+        self.variables = variables
+        self.return_empty = return_empty
 
     def fit(self, X):
         X, variables_ = self._fit_setup(X)
         self.variables_ = variables_
-        self._get_feature_names_in(X)
-        return X
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
+        return self
 
     def transform(self, X):
-        return self._check_transform_input_and_state(X)
+        return nw.to_native(self._check_transform_input_and_state(X), pass_through=True)
 
 
-def test_empty_find_numerical_variables(df_vartypes):
-    transformer = MockClass()
-    with pytest.raises(TypeError):
-        transformer.fit(df_vartypes.drop(columns=["Age", "Marks"]))
-    transformer = MockClass()
-    transformer.return_empty = True
-    transformer.fit(df_vartypes.drop(columns=["Age", "Marks"]))
-    assert transformer.variables_ == []
+# check_X returns pandas as is and other libraries as narwhals
+BACKENDS = [(pd.DataFrame, pd.DataFrame), (pl.DataFrame, nw.DataFrame)]
 
 
-def test_fit_method(df_vartypes, df_na):
-    transformer = MockClass()
-    res = transformer.fit(df_vartypes)
-    assert transformer.feature_names_in_ == list(df_vartypes.columns)
-    assert transformer.n_features_in_ == len(df_vartypes.columns)
-    assert_frame_equal(res, df_vartypes)
+# fit and transform
+@pytest.mark.parametrize("make_df, X_type", BACKENDS)
+def test_fit_setup_returns_check_X_output_and_numerical_variables(make_df, X_type):
+    X, variables_ = MockClass()._fit_setup(make_df(DATA))
 
-    with pytest.raises(ValueError):
-        transformer.fit(df_na)
-
-    df_na = df_na.fillna(inf)
-    with pytest.raises(ValueError):
-        assert transformer.fit(df_na)
+    assert isinstance(X, X_type)
+    assert frame_to_dict(nw.to_native(X, pass_through=True)) == DATA
+    assert variables_ == ["Age", "Marks"]
 
 
-def test_transform_method(df_vartypes, df_na):
-    transformer = MockClass()
-    transformer.fit(df_vartypes)
-    assert_frame_equal(
-        transformer._check_transform_input_and_state(df_vartypes), df_vartypes
+def test_fit_setup_checks_user_variables(make_df):
+    _, variables_ = MockClass(variables=["Marks"])._fit_setup(make_df(DATA))
+    assert variables_ == ["Marks"]
+
+    msg = (
+        "Some of the variables are not numerical. Please cast them as numerical "
+        "before using this transformer."
     )
-    assert_frame_equal(
+    with pytest.raises(TypeError, match=re.escape(msg)):
+        MockClass(variables=["Name"])._fit_setup(make_df(DATA))
+
+
+def test_fit_setup_when_there_are_no_numerical_variables(make_df):
+    X = make_df({"Name": DATA["Name"], "City": DATA["City"]})
+    msg = (
+        "No numerical variables found in this dataframe. Check variable dtypes or "
+        "set return_empty to True to return an empty list instead."
+    )
+    with pytest.raises(TypeError, match=re.escape(msg)):
+        MockClass()._fit_setup(X)
+
+    msg = "No numerical variables found in this dataframe. Returning an empty list."
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        _, variables_ = MockClass(return_empty=True)._fit_setup(X)
+    assert variables_ == []
+
+
+@pytest.mark.parametrize("value, msg", [(None, MSG_NA), (float("inf"), MSG_INF)])
+def test_fit_setup_raises_error_if_na_or_inf(make_df, value, msg):
+    X = make_df({**DATA, "Marks": [0.9, value, 0.7, 0.6]})
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        MockClass()._fit_setup(X)
+
+
+@pytest.mark.parametrize("make_df, X_type", BACKENDS)
+def test_check_transform_input_and_state_returns_columns_in_train_order(
+    make_df, X_type
+):
+    transformer = MockClass().fit(make_df(DATA))
+    reordered = make_df({k: DATA[k] for k in ["Marks", "City", "Age", "Name"]})
+
+    X = transformer._check_transform_input_and_state(reordered)
+
+    assert isinstance(X, X_type)
+    Xt = nw.to_native(X, pass_through=True)
+    assert list(Xt.columns) == list(DATA)
+    assert frame_to_dict(Xt) == DATA
+
+
+def test_check_transform_input_and_state_with_integer_column_names():
+    # integer column names are pandas-only
+    X = pd.DataFrame({0: [1.0, 2.0], 1: ["a", "b"], 2: [3, 4]})
+    transformer = MockClass().fit(X)
+
+    Xt = transformer._check_transform_input_and_state(X[[2, 0, 1]])
+
+    pd.testing.assert_frame_equal(Xt, X)
+
+
+def test_check_transform_input_and_state_raises_error_if_columns_differ(make_df):
+    transformer = MockClass().fit(make_df(DATA))
+    msg = (
+        "The number of columns in this dataset is different from the one used to "
+        "fit this transformer (when using the fit() method)."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         transformer._check_transform_input_and_state(
-            df_vartypes[["City", "Age", "Name", "Marks", "dob"]]
-        ),
-        df_vartypes,
-    )
-
-    with pytest.raises(ValueError):
-        transformer.fit(df_na)
-
-    df_na = df_na.fillna(inf)
-    with pytest.raises(ValueError):
-        assert transformer.fit(df_na)
-
-    with pytest.raises(ValueError):
-        assert transformer._check_transform_input_and_state(
-            df_vartypes[["Age", "Marks"]]
+            make_df({k: DATA[k] for k in ["Age", "Marks"]})
         )
+
+
+@pytest.mark.parametrize("value, msg", [(None, MSG_NA), (float("inf"), MSG_INF)])
+def test_check_transform_input_and_state_raises_error_if_na_or_inf(
+    make_df, value, msg
+):
+    transformer = MockClass().fit(make_df(DATA))
+    X = make_df({**DATA, "Marks": [0.9, value, 0.7, 0.6]})
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer._check_transform_input_and_state(X)
 
 
 def test_raises_non_fitted_error():

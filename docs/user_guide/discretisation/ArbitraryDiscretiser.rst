@@ -110,6 +110,42 @@ obtain monotonic relationships between the variable and the target, you can do s
 seamlessly by setting `return_object` to True. You can find an example of discretisation followed
 by encoding to obtain monotonic releationships `here <https://nbviewer.org/github/feature-engine/feature-engine-examples/blob/main/discretisation/ArbitraryDiscretiser_plus_MeanEncoder.ipynb>`_.
 
+With polars
+-----------
+
+:class:`ArbitraryDiscretiser()` also works with polars dataframes.
+
+.. code:: python
+
+    import polars as pl
+    import numpy as np
+    from feature_engine.discretisation import ArbitraryDiscretiser
+
+    X = pl.DataFrame({
+        "MedInc": [1.5, 3.0, 5.0, 8.0, 0.8],
+    })
+
+    user_dict = {"MedInc": [0, 2, 4, 6, np.inf]}
+
+    transformer = ArbitraryDiscretiser(binning_dict=user_dict, return_boundaries=False)
+    X_t = transformer.fit_transform(X)
+    print(X_t)
+
+.. code:: text
+
+    shape: (5, 1)
+    ┌────────┐
+    │ MedInc │
+    │ ---    │
+    │ i64    │
+    ╞════════╡
+    │ 0      │
+    │ 1      │
+    │ 2      │
+    │ 3      │
+    │ 0      │
+    └────────┘
+
 Additional resources
 --------------------
 

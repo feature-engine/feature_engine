@@ -395,7 +395,7 @@ To do this, first make sure you have all the documentation dependencies installe
 set up the environment as we described previously, they should be installed. Alternatively,
 from the windows cmd or mac terminal, run::
 
-    $ pip install -r docs/requirements.txt
+    $ pip install -e ".[docs]"
 
 Make sure you are within the feature_engine module when you run the previous command.
 

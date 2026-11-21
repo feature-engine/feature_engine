@@ -553,6 +553,44 @@ The recovered data:
     493  -3.258723  9405.785347
     122  30.047946  1448.874284
 
+With polars
+-----------
+
+:class:`ArcSinhTransformer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import ArcSinhTransformer
+
+    df = pl.DataFrame({
+        "profit": [12.14, 6.43, 14.12, 33.89, 5.85, -2.5, 0.0],
+        "net_worth": [-8516.91, -277.74, 1920.33, -163.47, -10337.21, 500.0, 0.0],
+    })
+
+    tf = ArcSinhTransformer(variables=["profit", "net_worth"])
+    tf.fit(df)
+    Xt = tf.transform(df)
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (7, 2)
+    ┌───────────┬───────────┐
+    │ profit    ┆ net_worth │
+    │ ---       ┆ ---       │
+    │ f64       ┆ f64       │
+    ╞═══════════╪═══════════╡
+    │ 3.191345  ┆ -9.742956 │
+    │ 2.560114  ┆ -6.319836 │
+    │ 3.341991  ┆ 8.2534    │
+    │ 4.216485  ┆ -5.789786 │
+    │ 2.466815  ┆ -9.936652 │
+    │ -1.647231 ┆ 6.907756  │
+    │ 0.0       ┆ 0.0       │
+    └───────────┴───────────┘
+
 References
 ----------
 

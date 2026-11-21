@@ -1,7 +1,10 @@
-from typing import List, Optional, Union
 import datetime
+from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
+from dateutil.parser import parse as _parse_datetime
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -29,8 +32,18 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    subset_df,
+)
+from feature_engine.datetime._datetime_helpers import datetime_to_numpy
 from feature_engine.variable_handling.check_variables import check_datetime_variables
 from feature_engine.variable_handling.find_variables import find_datetime_variables
+
+# datetime.date(1970, 1, 1).toordinal(): numpy counts days from 1970-01-01, and
+# toordinal() from January 1, 0001.
+_UNIX_EPOCH_ORDINAL = 719_163
 
 
 @Substitution(
@@ -66,7 +79,7 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         contain missing values. If 'ignore', missing data will be ignored when
         performing the transformation.
 
-    start_date: str, datetime.datetime, default=None
+    start_date: str, datetime.date, datetime.datetime, default=None
         A reference date from which the ordinal values will be calculated.
         If provided, the ordinal value of `start_date` will be 1, the day after will be
         2, and so on. Days before `start_date` will take negative values.
@@ -116,6 +129,25 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     0             1
     1             2
     2             3
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.datetime import DatetimeOrdinal
+    >>> X = pl.DataFrame(dict(date = ["2023-01-01", "2023-01-02", "2023-01-03"]))
+    >>> dtf = DatetimeOrdinal(start_date="2023-01-01")
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+    shape: (3, 1)
+    ┌──────────────┐
+    │ date_ordinal │
+    │ ---          │
+    │ i64          │
+    ╞══════════════╡
+    │ 1            │
+    │ 2            │
+    │ 3            │
+    └──────────────┘
     """
 
     def __init__(
@@ -133,17 +165,6 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 f"Got {missing_values} instead."
             )
 
-        if start_date is not None:
-            try:
-                self.start_date_ = pd.to_datetime(start_date)
-            except Exception as e:
-                raise ValueError(
-                    f"start_date could not be converted to datetime. "
-                    f"Got {start_date} instead. Error: {e}"
-                )
-        else:
-            self.start_date_ = None
-
         if not isinstance(drop_original, bool):
             raise ValueError(
                 "drop_original takes only booleans True or False. "
@@ -155,26 +176,45 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
         self.missing_values = missing_values
+        self.start_date = start_date
         self.drop_original = drop_original
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Finds datetime variables or checks that the variables selected by the user
-        can be converted to datetime.
+        can be converted to datetime. Also parses `start_date`, if provided, into
+        its ordinal representation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series=None
+        y: Series=None
             It is not needed in this transformer. You can pass y or None.
+
         """
-        # check input dataframe
         X = check_X(X)
+
+        # parse the user-provided start_date into its ordinal representation.
+        # datetime.datetime is a subclass of datetime.date, so both are handled
+        # by the isinstance branch; strings are parsed with dateutil.
+        self.start_date_ordinal_: Optional[int]
+        if self.start_date is None:
+            self.start_date_ordinal_ = None
+        elif isinstance(self.start_date, datetime.date):
+            self.start_date_ordinal_ = self.start_date.toordinal()
+        else:
+            try:
+                self.start_date_ordinal_ = _parse_datetime(self.start_date).toordinal()
+            except Exception as e:
+                raise ValueError(
+                    f"start_date could not be converted to datetime. "
+                    f"Got {self.start_date} instead. Error: {e}"
+                )
 
         if self.variables is None:
             self.variables_ = find_datetime_variables(
@@ -183,81 +223,58 @@ class DatetimeOrdinal(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         else:
             self.variables_ = check_datetime_variables(X, self.variables)
 
-        # check if datetime variables contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_)
 
-        if self.start_date_ is not None:
-            self.start_date_ordinal_ = self.start_date_.toordinal()
-        else:
-            self.start_date_ordinal_ = None
-
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        # save train set shape
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Calculate ordinal representation of datetime features and add them to the
         dataframe.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe, shape = [n_samples, n_features x n_df_features]
+        X_new: dataframe, shape = [n_samples, n_features x n_df_features]
             The dataframe with the original variables plus the new features.
         """
-
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
         X = check_X(X)
-
-        # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
-
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
+        X = subset_df(X, self.feature_names_in_)
 
         if len(self.variables_) == 0:
-            return X
+            return nw.to_native(X, pass_through=True)
 
-        # create a copy(to protect original data)
-        X_new = X.copy()
-
-        # check if dataset contains na
         if self.missing_values == "raise":
-            _check_contains_na(X_new, self.variables_)
+            _check_contains_na(X, self.variables_)
 
-        for var in self.variables_:
-            # Convert to datetime, then to ordinal
-            datetime_series = pd.to_datetime(X_new[var])
-            # Handle NaT values: toordinal() raises ValueError for NaT
-            ordinal_series = datetime_series.apply(
-                lambda x: x.toordinal() if pd.notna(x) else pd.NA
-            )
-
+        new_features = {}
+        for var, values in zip(self.variables_, datetime_to_numpy(X, self.variables_)):
+            days: np.ndarray = values.astype("datetime64[D]")
+            na_mask = np.isnat(days)
+            ordinal: np.ndarray = days.astype("int64") + _UNIX_EPOCH_ORDINAL
             if self.start_date_ordinal_ is not None:
-                # Only apply offset if not NaT
-                ordinal_series = ordinal_series.apply(
-                    lambda x: x - self.start_date_ordinal_ + 1 if pd.notna(x) else pd.NA
-                )
+                ordinal = ordinal - self.start_date_ordinal_ + 1
+            if bool(na_mask.any()) is True:
+                # NaT becomes a large negative integer; it's replaced by NaN.
+                ordinal = ordinal.astype("float64")
+                ordinal[na_mask] = np.nan
+            new_features[str(var) + "_ordinal"] = ordinal
 
-            X_new[str(var) + "_ordinal"] = ordinal_series
+        X = add_columns_to_df(X, new_features)
+        if self.drop_original is True:
+            X = drop_variables_from_df(X, self.variables_)
 
-        if self.drop_original:
-            X_new.drop(self.variables_, axis=1, inplace=True)
-
-        return X_new
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """create the names for the new features."""

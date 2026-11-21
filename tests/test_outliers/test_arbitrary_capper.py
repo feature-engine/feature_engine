@@ -1,176 +1,165 @@
+import re
+
 import numpy as np
-import pandas as pd
 import pytest
 
 from feature_engine.outliers import ArbitraryOutlierCapper
+from tests.backend_helpers import frame_to_dict
+
+MSG_NA = (
+    "Some of the variables in the dataset contain NaN. Check and "
+    "remove those before using this transformer."
+)
 
 
-def test_right_end_capping(df_normal_dist):
-    # test case 1: right end capping
-    transformer = ArbitraryOutlierCapper(
-        max_capping_dict={"var": 0.10727677848029868}, min_capping_dict=None
+# init parameters
+@pytest.mark.parametrize("param", ["max_capping_dict", "min_capping_dict"])
+@pytest.mark.parametrize("value", ["other", 1, ["var"], ("var", 1)])
+def test_error_if_capping_dict_not_dict(param, value):
+    msg = f"The parameter can only take a dictionary or None. Got {value} instead."
+    with pytest.raises(TypeError, match=re.escape(msg)):
+        ArbitraryOutlierCapper(**{param: value})
+
+
+@pytest.mark.parametrize("param", ["max_capping_dict", "min_capping_dict"])
+@pytest.mark.parametrize("value", [{"var": "a"}, {"var": None}, {"a": 1, "b": [2]}])
+def test_error_if_capping_dict_values_not_numerical(param, value):
+    msg = (
+        "All values in the dictionary must be integer or float. "
+        f"Got {value} instead."
     )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = np.where(
-        df_transf["var"] > 0.10727677848029868, 0.10727677848029868, df_transf["var"]
-    )
-
-    # test init params
-    assert np.round(transformer.max_capping_dict["var"], 3) == np.round(
-        0.10727677848029868, 3
-    )
-    assert transformer.min_capping_dict is None
-    assert transformer.variables_ == ["var"]
-    # test fit attrs
-    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
-        0.10727677848029868, 3
-    )
-    assert transformer.left_tail_caps_ == {}
-    assert transformer.n_features_in_ == 1
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert np.round(X["var"].max(), 3) <= np.round(0.10727677848029868, 3)
-    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.10727677848029868, 3)
-
-
-def test_both_ends_capping(df_normal_dist):
-    # test case 2: both tails
-    transformer = ArbitraryOutlierCapper(
-        max_capping_dict={"var": 0.20857275540714884},
-        min_capping_dict={"var": -0.19661115230025186},
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = np.where(
-        df_transf["var"] > 0.20857275540714884, 0.20857275540714884, df_transf["var"]
-    )
-    df_transf["var"] = np.where(
-        df_transf["var"] < -0.19661115230025186, -0.19661115230025186, df_transf["var"]
-    )
-
-    # test fit params
-    assert np.round(transformer.right_tail_caps_["var"], 3) == np.round(
-        0.20857275540714884, 3
-    )
-    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
-        -0.19661115230025186, 3
-    )
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert np.round(X["var"].max(), 3) <= np.round(0.20857275540714884, 3)
-    assert np.round(X["var"].min(), 3) >= np.round(-0.19661115230025186, 3)
-    assert np.round(df_normal_dist["var"].max(), 3) > np.round(0.20857275540714884, 3)
-    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.19661115230025186, 3)
-
-
-def test_left_tail_capping(df_normal_dist):
-    # test case 3: left tail
-    transformer = ArbitraryOutlierCapper(
-        max_capping_dict=None, min_capping_dict={"var": -0.17486039103044}
-    )
-    X = transformer.fit_transform(df_normal_dist)
-
-    # expected output
-    df_transf = df_normal_dist.copy()
-    df_transf["var"] = np.where(
-        df_transf["var"] < -0.17486039103044, -0.17486039103044, df_transf["var"]
-    )
-
-    # test init param
-    assert transformer.max_capping_dict is None
-    assert np.round(transformer.min_capping_dict["var"], 3) == np.round(
-        -0.17486039103044, 3
-    )
-    # test fit attr
-    assert transformer.right_tail_caps_ == {}
-    assert np.round(transformer.left_tail_caps_["var"], 3) == np.round(
-        -0.17486039103044, 3
-    )
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert np.round(X["var"].min(), 3) >= np.round(-0.17486039103044, 3)
-    assert np.round(df_normal_dist["var"].min(), 3) < np.round(-0.17486039103044, 3)
-
-
-def test_ignores_na_in_input_df(df_na):
-    # test case 4: dataset contains na and transformer is asked to ignore them
-    transformer = ArbitraryOutlierCapper(
-        max_capping_dict=None, min_capping_dict={"Age": 20}, missing_values="ignore"
-    )
-    X = transformer.fit_transform(df_na)
-
-    # expected output
-    df_transf = df_na.copy()
-    df_transf["Age"] = np.where(df_transf["Age"] < 20, 20, df_transf["Age"])
-
-    # test fit params
-    assert transformer.max_capping_dict is None
-    assert transformer.min_capping_dict == {"Age": 20}
-    assert transformer.n_features_in_ == 6
-    # test transform output
-    pd.testing.assert_frame_equal(X, df_transf)
-    assert X["Age"].min() >= 20
-    assert df_na["Age"].min() < 20
-
-
-def test_error_if_max_capping_dict_wrong_input():
-    with pytest.raises(TypeError):
-        ArbitraryOutlierCapper(max_capping_dict="other")
-    with pytest.raises(ValueError):
-        ArbitraryOutlierCapper(max_capping_dict={"a": "a"})
-
-
-def test_error_if_min_capping_dict_wrong_input():
-    with pytest.raises(TypeError):
-        ArbitraryOutlierCapper(min_capping_dict="other")
-    with pytest.raises(ValueError):
-        ArbitraryOutlierCapper(min_capping_dict={"a": "a"})
-
-
-def test_error_if_both_capping_dicts_are_none():
-    with pytest.raises(ValueError):
-        ArbitraryOutlierCapper(min_capping_dict=None, max_capping_dict=None)
-
-
-def test_error_if_missing_values_not_bool():
-    with pytest.raises(ValueError):
-        ArbitraryOutlierCapper(missing_values="other")
-
-
-def test_fit_and_transform_raise_error_if_df_contains_na(df_normal_dist):
-    df_na = df_normal_dist.copy()
-    df_na.loc[1, "var"] = np.nan
-
-    # test case 5: when dataset contains na, fit method
-    with pytest.raises(ValueError):
-        transformer = ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}
-        )
-        transformer.fit(df_na)
-
-    # test case 6: when dataset contains na, transform method
-    with pytest.raises(ValueError):
-        transformer = ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}
-        )
-        transformer.fit(df_normal_dist)
-        transformer.transform(df_na)
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        ArbitraryOutlierCapper(**{param: value})
 
 
 @pytest.mark.parametrize(
-    "missing_values",
-    ["HOLA", 1, True, {"key1": "value1", "key2": "value2", "key3": "value3"}],
+    "max_capping_dict, min_capping_dict",
+    [(None, None), ({}, None), (None, {}), ({}, {})],
 )
-def test_error_if_missing_values_wrong_type(missing_values):
-    msg = "missing_values takes only values 'raise' or 'ignore'"
-    with pytest.raises(ValueError) as record:
+def test_error_if_no_capping_values(max_capping_dict, min_capping_dict):
+    msg = "Please provide at least 1 dictionary with the capping values."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         ArbitraryOutlierCapper(
-            min_capping_dict={"var": -0.17486039103044}, missing_values="missing_values"
+            max_capping_dict=max_capping_dict, min_capping_dict=min_capping_dict
         )
-    # check that error message matches
-    assert str(record.value) == msg
+
+
+@pytest.mark.parametrize(
+    "missing_values", ["HOLA", "Raise", 1, True, None, ["raise"], {"key": "raise"}]
+)
+def test_error_if_missing_values_not_permitted(missing_values):
+    msg = (
+        "missing_values must be 'raise' or 'ignore'. "
+        f"Got {missing_values} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        ArbitraryOutlierCapper(
+            min_capping_dict={"var": -0.15}, missing_values=missing_values
+        )
+
+
+@pytest.mark.parametrize(
+    "max_capping_dict, min_capping_dict, missing_values",
+    [
+        ({"var": 0.1}, None, "raise"),
+        (None, {"var": -0.15}, "ignore"),
+        ({"var": 0.1}, {"var": -0.15, "other": 2}, "raise"),
+        ({"var": 1}, {}, "ignore"),
+    ],
+)
+def test_init_param_assignment(max_capping_dict, min_capping_dict, missing_values):
+    transformer = ArbitraryOutlierCapper(
+        max_capping_dict=max_capping_dict,
+        min_capping_dict=min_capping_dict,
+        missing_values=missing_values,
+    )
+    assert transformer.max_capping_dict == max_capping_dict
+    assert transformer.min_capping_dict == min_capping_dict
+    assert transformer.missing_values == missing_values
+
+
+# fit and transform
+@pytest.mark.parametrize(
+    "max_capping_dict, min_capping_dict, right_tail_caps, left_tail_caps",
+    [
+        ({"var": 0.1}, None, {"var": 0.1}, {}),
+        (None, {"var": -0.15}, {}, {"var": -0.15}),
+        ({"var": 0.1}, {"var": -0.15}, {"var": 0.1}, {"var": -0.15}),
+    ],
+)
+def test_capping(
+    make_df,
+    data_normal_dist,
+    max_capping_dict,
+    min_capping_dict,
+    right_tail_caps,
+    left_tail_caps,
+):
+    transformer = ArbitraryOutlierCapper(
+        max_capping_dict=max_capping_dict, min_capping_dict=min_capping_dict
+    )
+    Xt = transformer.fit_transform(make_df(data_normal_dist))
+
+    # a tail without a limit is not capped
+    upper = right_tail_caps.get("var", np.inf)
+    lower = left_tail_caps.get("var", -np.inf)
+    expected = np.clip(data_normal_dist["var"], lower, upper).tolist()
+
+    assert transformer.right_tail_caps_ == right_tail_caps
+    assert transformer.left_tail_caps_ == left_tail_caps
+    assert transformer.variables_ == ["var"]
+    assert transformer.feature_names_in_ == ["var"]
+    assert transformer.n_features_in_ == 1
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"var": pytest.approx(expected)}
+
+
+def test_variables_are_taken_from_both_dicts(make_df):
+    X = make_df({"a": [0, 5, 10], "b": [0, 5, 10], "c": [0, 5, 10]})
+    transformer = ArbitraryOutlierCapper(
+        max_capping_dict={"a": 8}, min_capping_dict={"b": 2, "a": 1}
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert transformer.variables_ == ["b", "a"]
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"a": [1, 5, 8], "b": [2, 5, 10], "c": [0, 5, 10]}
+
+
+def test_empty_dict_is_ignored(make_df):
+    X = make_df({"a": [0, 5, 10], "b": [0, 5, 10]})
+    transformer = ArbitraryOutlierCapper(max_capping_dict={"a": 8}, min_capping_dict={})
+    Xt = transformer.fit_transform(X)
+
+    assert transformer.variables_ == ["a"]
+    assert transformer.left_tail_caps_ == {}
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"a": [0, 5, 8], "b": [0, 5, 10]}
+
+
+def test_ignores_na_in_input_df(make_df, data_na):
+    transformer = ArbitraryOutlierCapper(
+        min_capping_dict={"Age": 21}, missing_values="ignore"
+    )
+    Xt = transformer.fit_transform(make_df(data_na))
+
+    expected = [None if v is None else max(v, 21) for v in data_na["Age"]]
+
+    assert transformer.n_features_in_ == 5
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt)["Age"] == expected
+
+
+def test_fit_raises_error_if_df_contains_na(make_df, data_na):
+    transformer = ArbitraryOutlierCapper(min_capping_dict={"Age": 21})
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        transformer.fit(make_df(data_na))
+
+
+def test_transform_raises_error_if_df_contains_na(make_df, data_normal_dist):
+    data_na = {"var": list(data_normal_dist["var"])}
+    data_na["var"][1] = None
+    transformer = ArbitraryOutlierCapper(min_capping_dict={"var": -0.15})
+    transformer.fit(make_df(data_normal_dist))
+    with pytest.raises(ValueError, match=re.escape(MSG_NA)):
+        transformer.transform(make_df(data_na))

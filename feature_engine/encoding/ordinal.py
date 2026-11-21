@@ -3,7 +3,8 @@
 
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -29,7 +30,12 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X, check_X_y
-from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.dataframe_helpers import subset_df
+from feature_engine.encoding._helper_functions import (
+    TARGET_NAME,
+    add_target_to_X,
+    check_parameter_unseen,
+)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -177,9 +183,13 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         unseen: str = "ignore",
     ) -> None:
 
-        if encoding_method not in ["ordered", "arbitrary"]:
+        if not isinstance(encoding_method, str) or encoding_method not in [
+            "ordered",
+            "arbitrary",
+        ]:
             raise ValueError(
-                "encoding_method takes only values 'ordered' and 'arbitrary'"
+                "encoding_method takes only values 'ordered' and 'arbitrary'. "
+                f"Got {encoding_method} instead."
             )
 
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
@@ -190,17 +200,17 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         self.unseen = unseen
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """Learn the numbers to be used to replace the categories in each
         variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to be encoded.
 
-        y: pandas series, default=None
+        y: Series, default=None
             The Target. Can be None if `encoding_method='arbitrary'`.
             Otherwise, y needs to be passed when fitting the transformer.
         """
@@ -213,25 +223,28 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
-        self.encoder_dict_ = {}
+        nw_X = nw.from_native(subset_df(X, variables_), eager_only=True)
+        if self.encoding_method == "ordered":
+            nw_Xy = add_target_to_X(nw_X, y)
 
+        self.encoder_dict_ = {}
         for var in variables_:
             if self.encoding_method == "ordered":
-                t = y.groupby(X[var], observed=False).mean()  # type: ignore
-                t = t.sort_values(ascending=True).index
-
-            elif self.encoding_method == "arbitrary":
-                if self.missing_values == "ignore":
-                    t = X[var].dropna().unique()
-                else:
-                    t = X[var].unique()
-            else:
-                raise ValueError(
-                    "Unrecognized value for encoding_method. It should be 'arbitrary' "
-                    f"or 'frequency'. Got {self.encoding_method} instead."
+                # sort by mean, then category, so ties get the same order
+                # in every backend
+                t = (
+                    nw_Xy.group_by(var, drop_null_keys=True)
+                    .agg(nw.col(TARGET_NAME).mean())
+                    .sort([TARGET_NAME, var])
+                    .get_column(var)
+                    .to_list()
                 )
-
-            self.encoder_dict_[var] = {k: i for i, k in enumerate(t, 0)}
+            else:
+                col = nw_X.get_column(var)
+                if self.missing_values == "ignore":
+                    col = col.drop_nulls()
+                t = col.unique(maintain_order=True).to_list()
+            self.encoder_dict_[var] = {k: i for i, k in enumerate(t)}
 
         if self.unseen == "encode":
             self._unseen = -1

@@ -67,6 +67,13 @@ Percentiles or quantiles
     The values used by default by :class:`Winsoriser()` are those suggested as optimal
     in statistical studies.
 
+.. note::
+
+    If all or most of the values of a variable are the same, the method may return a
+    spread of 0 (for example, an IQR of 0 when over half of the values are 0). The
+    variable then has no outliers, so :class:`Winsoriser()` sets its limits to infinity
+    in `right_tail_caps_` and `left_tail_caps_`, and leaves it untouched.
+
 The following image shows the four methods applied to a normal distribution. Their capping
 values are close together because, when the data is roughly symmetric and bell-shaped, the
 mean, median, standard deviation, IQR, and MAD all describe the same thing.
@@ -353,6 +360,62 @@ The default values for fold are as follows:
 
 You can manually adjust the `fold` value to make the outlier detection process more or less
 conservative, thus customising the extent of outlier capping.
+
+With polars
+-----------
+
+:class:`Winsoriser()` works in the same way with a polars dataframe, including the
+`add_indicators` option, which flags the rows that were capped on each tail:
+
+.. code:: python
+
+	import polars as pl
+	from feature_engine.outliers import Winsoriser
+
+	df = pl.DataFrame({
+	    "Age": [20, 21, 19, 18, 23, 40, 41, 97],
+	    "Marks": [0.9, 0.8, 0.7, 0.6, 0.3, 0.5, 0.8, 0.05],
+	})
+
+	transformer = Winsoriser(
+	    capping_method="iqr", tail="both", fold=1.5, add_indicators=True,
+	)
+	transformer.fit(df)
+
+	print(transformer.right_tail_caps_)
+	print(transformer.left_tail_caps_)
+
+The learned capping values match those found with pandas:
+
+.. code:: text
+
+	{'Age': 71.0, 'Marks': 1.3250000000000002}
+	{'Age': -11.0, 'Marks': -0.07500000000000001}
+
+.. code:: python
+
+	print(transformer.transform(df))
+
+`Age`'s outlier, 97, was capped to 71 and flagged in `Age_right`; none of the values
+in `Marks` were extreme enough to be capped:
+
+.. code:: text
+
+	shape: (8, 6)
+	┌──────┬───────┬──────────┬───────────┬────────────┬─────────────┐
+	│ Age  ┆ Marks ┆ Age_left ┆ Age_right ┆ Marks_left ┆ Marks_right │
+	│ ---  ┆ ---   ┆ ---      ┆ ---       ┆ ---        ┆ ---         │
+	│ f64  ┆ f64   ┆ f64      ┆ f64       ┆ f64        ┆ f64         │
+	╞══════╪═══════╪══════════╪═══════════╪════════════╪═════════════╡
+	│ 20.0 ┆ 0.9   ┆ 0.0      ┆ 0.0       ┆ 0.0        ┆ 0.0         │
+	│ 21.0 ┆ 0.8   ┆ 0.0      ┆ 0.0       ┆ 0.0        ┆ 0.0         │
+	│ 19.0 ┆ 0.7   ┆ 0.0      ┆ 0.0       ┆ 0.0        ┆ 0.0         │
+	│ 18.0 ┆ 0.6   ┆ 0.0      ┆ 0.0       ┆ 0.0        ┆ 0.0         │
+	│ 23.0 ┆ 0.3   ┆ 0.0      ┆ 0.0       ┆ 0.0        ┆ 0.0         │
+	│ 40.0 ┆ 0.5   ┆ 0.0      ┆ 0.0       ┆ 0.0        ┆ 0.0         │
+	│ 41.0 ┆ 0.8   ┆ 0.0      ┆ 0.0       ┆ 0.0        ┆ 0.0         │
+	│ 71.0 ┆ 0.05  ┆ 0.0      ┆ 1.0       ┆ 0.0        ┆ 0.0         │
+	└──────┴───────┴──────────┴───────────┴────────────┴─────────────┘
 
 Additional resources
 --------------------

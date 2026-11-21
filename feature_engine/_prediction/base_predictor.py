@@ -1,7 +1,8 @@
 from typing import List, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_is_fitted
@@ -16,6 +17,7 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
+from feature_engine.dataframe_helpers import subset_df, to_numpy
 from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
@@ -42,7 +44,7 @@ class BaseTargetMeanEstimator(BaseEstimator):
         the values will be sorted.
 
     strategy: str, default='equal_width'
-        Whether the bins should of equal width ('equal_width') or equal frequency
+        Whether the bins should be of equal width ('equal_width') or equal frequency
         ('equal_frequency').
 
     Attributes
@@ -87,10 +89,13 @@ class BaseTargetMeanEstimator(BaseEstimator):
         strategy: str = "equal_width",
     ):
 
-        if not isinstance(bins, int):
-            raise ValueError(f"bins must be an integer. Got {bins} instead.")
+        if not isinstance(bins, int) or bins < 1:
+            raise ValueError(f"bins must be a positive integer. Got {bins} instead.")
 
-        if strategy not in ["equal_width", "equal_frequency"]:
+        if not isinstance(strategy, str) or strategy not in [
+            "equal_width",
+            "equal_frequency",
+        ]:
             raise ValueError(
                 "strategy takes only values 'equal_width' or 'equal_frequency'. "
                 f"Got {strategy} instead."
@@ -100,201 +105,122 @@ class BaseTargetMeanEstimator(BaseEstimator):
         self.bins = bins
         self.strategy = strategy
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(
+        self,
+        X: IntoDataFrame,
+        y: Union[IntoSeries, np.ndarray, List],
+    ):
         """
         Learn the mean target value per category or bin.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y : pandas series of shape = [n_samples,]
+        y: Series, numpy array or list of shape = [n_samples,]
             The target variable.
         """
-        # check if 'X' is a dataframe
         X, y = check_X_y(X, y)
 
-        # find categorical and numerical variables
         (
-            self.variables_categorical_,
-            self.variables_numerical_,
+            variables_categorical_,
+            variables_numerical_,
         ) = find_categorical_and_numerical_variables(X, self.variables)
 
-        # check for missing values
-        _check_contains_na(X, self.variables_numerical_)
-        _check_contains_na(X, self.variables_categorical_)
+        _check_contains_na(X, variables_numerical_ + variables_categorical_)
+        _check_contains_inf(X, variables_numerical_)
 
-        # check inf
-        _check_contains_inf(X, self.variables_numerical_)
+        pipeline = self._make_pipeline(variables_numerical_, variables_categorical_)
+        # the pipeline checks X again, and expects the user's dataframe.
+        pipeline.fit(nw.to_native(X, pass_through=True), y)
 
-        # Create pipelines
-        if self.variables_categorical_ and self.variables_numerical_:
-            self._pipeline = self._make_combined_pipeline()
+        steps = pipeline.named_steps
+        binner_dict_ = {}
+        encoder_dict_ = {}
+        if len(variables_numerical_) > 0:
+            discretiser = steps["discretiser"]
+            binner_dict_ = dict(discretiser.binner_dict_)
+            # the encoder learns the bin numbers; show the intervals instead.
+            for var, means in steps["encoder_num"].encoder_dict_.items():
+                labels = discretiser._format_bin_labels(
+                    np.asarray(binner_dict_[var], dtype=float), discretiser.precision
+                )
+                encoder_dict_[var] = {labels[code]: m for code, m in means.items()}
+        if len(variables_categorical_) > 0:
+            encoder_dict_.update(steps["encoder_cat"].encoder_dict_)
 
-        elif self.variables_categorical_:
-            self._pipeline = self._make_categorical_pipeline()
-
-        else:
-            self._pipeline = self._make_numerical_pipeline()
-
-        # Train pipeline
-        self._pipeline.fit(X, y)
-
-        # Assign attributes (useful to interpret features)
-        # Use dict() to make a copy of the dictionary. Otherwise, like in pandas,
-        # it is just another view of the same data, mind-blowing.
-        if self.variables_categorical_ and self.variables_numerical_:
-            self.binner_dict_ = dict(
-                self._pipeline.named_steps["discretiser"].binner_dict_
-            )
-            self.encoder_dict_ = dict(
-                self._pipeline.named_steps["encoder_num"].encoder_dict_
-            )
-            tmp_dict = dict(self._pipeline.named_steps["encoder_cat"].encoder_dict_)
-            self.encoder_dict_.update(tmp_dict)
-
-        elif self.variables_categorical_:
-            self.binner_dict_ = {}
-            self.encoder_dict_ = dict(self._pipeline.encoder_dict_)
-
-        else:
-            self.binner_dict_ = dict(
-                self._pipeline.named_steps["discretiser"].binner_dict_
-            )
-            self.encoder_dict_ = dict(
-                self._pipeline.named_steps["encoder"].encoder_dict_
-            )
-
-        # store input features
-        self.n_features_in_ = X.shape[1]
+        self.variables_categorical_ = variables_categorical_
+        self.variables_numerical_ = variables_numerical_
+        self.binner_dict_ = binner_dict_
+        self.encoder_dict_ = encoder_dict_
+        self._pipeline = pipeline
         self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _make_numerical_pipeline(self):
+    def _make_pipeline(
+        self,
+        variables_numerical: List[Union[str, int]],
+        variables_categorical: List[Union[str, int]],
+    ) -> Pipeline:
         """
-        Create pipeline for a dataframe solely comprised of numerical variables
-        using a discretiser and an encoder.
+        Sort the numerical variables into bins, and replace bins and categories by
+        the mean target value.
         """
-        encoder = MeanEncoder(variables=self.variables_numerical_, unseen="raise")
+        steps = []
+        if len(variables_numerical) > 0:
+            steps.append(("discretiser", self._make_discretiser(variables_numerical)))
+            # bin numbers are faster to encode than interval labels.
+            encoder = MeanEncoder(
+                variables=variables_numerical, ignore_format=True, unseen="raise"
+            )
+            steps.append(("encoder_num", encoder))
+        if len(variables_categorical) > 0:
+            encoder = MeanEncoder(variables=variables_categorical, unseen="raise")
+            steps.append(("encoder_cat", encoder))
+        return Pipeline(steps)
 
-        pipeline = Pipeline(
-            [
-                ("discretiser", self._make_discretiser()),
-                ("encoder", encoder),
-            ]
-        )
-
-        return pipeline
-
-    def _make_categorical_pipeline(self):
-        """
-        Instantiate the target mean encoder. Used when all variables are categorical.
-        """
-
-        pipeline = MeanEncoder(variables=self.variables_categorical_, unseen="raise")
-
-        return pipeline
-
-    def _make_combined_pipeline(self):
-
-        encoder_num = MeanEncoder(variables=self.variables_numerical_, unseen="raise")
-        encoder_cat = MeanEncoder(variables=self.variables_categorical_, unseen="raise")
-
-        pipeline = Pipeline(
-            [
-                ("discretiser", self._make_discretiser()),
-                ("encoder_num", encoder_num),
-                ("encoder_cat", encoder_cat),
-            ]
-        )
-
-        return pipeline
-
-    def _make_discretiser(self):
+    def _make_discretiser(self, variables: List[Union[str, int]]):
         """
         Instantiate the EqualWidthDiscretiser or EqualFrequencyDiscretiser.
         """
         if self.strategy == "equal_width":
-            discretiser = EqualWidthDiscretiser(
-                bins=self.bins,
-                variables=self.variables_numerical_,
-                return_boundaries=True,
-            )
+            discretiser = EqualWidthDiscretiser(bins=self.bins, variables=variables)
         else:
-            discretiser = EqualFrequencyDiscretiser(
-                q=self.bins,
-                variables=self.variables_numerical_,
-                return_boundaries=True,
-            )
+            discretiser = EqualFrequencyDiscretiser(q=self.bins, variables=variables)
 
         return discretiser
 
-    def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-         Replace original values by the average of the target mean value per bin or
-         category in each one of the variables.
-
-         Parameters
-         ----------
-         X : pandas dataframe of shape = [n_samples, n_features]
-             The input samples.
-
-         Return
-         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
-            The transformed data with the discrete variables.
-        """
-        # check method fit has been called
-        check_is_fitted(self)
-
-        # check that input is a dataframe
-        X = check_X(X)
-
-        # Check input data contains same number of columns as df used to fit
-        _check_X_matches_training_df(X, self.n_features_in_)
-
-        # check for missing values
-        _check_contains_na(X, self.variables_numerical_)
-        _check_contains_na(X, self.variables_categorical_)
-
-        # check inf
-        _check_contains_inf(X, self.variables_numerical_)
-
-        # reorder dataframe to match train set
-        X = X[self.feature_names_in_]
-
-        # transform dataframe
-        X_tr = self._pipeline.transform(X)
-
-        return X_tr
-
-    def _predict(self, X: pd.DataFrame) -> np.ndarray:
+    def _predict(self, X: IntoDataFrame) -> np.ndarray:
         """
         Predict using the average of the target mean value across variables.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The input samples.
 
-        Return
+        Returns
         -------
         y_pred: numpy array of shape = (n_samples, )
             The mean target value per observation.
         """
-        # transform dataframe
-        X_tr = self._transform(X)
+        check_is_fitted(self)
+        X = check_X(X)
+        _check_X_matches_training_df(X, self.n_features_in_)
+        _check_contains_na(X, self.variables_numerical_ + self.variables_categorical_)
+        _check_contains_inf(X, self.variables_numerical_)
+        X = subset_df(X, self.feature_names_in_)
 
-        # calculate the average for each observation
-        predictions = (
-            X_tr[self.variables_numerical_ + self.variables_categorical_]
-            .mean(axis=1)
-            .to_numpy()
-        )
-
-        return predictions
+        X_tr = check_X(self._pipeline.transform(nw.to_native(X, pass_through=True)))
+        variables = self.variables_numerical_ + self.variables_categorical_
+        # summing in order gives the same values as pandas' mean(axis=1).
+        predictions = np.zeros(X_tr.shape[0])
+        for values in to_numpy(X_tr, variables):
+            predictions += values
+        return predictions / len(variables)
 
     def _more_tags(self):
         return _return_tags()

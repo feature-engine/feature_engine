@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -30,7 +30,12 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.tags import _return_tags
+from feature_engine.timeseries.forecasting._forecasting_helpers import (
+    check_index,
+    sort_by_index,
+)
 from feature_engine.variable_handling import (
     check_numerical_variables,
     find_numerical_variables,
@@ -49,6 +54,11 @@ class BaseForecastTransformer(
 ):
     """
     Shared methods across time-series forecasting transformers.
+
+    With pandas, the rows are ordered in time by the dataframe's index. Other
+    dataframes, like polars, have no index: their rows are taken in the order given.
+
+    Subclasses define the parameters `freq` and `sort_index`.
 
     Parameters
     ----------
@@ -79,7 +89,10 @@ class BaseForecastTransformer(
         drop_na: bool = False,
     ) -> None:
 
-        if missing_values not in ["raise", "ignore"]:
+        if not isinstance(missing_values, str) or missing_values not in [
+            "raise",
+            "ignore",
+        ]:
             raise ValueError(
                 "missing_values takes only values 'raise' or 'ignore'. "
                 f"Got {missing_values} instead."
@@ -105,80 +118,24 @@ class BaseForecastTransformer(
         self.drop_original = drop_original
         self.drop_na = drop_na
 
-    def _check_index(self, X: pd.DataFrame):
-        """
-        Check that the index does not have missing data and its values are unique.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The dataset.
-        """
-        if X.index.isnull().any():
-            raise NotImplementedError(
-                "The dataframe's index contains NaN values or missing data. "
-                "Only dataframes with complete indexes are compatible with "
-                "this transformer."
-            )
-
-        if X.index.is_unique is False:
-            raise NotImplementedError(
-                "The dataframe's index does not contain unique values. "
-                "Only dataframes with unique values in the index are "
-                "compatible with this transformer."
-            )
-
-        return self
-
-    def _check_na_and_inf(self, X: pd.DataFrame):
-        """
-        Checks that the dataframe does not contain NaN or Infinite values.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The dataset for training or transformation.
-        """
-        _check_contains_na(X, self.variables_)
-        _check_contains_inf(X, self.variables_)
-
-        return self
-
-    def _get_feature_names_in(self, X: pd.DataFrame):
-        """
-        Finds the number and name of the features in the training set.
-
-        Parameters
-        ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The dataset for training or transformation.
-        """
-
-        self.feature_names_in_ = X.columns.tolist()
-        self.n_features_in_ = X.shape[1]
-
-        return self
-
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             y is not needed in this transformer. You can pass None or y.
         """
-        # check input dataframe
         X = check_X(X)
 
         # We need the dataframes to have unique values in the index and no missing data.
         # Otherwise, when we merge the new features we will duplicate rows.
-        self._check_index(X)
+        check_index(X, self.freq)
 
-        # find or check for numerical variables
         if self.variables is None:
             self.variables_ = find_numerical_variables(
                 X, return_empty=self.return_empty
@@ -186,51 +143,43 @@ class BaseForecastTransformer(
         else:
             self.variables_ = check_numerical_variables(X, self.variables)
 
-        # check if dataset contains na
         if self.missing_values == "raise":
-            self._check_na_and_inf(X)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _check_transform_input_and_state(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Common checks performed before the feature transformation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The data to transform.
+        X: pandas or narwhals dataframe of shape = [n_samples, n_features]
+            The data to transform, with the variables in the same order as in the
+            train set. With pandas, the rows are sorted by the index if
+            `sort_index=True`.
         """
-        # check method fit has been called
         check_is_fitted(self)
-
-        # check if 'X' is a dataframe
         X = check_X(X)
-
-        # check if input data contains the same number of columns as the fitted
-        # dataframe.
         _check_X_matches_training_df(X, self.n_features_in_)
+        check_index(X)
 
-        # Dataframes must have unique values in the index and no missing data.
-        # Otherwise, when we merge the created features we will duplicate rows.
-        self._check_index(X)
-
-        # check if dataset contains na
         if self.missing_values == "raise":
-            self._check_na_and_inf(X)
+            _check_contains_na(X, self.variables_)
+            _check_contains_inf(X, self.variables_)
 
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
-
+        X = subset_df(X, self.feature_names_in_)
         if self.sort_index is True:
-            X.sort_index(inplace=True)
+            X = sort_by_index(X)
 
         return X
 

@@ -1,81 +1,84 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 
 from feature_engine.creation import GeoDistanceFeatures
 
+COORDS_DATA = {
+    "lat1": [40.7128],
+    "lon1": [-74.0060],
+    "lat2": [34.0522],
+    "lon2": [-118.2437],
+}
 
-@pytest.fixture
-def df_coords():
-    """Fixture providing sample coordinate data for a single route."""
-    return pd.DataFrame({
-        "lat1": [40.7128],
-        "lon1": [-74.0060],
-        "lat2": [34.0522],
-        "lon2": [-118.2437],
-    })
+MULTI_COORDS_DATA = {
+    "origin_lat": [40.7128, 34.0522, 41.8781],
+    "origin_lon": [-74.0060, -118.2437, -87.6298],
+    "dest_lat": [34.0522, 41.8781, 40.7128],
+    "dest_lon": [-118.2437, -87.6298, -74.0060],
+}
 
-
-@pytest.fixture
-def df_multi_coords():
-    """Fixture providing sample coordinate data with multiple rows."""
-    return pd.DataFrame({
-        "origin_lat": [40.7128, 34.0522, 41.8781],
-        "origin_lon": [-74.0060, -118.2437, -87.6298],
-        "dest_lat": [34.0522, 41.8781, 40.7128],
-        "dest_lon": [-118.2437, -87.6298, -74.0060],
-    })
-
-
-@pytest.fixture
-def df_with_extra():
-    """Fixture for DataFrame with coordinates and extra columns."""
-    return pd.DataFrame({
-        "lat1": [40.0],
-        "lon1": [-74.0],
-        "lat2": [34.0],
-        "lon2": [-118.0],
-        "other": [1],
-    })
+COORDS_WITH_EXTRA_DATA = {
+    "lat1": [40.0],
+    "lon1": [-74.0],
+    "lat2": [34.0],
+    "lon2": [-118.0],
+    "other": [1],
+}
 
 
-def test_haversine_distance_default(df_coords):
+def get_value(X, col: str, idx: int = 0):
+    """Extract a single scalar from a pandas or polars dataframe column."""
+    return nw.from_native(X, eager_only=True).get_column(col).to_list()[idx]
+
+
+def assert_df_equal(X, expected: dict, abs_tol: float = 1e-5) -> None:
+    result = nw.from_native(X, eager_only=True).to_dict(as_series=False)
+    assert list(result.keys()) == list(expected.keys())
+    for col, values in expected.items():
+        assert result[col] == pytest.approx(values, abs=abs_tol)
+
+
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_haversine_distance_default(make_df):
     """Test Haversine distance calculation with default parameters."""
+    df = make_df(COORDS_DATA)
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
-    X_tr = transformer.fit_transform(df_coords)
+    X_tr = transformer.fit_transform(df)
 
     assert "geo_distance" in X_tr.columns
-    assert 3900 < X_tr["geo_distance"].iloc[0] < 4000
+    assert 3900 < get_value(X_tr, "geo_distance") < 4000
 
 
-def test_haversine_distance_miles():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_haversine_distance_miles(make_df):
     """Test Haversine distance in miles."""
-    X = pd.DataFrame({
-        "lat1": [40.7128],
-        "lon1": [-74.0060],
-        "lat2": [34.0522],
-        "lon2": [-118.2437],
-    })
+    X = make_df(COORDS_DATA)
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", output_unit="miles"
     )
     X_tr = transformer.fit_transform(X)
 
-    assert 2400 < X_tr["geo_distance"].iloc[0] < 2500
+    assert 2400 < get_value(X_tr, "geo_distance") < 2500
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("method", ["haversine", "euclidean", "manhattan"])
 @pytest.mark.parametrize("output_unit", ["km", "miles", "meters", "feet"])
-def test_same_location_zero_distance(method, output_unit):
+def test_same_location_zero_distance(make_df, method, output_unit):
     """Test that same location returns zero distance for all methods and units."""
-    X = pd.DataFrame({
-        "lat1": [40.7128, 34.0522],
-        "lon1": [-74.0060, -118.2437],
-        "lat2": [40.7128, 34.0522],
-        "lon2": [-74.0060, -118.2437],
-    })
+    X = make_df(
+        {
+            "lat1": [40.7128, 34.0522],
+            "lon1": [-74.0060, -118.2437],
+            "lat2": [40.7128, 34.0522],
+            "lon2": [-74.0060, -118.2437],
+        }
+    )
     transformer = GeoDistanceFeatures(
         lat1="lat1",
         lon1="lon1",
@@ -86,14 +89,14 @@ def test_same_location_zero_distance(method, output_unit):
     )
     X_tr = transformer.fit_transform(X)
 
-    np.testing.assert_array_almost_equal(
-        X_tr["geo_distance"].values, [0.0, 0.0], decimal=10
-    )
+    values = nw.from_native(X_tr, eager_only=True).get_column("geo_distance")
+    np.testing.assert_array_almost_equal(values.to_list(), [0.0, 0.0], decimal=10)
 
 
-def test_euclidean_method():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_euclidean_method(make_df):
     """Test Euclidean distance method returns expected values."""
-    X = pd.DataFrame({"lat1": [0.0], "lon1": [0.0], "lat2": [1.0], "lon2": [1.0]})
+    X = make_df({"lat1": [0.0], "lon1": [0.0], "lat2": [1.0], "lon2": [1.0]})
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", method="euclidean"
     )
@@ -101,13 +104,14 @@ def test_euclidean_method():
 
     expected_distance = np.sqrt(2) * 111.0
     np.testing.assert_almost_equal(
-        X_tr["geo_distance"].iloc[0], expected_distance, decimal=1
+        get_value(X_tr, "geo_distance"), expected_distance, decimal=1
     )
 
 
-def test_manhattan_method():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_manhattan_method(make_df):
     """Test Manhattan distance method returns expected values."""
-    X = pd.DataFrame({"lat1": [0.0], "lon1": [0.0], "lat2": [1.0], "lon2": [1.0]})
+    X = make_df({"lat1": [0.0], "lon1": [0.0], "lat2": [1.0], "lon2": [1.0]})
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", method="manhattan"
     )
@@ -115,30 +119,35 @@ def test_manhattan_method():
 
     expected_distance = 2 * 111.0
     np.testing.assert_almost_equal(
-        X_tr["geo_distance"].iloc[0], expected_distance, decimal=1
+        get_value(X_tr, "geo_distance"), expected_distance, decimal=1
     )
 
 
-def test_custom_output_column_name(df_coords):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_custom_output_column_name(make_df):
     """Test custom output column name."""
+    df = make_df(COORDS_DATA)
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", output_col="distance_km"
     )
-    X_tr = transformer.fit_transform(df_coords)
+    X_tr = transformer.fit_transform(df)
 
     assert "distance_km" in X_tr.columns
     assert "geo_distance" not in X_tr.columns
 
 
-def test_drop_original_columns():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_drop_original_columns(make_df):
     """Test drop_original parameter removes coordinate columns."""
-    X = pd.DataFrame({
-        "lat1": [40.7128],
-        "lon1": [-74.0060],
-        "lat2": [34.0522],
-        "lon2": [-118.2437],
-        "other": [1],
-    })
+    X = make_df(
+        {
+            "lat1": [40.7128],
+            "lon1": [-74.0060],
+            "lat2": [34.0522],
+            "lon2": [-118.2437],
+            "other": [1],
+        }
+    )
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", drop_original=True
     )
@@ -153,26 +162,23 @@ def test_drop_original_columns():
     assert list(X_tr.columns) == ["other", "geo_distance"]
 
 
-def test_multiple_rows(df_multi_coords):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_multiple_rows(make_df):
     """Test transformation with multiple rows returns expected distances."""
+    df = make_df(MULTI_COORDS_DATA)
     transformer = GeoDistanceFeatures(
         lat1="origin_lat", lon1="origin_lon", lat2="dest_lat", lon2="dest_lon"
     )
-    X_tr = transformer.fit_transform(df_multi_coords)
+    X_tr = transformer.fit_transform(df)
 
-    expected = df_multi_coords.copy()
+    expected = dict(MULTI_COORDS_DATA)
     expected["geo_distance"] = [
         3935.746254609723,
         2803.971506975193,
         1144.2912739463475,
     ]
 
-    pd.testing.assert_frame_equal(
-        X_tr,
-        expected,
-        check_exact=False,
-        atol=0.001,
-    )
+    assert_df_equal(X_tr, expected, abs_tol=0.001)
 
 
 @pytest.mark.parametrize("invalid_method", ["invalid", True, 123])
@@ -197,9 +203,10 @@ def test_invalid_output_unit_raises_error(invalid_unit):
         )
 
 
-def test_missing_columns_raises_error():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_missing_columns_raises_error(make_df):
     """Test that missing columns raise ValueError on fit."""
-    X = pd.DataFrame({"lat1": [1], "lon1": [1]})
+    X = make_df({"lat1": [1], "lon1": [1]})
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
@@ -207,15 +214,18 @@ def test_missing_columns_raises_error():
         transformer.fit(X)
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("invalid_lat", [100, -100])
-def test_invalid_latitude_range_raises_error(invalid_lat):
+def test_invalid_latitude_range_raises_error(make_df, invalid_lat):
     """Test that latitude outside [-90, 90] raises ValueError."""
-    X = pd.DataFrame({
-        "lat1": [invalid_lat],
-        "lon1": [0],
-        "lat2": [0],
-        "lon2": [0],
-    })
+    X = make_df(
+        {
+            "lat1": [invalid_lat],
+            "lon1": [0],
+            "lat2": [0],
+            "lon2": [0],
+        }
+    )
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
@@ -223,15 +233,18 @@ def test_invalid_latitude_range_raises_error(invalid_lat):
         transformer.fit(X)
 
 
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("invalid_lon", [200, -200])
-def test_invalid_longitude_range_raises_error(invalid_lon):
+def test_invalid_longitude_range_raises_error(make_df, invalid_lon):
     """Test that longitude outside [-180, 180] raises ValueError."""
-    X = pd.DataFrame({
-        "lat1": [0],
-        "lon1": [invalid_lon],
-        "lat2": [0],
-        "lon2": [0],
-    })
+    X = make_df(
+        {
+            "lat1": [0],
+            "lon1": [invalid_lon],
+            "lat2": [0],
+            "lon2": [0],
+        }
+    )
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
@@ -239,14 +252,17 @@ def test_invalid_longitude_range_raises_error(invalid_lon):
         transformer.fit(X)
 
 
-def test_validate_ranges_disabled():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_validate_ranges_disabled(make_df):
     """Test that invalid coordinates don't raise error when validate_ranges=False."""
-    X = pd.DataFrame({
-        "lat1": [100],
-        "lon1": [200],
-        "lat2": [0],
-        "lon2": [0],
-    })
+    X = make_df(
+        {
+            "lat1": [100],
+            "lon1": [200],
+            "lat2": [0],
+            "lon2": [0],
+        }
+    )
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", validate_ranges=False
     )
@@ -268,11 +284,10 @@ def test_validate_ranges_parameter_validation(invalid_value):
         )
 
 
-def test_fit_stores_attributes():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_fit_stores_attributes(make_df):
     """Test that fit stores expected attributes with correct values."""
-    X = pd.DataFrame(
-        {"lat1": [40.0], "lon1": [-74.0], "lat2": [34.0], "lon2": [-118.0]}
-    )
+    X = make_df({"lat1": [40.0], "lon1": [-74.0], "lat2": [34.0], "lon2": [-118.0]})
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
@@ -286,38 +301,38 @@ def test_fit_stores_attributes():
     assert transformer.n_features_in_ == 4
 
 
-def test_get_feature_names_out(df_with_extra):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out(make_df):
     """Test get_feature_names_out returns correct feature names."""
+    df = make_df(COORDS_WITH_EXTRA_DATA)
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2"
     )
-    transformer.fit(df_with_extra)
+    transformer.fit(df)
 
     feature_names = transformer.get_feature_names_out()
     expected_names = ["lat1", "lon1", "lat2", "lon2", "other", "geo_distance"]
     assert feature_names == expected_names
 
 
-def test_get_feature_names_out_with_drop_original(df_with_extra):
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names_out_with_drop_original(make_df):
     """Test get_feature_names_out when drop_original=True."""
+    df = make_df(COORDS_WITH_EXTRA_DATA)
     transformer = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", drop_original=True
     )
-    transformer.fit(df_with_extra)
+    transformer.fit(df)
 
     feature_names = transformer.get_feature_names_out()
     expected_names = ["other", "geo_distance"]
     assert feature_names == expected_names
 
 
-def test_output_units_conversion():
+@pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
+def test_output_units_conversion(make_df):
     """Test different output units give consistent results with correct conversion."""
-    X = pd.DataFrame({
-        "lat1": [40.7128],
-        "lon1": [-74.0060],
-        "lat2": [34.0522],
-        "lon2": [-118.2437],
-    })
+    data = COORDS_DATA
 
     transformer_km = GeoDistanceFeatures(
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", output_unit="km"
@@ -326,8 +341,10 @@ def test_output_units_conversion():
         lat1="lat1", lon1="lon1", lat2="lat2", lon2="lon2", output_unit="miles"
     )
 
-    dist_km = transformer_km.fit_transform(X.copy())["geo_distance"].iloc[0]
-    dist_miles = transformer_miles.fit_transform(X.copy())["geo_distance"].iloc[0]
+    dist_km = get_value(transformer_km.fit_transform(make_df(data)), "geo_distance")
+    dist_miles = get_value(
+        transformer_miles.fit_transform(make_df(data)), "geo_distance"
+    )
 
     expected_miles = dist_km * 0.621371
     np.testing.assert_almost_equal(dist_miles, expected_miles, decimal=0)
@@ -356,7 +373,5 @@ def test_more_tags_and_sklearn_tags():
         == "transformer has mandatory parameters"
     )
 
-    # basic check for sklearn tags if available (new sklearn versions)
-    if hasattr(transformer, "__sklearn_tags__"):
-        tags = transformer.__sklearn_tags__()
-        assert tags is not None
+    tags = transformer.__sklearn_tags__()
+    assert tags is not None

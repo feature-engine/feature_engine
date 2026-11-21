@@ -60,13 +60,7 @@ _selectors = [
 
 
 def _OneHotEncoder(sparse, drop=None, dtype=np.float64) -> OneHotEncoder:
-    """OneHotEncoder sparse argument has been renamed as sparse_output
-    in scikitlearn >=1.2"""
-
-    if skl_version.split(".")[0] == "1" and int(skl_version.split(".")[1]) >= 2:
-        return OneHotEncoder(sparse_output=sparse, drop=drop, dtype=dtype)
-    else:
-        return OneHotEncoder(sparse=sparse, drop=drop, dtype=dtype)
+    return OneHotEncoder(sparse_output=sparse, drop=drop, dtype=dtype)
 
 
 @pytest.mark.parametrize(

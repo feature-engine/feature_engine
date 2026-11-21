@@ -1,6 +1,17 @@
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
+
+
+@pytest.fixture(params=[pd.DataFrame, pl.DataFrame], ids=["pandas", "polars"])
+def make_df(request):
+    """Dataframe constructor of the backend under test: pandas or polars.
+
+    A test that requests this fixture runs once per backend. Build the input
+    with ``make_df(data)`` and check the output with ``isinstance(X, make_df)``.
+    """
+    return request.param
 
 
 @pytest.fixture(scope="module")

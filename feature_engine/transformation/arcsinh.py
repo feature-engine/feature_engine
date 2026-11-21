@@ -3,10 +3,12 @@
 
 from typing import List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -119,11 +121,35 @@ class ArcSinhTransformer(BaseNumericalTransformer):
     >>> X = ast.transform(X)
     >>> X.head()
               x
-    0  7.516076
-    1 -6.330816
-    2  7.780254
-    3  8.825252
-    4 -6.995893
+    0  6.901163
+    1 -5.622327
+    2  7.166558
+    3  8.021604
+    4 -6.149128
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.transformation import ArcSinhTransformer
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame({"x": list(np.random.randn(6) * 1000)})
+    >>> ast = ArcSinhTransformer()
+    >>> ast.fit(X)
+    >>> ast.transform(X)
+    shape: (6, 1)
+    ┌───────────┐
+    │ x         │
+    │ ---       │
+    │ f64       │
+    ╞═══════════╡
+    │ 6.901163  │
+    │ -5.622327 │
+    │ 7.166558  │
+    │ 8.021604  │
+    │ -6.149128 │
+    │ -6.149058 │
+    └───────────┘
     """
 
     def __init__(
@@ -152,17 +178,17 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         self.loc = float(loc)
         self.scale = float(scale)
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Selects the numerical variables and stores feature names.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
 
         Returns
@@ -170,67 +196,64 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         self: ArcSinhTransformer
             The fitted transformer.
         """
-
-        # check input dataframe and find/check numerical variables
         X, variables_ = self._fit_setup(X)
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Transform the variables using the arcsinh function.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the transformed variables.
         """
-
-        # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-        # Ensure float dtype for the transformation
-        X[self.variables_] = X[self.variables_].astype(float)
+        # arcsinh((x - loc) / scale)
+        new_columns = {
+            var: np.arcsinh((values.astype(float) - self.loc) / self.scale)
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        # Apply arcsinh transformation: arcsinh((x - loc) / scale)
-        X.loc[:, self.variables_] = np.arcsinh(
-            (X.loc[:, self.variables_] - self.loc) / self.scale
-        )
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
-        return X
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be inverse transformed.
 
         Returns
         -------
-        X_tr: pandas dataframe
+        X_tr: dataframe
             The dataframe with the inverse transformed variables.
         """
-
-        # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-        # Inverse transform: x = sinh(y) * scale + loc
-        X.loc[:, self.variables_] = (
-            np.sinh(X.loc[:, self.variables_]) * self.scale + self.loc
-        )
+        # x = sinh(y) * scale + loc
+        new_columns = {
+            var: np.sinh(values.astype(float)) * self.scale + self.loc
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

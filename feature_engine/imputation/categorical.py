@@ -1,9 +1,10 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -26,6 +27,12 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import (
+    DataFrame,
+    add_category_to_df,
+    fill_missing_in_df,
+    replace_columns_in_df,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
@@ -34,6 +41,35 @@ from feature_engine.variable_handling import (
     find_all_variables,
     find_categorical_variables,
 )
+
+
+def _column_modes(
+    X: DataFrame, variables: Sequence[Union[str, int]]
+) -> List[List[Any]]:
+    """
+    Returns the most frequent values of each variable, ignoring missing values.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the variables.
+
+    Returns
+    -------
+    modes : list
+        One list per variable, with all the values that are the most frequent.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return [X[var].mode().tolist() for var in variables]
+    else:
+        return [
+            X.get_column(var).drop_nulls().mode(keep="all").to_list()
+            for var in variables
+        ]
 
 
 @Substitution(
@@ -146,13 +182,26 @@ class CategoricalImputer(BaseImputer):
         return_object: bool = False,
         ignore_format: bool = False,
     ) -> None:
-        if imputation_method not in ["missing", "frequent"]:
+        if not isinstance(imputation_method, str) or imputation_method not in [
+            "missing",
+            "frequent",
+        ]:
             raise ValueError(
-                "imputation_method takes only values 'missing' or 'frequent'"
+                "imputation_method takes only values 'missing' or 'frequent'. "
+                f"Got {imputation_method} instead."
             )
 
         if not isinstance(ignore_format, bool):
-            raise ValueError("ignore_format takes only booleans True and False")
+            raise ValueError(
+                "ignore_format takes only booleans True and False. "
+                f"Got {ignore_format} instead."
+            )
+
+        if not isinstance(return_object, bool):
+            raise ValueError(
+                "return_object takes only booleans True and False. "
+                f"Got {return_object} instead."
+            )
 
         self.imputation_method = imputation_method
         self.fill_value = fill_value
@@ -162,16 +211,17 @@ class CategoricalImputer(BaseImputer):
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the most frequent category if the imputation method is set to frequent.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
+        X: dataframe of shape = [n_samples, n_features]
+            The training dataset. Can be a pandas, polars, or any other dataframe
+            supported by narwhals.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             y is not needed in this imputation. You can pass None or y.
         """
 
@@ -194,69 +244,32 @@ class CategoricalImputer(BaseImputer):
             imputer_dict_ = {var: self.fill_value for var in variables_}
 
         elif self.imputation_method == "frequent":
-            # if imputing only 1 variable:
-            if len(variables_) == 1:
-                var = variables_[0]
-                mode_vals = X[var].mode()
-
-                # Some variables may contain more than 1 mode:
-                if len(mode_vals) > 1:
-                    raise ValueError(
-                        f"The variable {var} contains multiple frequent categories."
-                    )
-
-                imputer_dict_ = {var: mode_vals[0]}
-
-            # imputing multiple variables:
-            else:
-                # Returns a dataframe with 1 row if there is one mode per
-                # variable, or more rows if there are more modes:
-                mode_vals = X[variables_].mode()
-
-                # Careful: some variables contain multiple modes
-                if len(mode_vals) > 1:
-                    varnames = mode_vals.dropna(axis=1).columns.to_list()
-                    if len(varnames) > 1:
-                        varnames_str = ", ".join(varnames)
-                    else:
-                        varnames_str = varnames[0]
-                    raise ValueError(
-                        f"The variable(s) {varnames_str} contain(s) multiple frequent "
-                        f"categories."
-                    )
-
-                imputer_dict_ = mode_vals.iloc[0].to_dict()
+            # When a variable has several equally-frequent categories, take the
+            # smallest so fit() is reproducible and pandas and polars agree.
+            imputer_dict_ = {
+                var: sorted(modes)[0]
+                for var, modes in zip(variables_, _column_modes(X, variables_))
+            }
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        # Frequent category imputation
-        if self.imputation_method == "frequent":
-            X = super().transform(X)
-
-        # Imputation with string
-        else:
-            X = self._transform(X)
-
-            # if variable is of type category, we need to add the new
-            # category, before filling in the nan
-            for variable in self.variables_:
-                if X[variable].dtype.name == "category":
-                    X[variable] = X[variable].cat.add_categories(
-                        self.imputer_dict_[variable]
-                    )
-
-            X = X.fillna(self.imputer_dict_)
-
-        # add additional step to return variables cast as object
-        if self.return_object:
-            X[self.variables_] = X[self.variables_].astype("O")
-
-        return X
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
+        X = self._transform(X)
+        if self.imputation_method == "missing":
+            # pandas categorical variables need the fill value as a category.
+            X = add_category_to_df(X, self.variables_, self.fill_value)
+        X = fill_missing_in_df(X, self.imputer_dict_)
+        # only pandas has the object dtype: other libraries keep their dtypes.
+        if self.return_object is True and not isinstance(X, nw.DataFrame):
+            X = replace_columns_in_df(
+                X, {var: X[var].astype("O") for var in self.variables_}
+            )
+        return nw.to_native(X, pass_through=True)
 
     # Get docstring from BaseClass
     transform.__doc__ = BaseImputer.transform.__doc__

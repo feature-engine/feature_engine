@@ -68,3 +68,32 @@ need to set `return_empty` to `True`:
     find_numerical_variables(df[["Name", "City", "dob"]], return_empty=True)
 
 The previous command returns an empty list: `[]`.
+
+With polars
+-----------
+
+:class:`find_numerical_variables()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from datetime import datetime
+    from feature_engine.variable_handling import find_numerical_variables
+
+    df = pl.DataFrame({
+        "Name": ["tom", "nick", "krish", "jack"],
+        "City": ["London", "Manchester", "Liverpool", "Bristol"],
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+        "dob": [datetime(2020, 2, 24, 0, i) for i in range(4)],
+    })
+
+    var_num = find_numerical_variables(df)
+
+    var_num
+
+We see the names of the numerical variables in the list below:
+
+.. code:: python
+
+    ['Age', 'Marks']

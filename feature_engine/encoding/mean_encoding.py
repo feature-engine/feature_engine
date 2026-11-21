@@ -2,7 +2,8 @@
 # License: BSD 3 clause
 from typing import List, Union
 
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -28,7 +29,12 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
-from feature_engine.encoding._helper_functions import check_parameter_unseen
+from feature_engine.dataframe_helpers import subset_df
+from feature_engine.encoding._helper_functions import (
+    TARGET_NAME,
+    add_target_to_X,
+    check_parameter_unseen,
+)
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -203,17 +209,17 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         check_parameter_unseen(unseen, ["ignore", "raise", "encode"])
         self.unseen = unseen
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Learn the mean value of the target for each category of the variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to be encoded.
 
-        y: pandas series
+        y: Series
             The target.
         """
 
@@ -223,44 +229,57 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
 
         self.encoder_dict_ = {}
 
-        y_prior = y.mean()
+        # adding a column to a wide pandas dataframe is slow, so take the variables.
+        nw_Xy = add_target_to_X(
+            nw.from_native(subset_df(X, variables_), eager_only=True), y
+        )
+        y_nw = nw_Xy[TARGET_NAME]
+        y_prior = y_nw.mean()
 
         if self.unseen == "encode":
             self._unseen = y_prior
 
         if self.smoothing == "auto":
-            y_var = y.var(ddof=0)
+            y_var = y_nw.var(ddof=0)
+
         for var in variables_:
+            # group_by() needs string names; pandas columns can be integers.
+            category = nw_Xy.get_column(var).alias("__category__")
+            category_y = category.to_frame().with_columns(y_nw)
+            stats = category_y.group_by("__category__", drop_null_keys=True).agg(
+                nw.col(TARGET_NAME).mean().alias("__mean__"),
+                nw.col(TARGET_NAME).len().alias("__count__"),
+                nw.col(TARGET_NAME).var(ddof=0).alias("__var__"),
+            )
             if self.smoothing == "auto":
-                damping = y.groupby(X[var]).var(ddof=0) / y_var
+                damping = nw.col("__var__") / y_var
             else:
                 damping = self.smoothing
-            counts = X[var].value_counts()
-            counts.index = counts.index.infer_objects()
-            _lambda = counts / (counts + damping)
-            self.encoder_dict_[var] = (
-                _lambda * y.groupby(X[var], observed=False).mean()
-                + (1.0 - _lambda) * y_prior
-            ).to_dict()
+            _lambda = nw.col("__count__") / (nw.col("__count__") + damping)
+            encoding = _lambda * nw.col("__mean__") + (1.0 - _lambda) * y_prior
+            stats = stats.select("__category__", encoding.alias("__encoding__"))
+            self.encoder_dict_[var] = dict(
+                zip(stats["__category__"].to_list(), stats["__encoding__"].to_list())
+            )
 
         # assign underscore parameters at the end in case code above fails
         self.variables_ = variables_
         self._get_feature_names_in(X)
         return self
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Convert the encoded variable back to the original values.
 
         Note that if unseen was set to 'encode', then this method is not implemented.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The transformed dataframe.
 
         Returns
         -------
-        X_tr: pandas dataframe of shape = [n_samples, n_features].
+        X_tr: dataframe of shape = [n_samples, n_features].
             The un-transformed dataframe, with the categorical variables containing the
             original values.
         """

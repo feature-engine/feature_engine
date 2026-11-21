@@ -3,11 +3,13 @@
 
 from typing import List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
 import scipy.stats as stats
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -108,11 +110,35 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
     >>> X = yjt.transform(X)
     >>> X.head()
                    x
-    0 -267042.906453
-    1 -444357.138990
-    2 -221626.115742
-    3  -23647.632651
-    4 -467264.993249
+    0 -267042.661354
+    1 -444356.715596
+    2 -221625.915167
+    3  -23647.614887
+    4 -467264.546413
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.transformation import YeoJohnsonTransformer
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame({"x": list(np.random.lognormal(size=6) - 10)})
+    >>> yjt = YeoJohnsonTransformer()
+    >>> yjt.fit(X)
+    >>> yjt.transform(X)
+    shape: (6, 1)
+    ┌────────────────┐
+    │ x              │
+    │ ---            │
+    │ f64            │
+    ╞════════════════╡
+    │ -467714.164249 │
+    │ -795057.401919 │
+    │ -385148.281012 │
+    │ -37417.353351  │
+    │ -837807.71099  │
+    │ -837800.580457 │
+    └────────────────┘
     """
 
     def __init__(
@@ -125,83 +151,85 @@ class YeoJohnsonTransformer(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the optimal lambda for the Yeo-Johnson transformation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
-        # check input dataframe
         X, variables_ = self._fit_setup(X)
 
         lambda_dict_ = {}
-
-        for var in variables_:
-            _, lambda_dict_[var] = stats.yeojohnson(X[var])
+        for var, values in zip(variables_, to_numpy(X, variables_)):
+            _, lambda_dict_[var] = stats.yeojohnson(values.astype(float))
 
         self.variables_ = variables_
         self.lambda_dict_ = lambda_dict_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Apply the Yeo-Johnson transformation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X: pandas dataframe
+        X_new: dataframe
             The dataframe with the transformed variables.
         """
-
-        # check input dataframe and if class was fitted
-
         X = self._check_transform_input_and_state(X)
-        for feature in self.variables_:
-            X[feature] = stats.yeojohnson(X[feature], lmbda=self.lambda_dict_[feature])
 
-        return X
+        new_columns = {
+            var: stats.yeojohnson(values.astype(float), lmbda=self.lambda_dict_[var])
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
+
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas DataFrame of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_tr: pandas dataframe
+        X_tr: dataframe
             The dataframe with the transformed variables.
         """
-        # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
 
-        for feature in self.variables_:
-            X[feature] = self._inverse_transform_series(
-                X[feature], lmbda=self.lambda_dict_[feature]
+        new_columns = {
+            var: self._inverse_transform_array(
+                values.astype(float), lmbda=self.lambda_dict_[var]
             )
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
-    def _inverse_transform_series(self, X: pd.Series, lmbda: float) -> pd.Series:
-        x_inv = pd.Series(np.zeros_like(X), index=X.index)
+    def _inverse_transform_array(self, X: np.ndarray, lmbda: float) -> np.ndarray:
+        x_inv = np.zeros_like(X)
         pos = X >= 0
 
         # when x >= 0

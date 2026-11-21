@@ -1,9 +1,12 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 import warnings
-import pandas as pd
+
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -21,9 +24,40 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import DataFrame, missing_values_count
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
+
+
+def _add_missing_indicators(X: DataFrame, names: Dict[Any, Any]) -> DataFrame:
+    """
+    Adds binary columns to the end of the dataframe, with 1 where the variables
+    have missing values and 0 otherwise.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    names : dict
+        The names of the variables and the name of their indicator column.
+
+    Returns
+    -------
+    X : pandas or narwhals dataframe
+        The dataframe with the int8 indicator columns.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        indicators = X[list(names)].isna().astype("int8")
+        indicators = indicators.set_axis(list(names.values()), axis=1)
+        return nwd.get_pandas().concat([X, indicators], axis=1)
+    else:
+        return X.with_columns(
+            nw.col(var).is_null().cast(nw.Int8).alias(name)
+            for var, name in names.items()
+        )
 
 
 @Substitution(
@@ -105,6 +139,30 @@ class MissingIndicator(BaseImputer):
     2  1.0    b      0      0
     3  0.0  NaN      0      1
     4  NaN    a      1      0
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.imputation import MissingIndicator
+    >>> X = pl.DataFrame(dict(
+    ...        x1 = [None, 1, 1, 0, None],
+    ...        x2 = ["a", None, "b", None, "a"],
+    ...        ))
+    >>> ami = MissingIndicator()
+    >>> ami.fit(X)
+    >>> ami.transform(X)
+    shape: (5, 4)
+    ┌──────┬──────┬───────┬───────┐
+    │ x1   ┆ x2   ┆ x1_na ┆ x2_na │
+    │ ---  ┆ ---  ┆ ---   ┆ ---   │
+    │ i64  ┆ str  ┆ i8    ┆ i8    │
+    ╞══════╪══════╪═══════╪═══════╡
+    │ null ┆ a    ┆ 1     ┆ 0     │
+    │ 1    ┆ null ┆ 0     ┆ 1     │
+    │ 1    ┆ b    ┆ 0     ┆ 0     │
+    │ 0    ┆ null ┆ 0     ┆ 1     │
+    │ null ┆ a    ┆ 1     ┆ 0     │
+    └──────┴──────┴───────┴───────┘
     """
 
     def __init__(
@@ -115,7 +173,10 @@ class MissingIndicator(BaseImputer):
     ) -> None:
 
         if not isinstance(missing_only, bool):
-            raise ValueError("missing_only takes values True or False")
+            raise ValueError(
+                "missing_only takes values True or False. "
+                f"Got {missing_only} instead."
+            )
 
         self.variables = _check_variables_input_value(variables)
         self.missing_only = missing_only
@@ -123,16 +184,16 @@ class MissingIndicator(BaseImputer):
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the variables for which the missing indicators will be created.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             y is not needed in this imputation. You can pass None or y.
         """
 
@@ -146,40 +207,37 @@ class MissingIndicator(BaseImputer):
             variables_ = check_all_variables(X, self.variables)
 
         if self.missing_only is True:
-            variables_ = [var for var in variables_ if X[var].isnull().sum() > 0]
+            counts = missing_values_count(X, variables_)
+            variables_ = [var for var, count in zip(variables_, counts) if count > 0]
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Add the binary missing indicators.
 
         Parameters
         ----------
 
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X : dataframe of shape = [n_samples, n_features]
             The dataframe to be transformed.
 
         Returns
         -------
 
-        X_new : pandas dataframe of shape = [n_samples, n_features]
+        X_new : dataframe of shape = [n_samples, n_features]
             The dataframe containing the additional binary variables.
         """
 
         X = self._transform(X)
-        X_indicators = (
-            X[self.variables_]
-            .isna()
-            .astype("int8")
-            .add_suffix("_na")
+        X = _add_missing_indicators(
+            X, {var: f"{var}_na" for var in self.variables_}
         )
-        X = pd.concat([X, X_indicators], axis=1)
-
-        return X
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

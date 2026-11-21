@@ -1,18 +1,20 @@
-import pandas as pd
+from typing import Union
+
+import narwhals as nw
+from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.dataframe_helpers import fill_missing_in_df, subset_df
 from feature_engine.tags import _return_tags
-
-_PANDAS_LT_3 = int(pd.__version__.split(".")[0]) < 3
 
 
 class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across imputers"""
 
-    def _transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def _transform(self, X: IntoDataFrame) -> Union[IntoDataFrame, nw.DataFrame]:
         """
         Common checks before transforming data:
 
@@ -23,62 +25,36 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Parameters
         ----------
-        X: Pandas DataFrame
+        X: dataframe of shape = [n_samples, n_features]
 
         Returns
         -------
-        X: Pandas DataFrame
-            The same dataframe entered by the user.
+        X: pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise, with the variables in the same order as in the train set.
         """
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
         X = check_X(X)
-
-        # Check that input df contains same number of columns as df used to fit
         _check_X_matches_training_df(X, self.n_features_in_)
+        return subset_df(X, self.feature_names_in_)
 
-        # reorder df to match train set
-        X = X[self.feature_names_in_]
-
-        return X
-
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Replace missing data with the learned parameters.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the selected variables.
         """
-
         X = self._transform(X)
-
-        # Replace missing data with learned parameters. In pandas < 3, fillna
-        # downcasts object columns and warns; the option applies the pandas 3
-        # behavior: no downcasting, and infer_objects restores numeric dtypes.
-        if _PANDAS_LT_3:
-            with pd.option_context("future.no_silent_downcasting", True):
-                X = X.fillna(value=self.imputer_dict_)
-        else:
-            X = X.fillna(value=self.imputer_dict_)
-        return X.infer_objects()
-
-    def _get_feature_names_in(self, X):
-        """Get the names and number of features in the train set (the dataframe
-        used during fit)."""
-
-        self.feature_names_in_ = X.columns.to_list()
-        self.n_features_in_ = X.shape[1]
-
-        return self
+        X = fill_missing_in_df(X, self.imputer_dict_)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

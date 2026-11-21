@@ -79,7 +79,7 @@ dependencies. If you set up the development environment as we described in the
 Alternatively, first activate your environment. Then navigate to the root folder of
 feature-engine. And now install the requirements for the documentation::
 
-        $ pip install -r docs/requirements.txt
+        $ pip install -e ".[docs]"
 
 To build the documentation (and test if it is working properly) run::
 

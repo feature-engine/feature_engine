@@ -4,7 +4,8 @@
 import warnings
 from typing import Dict, List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._docstrings.fit_attributes import (
@@ -24,6 +25,7 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 from feature_engine.tags import _return_tags
 
@@ -110,6 +112,27 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
     3    25
     1    17
     Name: x, dtype: int64
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.discretisation import ArbitraryDiscretiser
+    >>> X = pl.DataFrame({"x": [10, 30, 60, 90]})
+    >>> bins = dict(x=[0, 25, 50, 75, 100])
+    >>> ad = ArbitraryDiscretiser(binning_dict=bins)
+    >>> ad.fit(X)
+    >>> ad.transform(X)
+    shape: (4, 1)
+    ┌─────┐
+    │ x   │
+    │ --- │
+    │ i64 │
+    ╞═════╡
+    │ 0   │
+    │ 1   │
+    │ 2   │
+    │ 3   │
+    └─────┘
     """
 
     def __init__(
@@ -127,7 +150,7 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
                 f"variable. Got {binning_dict} instead."
             )
 
-        if errors not in ["ignore", "raise"]:
+        if not isinstance(errors, str) or errors not in ["ignore", "raise"]:
             raise ValueError(
                 "errors only takes values 'ignore' and 'raise'. "
                 f"Got {errors} instead."
@@ -138,53 +161,58 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
         self.binning_dict = binning_dict
         self.errors = errors
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the
             variables to be transformed.
 
         y: None
             y is not needed in this transformer. You can pass y or None.
         """
-        # check input dataframe
         X, variables_ = super()._fit_from_dict(X, self.binning_dict)
 
         self.variables_ = variables_
         # for consistency with the rest of the discretisers, we add this attribute
         self.binner_dict_ = self.binning_dict
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Sort the variable values into the intervals.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The transformed data with the discrete variables.
         """
 
-        X = super().transform(X)
-        # check if NaN values were introduced by the discretisation procedure.
-        if X[self.variables_].isnull().sum().sum() > 0:
+        X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
 
-            # obtain the name(s) of the columns with null values
-            nan_columns = (
-                X[self.variables_].columns[X[self.variables_].isnull().any()].tolist()
-            )
+        # values outside the interval limits are returned as NaN.
+        nan_columns = [
+            var
+            for var, values in zip(self.variables_, arrays)
+            if (
+                (values < self.binner_dict_[var][0])
+                | (values > self.binner_dict_[var][-1])
+            ).any()
+        ]
 
+        if len(nan_columns) > 0:
             if len(nan_columns) > 1:
                 nan_columns_str = ", ".join(nan_columns)
             else:
@@ -202,7 +230,8 @@ class ArbitraryDiscretiser(BaseDiscretiser, FitFromDictMixin):
                     f"the feature(s) {nan_columns_str}."
                 )
 
-        return X
+        X = replace_columns_in_df(X, self._discretise(arrays))
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

@@ -227,6 +227,43 @@ symmetrically distributed across their value ranges:
 That's it! We've now applied different mathematical functions to stabilise the variance of the variables in the
 dataset.
 
+With polars
+-----------
+
+:class:`ReciprocalTransformer()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.transformation import ReciprocalTransformer
+
+    df = pl.DataFrame({
+        "ratio_1": [4.0, 5.0, 10.0, 20.0, 2.0],
+        "ratio_2": [0.5, 0.25, 0.2, 0.1, 1.0],
+    })
+
+    tf = ReciprocalTransformer(variables=None)
+    tf.fit(df)
+    Xt = tf.transform(df)
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (5, 2)
+    ┌─────────┬─────────┐
+    │ ratio_1 ┆ ratio_2 │
+    │ ---     ┆ ---     │
+    │ f64     ┆ f64     │
+    ╞═════════╪═════════╡
+    │ 0.25    ┆ 2.0     │
+    │ 0.2     ┆ 4.0     │
+    │ 0.1     ┆ 5.0     │
+    │ 0.05    ┆ 10.0    │
+    │ 0.5     ┆ 1.0     │
+    └─────────┴─────────┘
+
+
 Alternatives to the reciprocal function
 ---------------------------------------
 

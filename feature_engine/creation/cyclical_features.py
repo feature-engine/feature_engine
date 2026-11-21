@@ -1,7 +1,8 @@
 from typing import Dict, List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._base_transformers.mixins import (
@@ -17,6 +18,11 @@ from feature_engine._check_init_parameters.check_input_dictionary import (
 )
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
+)
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    to_numpy,
 )
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -122,6 +128,30 @@ class CyclicalFeatures(
     5  2  1.224647e-16 -1.000000e+00
     6  1  1.000000e+00  6.123234e-17
     7  2  1.224647e-16 -1.000000e+00
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.creation import CyclicalFeatures
+    >>> X = pl.DataFrame({"x": [1, 4, 3, 3, 4, 2, 1, 2]})
+    >>> cf = CyclicalFeatures()
+    >>> cf.fit(X)
+    >>> cf.transform(X)
+    shape: (8, 3)
+    ┌─────┬─────────────┬─────────────┐
+    │ x   ┆ x_sin       ┆ x_cos       │
+    │ --- ┆ ---         ┆ ---         │
+    │ i64 ┆ f64         ┆ f64         │
+    ╞═════╪═════════════╪═════════════╡
+    │ 1   ┆ 1.0         ┆ 6.1232e-17  │
+    │ 4   ┆ -2.4493e-16 ┆ 1.0         │
+    │ 3   ┆ -1.0        ┆ -1.8370e-16 │
+    │ 3   ┆ -1.0        ┆ -1.8370e-16 │
+    │ 4   ┆ -2.4493e-16 ┆ 1.0         │
+    │ 2   ┆ 1.2246e-16  ┆ -1.0        │
+    │ 1   ┆ 1.0         ┆ 6.1232e-17  │
+    │ 2   ┆ 1.2246e-16  ┆ -1.0        │
+    └─────┴─────────────┴─────────────┘
     """
 
     def __init__(
@@ -141,57 +171,64 @@ class CyclicalFeatures(
         self.max_values = max_values
         self.drop_original = drop_original
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learns the maximum value of each variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
         if self.max_values is None:
             X, variables_ = self._fit_setup(X)
-            max_values_ = X[variables_].max().to_dict()
+            # .item() returns a plain Python int or float, not a numpy scalar
+            max_values_: dict = {
+                var: values.max().item()
+                for var, values in zip(variables_, to_numpy(X, variables_))
+            }
         else:
             X, variables_ = super()._fit_from_dict(X, self.max_values)
             max_values_ = self.max_values
 
         self.variables_ = variables_
         self.max_values_ = max_values_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame):
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Creates new features using the cyclical transformations.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe.
+        X_new: dataframe.
             The original dataframe plus the additional features.
         """
         X = self._check_transform_input_and_state(X)
 
-        for variable in self.variables_:
-            max_value = self.max_values_[variable]
-            X[f"{variable}_sin"] = np.sin(X[variable] * (2.0 * np.pi / max_value))
-            X[f"{variable}_cos"] = np.cos(X[variable] * (2.0 * np.pi / max_value))
+        new_features = {}
+        arrays = to_numpy(X, self.variables_)
+        for variable, values in zip(self.variables_, arrays):
+            scaled = values * (2.0 * np.pi / self.max_values_[variable])
+            new_features[f"{variable}_sin"] = np.sin(scaled)
+            new_features[f"{variable}_cos"] = np.cos(scaled)
+        X = add_columns_to_df(X, new_features)
+        if self.drop_original is True:
+            X = drop_variables_from_df(X, self.variables_)
 
-        if self.drop_original:
-            X.drop(columns=self.variables_, inplace=True)
-
-        return X
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

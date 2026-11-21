@@ -230,8 +230,12 @@ class SelectByInformationValue(BaseSelector, WoE):
 
         self.information_values_ = {}
         for var in self.variables_:
-            total_pos, total_neg, woe = self._calculate_woe(X, y, var)
-            iv = self._calculate_iv(total_pos, total_neg, woe)
+            woe, _ = self._calculate_woe(X, y, var)
+            iv = self._calculate_iv(
+                woe["__pos__"].to_numpy(),
+                woe["__neg__"].to_numpy(),
+                woe["__woe__"].to_numpy(),
+            )
             self.information_values_[var] = iv
 
         self.features_to_drop_ = [

@@ -364,6 +364,62 @@ After encoding the features we can use the data sets to train machine learning a
     encoded variable. Hence, this encoding method is suitable for predictive modelling that
     uses models that are sensitive to the size of the feature space.
 
+With polars
+~~~~~~~~~~~
+
+:class:`MeanEncoder()` works the same way with a polars dataframe. Let's create a toy dataset:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import MeanEncoder
+
+    X = pl.DataFrame({
+        "city": ["London", "Manchester", "Liverpool", "London", "Manchester", "Liverpool"],
+        "price": [500, 300, 250, 520, 310, 260],
+    })
+    y = pl.Series("target", [1, 0, 0, 1, 0, 1])
+
+Let's set up :class:`MeanEncoder()` to encode `city` with the target mean, and fit it to the data:
+
+.. code:: python
+
+    encoder = MeanEncoder(variables=["city"])
+    encoder.fit(X, y)
+
+    encoder.encoder_dict_
+
+We see the resulting mappings from category to target mean:
+
+.. code:: python
+
+    {'city': {'London': 1.0, 'Liverpool': 0.5, 'Manchester': 0.0}}
+
+Now let's transform the data:
+
+.. code:: python
+
+    encoder.transform(X)
+
+We obtain a polars dataframe with the categories in `city` replaced by the target mean:
+
+.. code:: text
+
+    shape: (6, 2)
+    ┌──────┬───────┐
+    │ city ┆ price │
+    │ ---  ┆ ---   │
+    │ f64  ┆ i64   │
+    ╞══════╪═══════╡
+    │ 1.0  ┆ 500   │
+    │ 0.0  ┆ 300   │
+    │ 0.5  ┆ 250   │
+    │ 1.0  ┆ 520   │
+    │ 0.0  ┆ 310   │
+    │ 0.5  ┆ 260   │
+    └──────┴───────┘
+
+
 Additional resources
 --------------------
 
