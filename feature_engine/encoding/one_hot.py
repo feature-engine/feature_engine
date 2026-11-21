@@ -214,9 +214,10 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             None.
         """
 
-        nw_X = check_X(X)
+        X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         _check_contains_na(X, variables_)
+        nw_X = nw.from_native(X, eager_only=True)
 
         encoder_dict_ = {}
 
@@ -268,10 +269,9 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
             original categorical ones.
         """
 
-        nw_X = self._check_transform_input_and_state(X)
-
-        # check if dataset contains na
+        X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
+        nw_X = nw.from_native(X, eager_only=True)
 
         dummy_frames = []
         # to_dummies() skips the prefix for falsy names (e.g. a column called 0), so
@@ -296,7 +296,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
         nw_X = nw.concat([nw_X.drop(*self.variables_), *dummy_frames], how="horizontal")
 
-        return nw_X.to_native()
+        return nw.to_native(nw_X)
 
     def inverse_transform(self, X: IntoDataFrame):
         """inverse_transform is not implemented for this transformer."""

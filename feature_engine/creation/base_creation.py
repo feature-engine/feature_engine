@@ -1,7 +1,6 @@
-from typing import Optional
+from typing import Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -11,6 +10,7 @@ from feature_engine._check_init_parameters.check_init_input_params import (
     _check_param_drop_original,
     _check_param_missing_values,
 )
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.dataframe_checks import (
     _check_contains_inf,
     _check_contains_na,
@@ -52,7 +52,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
             It is not needed in this transformer. You can pass y or None.
         """
 
-        check_X(X)
+        X = check_X(X)
 
         # check variables are numerical
         if self.variables is None:
@@ -72,17 +72,14 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # save input features
-        if nwd.is_pandas_dataframe(X) is True:
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
-
-        # save train set shape
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
+    def _check_transform_input_and_state(
+        self, X: IntoDataFrame
+    ) -> Union[IntoDataFrame, nw.DataFrame]:
         """
         Common input and transformer checks.
 
@@ -93,14 +90,14 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        X_new: dataframe
-            The dataframe with the original variables plus the new variables.
+        X: pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise, with the variables in the same order as in the train set.
         """
 
         # Check method fit has been called
         check_is_fitted(self)
-
-        check_X(X)
+        X = check_X(X)
 
         # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
@@ -114,14 +111,7 @@ class BaseCreation(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
                 _check_contains_inf(X, self.reference)
 
         # reorder variables to match train set
-        if nwd.is_pandas_dataframe(X) is True:
-            X = X[self.feature_names_in_]
-        else:
-            X = nw.from_native(X, eager_only=True).select(
-                self.feature_names_in_
-            ).to_native()
-
-        return X
+        return subset_df(X, self.feature_names_in_)
 
     def _more_tags(self):
         tags_dict = _return_tags()

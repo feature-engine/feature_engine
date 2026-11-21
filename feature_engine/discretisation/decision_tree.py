@@ -29,6 +29,11 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import (
+    replace_columns_in_df,
+    subset_df,
+    to_numpy,
+)
 from feature_engine.tags import _return_tags
 
 
@@ -283,14 +288,17 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         else:
             check_classification_targets(y)
 
-        nw_X, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
         if self.param_grid:
             param_grid = self.param_grid
         else:
             param_grid = {"max_depth": [1, 2, 3, 4]}
 
-        X_subs = [nw_X.get_column(var).to_frame().to_native() for var in variables_]
+        X_subs = [
+            nw.to_native(subset_df(X, [var]), pass_through=True)
+            for var in variables_
+        ]
 
         fitted = Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._fit_one_tree)(X_sub, y, param_grid) for X_sub in X_subs
@@ -315,7 +323,8 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         self.binner_dict_ = binner_dict_
         self.scores_dict_ = scores_dict_
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -334,15 +343,13 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
         X_new: dataframe of shape = [n_samples, n_features]
             The dataframe with transformed variables.
         """
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
 
-        # add all new columns in one step, instead of one per variable, and leave
-        # the user's dataframe unchanged
         new_columns: Dict[Union[str, int], np.ndarray] = {}
 
         if self.bin_output == "prediction":
             for feature in self.variables_:
-                X_sub = nw_X.get_column(feature).to_frame().to_native()
+                X_sub = nw.to_native(subset_df(X, [feature]), pass_through=True)
                 if self.regression is True:
                     preds = self.binner_dict_[feature].predict(X_sub)
                 else:
@@ -355,26 +362,19 @@ class DecisionTreeDiscretiser(BaseNumericalTransformer):
             # __init__ already guarantees precision is set when bin_output is
             # "boundaries"; assert narrows the type for mypy.
             assert self.precision is not None
-            for feature in self.variables_:
+            for feature, values in zip(self.variables_, to_numpy(X, self.variables_)):
                 thresholds = self.binner_dict_[feature]
                 labels = self._bin_labels(thresholds, self.precision)
-                values = nw_X.get_column(feature).to_numpy()
                 bin_idx = self._bin_index(values, thresholds)
                 new_columns[feature] = np.array(labels)[bin_idx]
 
         else:
-            for feature in self.variables_:
+            for feature, values in zip(self.variables_, to_numpy(X, self.variables_)):
                 thresholds = self.binner_dict_[feature]
-                values = nw_X.get_column(feature).to_numpy()
                 new_columns[feature] = self._bin_index(values, thresholds)
 
-        new_series = [
-            nw.new_series(name, values, backend=nw_X.implementation)
-            for name, values in new_columns.items()
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def _fit_one_tree(self, X_sub: IntoDataFrame, y: IntoSeries, param_grid: Dict):
         """Instantiate and fit one decision tree on one variable."""

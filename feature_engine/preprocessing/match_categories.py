@@ -22,6 +22,7 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 from feature_engine._docstrings.init_parameters.encoders import _ignore_format_docstring
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import missing_values_count, replace_columns_in_df
 from feature_engine.encoding.base_encoder import (
     CategoricalInitMixinNA,
     CategoricalMethodsMixin,
@@ -152,18 +153,18 @@ class MatchCategories(
         y: Series, default = None
             y is not needed in this transformer. You can pass y or None.
         """
-        nw_X = check_X(X)
+        X = check_X(X)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
-        if nwd.is_pandas_dataframe(X) is True:
-            # pandas is faster than narwhals.
+        # pandas is faster than narwhals.
+        if not isinstance(X, nw.DataFrame):
             self.category_dict_ = {
                 var: X[var].astype("category").cat.categories for var in variables_
             }
         else:
             self.category_dict_ = {
-                var: self._find_categories(nw_X.get_column(var)) for var in variables_
+                var: self._find_categories(X.get_column(var)) for var in variables_
             }
 
         self.variables_ = variables_
@@ -186,22 +187,25 @@ class MatchCategories(
             The dataframe with the variables cast to pandas `category` or polars
             `Enum` dtype.
         """
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
         self._check_na(X, self.variables_)
 
-        if nwd.is_pandas_dataframe(X) is True:
-            # pandas is faster than narwhals.
-            X = X.copy()
-            categorical = nw.get_native_namespace(nw_X).Categorical
-            for feature, levels in self.category_dict_.items():
-                # get_indexer returns -1 for unseen categories, which from_codes
-                # turns into NaN.
-                X[feature] = categorical.from_codes(
-                    levels.get_indexer(X[feature]), categories=levels
-                )
-            nw_X = nw.from_native(X, eager_only=True)
+        # pandas is faster than narwhals.
+        if not isinstance(X, nw.DataFrame):
+            categorical = nwd.get_pandas().Categorical
+            # get_indexer returns -1 for unseen categories, which from_codes turns
+            # into NaN.
+            X = replace_columns_in_df(
+                X,
+                {
+                    feature: categorical.from_codes(
+                        levels.get_indexer(X[feature]), categories=levels
+                    )
+                    for feature, levels in self.category_dict_.items()
+                },
+            )
         else:
-            nw_X = nw_X.with_columns(
+            X = X.with_columns(
                 *[
                     nw.when(nw.col(feature).cast(nw.String).is_in(levels))
                     .then(nw.col(feature).cast(nw.String))
@@ -210,14 +214,15 @@ class MatchCategories(
                 ]
             )
 
-        self._check_nas_in_result(nw_X)
-        return nw_X.to_native()
+        self._check_nas_in_result(X)
+        return nw.to_native(X, pass_through=True)
 
-    def _check_nas_in_result(self, nw_X: nw.DataFrame):
+    def _check_nas_in_result(self, X):
+        variables = list(self.category_dict_)
         nan_columns = [
             str(feature)
-            for feature in self.category_dict_
-            if nw_X.get_column(feature).null_count() > 0
+            for feature, count in zip(variables, missing_values_count(X, variables))
+            if count > 0
         ]
 
         if len(nan_columns) > 0:

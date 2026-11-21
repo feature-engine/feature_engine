@@ -369,6 +369,20 @@ def test_max_n_categories_with_numeric_var_polars(data_enc_numeric):
     }
 
 
+def test_pandas_categorical_variables_that_have_the_rare_category():
+    X = pd.DataFrame({"var": pd.Categorical(["a"] * 10 + ["b", "Rare"])})
+    Xt = RareLabelEncoder(tol=0.1, n_categories=1).fit_transform(X)
+
+    expected = pd.DataFrame(
+        {
+            "var": pd.Categorical(
+                ["a"] * 10 + ["Rare", "Rare"], categories=["Rare", "a", "b"]
+            )
+        }
+    )
+    pd.testing.assert_frame_equal(Xt, expected)
+
+
 def test_inverse_transform_raises_not_implemented_error(make_df, data_enc_big):
     df_enc_big = make_df(data_enc_big)
     enc = RareLabelEncoder().fit(df_enc_big)

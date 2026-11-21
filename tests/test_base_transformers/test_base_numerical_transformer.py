@@ -2,6 +2,7 @@ import re
 
 import narwhals as nw
 import pandas as pd
+import polars as pl
 import pytest
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
@@ -31,22 +32,27 @@ class MockClass(BaseNumericalTransformer):
         self.return_empty = return_empty
 
     def fit(self, X):
-        _, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
         return self
 
     def transform(self, X):
-        return self._check_transform_input_and_state(X).to_native()
+        return nw.to_native(self._check_transform_input_and_state(X), pass_through=True)
+
+
+# check_X returns pandas as is and other libraries as narwhals
+BACKENDS = [(pd.DataFrame, pd.DataFrame), (pl.DataFrame, nw.DataFrame)]
 
 
 # fit and transform
-def test_fit_setup_returns_narwhals_frame_and_numerical_variables(make_df):
-    nw_X, variables_ = MockClass()._fit_setup(make_df(DATA))
+@pytest.mark.parametrize("make_df, X_type", BACKENDS)
+def test_fit_setup_returns_check_X_output_and_numerical_variables(make_df, X_type):
+    X, variables_ = MockClass()._fit_setup(make_df(DATA))
 
-    assert isinstance(nw_X, nw.DataFrame)
-    assert isinstance(nw_X.to_native(), make_df)
-    assert frame_to_dict(nw_X.to_native()) == DATA
+    assert isinstance(X, X_type)
+    assert frame_to_dict(nw.to_native(X, pass_through=True)) == DATA
     assert variables_ == ["Age", "Marks"]
 
 
@@ -84,23 +90,19 @@ def test_fit_setup_raises_error_if_na_or_inf(make_df, value, msg):
         MockClass()._fit_setup(X)
 
 
-def test_get_feature_names_in(make_df):
-    transformer = MockClass().fit(make_df(DATA))
-    assert transformer.feature_names_in_ == list(DATA)
-    assert transformer.n_features_in_ == 4
-
-
-def test_check_transform_input_and_state_returns_narwhals_frame(make_df):
+@pytest.mark.parametrize("make_df, X_type", BACKENDS)
+def test_check_transform_input_and_state_returns_columns_in_train_order(
+    make_df, X_type
+):
     transformer = MockClass().fit(make_df(DATA))
     reordered = make_df({k: DATA[k] for k in ["Marks", "City", "Age", "Name"]})
 
-    nw_X = transformer._check_transform_input_and_state(reordered)
+    X = transformer._check_transform_input_and_state(reordered)
 
-    assert isinstance(nw_X, nw.DataFrame)
-    assert isinstance(nw_X.to_native(), make_df)
-    # the columns are returned in the order seen in fit
-    assert nw_X.columns == list(DATA)
-    assert frame_to_dict(nw_X.to_native()) == DATA
+    assert isinstance(X, X_type)
+    Xt = nw.to_native(X, pass_through=True)
+    assert list(Xt.columns) == list(DATA)
+    assert frame_to_dict(Xt) == DATA
 
 
 def test_check_transform_input_and_state_with_integer_column_names():
@@ -108,9 +110,9 @@ def test_check_transform_input_and_state_with_integer_column_names():
     X = pd.DataFrame({0: [1.0, 2.0], 1: ["a", "b"], 2: [3, 4]})
     transformer = MockClass().fit(X)
 
-    nw_X = transformer._check_transform_input_and_state(X[[2, 0, 1]])
+    Xt = transformer._check_transform_input_and_state(X[[2, 0, 1]])
 
-    pd.testing.assert_frame_equal(nw_X.to_native(), X)
+    pd.testing.assert_frame_equal(Xt, X)
 
 
 def test_check_transform_input_and_state_raises_error_if_columns_differ(make_df):

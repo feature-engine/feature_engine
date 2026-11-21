@@ -8,6 +8,7 @@ import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -155,11 +156,12 @@ class PowerTransformer(BaseNumericalTransformer):
         y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
-        _, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -177,19 +179,15 @@ class PowerTransformer(BaseNumericalTransformer):
         X_new: dataframe
             The dataframe with the power transformed variables.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
+        new_columns = {
+            var: np.power(values.astype(float), self.exp)
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        # transform
-        result = np.power(values, self.exp)
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -205,16 +203,12 @@ class PowerTransformer(BaseNumericalTransformer):
         X_tr: dataframe
             The dataframe with the power transformed variables.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
+        new_columns = {
+            var: np.power(values.astype(float), 1 / self.exp)
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        # inverse_transform
-        result = np.power(values, 1 / self.exp)
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)

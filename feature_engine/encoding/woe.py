@@ -26,6 +26,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import _check_contains_na, check_X_y
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.encoding._helper_functions import (
     TARGET_NAME,
     add_target_to_X,
@@ -43,8 +44,10 @@ class WoE:
         """
         Check that X is dataframe, and y a binary series with values 0 and 1.
         """
-        nw_X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y)
         # with pandas, y takes the index of X
+        # adding a column to a wide pandas dataframe is slow, so take one column.
+        nw_X = nw.from_native(subset_df(X, list(X.columns)[:1]), eager_only=True)
         y_nw = add_target_to_X(nw_X, y)[TARGET_NAME]
 
         # check that y is binary
@@ -298,10 +301,9 @@ class WoEEncoder(CategoricalMethodsMixin, CategoricalInitMixin, WoE):
             The dataframe containing the categories replaced by numbers.
         """
 
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
         _check_contains_na(X, self.variables_)
-        X = self._encode(nw_X)
-        return X
+        return self._encode(X)
 
     def _more_tags(self):
         tags_dict = _return_tags()

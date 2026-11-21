@@ -1,6 +1,7 @@
 import warnings
 from typing import List, Union
 
+import narwhals as nw
 from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -22,8 +23,10 @@ from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import (
     _check_contains_na,
     _check_X_matches_training_df,
+    _contains_na,
     check_X,
 )
+from feature_engine.dataframe_helpers import map_categories_in_df, subset_df
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
     check_all_variables,
@@ -169,17 +172,15 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
         Parameters
         ----------
-        X: narwhals dataframe
+        X: pandas or narwhals dataframe
             The dataframe returned by `check_X` / `check_X_y` at the start of `fit`.
         """
-        # save input features. list() normalises both a narwhals `.columns`
-        # (already a list) and a pandas `Index` to a plain list.
         self.feature_names_in_ = list(X.columns)
-
-        # save train set shape
         self.n_features_in_ = X.shape[1]
 
-    def _check_transform_input_and_state(self, X: IntoDataFrame) -> IntoDataFrame:
+    def _check_transform_input_and_state(
+        self, X: IntoDataFrame
+    ) -> Union[IntoDataFrame, nw.DataFrame]:
         """
         Checks that the input is a dataframe and of the same size than the one used
         in the fit method.
@@ -198,17 +199,15 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
 
         Returns
         -------
-        nw_X: narwhals dataframe
-            The narwhalified version of the dataframe entered by the user.
+        X: pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise, with the variables in the same order as in the train set.
         """
-
         check_is_fitted(self)
-
-        nw_X = check_X(X)
-
+        X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
 
-        return nw_X
+        return subset_df(X, self.feature_names_in_)
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """Replace categories with the learned parameters.
@@ -223,37 +222,30 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
         X_new: dataframe of shape = [n_samples, n_features].
             The dataframe containing the categories replaced by numbers.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
-
-        # check if dataset contains na
         if self.missing_values == "raise":
             _check_contains_na(X, self.variables_, error_msg="optional")
 
-        X = self._encode(nw_X)
+        return self._encode(X)
 
-        return X
-
-    def _encode(self, X: IntoDataFrame) -> IntoDataFrame:
+    def _encode(self, X: Union[IntoDataFrame, nw.DataFrame]) -> IntoDataFrame:
         default = self._unseen if self.unseen == "encode" else None
-        new_series = [
-            X.get_column(feature).replace_strict(mapping, default=default)
-            for feature, mapping in self.encoder_dict_.items()
-        ]
-        X = X.with_columns(*new_series)
+        X = map_categories_in_df(X, self.encoder_dict_, default=default)
 
         if self.unseen != "encode":
             # check if nan values were introduced by the transformation
             self._check_nan_values_after_transformation(X)
 
-        return X.to_native()
+        return nw.to_native(X, pass_through=True)
 
-    def _check_nan_values_after_transformation(self, X: IntoDataFrame):
-        nan_columns = [
-            feature
-            for feature in self.encoder_dict_.keys()
-            if X.get_column(feature).null_count() > 0
-        ]
+    def _check_nan_values_after_transformation(
+        self, X: Union[IntoDataFrame, nw.DataFrame]
+    ):
+        variables = list(self.encoder_dict_.keys())
+        if len(variables) == 0 or _contains_na(X, variables) is False:
+            return
+        nan_columns = [var for var in variables if _contains_na(X, [var]) is True]
 
         if len(nan_columns) > 0:
 
@@ -287,20 +279,15 @@ class CategoricalMethodsMixin(TransformerMixin, BaseEstimator, GetFeatureNamesOu
             The un-transformed dataframe, with the categorical variables containing the
             original values.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
-
-        # replace encoded categories by the original values. get_column()
-        # rather than nw.col() again, to support pandas integer column names.
-        new_series = [
-            nw_X.get_column(feature).replace_strict(
-                {v: k for k, v in mapping.items()}, default=None
-            )
+        inverse_mappings = {
+            feature: {v: k for k, v in mapping.items()}
             for feature, mapping in self.encoder_dict_.items()
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
+        }
+        X = map_categories_in_df(X, inverse_mappings)
 
-        return X
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

@@ -18,7 +18,7 @@ class StubCreation(BaseCreation):
         super().__init__(missing_values=missing_values, drop_original=drop_original)
 
     def transform(self, X):
-        return self._check_transform_input_and_state(X)
+        return nw.to_native(self._check_transform_input_and_state(X), pass_through=True)
 
 
 class StubWithReference(StubCreation):

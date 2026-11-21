@@ -12,6 +12,7 @@ from feature_engine.imputation import (
     MeanImputer,
     RandomSampleImputer,
 )
+from tests.backend_helpers import frame_to_dict
 from tests.estimator_checks.estimator_checks import check_feature_engine_estimator
 from tests.estimator_checks.non_fitted_error_checks import (
     check_raises_non_fitted_error_when_fit_fails,
@@ -87,3 +88,37 @@ def test_raises_non_fitted_error_when_error_during_fit(estimator):
         X = pd.DataFrame()
 
     check_raises_non_fitted_error_when_fit_fails(estimator, X)
+
+
+_REORDER_DATA = {
+    "num_1": [1.0, None, 3.0, 4.0, 5.0],
+    "num_2": [10.0, 20.0, None, 40.0, 50.0],
+    "cat": ["a", "b", None, "a", "a"],
+}
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    [
+        MeanImputer(),
+        ArbitraryImputer(),
+        EndTailImputer(),
+        CategoricalImputer(),
+        CategoricalImputer(imputation_method="frequent"),
+        MissingIndicator(),
+        RandomSampleImputer(random_state=0),
+        RandomSampleImputer(seed="observation", random_state="num_1"),
+        DropMissingData(),
+    ],
+)
+def test_transform_reorders_columns_as_in_train_set(make_df, transformer):
+    X = make_df(_REORDER_DATA)
+    expected = transformer.fit(X).transform(X)
+
+    reordered = ["cat", "num_2", "num_1"]
+    X_reordered = make_df({var: _REORDER_DATA[var] for var in reordered})
+    Xt = transformer.transform(X_reordered)
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == list(expected.columns)
+    assert frame_to_dict(Xt) == frame_to_dict(expected)

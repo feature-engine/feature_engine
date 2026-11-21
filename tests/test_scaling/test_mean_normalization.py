@@ -205,3 +205,20 @@ def test_integer_column_names(transformer_class):
 
     pd.testing.assert_frame_equal(Xt, expected.set_axis([0, 1, 2], axis=1))
     pd.testing.assert_frame_equal(transformer.inverse_transform(Xt), X)
+
+
+def test_transform_reorders_columns_as_in_train_set(make_df):
+    transformer = MeanNormalisationScaler().fit(make_df(DATA))
+    expected = transformer.transform(make_df(DATA))
+    expected_inverse = transformer.inverse_transform(expected)
+
+    reordered = ["Marks", "City", "Age", "Name"]
+    Xt = transformer.transform(make_df({var: DATA[var] for var in reordered}))
+    Xt_reordered = make_df({var: frame_to_dict(expected)[var] for var in reordered})
+    X_inverse = transformer.inverse_transform(Xt_reordered)
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == list(expected.columns)
+    assert frame_to_dict(Xt) == frame_to_dict(expected)
+    assert list(X_inverse.columns) == list(expected_inverse.columns)
+    assert frame_to_dict(X_inverse) == frame_to_dict(expected_inverse)

@@ -415,3 +415,16 @@ def test_n_jobs_parallel_matches_sequential(make_df):
 
     assert isinstance(Xt_par, make_df)
     assert frame_to_dict(Xt_par) == frame_to_dict(Xt_seq)
+
+
+@pytest.mark.parametrize("bin_output", ["prediction", "bin_number", "boundaries"])
+def test_transform_does_not_modify_the_input(make_df, bin_output):
+    X = make_df(DATA_TWO_VARS)
+    y = make_series(make_df, TARGET_TWO_VARS)
+    transformer = DecisionTreeDiscretiser(
+        bin_output=bin_output, precision=3, regression=False, random_state=0
+    )
+
+    transformer.fit_transform(X, y)
+
+    assert frame_to_dict(X) == DATA_TWO_VARS

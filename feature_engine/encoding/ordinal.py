@@ -4,7 +4,6 @@
 from typing import List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -31,6 +30,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X, check_X_y
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.encoding._helper_functions import (
     TARGET_NAME,
     add_target_to_X,
@@ -216,47 +216,35 @@ class OrdinalEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         """
 
         if self.encoding_method == "ordered":
-            nw_X, y = check_X_y(X, y)
-            nw_Xy = add_target_to_X(nw_X, y)
+            X, y = check_X_y(X, y)
         else:
-            nw_X = check_X(X)
+            X = check_X(X)
 
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
-        self.encoder_dict_ = {}
+        nw_X = nw.from_native(subset_df(X, variables_), eager_only=True)
+        if self.encoding_method == "ordered":
+            nw_Xy = add_target_to_X(nw_X, y)
 
-        # pandas is faster than narwhals.
-        if nwd.is_pandas_dataframe(X):
+        self.encoder_dict_ = {}
+        for var in variables_:
             if self.encoding_method == "ordered":
-                # pandas series with the index of X
-                y_pd = nw_Xy[TARGET_NAME].to_native()
-            for var in variables_:
-                if self.encoding_method == "ordered":
-                    t = y_pd.groupby(X[var], observed=False).mean().sort_values().index
-                elif self.missing_values == "ignore":
-                    t = X[var].dropna().unique()
-                else:
-                    t = X[var].unique()
-                self.encoder_dict_[var] = {k: i for i, k in enumerate(t)}
-        else:
-            for var in variables_:
-                if self.encoding_method == "ordered":
-                    # sort by mean, then category, so ties get the same order
-                    # in every backend
-                    t = (
-                        nw_Xy.group_by(var, drop_null_keys=True)
-                        .agg(nw.col(TARGET_NAME).mean())
-                        .sort([TARGET_NAME, var])
-                        .get_column(var)
-                        .to_list()
-                    )
-                else:
-                    col = nw_X.get_column(var)
-                    if self.missing_values == "ignore":
-                        col = col.drop_nulls()
-                    t = col.unique(maintain_order=True).to_list()
-                self.encoder_dict_[var] = {k: i for i, k in enumerate(t)}
+                # sort by mean, then category, so ties get the same order
+                # in every backend
+                t = (
+                    nw_Xy.group_by(var, drop_null_keys=True)
+                    .agg(nw.col(TARGET_NAME).mean())
+                    .sort([TARGET_NAME, var])
+                    .get_column(var)
+                    .to_list()
+                )
+            else:
+                col = nw_X.get_column(var)
+                if self.missing_values == "ignore":
+                    col = col.drop_nulls()
+                t = col.unique(maintain_order=True).to_list()
+            self.encoder_dict_[var] = {k: i for i, k in enumerate(t)}
 
         if self.unseen == "encode":
             self._unseen = -1

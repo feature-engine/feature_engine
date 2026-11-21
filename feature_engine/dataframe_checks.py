@@ -12,7 +12,7 @@ from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.utils.validation import _check_y, check_consistent_length, column_or_1d
 
 
-def check_X(X: IntoDataFrame) -> IntoDataFrame:
+def check_X(X: IntoDataFrame) -> Union[IntoDataFrame, nw.DataFrame]:
     """
     Checks that X is a dataframe from any library supported by narwhals (for example
     pandas, polars, modin, cuDF, or PyArrow).
@@ -34,26 +34,32 @@ def check_X(X: IntoDataFrame) -> IntoDataFrame:
 
     Returns
     -------
-    X : narwhals dataframe.
-        The validated dataframe in narwhals format.
+    X : pandas or narwhals dataframe.
+        The validated dataframe: the same pandas dataframe if X is pandas, or X in
+        narwhals format otherwise.
     """
-    if nwd.is_into_dataframe(X):
+    # pandas is faster than narwhals.
+    if nwd.is_pandas_dataframe(X) is True:
+        if X.columns.is_unique is False:
+            duplicated = list(X.columns[X.columns.duplicated()].unique())
+            raise ValueError(f"Expected unique column names, got: {duplicated}.")
+    elif nwd.is_into_dataframe(X) is True:
         # from_native() raises narwhals.exceptions.DuplicateError, a ValueError
         # subclass, when the dataframe has duplicated column names.
-        nw_X = nw.from_native(X, eager_only=True)
-        if nw_X.is_empty() or nw_X.shape[1] == 0:
-            raise ValueError(
-                f"Found array with 0 feature(s) (shape={nw_X.shape}) while a "
-                "minimum of 1 is required."
-            )
-
+        X = nw.from_native(X, eager_only=True)
     else:
         raise TypeError(
             "X must be a dataframe from a library supported by narwhals "
             f"(e.g. pandas, polars, PyArrow). Got {type(X)} instead."
         )
 
-    return nw_X
+    if X.shape[0] == 0 or X.shape[1] == 0:
+        raise ValueError(
+            f"Found array with 0 feature(s) (shape={X.shape}) while a "
+            "minimum of 1 is required."
+        )
+
+    return X
 
 
 def check_y(
@@ -91,9 +97,7 @@ def check_y(
 
     if nwd.is_into_series(y):
         nw_y = nw.from_native(y, series_only=True)
-        if nw_y.is_null().any() or (
-            nw_y.dtype.is_numeric() and nw_y.is_nan().any()
-        ):
+        if nw_y.is_null().any() or (nw_y.dtype.is_numeric() and nw_y.is_nan().any()):
             raise ValueError("y contains NaN values.")
         if nw_y.dtype.is_numeric():
             if not np.isfinite(nw_y.to_numpy()).all():
@@ -124,7 +128,9 @@ def check_X_y(
     X: IntoDataFrame,
     y: Union[IntoSeries, IntoDataFrame, np.generic, np.ndarray, List],
     y_numeric: bool = False,
-) -> Tuple[IntoDataFrame, Union[IntoSeries, IntoDataFrame, np.ndarray]]:
+) -> Tuple[
+    Union[IntoDataFrame, nw.DataFrame], Union[IntoSeries, IntoDataFrame, np.ndarray]
+]:
     """
     Ensures X and y are compatible dataframe/array-like objects with a consistent
     number of rows. If both are pandas objects, checks that their indexes match.
@@ -156,16 +162,16 @@ def check_X_y(
 
     Returns
     -------
-    X: narwhals dataframe
+    X: the same pandas dataframe if X is pandas, or X in narwhals format otherwise.
     y: Series, DataFrame, or numpy array
     """
     X = check_X(X)
     y = check_y(y, y_numeric=y_numeric)
     check_consistent_length(X, y)
 
-    if X.implementation.is_pandas():
+    if not isinstance(X, nw.DataFrame):  # if pandas df
         if nwd.is_pandas_series(y) or nwd.is_pandas_dataframe(y):
-            if not X.to_native().index.equals(y.index):
+            if X.index.equals(y.index) is False:
                 raise ValueError("The indexes of X and y do not match.")
 
     return X, y
@@ -239,18 +245,17 @@ def _check_contains_na(
 
 def _contains_na(X: IntoDataFrame, variables: List[Union[str, int]]) -> bool:
     # pandas is faster than narwhals.
-    if nwd.is_pandas_dataframe(X) is True:
+    if not isinstance(X, nw.DataFrame):
         return bool(X[variables].isna().to_numpy().any())
     else:
-        nw_X = nw.from_native(X, eager_only=True)
         # polars stores the null count, so check it before scanning floats for NaN.
-        if sum(nw_X.select(nw.col(variables).null_count()).row(0)) > 0:
+        if sum(X.select(nw.col(variables).null_count()).row(0)) > 0:
             return True
-        schema = nw_X.schema
+        schema = X.schema
         floats = [var for var in variables if schema[var].is_float() is True]
         if len(floats) == 0:
             return False
-        return True in nw_X.select(nw.col(floats).is_nan().any()).row(0)
+        return True in X.select(nw.col(floats).is_nan().any()).row(0)
 
 
 def _check_contains_inf(X: IntoDataFrame, variables: List[Union[str, int]]) -> None:
@@ -272,7 +277,11 @@ def _check_contains_inf(X: IntoDataFrame, variables: List[Union[str, int]]) -> N
     if len(variables) == 0:
         return None
 
-    values = nw.from_native(X, eager_only=True).select(nw.col(variables)).to_numpy()
+    if not isinstance(X, nw.DataFrame):  # if pandas df
+        values = X[variables].to_numpy()
+    else:
+        values = X.select(variables).to_numpy()
+
     if np.isinf(values.astype(float)).any():
         raise ValueError(
             "Some of the variables to transform contain inf values. Check and "

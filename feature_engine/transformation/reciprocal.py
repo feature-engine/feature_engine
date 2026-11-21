@@ -8,6 +8,7 @@ import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -148,19 +149,19 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
-        nw_X, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
         # check if the variables contain the value 0
-        values = nw_X.select(nw.col(variables_)).to_numpy()
-        if np.any(values == 0):
+        if any(np.any(values == 0) for values in to_numpy(X, variables_)):
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
             )
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -178,26 +179,20 @@ class ReciprocalTransformer(BaseNumericalTransformer):
         X_new: dataframe
             The dataframe with the transformed variables.
         """
-
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy()
+        X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
 
         # check if the variables contain the value 0
-        if np.any(values == 0):
+        if any(np.any(values == 0) for values in arrays):
             raise ValueError(
                 "Some variables contain the value zero, can't apply reciprocal "
                 "transformation."
             )
 
-        # transform
-        result = 1 / values
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
+        new_columns = {var: 1 / values for var, values in zip(self.variables_, arrays)}
 
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """

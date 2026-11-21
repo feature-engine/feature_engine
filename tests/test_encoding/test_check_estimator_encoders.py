@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 import pytest
 from numpy import nan
@@ -22,6 +24,7 @@ from tests.estimator_checks.estimator_checks import (
     check_feature_engine_estimator,
     test_df,
 )
+from tests.backend_helpers import frame_to_dict, make_series
 from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
 _estimators = [
@@ -288,3 +291,63 @@ def test_encoders_raise_error_when_x_pandas_y_pandas_index_mismatch(encoder, df_
     with pytest.raises(Exception) as e:
         encoder.fit_transform(X, y)
     assert "indexes" in e.value.args[0].lower()
+
+
+_REORDER_DATA = {
+    "var_A": ["a", "a", "b", "b", "c", "c"] * 3,
+    "var_B": ["x", "y", "x", "y", "x", "y"] * 3,
+    "num": list(range(18)),
+}
+
+
+@pytest.mark.parametrize(
+    "encoder",
+    [
+        CountFrequencyEncoder(),
+        DecisionTreeEncoder(regression=False),
+        MeanEncoder(),
+        OneHotEncoder(),
+        OrdinalEncoder(encoding_method="ordered"),
+        RareLabelEncoder(tol=0.1, n_categories=2),
+        StringSimilarityEncoder(),
+        WoEEncoder(),
+    ],
+)
+def test_transform_reorders_columns_as_in_train_set(make_df, encoder):
+    X = make_df(_REORDER_DATA)
+    y = make_series(make_df, [0, 1] * 9)
+    expected = encoder.fit(X, y).transform(X)
+
+    reordered = ["num", "var_B", "var_A"]
+    X_reordered = make_df({var: _REORDER_DATA[var] for var in reordered})
+    Xt = encoder.transform(X_reordered)
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == list(expected.columns)
+    assert frame_to_dict(Xt) == frame_to_dict(expected)
+
+
+@pytest.mark.parametrize(
+    "encoder",
+    [
+        CountFrequencyEncoder(return_empty=True),
+        MeanEncoder(return_empty=True),
+        OneHotEncoder(return_empty=True),
+        OrdinalEncoder(return_empty=True),
+        OrdinalEncoder(encoding_method="arbitrary", return_empty=True),
+        RareLabelEncoder(return_empty=True),
+        StringSimilarityEncoder(return_empty=True),
+    ],
+)
+def test_transform_returns_input_when_there_are_no_categorical_variables(
+    make_df, encoder
+):
+    X = make_df({"num": [1.0, 2.0, 3.0, 4.0]})
+    y = make_series(make_df, [0, 1, 0, 1])
+
+    msg = "No categorical variables found in this dataframe. Returning an empty list."
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        Xt = encoder.fit(X, y).transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"num": [1.0, 2.0, 3.0, 4.0]}
