@@ -165,7 +165,7 @@ class TargetMeanClassifier(ClassifierMixin, BaseTargetMeanEstimator):
 
         # Other labels are mapped to 0 and 1, so that the target means are
         # probabilities.
-        if any(x for x in self.classes_ if x not in [0, 1]):
+        if any(label not in [0, 1] for label in self.classes_) is True:
             y = np.where(np.asarray(y) == self.classes_[0], 0, 1)
 
         return super().fit(X, y)
