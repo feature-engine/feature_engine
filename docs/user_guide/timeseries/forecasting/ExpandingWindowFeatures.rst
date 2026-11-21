@@ -490,7 +490,7 @@ With polars, other functions, like `"skew"`, raise an error:
 
 .. code:: text
 
-    NotImplementedError: With dataframes other than pandas, ExpandingWindowFeatures supports the functions ['count', 'sum', 'mean', 'median', 'min', 'max', 'std', 'var']. Got ['skew'] instead.
+    NotImplementedError: With dataframes other than pandas, functions takes only ['count', 'max', 'mean', 'median', 'min', 'std', 'sum', 'var']. Got ['skew'] instead.
 
 Getting the name of the new features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
