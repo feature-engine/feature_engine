@@ -285,6 +285,19 @@ def test_auto_smoothing(make_df, data_enc):
     }
 
 
+@pytest.mark.parametrize("constant_target", [0, 1, 3.5])
+def test_auto_smoothing_with_constant_target(make_df, constant_target):
+    X = make_df({"category": ["a", "a", "b", "b"]})
+    y = make_series(make_df, [constant_target] * 4)
+
+    encoder = MeanEncoder(variables=["category"], smoothing="auto")
+    Xt = encoder.fit_transform(X, y)
+
+    expected = pytest.approx(constant_target)
+    assert encoder.encoder_dict_["category"] == {"a": expected, "b": expected}
+    assert frame_to_dict(Xt) == {"category": [expected] * 4}
+
+
 def test_value_smoothing(make_df, data_enc):
     X = make_df(data_enc)[["var_A", "var_B"]]
     y = make_series(make_df, data_enc["target"])
