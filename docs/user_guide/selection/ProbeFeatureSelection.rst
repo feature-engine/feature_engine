@@ -348,6 +348,7 @@ The previous command returns the following output:
     concave points error       0.003548
     fractal dimension error    0.003576
     gaussian_probe_0           0.003783
+    dtype: float64
 
 Dropping features from the data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -632,6 +633,102 @@ importance of the probes, as follows:
         confirm_variables=False
     ).fit(X_train, y_train)
 
+
+With polars
+~~~~~~~~~~~
+
+:class:`ProbeFeatureSelection()` also works with polars dataframes. The probe features
+are returned as a polars dataframe, and the transformed data is a polars dataframe as well.
+The feature importance and its standard deviation are returned as dictionaries, with the
+feature names as keys.
+
+Let's load the breast cancer data into a polars dataframe and split it as we did before:
+
+.. code:: python
+
+    import polars as pl
+
+    data = load_breast_cancer()
+    X = pl.DataFrame(data.data, schema=list(data.feature_names))
+    y = pl.Series("target", data.target)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=3
+    )
+
+Now, we select features with a random forest and a single probe feature, like we did at
+the beginning of this section:
+
+.. code:: python
+
+    sel = ProbeFeatureSelection(
+        estimator=RandomForestClassifier(),
+        scoring="precision",
+        n_probes=1,
+        distribution="normal",
+        cv=5,
+        random_state=150,
+    )
+
+    sel.fit(X_train, y_train)
+
+    sel.probe_features_.head()
+
+The probe feature has the same values that we obtained with pandas:
+
+.. code:: text
+
+    shape: (5, 1)
+    ┌──────────────────┐
+    │ gaussian_probe_0 │
+    │ ---              │
+    │ f64              │
+    ╞══════════════════╡
+    │ -0.69415         │
+    │ 1.17184          │
+    │ 1.074892         │
+    │ 1.698733         │
+    │ 0.498702         │
+    └──────────────────┘
+
+We can read the importance of any feature from the dictionary:
+
+.. code:: python
+
+    sel.feature_importances_["gaussian_probe_0"]
+
+which returns the importance of the probe:
+
+.. code:: python
+
+    0.003782984070348287
+
+And, as with pandas, six features will be removed from the data:
+
+.. code:: python
+
+    sel.features_to_drop_
+
+.. code:: python
+
+    ['mean symmetry',
+     'mean fractal dimension',
+     'texture error',
+     'smoothness error',
+     'concave points error',
+     'fractal dimension error']
+
+Finally, we remove those features from the test set, and obtain a polars dataframe:
+
+.. code:: python
+
+    Xtr = sel.transform(X_test)
+
+    type(Xtr), Xtr.shape
+
+.. code:: python
+
+    (<class 'polars.dataframe.frame.DataFrame'>, (114, 24))
 
 Additional resources
 --------------------
