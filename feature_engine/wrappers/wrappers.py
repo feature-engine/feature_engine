@@ -328,7 +328,9 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
 
         # a global scikit-learn output config would change what transform() receives.
         self.transformer_.set_output(transform="default")
-        self.transformer_.fit(self._to_sklearn_input(X), y)
+        self.transformer_.fit(
+            nw.to_native(subset_df(X, self.variables_), pass_through=True), y
+        )
 
         if self.transformer_.__class__.__name__ in _SELECTORS:
             selected = [
@@ -375,7 +377,9 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
 
         # Transformers that add features: creators
         elif self.transformer_.__class__.__name__ in _CREATORS:
-            X_new = self.transformer_.transform(self._to_sklearn_input(X))
+            X_new = self.transformer_.transform(
+                nw.to_native(subset_df(X, self.variables_), pass_through=True)
+            )
             columns = self.transformer_.get_feature_names_out(self.variables_)
             X = add_columns_to_df(
                 subset_df(
@@ -387,7 +391,11 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
         # Transformers that modify existing features
         else:
             # the function in a FunctionTransformer may return a dataframe.
-            X_new = np.asarray(self.transformer_.transform(self._to_sklearn_input(X)))
+            X_new = np.asarray(
+                self.transformer_.transform(
+                    nw.to_native(subset_df(X, self.variables_), pass_through=True)
+                )
+            )
             X = replace_columns_in_df(
                 subset_df(X, self.feature_names_in_),
                 dict(zip(self.variables_, X_new.T)),
@@ -427,13 +435,11 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
                 )
             )
 
-        X_inv = self.transformer_.inverse_transform(self._to_sklearn_input(X))
+        X_inv = self.transformer_.inverse_transform(
+            nw.to_native(subset_df(X, self.variables_), pass_through=True)
+        )
         X = replace_columns_in_df(X, dict(zip(self.variables_, X_inv.T)))
         return nw.to_native(X, pass_through=True)
-
-    def _to_sklearn_input(self, X):
-        """Returns the variables in the user's dataframe library."""
-        return nw.to_native(subset_df(X, self.variables_), pass_through=True)
 
     def get_feature_names_out(
         self, input_features: Optional[List[Union[str, int]]] = None
