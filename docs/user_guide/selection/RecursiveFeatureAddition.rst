@@ -136,7 +136,7 @@ entire dataset:
 
 .. code:: python
 
-    0.488702767247119
+    np.float64(0.48870212980353145)
 
 Evaluating feature importance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -202,15 +202,15 @@ In the following output we see the changes in performance returned by adding eac
 ..  code:: python
 
     {'s1': 0,
-     's5': 0.28371458794131676,
-     'bmi': 0.1377714799388745,
-     's2': 0.0023327265047610735,
-     'bp': 0.018759914615172735,
-     'sex': 0.0027996354657459643,
-     's4': 0.002695149440021638,
-     's3': 0.002683934134630306,
-     's6': 0.000304067408860742,
-     'age': -0.007387230783454768}
+     's5': np.float64(0.28371458794131676),
+     'bmi': np.float64(0.13777147993887456),
+     's2': np.float64(0.0023327265047610735),
+     'bp': np.float64(0.01875991461517268),
+     'sex': np.float64(0.002799635465745798),
+     's4': np.float64(0.002695149440021638),
+     's3': np.float64(0.0026839341346303613),
+     's6': np.float64(0.0003040674088605755),
+     'age': np.float64(-0.007387230783454768)}
 
 We can also check out the standard deviation of the performance drift:
 
@@ -225,15 +225,15 @@ returned by adding each feature:
 ..  code:: python
 
     {'s1': 0,
-     's5': 0.029336910701570382,
-     'bmi': 0.01752426732750277,
-     's2': 0.020525965661877265,
-     'bp': 0.017326401244547558,
-     'sex': 0.00867675077259389,
-     's4': 0.024234566449074676,
-     's3': 0.023391851139598106,
-     's6': 0.016865740401721313,
-     'age': 0.02042081611218045}
+     's5': np.float64(0.02933691070157033),
+     'bmi': np.float64(0.017524267327502716),
+     's2': np.float64(0.020525965661877265),
+     'bp': np.float64(0.017326401244547592),
+     'sex': np.float64(0.008676750772593802),
+     's4': np.float64(0.024234566449074697),
+     's3': np.float64(0.02339185113959813),
+     's6': np.float64(0.01686574040172137),
+     'age': np.float64(0.020420816112180475)}
 
 We can now plot the performance change with the standard deviation to identify importance
 features:
@@ -320,6 +320,67 @@ be dropped:
 ..  code:: python
 
     [False, False, True, True, True, False, False, False, True, False]
+
+With polars
+~~~~~~~~~~~
+
+:class:`RecursiveFeatureAddition` also selects features from polars dataframes, and
+returns a polars dataframe. Let's load the diabetes dataset into a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+
+    diabetes = load_diabetes()
+    X = pl.DataFrame(diabetes.data, schema=diabetes.feature_names)
+    y = pl.Series("target", diabetes.target)
+
+Now, we select features as we did with pandas:
+
+.. code:: python
+
+    tr = RecursiveFeatureAddition(estimator=LinearRegression(), scoring="r2", cv=3)
+    Xt = tr.fit_transform(X, y)
+    print(Xt.head())
+
+The same 4 features are retained:
+
+.. code:: text
+
+    shape: (5, 4)
+    ┌───────────┬───────────┬───────────┬───────────┐
+    │ bmi       ┆ bp        ┆ s1        ┆ s5        │
+    │ ---       ┆ ---       ┆ ---       ┆ ---       │
+    │ f64       ┆ f64       ┆ f64       ┆ f64       │
+    ╞═══════════╪═══════════╪═══════════╪═══════════╡
+    │ 0.061696  ┆ 0.021872  ┆ -0.044223 ┆ 0.019907  │
+    │ -0.051474 ┆ -0.026328 ┆ -0.008449 ┆ -0.068332 │
+    │ 0.044451  ┆ -0.00567  ┆ -0.045599 ┆ 0.002861  │
+    │ -0.011595 ┆ -0.036656 ┆ 0.012191  ┆ 0.022688  │
+    │ -0.036385 ┆ 0.021872  ┆ 0.003935  ┆ -0.031988 │
+    └───────────┴───────────┴───────────┴───────────┘
+
+With polars, the feature importance and its standard deviation are dictionaries instead
+of pandas Series:
+
+.. code:: python
+
+    tr.feature_importances_
+
+In the following output we see the features sorted by their importance:
+
+.. code:: python
+
+    {'s1': 750.0238715216746,
+     's5': 741.4713367752565,
+     'bmi': 522.3301645404875,
+     's2': 436.67158399913274,
+     'bp': 322.0918016880965,
+     'sex': 238.6195264502995,
+     's4': 182.174833735295,
+     's3': 113.96599187843395,
+     's6': 64.76841724774016,
+     'age': 41.41804062408145}
 
 And that's it! You now know how to select features by recursively adding them to a dataset.
 
