@@ -6,11 +6,18 @@ import pandas as pd
 import polars as pl
 import pytest
 from sklearn import config_context
+from sklearn.base import clone
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.experimental import enable_iterative_imputer  # noqa: F401
-from sklearn.feature_selection import SelectKBest, VarianceThreshold, f_regression
+from sklearn.feature_selection import (
+    RFE,
+    SelectFromModel,
+    SelectKBest,
+    VarianceThreshold,
+    f_regression,
+)
 from sklearn.impute import IterativeImputer, KNNImputer, MissingIndicator, SimpleImputer
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import cross_val_score
@@ -29,7 +36,7 @@ from sklearn.preprocessing import (
 )
 
 from feature_engine.wrappers import SklearnTransformerWrapper, SklearnWrapper
-from tests.backend_helpers import frame_to_dict, make_series
+from tests.backend_helpers import frame_to_dict, make_series, none_if_missing
 
 DATA = {
     "num_1": [1, 2, 3, 4],
@@ -51,6 +58,34 @@ DATA_SELECTION = {
 }
 TARGET = [1.1, 2.0, 2.9, 4.2, 5.0, 6.1]
 
+# numerical data where x1 and x2 follow the target
+_rng = np.random.default_rng(0)
+_X_NUM = _rng.uniform(1, 4, size=(20, 4)).round(2)
+DATA_NUM = {f"x{i + 1}": _X_NUM[:, i].tolist() for i in range(4)}
+TARGET_NUM = (
+    (3 * _X_NUM[:, 0] - 2 * _X_NUM[:, 1] + _rng.normal(0, 0.1, 20)).round(2).tolist()
+)
+
+TRANSFORMERS = [
+    Binarizer(threshold=2),
+    KBinsDiscretizer(
+        n_bins=3, encode="ordinal", quantile_method="averaged_inverted_cdf"
+    ),
+    StandardScaler(),
+    MinMaxScaler(),
+    Normalizer(),
+    PowerTransformer(),
+    FunctionTransformer(np.cbrt, validate=True),
+    OrdinalEncoder(),
+]
+
+SELECTORS = [
+    SelectFromModel(Lasso(random_state=1)),
+    SelectKBest(f_regression, k=2),
+    VarianceThreshold(),
+    RFE(Lasso(random_state=1)),
+]
+
 # StandardScaler of [1, 2, 3, 4], or of any linear transformation of it
 SCALED = [
     -1.3416407864998738,
@@ -63,6 +98,21 @@ NOT_FITTED_MSG = (
     "This SklearnWrapper instance is not fitted yet. Call 'fit' with "
     "appropriate arguments before using this estimator."
 )
+
+
+def sklearn_output_dict(transformer, X, variables, y=None, columns=None):
+    """Returns the output of the scikit-learn transformer fitted on the variables
+    of X, as ``{column: list of values}``. The columns default to the names given
+    by the transformer."""
+    X_vars = nw.from_native(X, eager_only=True).select(variables).to_native()
+    transformer = clone(transformer)
+    output = np.asarray(transformer.fit_transform(X_vars, y))
+    if columns is None:
+        columns = transformer.get_feature_names_out(variables)
+    return {
+        name: [none_if_missing(v) for v in output[:, i].tolist()]
+        for i, name in enumerate(columns)
+    }
 
 
 # init parameters
@@ -198,6 +248,22 @@ def test_transformers_replace_the_variables(make_df, transformer, expected):
     }
 
 
+@pytest.mark.parametrize("variables", [["x1", "x2", "x3"], None])
+@pytest.mark.parametrize("transformer", TRANSFORMERS)
+def test_transformers_return_the_sklearn_output(make_df, transformer, variables):
+    X = make_df(DATA_NUM)
+    wrapper = SklearnWrapper(transformer=transformer, variables=variables)
+    Xt = wrapper.fit_transform(X)
+
+    transformed = list(DATA_NUM) if variables is None else variables
+    expected = sklearn_output_dict(transformer, X, transformed, columns=transformed)
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        **DATA_NUM,
+        **{var: pytest.approx(values) for var, values in expected.items()},
+    }
+
+
 def test_variables_none_selects_numerical_variables(make_df):
     wrapper = SklearnWrapper(transformer=StandardScaler())
     Xt = wrapper.fit_transform(make_df(DATA))
@@ -234,12 +300,28 @@ def test_transform_returns_variables_in_the_order_seen_in_fit(make_df):
     assert frame_to_dict(Xt) == {**DATA, "num_1": pytest.approx(SCALED)}
 
 
-def test_simple_imputer_with_numerical_variables(make_df):
-    wrapper = SklearnWrapper(transformer=SimpleImputer(), variables=["num"])
+@pytest.mark.parametrize(
+    "transformer, expected",
+    [
+        (SimpleImputer(), [1.0, 3.0, 3.0, 5.0]),
+        (SimpleImputer(strategy="constant", fill_value=-999), [1.0, -999.0, 3.0, 5.0]),
+    ],
+)
+def test_simple_imputer_with_numerical_variables(make_df, transformer, expected):
+    wrapper = SklearnWrapper(transformer=transformer, variables=["num"])
     Xt = wrapper.fit_transform(make_df(DATA_NA))
 
     assert isinstance(Xt, make_df)
-    assert frame_to_dict(Xt) == {**DATA_NA, "num": [1.0, 3.0, 3.0, 5.0]}
+    assert frame_to_dict(Xt) == {**DATA_NA, "num": expected}
+
+
+def test_simple_imputer_with_all_variables(make_df):
+    X = make_df(DATA_NA)
+    transformer = SimpleImputer(strategy="constant", fill_value="missing")
+    Xt = SklearnWrapper(transformer=transformer).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == sklearn_output_dict(transformer, X, list(DATA_NA))
 
 
 @pytest.mark.parametrize(
@@ -315,6 +397,18 @@ def test_one_hot_encoder_adds_variables_at_the_end(make_df, transformer, expecte
     }
 
 
+def test_one_hot_encoder_with_all_variables(make_df):
+    X = make_df(DATA)
+    transformer = OneHotEncoder(sparse_output=False, dtype=np.int64)
+    wrapper = SklearnWrapper(transformer=transformer)
+    Xt = wrapper.fit_transform(X)
+
+    expected = sklearn_output_dict(transformer, X, list(DATA))
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == expected
+    assert wrapper.get_feature_names_out() == list(expected)
+
+
 def test_one_hot_encoder_encodes_missing_values_as_a_category(make_df):
     wrapper = SklearnWrapper(
         transformer=OneHotEncoder(sparse_output=False), variables=["cat"]
@@ -378,6 +472,22 @@ def test_polynomial_features_when_all_variables_are_transformed(make_df):
         "num_1": [1.0, 2.0, 3.0, 4.0],
         "num_1^2": [1.0, 4.0, 9.0, 16.0],
     }
+
+
+@pytest.mark.parametrize("variables", [["x1", "x2", "x3"], None])
+@pytest.mark.parametrize("transformer", SELECTORS)
+def test_selectors_keep_the_sklearn_selection(make_df, transformer, variables):
+    X = make_df(DATA_NUM)
+    y = make_series(make_df, TARGET_NUM)
+    wrapper = SklearnWrapper(transformer=transformer, variables=variables)
+    Xt = wrapper.fit_transform(X, y)
+
+    examined = list(DATA_NUM) if variables is None else variables
+    kept = list(sklearn_output_dict(transformer, X, examined, y))
+    expected = [var for var in DATA_NUM if var not in examined or var in kept]
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {var: DATA_NUM[var] for var in expected}
+    assert wrapper.features_to_drop_ == [var for var in examined if var not in kept]
 
 
 def test_variance_threshold_drops_variables(make_df):
@@ -485,12 +595,13 @@ def test_wrapper_in_pipeline_with_cross_validation(make_df):
     assert np.isfinite(results).all()
 
 
+@pytest.mark.parametrize("variables", [["num_1", "num_2"], None])
 @pytest.mark.parametrize(
     "transformer",
     [StandardScaler(), MinMaxScaler(), PowerTransformer(), OrdinalEncoder()],
 )
-def test_inverse_transform(make_df, transformer):
-    wrapper = SklearnWrapper(transformer=transformer, variables=["num_1", "num_2"])
+def test_inverse_transform(make_df, transformer, variables):
+    wrapper = SklearnWrapper(transformer=transformer, variables=variables)
     Xt = wrapper.fit_transform(make_df(DATA))
     Xt_before = frame_to_dict(Xt)
     X_inv = wrapper.inverse_transform(Xt)
@@ -536,24 +647,16 @@ def test_error_if_inverse_transform_is_not_supported(make_df, transformer):
         wrapper.inverse_transform(wrapper.transform(X))
 
 
-@pytest.mark.parametrize("variables", [["num_1", "num_2"], None])
-@pytest.mark.parametrize(
-    "transformer",
-    [
-        StandardScaler(),
-        Binarizer(threshold=2),
-        Normalizer(),
-        MinMaxScaler(),
-    ],
-)
+@pytest.mark.parametrize("variables", [["x1", "x2"], None])
+@pytest.mark.parametrize("transformer", TRANSFORMERS)
 def test_get_feature_names_out_transformers(make_df, transformer, variables):
     wrapper = SklearnWrapper(transformer=transformer, variables=variables)
-    Xt = wrapper.fit_transform(make_df(DATA))
+    Xt = wrapper.fit_transform(make_df(DATA_NUM))
 
-    assert wrapper.get_feature_names_out() == ["num_1", "num_2", "cat"]
+    assert wrapper.get_feature_names_out() == list(DATA_NUM)
     assert wrapper.get_feature_names_out() == list(Xt.columns)
     # input_features is ignored
-    assert wrapper.get_feature_names_out(["num_1"]) == ["num_1", "num_2", "cat"]
+    assert wrapper.get_feature_names_out(["x1"]) == list(DATA_NUM)
 
 
 @pytest.mark.parametrize("variables", [["x1", "x2"], None])
