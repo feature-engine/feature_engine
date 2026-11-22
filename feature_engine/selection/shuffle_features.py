@@ -1,11 +1,13 @@
 from types import GeneratorType
 from typing import List, MutableSequence, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
-from sklearn.base import is_classifier
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.metrics import get_scorer
-from sklearn.model_selection import check_cv, cross_validate
+from sklearn.model_selection import cross_validate
+from sklearn.utils import _safe_indexing
 from sklearn.utils.validation import _check_sample_weight, check_random_state
 
 from feature_engine._check_init_parameters.check_variables import (
@@ -169,6 +171,37 @@ class SelectByShuffling(BaseSelector):
     3   1   1   1
     4   2   0   1
     5   2   1   1
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from feature_engine.selection import SelectByShuffling
+    >>> X = pl.DataFrame(dict(x1 = [1000,2000,1000,1000,2000,3000],
+    >>>                     x2 = [2,4,3,1,2,2],
+    >>>                     x3 = [1,1,1,0,0,0],
+    >>>                     x4 = [1,2,1,1,0,1],
+    >>>                     x5 = [1,1,1,1,1,1]))
+    >>> y = pl.Series([1,0,0,1,1,0])
+    >>> sbs = SelectByShuffling(
+    >>>         RandomForestClassifier(random_state=42),
+    >>>         cv=2,
+    >>>         random_state=42,
+    >>>       )
+    >>> sbs.fit_transform(X, y)
+    shape: (6, 3)
+    ┌─────┬─────┬─────┐
+    │ x2  ┆ x4  ┆ x5  │
+    │ --- ┆ --- ┆ --- │
+    │ i64 ┆ i64 ┆ i64 │
+    ╞═════╪═════╪═════╡
+    │ 2   ┆ 1   ┆ 1   │
+    │ 4   ┆ 2   ┆ 1   │
+    │ 3   ┆ 1   ┆ 1   │
+    │ 1   ┆ 1   ┆ 1   │
+    │ 2   ┆ 0   ┆ 1   │
+    │ 2   ┆ 1   ┆ 1   │
+    └─────┴─────┴─────┘
     """
 
     def __init__(
@@ -182,8 +215,11 @@ class SelectByShuffling(BaseSelector):
         confirm_variables: bool = False,
     ):
 
-        if threshold and not isinstance(threshold, (int, float)):
-            raise ValueError("threshold can only be integer or float or None")
+        if threshold is not None and not isinstance(threshold, (int, float)):
+            raise ValueError(
+                "threshold must be an integer, a float or None. "
+                f"Got {threshold} instead."
+            )
 
         super().__init__(confirm_variables)
 
@@ -196,8 +232,8 @@ class SelectByShuffling(BaseSelector):
 
     def fit(
         self,
-        X: pd.DataFrame,
-        y: pd.Series,
+        X: IntoDataFrame,
+        y: IntoSeries,
         sample_weight: Union[MutableSequence, None] = None,
     ):
         """
@@ -205,8 +241,9 @@ class SelectByShuffling(BaseSelector):
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-           The input dataframe.
+        X: dataframe of shape = [n_samples, n_features]
+           The input dataframe. Can be a pandas, polars, or any other dataframe
+           supported by narwhals.
 
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
@@ -214,12 +251,7 @@ class SelectByShuffling(BaseSelector):
         sample_weight : array-like of shape (n_samples,), default=None
             Sample weights. If None, then samples are equally weighted.
         """
-
-        X, y = check_X_y(X, y)
-
-        # reset the index
-        X = X.reset_index(drop=True)
-        y = y.reset_index(drop=True)
+        nw_X, y = check_X_y(X, y)
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
@@ -233,70 +265,76 @@ class SelectByShuffling(BaseSelector):
 
         cv = list(self.cv) if isinstance(self.cv, GeneratorType) else self.cv
 
+        nw_X_model = nw_X.select(nw.col(*self.variables_))
+        X_model = nw_X_model.to_native()
+
         # train model with all features and cross-validation
         model = cross_validate(
             estimator=self.estimator,
-            X=X[self.variables_],
+            X=X_model,
             y=y,
             cv=cv,
             return_estimator=True,
+            return_indices=True,
             scoring=self.scoring,
             params={"sample_weight": sample_weight},
         )
 
-        # store initial model performance
         self.initial_model_performance_ = model["test_score"].mean()
 
-        # extract the validation folds
-        cv_ = check_cv(cv, y=y, classifier=is_classifier(self.estimator))
-        validation_indices = [val_index for _, val_index in cv_.split(X, y)]
+        # the indices returned by cross_validate are the folds each model was
+        # evaluated on, also when the splitter gives different folds on every call.
+        validation_indices = model["indices"]["test"]
+        y_val = [_safe_indexing(y, idx) for idx in validation_indices]
 
-        # get performance metric
         scorer = get_scorer(self.scoring)
-
-        # seed
         random_state = check_random_state(self.random_state)
+        n_samples = nw_X.shape[0]
 
-        # dict to collect features and their performance_drift after shuffling
         self.performance_drifts_ = {}
         self.performance_drifts_std_ = {}
 
-        # shuffle features and save feature performance drift into a dict
+        estimators = model["estimator"]
+
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            X_val = [X_model.iloc[idx] for idx in validation_indices]
+        else:
+            nw_X_val = [nw_X_model[idx] for idx in validation_indices]
+
         for feature in self.variables_:
+            # same permutation as pandas' sample(frac=1), so the drifts for a given
+            # random_state are the same with every dataframe library.
+            permutation = random_state.permutation(n_samples)
 
-            X_shuffled = X[self.variables_].copy()
+            # pandas is faster than narwhals.
+            if nwd.is_pandas_dataframe(X) is True:
+                values = X_model[feature].array
+                performance = []
+                for m, idx, X_, y_ in zip(estimators, validation_indices, X_val, y_val):
+                    # the fold dataframes are copies made in fit, so we can shuffle
+                    # the column in place and restore it afterwards.
+                    original = X_[feature]
+                    X_[feature] = values.take(permutation[idx])
+                    performance.append(scorer(m, X_, y_))
+                    X_[feature] = original
+            else:
+                column = nw_X_model.get_column(feature)
+                performance = [
+                    scorer(m, X_.with_columns(column[permutation[idx]]).to_native(), y_)
+                    for m, idx, X_, y_ in zip(
+                        estimators, validation_indices, nw_X_val, y_val
+                    )
+                ]
 
-            # shuffle individual feature
-            X_shuffled[feature] = (
-                X_shuffled[feature]
-                .sample(frac=1, random_state=random_state)
-                .reset_index(drop=True)
-            )
-
-            # determine the performance with the shuffled feature
-            performance = [
-                scorer(m, X_shuffled.iloc[idx], y.iloc[idx])
-                for m, idx in zip(model["estimator"], validation_indices)
-            ]
-
-            performance_std = np.std(performance)
-            performance = np.mean(performance)
-
-            # determine drift in performance
-            # Note, sklearn negates the log and error scores, so no need to manually
-            # do the inversion
-            # https://scikit-learn.org/stable/modules/model_evaluation.html
-            # (https://scikit-learn.org/stable/modules/model_evaluation.html
-            # #the-scoring-parameter-defining-model-evaluation-rules)
-            performance_drift = self.initial_model_performance_ - performance
-
-            # Save feature and performance drift
-            self.performance_drifts_[feature] = performance_drift
-            self.performance_drifts_std_[feature] = performance_std
+            # sklearn negates the error and loss scores, so larger is always better.
+            drift = self.initial_model_performance_ - np.mean(performance)
+            self.performance_drifts_[feature] = drift
+            self.performance_drifts_std_[feature] = np.std(performance)
 
         # select features
         if not self.threshold:
-            threshold = pd.Series(self.performance_drifts_).mean()
+            threshold = np.mean(list(self.performance_drifts_.values()))
         else:
             threshold = self.threshold
 
@@ -306,7 +344,6 @@ class SelectByShuffling(BaseSelector):
             if self.performance_drifts_[f] < threshold
         ]
 
-        # save input features
         self._get_feature_names_in(X)
 
         return self
