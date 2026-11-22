@@ -2,6 +2,7 @@ import warnings
 from typing import List, Optional, Union
 
 import narwhals as nw
+import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
@@ -13,7 +14,11 @@ from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
 )
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
-from feature_engine.dataframe_helpers import subset_df
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    replace_columns_in_df,
+    subset_df,
+)
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import (
     check_numerical_variables,
@@ -21,12 +26,6 @@ from feature_engine.variable_handling import (
 )
 from feature_engine.variable_handling.check_variables import check_all_variables
 from feature_engine.variable_handling.find_variables import find_all_variables
-from feature_engine.wrappers._wrappers_helpers import (
-    add_sklearn_output,
-    replace_with_sklearn_output,
-    set_sklearn_output,
-    to_sklearn_input,
-)
 
 _SELECTORS = [
     "GenericUnivariateSelect",
@@ -327,7 +326,8 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
         if len(self.variables_) == 0:
             return self
 
-        set_sklearn_output(self.transformer_, X)
+        # a global scikit-learn output config would change what transform() receives.
+        self.transformer_.set_output(transform="default")
         self.transformer_.fit(self._to_sklearn_input(X), y)
 
         if self.transformer_.__class__.__name__ in _SELECTORS:
@@ -376,20 +376,21 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
         # Transformers that add features: creators
         elif self.transformer_.__class__.__name__ in _CREATORS:
             X_new = self.transformer_.transform(self._to_sklearn_input(X))
-            X = add_sklearn_output(
+            columns = self.transformer_.get_feature_names_out(self.variables_)
+            X = add_columns_to_df(
                 subset_df(
                     X, [f for f in self.feature_names_in_ if f not in self.variables_]
                 ),
-                X_new,
-                self.transformer_,
-                self.variables_,
+                dict(zip(columns, X_new.T)),
             )
 
         # Transformers that modify existing features
         else:
-            X_new = self.transformer_.transform(self._to_sklearn_input(X))
-            X = replace_with_sklearn_output(
-                subset_df(X, self.feature_names_in_), X_new, self.variables_
+            # the function in a FunctionTransformer may return a dataframe.
+            X_new = np.asarray(self.transformer_.transform(self._to_sklearn_input(X)))
+            X = replace_columns_in_df(
+                subset_df(X, self.feature_names_in_),
+                dict(zip(self.variables_, X_new.T)),
             )
 
         return nw.to_native(X, pass_through=True)
@@ -427,16 +428,12 @@ class SklearnWrapper(TransformerMixin, BaseEstimator):
             )
 
         X_inv = self.transformer_.inverse_transform(self._to_sklearn_input(X))
-        X = replace_with_sklearn_output(X, X_inv, self.variables_)
+        X = replace_columns_in_df(X, dict(zip(self.variables_, X_inv.T)))
         return nw.to_native(X, pass_through=True)
 
     def _to_sklearn_input(self, X):
-        # the function in a FunctionTransformer expects the user's dataframe.
-        return to_sklearn_input(
-            X,
-            self.variables_,
-            as_native=self.transformer_.__class__.__name__ == "FunctionTransformer",
-        )
+        """Returns the variables in the user's dataframe library."""
+        return nw.to_native(subset_df(X, self.variables_), pass_through=True)
 
     def get_feature_names_out(
         self, input_features: Optional[List[Union[str, int]]] = None

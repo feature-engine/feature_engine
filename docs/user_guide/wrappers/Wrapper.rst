@@ -340,36 +340,26 @@ With polars
 ^^^^^^^^^^^
 
 :class:`SklearnWrapper()` works in the same way with a polars dataframe, and returns a
-polars dataframe. In polars, missing values are `null`. The wrapper passes them to the
-scikit-learn transformer as missing values, so imputers replace them, and it returns the
-missing values that remain as `null`:
+polars dataframe:
 
 .. code:: python
 
     import polars as pl
-    from sklearn.impute import SimpleImputer
     from sklearn.preprocessing import StandardScaler
     from feature_engine.wrappers import SklearnWrapper
 
     X = pl.DataFrame({
-        "city": ["London", None, "Paris", "London"],
+        "city": ["London", "Madrid", "Paris", "London"],
         "age": [20, 30, None, 40],
         "income": [1000.0, 2000.0, 1500.0, None],
     })
 
-    imputer = SklearnWrapper(
-        transformer=SimpleImputer(strategy="most_frequent"),
-        variables=["city"],
-    )
-    X_t = imputer.fit_transform(X)
-
     scaler = SklearnWrapper(transformer=StandardScaler())
-    X_t = scaler.fit_transform(X_t)
+    X_t = scaler.fit_transform(X)
 
     print(X_t)
 
-The imputer replaced the missing city with the most frequent one, and the scaler
-standardised the numerical variables, leaving their missing values as `null`:
+The scaler standardised the numerical variables and left the text variable as it was:
 
 .. code:: text
 
@@ -380,10 +370,16 @@ standardised the numerical variables, leaving their missing values as `null`:
     │ str    ┆ f64       ┆ f64       │
     ╞════════╪═══════════╪═══════════╡
     │ London ┆ -1.224745 ┆ -1.224745 │
-    │ London ┆ 0.0       ┆ 1.224745  │
-    │ Paris  ┆ null      ┆ 0.0       │
-    │ London ┆ 1.224745  ┆ null      │
+    │ Madrid ┆ 0.0       ┆ 1.224745  │
+    │ Paris  ┆ NaN       ┆ 0.0       │
+    │ London ┆ 1.224745  ┆ NaN       │
     └────────┴───────────┴───────────┘
+
+The wrapper returns the values that the scikit-learn transformer returns. scikit-learn
+marks missing values with `NaN`, so the missing values of the numerical variables come
+back as `NaN` instead of `null`. scikit-learn also does not recognise `null` in polars
+text variables as a missing value: imputers don't replace it, and encoders treat it as
+one more category.
 
 When you use a `FunctionTransformer`, its function receives the polars dataframe, so
 write it with polars methods.
