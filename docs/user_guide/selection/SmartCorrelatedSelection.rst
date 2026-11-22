@@ -44,8 +44,8 @@ feature on the target.
 Procedure
 ---------
 
-:class:`SmartCorrelatedSelection` first finds correlated feature groups using any
-correlation method supported by `pandas.corr()`, or a user defined function that returns
+:class:`SmartCorrelatedSelection` first finds correlated feature groups using the Pearson,
+Spearman or Kendall correlation coefficient, or a user defined function that returns
 a value between -1 and 1.
 
 Then, from each group of correlated features, it will try and identify the best candidate
@@ -561,6 +561,57 @@ for those that are dropped:
 
     [True, True, True, True, False, True, False, True, False, False, True, True]
 
+With polars
+~~~~~~~~~~~
+
+:class:`SmartCorrelatedSelection` also works with polars dataframes, and returns a polars
+dataframe. Let's repeat the selection based on the correlation with the target, with the
+data from the previous example as a polars dataframe and series:
+
+.. code:: python
+
+    import polars as pl
+
+    X_pl = pl.DataFrame(X.to_dict(orient="list"))
+    y_pl = pl.Series(y.tolist())
+
+    tr = SmartCorrelatedSelection(threshold=0.8, selection_method="corr_with_target")
+    Xt = tr.fit_transform(X_pl, y_pl)
+
+The selector drops the same features as with pandas:
+
+.. code:: python
+
+    tr.features_to_drop_
+
+.. code:: python
+
+    ['var_4', 'var_6', 'var_9', 'var_8']
+
+And returns a polars dataframe:
+
+.. code:: python
+
+    print(Xt.head())
+
+.. code:: text
+
+    shape: (5, 8)
+    ┌──────────┬──────────┬───────────┬───────────┬───────────┬───────────┬───────────┬───────────┐
+    │ var_0    ┆ var_1    ┆ var_2     ┆ var_3     ┆ var_5     ┆ var_7     ┆ var_10    ┆ var_11    │
+    │ ---      ┆ ---      ┆ ---       ┆ ---       ┆ ---       ┆ ---       ┆ ---       ┆ ---       │
+    │ f64      ┆ f64      ┆ f64       ┆ f64       ┆ f64       ┆ f64       ┆ f64       ┆ f64       │
+    ╞══════════╪══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═══════════╡
+    │ 1.471061 ┆ -2.3764  ┆ -0.247208 ┆ 1.21029   ┆ 0.091527  ┆ -2.23017  ┆ 2.070526  ┆ -1.989335 │
+    │ 1.819196 ┆ 1.969326 ┆ -0.126894 ┆ 0.034598  ┆ -0.186802 ┆ -1.44749  ┆ 1.18482   ┆ -1.309524 │
+    │ 1.625024 ┆ 1.499174 ┆ 0.334123  ┆ -2.233844 ┆ -0.313881 ┆ -2.240741 ┆ -0.066448 ┆ -0.852703 │
+    │ 1.939212 ┆ 0.075341 ┆ 1.627132  ┆ 0.943132  ┆ -0.468041 ┆ -3.534861 ┆ 0.713558  ┆ 0.484649  │
+    │ 1.579307 ┆ 0.372213 ┆ 0.338141  ┆ 0.951526  ┆ 0.729005  ┆ -2.053965 ┆ 0.39879   ┆ -0.18653  │
+    └──────────┴──────────┴───────────┴───────────┴───────────┴───────────┴───────────┴───────────┘
+
+With polars, the missing data are the null values. When `selection_method="missing_values"`,
+the selector counts the nulls in each feature, and when `selection_method="cardinality"`, it
+does not count null as a value.
 
 And that's it!
 
