@@ -381,9 +381,6 @@ back as `NaN` instead of `null`. scikit-learn also does not recognise `null` in 
 text variables as a missing value: imputers don't replace it, and encoders treat it as
 one more category.
 
-When you use a `FunctionTransformer`, its function receives the polars dataframe, so
-write it with polars methods.
-
 
 More details
 ^^^^^^^^^^^^
