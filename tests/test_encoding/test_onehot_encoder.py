@@ -534,3 +534,25 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_binary):
     enc = OneHotEncoder().fit(df_enc_binary)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_binary)
+
+
+def test_onehot_encoder_dummy_name_matches_input_column():
+    X = pd.DataFrame({"a_b": ["x", "x", "y", "y"], "a": ["b", "c", "b", "c"]})
+
+    # 1. Default order
+    encoder = OneHotEncoder()
+    result = encoder.fit_transform(X)
+    expected_cols = ["a_b_x", "a_b_y", "a_b", "a_c"]
+    assert result.columns.tolist() == expected_cols
+    assert list(encoder.get_feature_names_out()) == expected_cols
+
+    # set_output pandas check
+    res_pandas = encoder.set_output(transform="pandas").transform(X)
+    assert res_pandas.columns.tolist() == expected_cols
+
+    # 2. Reverse variable order
+    encoder_rev = OneHotEncoder(variables=["a", "a_b"])
+    result_rev = encoder_rev.fit_transform(X)
+    expected_rev_cols = ["a_b", "a_c", "a_b_x", "a_b_y"]
+    assert result_rev.columns.tolist() == expected_rev_cols
+    assert list(encoder_rev.get_feature_names_out()) == expected_rev_cols

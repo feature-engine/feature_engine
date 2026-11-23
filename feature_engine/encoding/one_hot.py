@@ -278,16 +278,20 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         # check if dataset contains na
         _check_contains_na(X, self.variables_)
 
+        dummies = []
         for feature in self.variables_:
             for category in self.encoder_dict_[feature]:
                 dummy_df = pd.DataFrame(
                     {f"{feature}_{category}": np.where(X[feature] == category, 1, 0)},
                     index=X.index,
                 )
-                X = pd.concat([X, dummy_df], axis=1)
+                dummies.append(dummy_df)
 
-        # drop the original non-encoded variables.
-        X.drop(labels=self.variables_, axis=1, inplace=True)
+        non_encoded = [c for c in X.columns if c not in self.variables_]
+        if dummies:
+            X = pd.concat([X[non_encoded], *dummies], axis=1)
+        else:
+            X = X[non_encoded]
 
         return X
 
@@ -308,7 +312,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
     def _add_new_feature_names(self, feature_names) -> List:
         """Adds new features to df columns, and removes categoricals."""
-        feature_names = feature_names + self._get_new_features_name()
         feature_names = [f for f in feature_names if f not in self.variables_]
+        feature_names = feature_names + self._get_new_features_name()
 
         return feature_names
