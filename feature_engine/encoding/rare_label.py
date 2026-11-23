@@ -270,7 +270,8 @@ class RareLabelEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 X[num_vars] = X[num_vars].astype("O")
 
             if X[feature].dtype == "category":
-                X[feature] = X[feature].cat.add_categories(self.replace_with)
+                if self.replace_with not in X[feature].cat.categories:
+                    X[feature] = X[feature].cat.add_categories(self.replace_with)
 
             X.loc[~X[feature].isin(self.encoder_dict_[feature] + with_nan), feature] = (
                 self.replace_with
