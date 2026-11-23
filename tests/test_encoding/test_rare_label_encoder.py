@@ -516,3 +516,53 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_big):
     enc = RareLabelEncoder().fit(df_enc_big)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_big)
+
+
+def test_category_dtype_when_replace_with_already_in_categories():
+    # Test issue #1095: RareLabelEncoder fails when replacement label
+    # already exists in categorical dtype
+    X = pd.DataFrame(
+        {"cat": pd.Categorical(["a", "a", "Rare", "b"], categories=["a", "b", "Rare"])}
+    )
+    enc = RareLabelEncoder(tol=0.3, n_categories=1, variables=["cat"]).fit(X)
+    assert enc.encoder_dict_ == {"cat": ["a"]}
+
+    res = enc.transform(X)
+    expected = pd.DataFrame(
+        {
+            "cat": pd.Categorical(
+                ["a", "a", "Rare", "Rare"], categories=["a", "b", "Rare"]
+            )
+        }
+    )
+    pd.testing.assert_frame_equal(res, expected)
+
+    # Calling transform a second time on already transformed data should also work
+    res_second = enc.transform(res)
+    pd.testing.assert_frame_equal(res_second, expected)
+
+
+def test_category_dtype_with_custom_replace_with_already_in_categories():
+    X = pd.DataFrame(
+        {
+            "cat": pd.Categorical(
+                ["apple", "apple", "other", "banana"],
+                categories=["apple", "banana", "other"],
+            )
+        }
+    )
+    enc = RareLabelEncoder(
+        tol=0.3, n_categories=1, variables=["cat"], replace_with="other"
+    ).fit(X)
+    assert enc.encoder_dict_ == {"cat": ["apple"]}
+
+    res = enc.transform(X)
+    expected = pd.DataFrame(
+        {
+            "cat": pd.Categorical(
+                ["apple", "apple", "other", "other"],
+                categories=["apple", "banana", "other"],
+            )
+        }
+    )
+    pd.testing.assert_frame_equal(res, expected)
