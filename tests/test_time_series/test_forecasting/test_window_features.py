@@ -21,27 +21,57 @@ MSG_POLARS_FUNCTIONS = (
 
 
 # init parameters
-@pytest.mark.parametrize("window", [[2, 2, 3], ["45min", "45min", "30min"]])
-def test_error_if_window_duplicated(window):
-    msg = f"There are duplicated windows in the list: {window}"
+@pytest.mark.parametrize("window", [0, -1, True, [], [3, 0], [2, False]])
+def test_error_if_window_not_permitted(window):
+    msg = (
+        "window must be a positive integer, a time span or a non-empty list of "
+        f"them. Got {window} instead."
+    )
     with pytest.raises(ValueError, match=re.escape(msg)):
         WindowFeatures(window=window)
 
 
-@pytest.mark.parametrize("functions", [3.33, [1, "mean"], None, ("mean", "sum")])
+@pytest.mark.parametrize("window", [[2, 2, 3], ["45min", "45min", "30min"]])
+def test_error_if_window_duplicated(window):
+    msg = f"There are duplicated windows in the list. Got {window} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(window=window)
+
+
+@pytest.mark.parametrize("min_periods", [-1, 1.5, "1", True, [1]])
+def test_error_if_min_periods_not_permitted(min_periods):
+    msg = (
+        "min_periods must be None or a non-negative integer. "
+        f"Got {min_periods} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(min_periods=min_periods)
+
+
+@pytest.mark.parametrize(
+    "functions", [3.33, [1, "mean"], None, ("mean", "sum"), [], ""]
+)
 def test_error_if_functions_not_string_or_list(functions):
-    msg = f"functions must be a string or a list of strings. Got {functions} instead."
+    msg = (
+        "functions must be a string or a non-empty list of strings. "
+        f"Got {functions} instead."
+    )
     with pytest.raises(ValueError, match=re.escape(msg)):
         WindowFeatures(functions=functions)
 
 
 def test_error_if_functions_duplicated():
-    msg = "There are duplicated functions in the list: ['sum', 'sum', 'mean']"
+    msg = (
+        "There are duplicated functions in the list. "
+        "Got ['sum', 'sum', 'mean'] instead."
+    )
     with pytest.raises(ValueError, match=re.escape(msg)):
         WindowFeatures(functions=["sum", "sum", "mean"])
 
 
-@pytest.mark.parametrize("periods", ["pizza", 3.33, ["mate", "cumbia"], None, 0, -1])
+@pytest.mark.parametrize(
+    "periods", ["pizza", 3.33, ["mate", "cumbia"], None, 0, -1, True]
+)
 def test_error_if_periods_not_positive_integer(periods):
     msg = f"periods must be a positive integer. Got {periods} instead."
     with pytest.raises(ValueError, match=re.escape(msg)):
@@ -52,7 +82,7 @@ def test_error_if_periods_not_positive_integer(periods):
     "window, min_periods, functions, periods, freq, sort_index",
     [
         (3, None, "mean", 1, None, True),
-        ([2, 3], 1, ["sum", "mean", "count"], 2, "15min", False),
+        ([2, 3], 0, ["sum", "mean", "count"], 2, "15min", False),
         (["45min", "30min"], 2, ["std"], 3, "1h", True),
     ],
 )

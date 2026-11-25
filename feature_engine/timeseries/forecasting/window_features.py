@@ -209,20 +209,47 @@ class WindowFeatures(BaseForecastTransformer):
         drop_na: bool = False,
     ) -> None:
 
-        if isinstance(window, list) and len(window) != len(set(window)):
-            raise ValueError(f"There are duplicated windows in the list: {window}")
-
-        if not isinstance(functions, (str, list)) or not all(
-            isinstance(val, str) for val in functions
+        windows = window if isinstance(window, list) else [window]
+        # bool is a subclass of int, but True is not a window size. Windows that
+        # are not integers, like time spans, are checked by pandas.
+        if len(windows) == 0 or any(
+            isinstance(win, int) and (isinstance(win, bool) or win < 1)
+            for win in windows
         ):
             raise ValueError(
-                f"functions must be a string or a list of strings. "
+                "window must be a positive integer, a time span or a non-empty list "
+                f"of them. Got {window} instead."
+            )
+        if len(windows) != len(set(windows)):
+            raise ValueError(
+                f"There are duplicated windows in the list. Got {window} instead."
+            )
+
+        if min_periods is not None and (
+            not isinstance(min_periods, int)
+            or isinstance(min_periods, bool)
+            or min_periods < 0
+        ):
+            raise ValueError(
+                "min_periods must be None or a non-negative integer. "
+                f"Got {min_periods} instead."
+            )
+
+        if (
+            not isinstance(functions, (str, list))
+            or len(functions) == 0
+            or not all(isinstance(val, str) for val in functions)
+        ):
+            raise ValueError(
+                "functions must be a string or a non-empty list of strings. "
                 f"Got {functions} instead."
             )
         if isinstance(functions, list) and len(functions) != len(set(functions)):
-            raise ValueError(f"There are duplicated functions in the list: {functions}")
+            raise ValueError(
+                f"There are duplicated functions in the list. Got {functions} instead."
+            )
 
-        if not isinstance(periods, int) or periods < 1:
+        if not isinstance(periods, int) or isinstance(periods, bool) or periods < 1:
             raise ValueError(
                 f"periods must be a positive integer. Got {periods} instead."
             )
@@ -302,7 +329,7 @@ class WindowFeatures(BaseForecastTransformer):
         return [self.functions]
 
     def _get_new_features_name(self) -> List:
-        """Get names of the lag features."""
+        """Get names of the window features."""
 
         functions_ = self._functions_list()
 

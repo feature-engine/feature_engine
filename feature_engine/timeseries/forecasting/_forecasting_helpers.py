@@ -297,26 +297,27 @@ def add_window_features(
                 rolled.columns = [name_of[(win, var, function)] for var in variables]
                 tmp.append(rolled)
         # with freq, the index of the features moves: merge aligns them to X.
-        return X.merge(
+        X = X.merge(
             tmp[0].join(tmp[1:])[names], left_index=True, right_index=True, how="left"
         )
+    else:
+        plx = nw.get_native_namespace(X)
+        nw_exprs, native_exprs = [], []
+        for (win, var, function), name in name_of.items():
+            # like pandas, windows of integers need all their rows by default.
+            min_samples = win if min_periods is None else min_periods
+            if function in _NW_ROLLING:
+                rolled = _NW_ROLLING[function](nw.col(var), win, min_samples)
+                nw_exprs.append(rolled.shift(periods).alias(name))
+            else:
+                rolled = _POLARS_ROLLING[function](plx.col(var), win, min_samples)
+                native_exprs.append(rolled.shift(periods).alias(name))
 
-    plx = nw.get_native_namespace(X)
-    nw_exprs, native_exprs = [], []
-    for (win, var, function), name in name_of.items():
-        # like pandas, windows of integers need all their rows by default.
-        min_samples = win if min_periods is None else min_periods
-        if function in _NW_ROLLING:
-            rolled = _NW_ROLLING[function](nw.col(var), win, min_samples)
-            nw_exprs.append(rolled.shift(periods).alias(name))
-        else:
-            rolled = _POLARS_ROLLING[function](plx.col(var), win, min_samples)
-            native_exprs.append(rolled.shift(periods).alias(name))
+        columns = X.columns
+        X = X.with_columns(nw_exprs)
+        if len(native_exprs) > 0:
+            # the polars features were added last: restore the order of the names.
+            X_pl = X.to_native().with_columns(native_exprs)
+            X = nw.from_native(X_pl, eager_only=True).select(columns + names)
 
-    columns = X.columns
-    X = X.with_columns(nw_exprs)
-    if len(native_exprs) > 0:
-        # the polars features were added last: restore the order of the names.
-        X_pl = X.to_native().with_columns(native_exprs)
-        X = nw.from_native(X_pl, eager_only=True).select(columns + names)
     return X
