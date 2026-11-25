@@ -115,43 +115,42 @@ def add_lag_features(
     """
     # pandas is faster than narwhals, and freq needs the pandas index.
     if not isinstance(X, nw.DataFrame):
-        # the suffixes are the ones merge() added when a lag name was already in X.
         if freq is None:
-            lag = X[list(variables)].shift(periods=periods, fill_value=fill_value)
-            lag.columns = names
-            return X.join(lag, lsuffix="_x", rsuffix="_y")
+            lags = [X[list(variables)].shift(periods=periods, fill_value=fill_value)]
+        else:
+            lags = [X[list(variables)].shift(freq=fr) for fr in freq]
         # joining one lag at a time is faster than aligning all lags at once.
-        n_vars = len(variables)
-        for i, fr in enumerate(freq):
-            lag = X[list(variables)].shift(freq=fr)
-            lag.columns = names[i * n_vars:(i + 1) * n_vars]
-            X = X.join(lag, lsuffix="_x", rsuffix="_y")
+        new_names = iter(names)
+        for lag in lags:
+            lag.columns = [next(new_names) for _ in lag.columns]
+            X = X.join(lag)
         # shift() does not take fill_value together with freq.
-        if fill_value is not None:
+        if freq is not None and fill_value is not None:
             X = X.fillna({name: fill_value for name in names})
-        return X
-
-    lags = list(zip([(var, pr) for pr in periods for var in variables], names))
-    if fill_value is None:
-        return X.with_columns(
-            nw.col(var).shift(pr).alias(name) for (var, pr), name in lags
-        )
-    elif X.implementation is nw.Implementation.POLARS:
-        # polars is faster than narwhals: it fills the rows that shift()
-        # introduces without copying the column.
-        col = nw.get_native_namespace(X).col
-        X_pl = X.to_native().with_columns(
-            col(var).shift(pr, fill_value=fill_value).alias(name)
-            for (var, pr), name in lags
-        )
-        return nw.from_native(X_pl, eager_only=True)
     else:
-        # narwhals' shift() has no fill_value. The mask is True in the first rows,
-        # which have no past values, so missing data in X is not filled.
-        return X.with_columns(
-            nw.when(nw.col(var).is_null().shift(pr).is_null())
-            .then(nw.lit(fill_value))
-            .otherwise(nw.col(var).shift(pr))
-            .alias(name)
-            for (var, pr), name in lags
-        )
+        lags = list(zip([(var, pr) for pr in periods for var in variables], names))
+        if fill_value is None:
+            X = X.with_columns(
+                nw.col(var).shift(pr).alias(name) for (var, pr), name in lags
+            )
+        elif X.implementation is nw.Implementation.POLARS:
+            # polars is faster than narwhals: it fills the rows that shift()
+            # introduces without copying the column.
+            col = nw.get_native_namespace(X).col
+            X_pl = X.to_native().with_columns(
+                col(var).shift(pr, fill_value=fill_value).alias(name)
+                for (var, pr), name in lags
+            )
+            X = nw.from_native(X_pl, eager_only=True)
+        else:
+            # narwhals' shift() has no fill_value. The mask is True in the first
+            # rows, which have no past values, so missing data in X is not filled.
+            X = X.with_columns(
+                nw.when(nw.col(var).is_null().shift(pr).is_null())
+                .then(nw.lit(fill_value))
+                .otherwise(nw.col(var).shift(pr))
+                .alias(name)
+                for (var, pr), name in lags
+            )
+
+    return X
