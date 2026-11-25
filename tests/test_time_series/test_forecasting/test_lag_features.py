@@ -21,25 +21,38 @@ DATES = pd.date_range("2020-05-15 12:00:00", periods=5, freq="15min")
 # the errors of the parameters from BaseForecastTransformer are tested in
 # test_base_forecast_transformer.py
 @pytest.mark.parametrize(
-    "periods", [-1, 0, None, [-1, 2, 3], [0.1, 1], 0.5, [0, 1], "1", (1, 2)]
+    "periods",
+    [-1, 0, None, True, [-1, 2, 3], [0.1, 1], 0.5, [0, 1], [True], [], "1", (1, 2)],
 )
 def test_error_if_periods_not_permitted(periods):
     msg = (
-        "periods must be an integer or a list of positive integers. "
-        f"Got {periods} instead."
+        "periods must be a positive integer or a non-empty list of positive "
+        f"integers. Got {periods} instead."
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
         LagFeatures(periods=periods)
 
 
 def test_error_if_periods_duplicated():
-    msg = "There are duplicated periods in the list: [1, 1, 2]"
+    msg = "There are duplicated periods in the list. Got [1, 1, 2] instead."
     with pytest.raises(ValueError, match=re.escape(msg)):
         LagFeatures(periods=[1, 1, 2])
 
 
+def test_error_if_freq_empty_list():
+    msg = (
+        "freq must be None, a frequency or a non-empty list of frequencies. "
+        "Got [] instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        LagFeatures(freq=[])
+
+
 def test_error_if_freq_duplicated():
-    msg = "There are duplicated freq values in the list: ['2h', '2h', '3h']"
+    msg = (
+        "There are duplicated freq values in the list. "
+        "Got ['2h', '2h', '3h'] instead."
+    )
     with pytest.raises(ValueError, match=re.escape(msg)):
         LagFeatures(freq=["2h", "2h", "3h"])
 
@@ -294,6 +307,18 @@ def test_lag_with_freq_with_pandas(df_time):
     )
     pd.testing.assert_frame_equal(Xt.head(5), expected, check_freq=False)
     assert len(Xt) == len(df_time)
+
+
+@pytest.mark.parametrize(
+    "freq", [pd.offsets.Minute(15), pd.Timedelta("15min"), [pd.offsets.Minute(15)]]
+)
+def test_lag_with_pandas_offsets_as_freq(df_time, freq):
+    Xt = LagFeatures(variables="ambient_temp", freq=freq).fit_transform(df_time)
+    expected = LagFeatures(variables="ambient_temp", freq="15min").fit_transform(
+        df_time
+    )
+
+    np.testing.assert_array_equal(Xt.iloc[:, -1], expected.iloc[:, -1])
 
 
 def test_lag_with_freq_on_irregular_index_with_pandas():

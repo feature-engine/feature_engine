@@ -191,22 +191,30 @@ class LagFeatures(BaseForecastTransformer):
         drop_na: bool = False,
     ) -> None:
 
-        if not (
-            isinstance(periods, int)
-            and periods > 0
-            or isinstance(periods, list)
-            and all(isinstance(num, int) and num > 0 for num in periods)
+        periods_list = periods if isinstance(periods, list) else [periods]
+        # bool is a subclass of int, but True is not a number of periods.
+        if len(periods_list) == 0 or not all(
+            isinstance(pr, int) and not isinstance(pr, bool) and pr > 0
+            for pr in periods_list
         ):
-
             raise ValueError(
-                "periods must be an integer or a list of positive integers. "
-                f"Got {periods} instead."
+                "periods must be a positive integer or a non-empty list of positive "
+                f"integers. Got {periods} instead."
             )
-        if isinstance(periods, list) and len(periods) != len(set(periods)):
-            raise ValueError(f"There are duplicated periods in the list: {periods}")
+        if len(periods_list) != len(set(periods_list)):
+            raise ValueError(
+                f"There are duplicated periods in the list. Got {periods} instead."
+            )
 
+        if isinstance(freq, list) and len(freq) == 0:
+            raise ValueError(
+                "freq must be None, a frequency or a non-empty list of frequencies. "
+                f"Got {freq} instead."
+            )
         if isinstance(freq, list) and len(freq) != len(set(freq)):
-            raise ValueError(f"There are duplicated freq values in the list: {freq}")
+            raise ValueError(
+                f"There are duplicated freq values in the list. Got {freq} instead."
+            )
 
         if not isinstance(sort_index, bool):
             raise ValueError(
@@ -240,7 +248,10 @@ class LagFeatures(BaseForecastTransformer):
         X = self._check_transform_input_and_state(X)
 
         periods = self.periods if isinstance(self.periods, list) else [self.periods]
-        freq = [self.freq] if isinstance(self.freq, str) else self.freq
+        if self.freq is None or isinstance(self.freq, list):
+            freq = self.freq
+        else:
+            freq = [self.freq]
         new_features = self._get_new_features_name()
         X = add_lag_features(
             X, self.variables_, periods, freq, self.fill_value, new_features

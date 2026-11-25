@@ -81,7 +81,7 @@ def add_lag_features(
     X: DataFrame,
     variables: Sequence[Union[str, int]],
     periods: List[int],
-    freq: Optional[List[str]],
+    freq: Optional[List[Any]],
     fill_value: Any,
     names: List[str],
 ) -> DataFrame:
@@ -100,7 +100,8 @@ def add_lag_features(
         The number of rows to shift. Used when `freq` is None.
 
     freq : list or None
-        The time spans to shift the pandas index by.
+        The time spans to shift the pandas index by: strings, like "1h", or pandas
+        offsets.
 
     fill_value :
         The value for the rows that have no past values. If None, they are missing.
