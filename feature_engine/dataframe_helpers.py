@@ -265,6 +265,37 @@ def missing_values_mask(
         return X.select(nw.col(var).is_null() for var in variables).to_numpy()
 
 
+def rows_with_missing_values(
+    X: DataFrame, variables: Sequence[Union[str, int]]
+) -> np.ndarray:
+    """
+    Returns which rows have missing values in any of the variables.
+
+    Parameters
+    ----------
+    X : pandas or narwhals dataframe
+        The dataframe returned by `check_X`.
+
+    variables : list
+        The names of the variables.
+
+    Returns
+    -------
+    mask : numpy array of shape = [n_samples]
+        True for the rows with at least one missing value.
+    """
+    # pandas is faster than narwhals.
+    if not isinstance(X, nw.DataFrame):
+        return X[list(variables)].isna().to_numpy().any(axis=1)
+    elif len(variables) == 0:
+        return np.zeros(X.shape[0], dtype=bool)
+    else:
+        is_missing = nw.any_horizontal(
+            (nw.col(var).is_null() for var in variables), ignore_nulls=True
+        )
+        return X.select(is_missing).to_numpy()[:, 0]
+
+
 def missing_values_count(
     X: DataFrame, variables: Sequence[Union[str, int]]
 ) -> List[int]:
