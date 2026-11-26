@@ -130,12 +130,26 @@ def test_get_feature_names_out(make_df):
     ]
     assert transformer.get_feature_names_out() == expected
     assert transformer.get_feature_names_out(input_features=original) == expected
+    # with pandas, the columns are an Index, not a list
+    assert transformer.get_feature_names_out(input_features=X.columns) == expected
 
     transformer = WindowFeatures(window=[2, 3], functions="mean").fit(X)
     assert transformer.get_feature_names_out() == original + [
         "x1_window_2_mean",
         "x2_window_2_mean",
         "x1_window_3_mean",
+        "x2_window_3_mean",
+    ]
+
+    transformer = WindowFeatures(window=[2, 3], functions=["sum", "mean"]).fit(X)
+    assert transformer.get_feature_names_out() == original + [
+        "x1_window_2_sum",
+        "x1_window_2_mean",
+        "x2_window_2_sum",
+        "x2_window_2_mean",
+        "x1_window_3_sum",
+        "x1_window_3_mean",
+        "x2_window_3_sum",
         "x2_window_3_mean",
     ]
 
@@ -160,9 +174,12 @@ def test_error_if_input_features_not_list(make_df):
 
 def test_multiple_windows_and_functions(make_df):
     X = make_df(DATA)
-    Xt = WindowFeatures(window=[2, 3], functions=["sum", "mean"]).fit_transform(X)
+    transformer = WindowFeatures(window=[2, 3], functions=["sum", "mean"])
+    Xt = transformer.fit_transform(X)
 
     assert isinstance(Xt, make_df)
+    # the dicts below don't check the order of the columns
+    assert list(Xt.columns) == transformer.get_feature_names_out()
     assert frame_to_dict(Xt) == {
         **DATA,
         "x1_window_2_sum": [None, None, 3.0, 6.0, 11.0, 18.0, 27.0],
@@ -333,6 +350,19 @@ def test_drop_na(make_df):
     }
 
 
+def test_drop_original_and_drop_na(make_df):
+    X = make_df(DATA)
+    transformer = WindowFeatures(window=2, drop_original=True, drop_na=True)
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "cat": ["c", "d", "e", "f", "g"],
+        "x1_window_2_mean": [1.5, 3.0, 5.5, 9.0, 13.5],
+        "x2_window_2_mean": [15.0, 25.0, 35.0, 45.0, 55.0],
+    }
+
+
 def test_transform_x_y(make_df):
     X = make_df(DATA)
     y = make_series(make_df, [1, 2, 3, 4, 5, 6, 7], name="y")
@@ -382,6 +412,26 @@ def test_freq_with_pandas(df_time, df_time_expected):
     expected = df_time_expected.assign(
         ambient_temp_window_2_sum=[np.nan] * 4 + [62.82, 63.66, 64.54, 65.01],
         irradiation_window_2_sum=[np.nan] * 4 + [1.3, 1.44, 1.41, 1.18],
+    )
+    pd.testing.assert_frame_equal(Xt, expected, check_freq=False)
+
+
+def test_multiple_windows_with_periods_and_freq_with_pandas(df_time, df_time_expected):
+    transformer = WindowFeatures(
+        variables="irradiation",
+        window=[2, 3],
+        functions=["sum", "mean"],
+        periods=30,
+        freq="min",
+    )
+    Xt = transformer.fit_transform(df_time).head(8)
+
+    # 30 periods of 1 minute shift the windows by 2 rows, which are 15 minutes apart
+    expected = df_time_expected.assign(
+        irradiation_window_2_sum=[np.nan] * 3 + [1.3, 1.44, 1.41, 1.18, 0.91],
+        irradiation_window_2_mean=[np.nan] * 3 + [0.65, 0.72, 0.705, 0.59, 0.455],
+        irradiation_window_3_sum=[np.nan] * 4 + [1.95, 2.2, 1.83, 1.67],
+        irradiation_window_3_mean=[np.nan] * 4 + [0.65, 2.2 / 3, 0.61, 1.67 / 3],
     )
     pd.testing.assert_frame_equal(Xt, expected, check_freq=False)
 

@@ -307,11 +307,14 @@ class WindowFeatures(BaseForecastTransformer):
 
         if len(self.variables_) > 0:
             windows = self.window if isinstance(self.window, list) else [self.window]
+            functions = (
+                self.functions if isinstance(self.functions, list) else [self.functions]
+            )
             X = add_window_features(
                 X,
                 self.variables_,
                 windows,
-                self._functions_list(),
+                functions,
                 self.min_periods,
                 self.periods,
                 self.freq,
@@ -327,29 +330,15 @@ class WindowFeatures(BaseForecastTransformer):
 
         return nw.to_native(X, pass_through=True)
 
-    def _functions_list(self) -> List[str]:
-        """Return the functions as a list."""
-        if isinstance(self.functions, list):
-            return self.functions
-        return [self.functions]
-
     def _get_new_features_name(self) -> List:
         """Get names of the window features."""
-
-        functions_ = self._functions_list()
-
-        if isinstance(self.window, list):
-            feature_names = [
-                f"{feature}_window_{win}_{agg}"
-                for win in self.window
-                for feature in self.variables_
-                for agg in functions_
-            ]
-        else:
-            feature_names = [
-                f"{feature}_window_{self.window}_{agg}"
-                for feature in self.variables_
-                for agg in functions_
-            ]
-
-        return feature_names
+        windows = self.window if isinstance(self.window, list) else [self.window]
+        functions = (
+            self.functions if isinstance(self.functions, list) else [self.functions]
+        )
+        return [
+            f"{feature}_window_{win}_{agg}"
+            for win in windows
+            for feature in self.variables_
+            for agg in functions
+        ]

@@ -223,30 +223,28 @@ def check_window_parameters(
         The minimum number of values in a window to return a value.
     """
     # only pandas has an index, and pandas supports every window.
-    if not isinstance(X, nw.DataFrame):
-        return
-
-    windows = window if isinstance(window, list) else [window]
-    if not all(isinstance(win, int) for win in windows):
-        raise NotImplementedError(
-            "Time spans in window, like '3D', are only supported with pandas "
-            "dataframes, because they use the dataframe's DatetimeIndex. With "
-            "other dataframes, window takes integers, the number of rows in "
-            f"each window. Got {window} instead."
-        )
-    function_list = functions if isinstance(functions, list) else [functions]
-    supported = sorted([*_NW_ROLLING, *_POLARS_ROLLING, *_POLARS_ROW_WINDOWS])
-    if not all(function in supported for function in function_list):
-        raise NotImplementedError(
-            "With dataframes other than pandas, functions takes only "
-            f"{supported}. Got {functions} instead."
-        )
-    if min_periods == 0:
-        raise NotImplementedError(
-            "min_periods=0 is only supported with pandas dataframes. With "
-            "other dataframes, min_periods takes integers greater than 0 or "
-            f"None. Got {min_periods} instead."
-        )
+    if isinstance(X, nw.DataFrame):
+        windows = window if isinstance(window, list) else [window]
+        if not all(isinstance(win, int) for win in windows):
+            raise NotImplementedError(
+                "Time spans in window, like '3D', are only supported with pandas "
+                "dataframes, because they use the dataframe's DatetimeIndex. With "
+                "other dataframes, window takes integers, the number of rows in "
+                f"each window. Got {window} instead."
+            )
+        function_list = functions if isinstance(functions, list) else [functions]
+        supported = sorted([*_NW_ROLLING, *_POLARS_ROLLING, *_POLARS_ROW_WINDOWS])
+        if not all(function in supported for function in function_list):
+            raise NotImplementedError(
+                "With dataframes other than pandas, functions takes only "
+                f"{supported}. Got {functions} instead."
+            )
+        if min_periods == 0:
+            raise NotImplementedError(
+                "min_periods=0 is only supported with pandas dataframes. With "
+                "other dataframes, min_periods takes integers greater than 0 or "
+                f"None. Got {min_periods} instead."
+            )
 
 
 def add_window_features(
