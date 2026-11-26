@@ -162,3 +162,15 @@ def test_inverse_transform_when_ignore_unseen():
     enc = MockClass(unseen="ignore")
     pd.testing.assert_frame_equal(enc.transform(input_df), output_df)
     pd.testing.assert_frame_equal(enc.inverse_transform(output_df), inverse_df)
+
+
+def test_inverse_transform_warns_when_categories_share_a_code():
+    enc = MockClass()
+    enc.encoder_dict_ = {"words": {"dog": 1, "dig": 0, "cat": 0}}
+    msg = (
+        "Some categories of words were encoded to the same value. "
+        "inverse_transform will return only one of those categories for all of them."
+    )
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        X = enc.inverse_transform(pd.DataFrame({"words": [1, 0, 0]}))
+    pd.testing.assert_frame_equal(X, pd.DataFrame({"words": ["dog", "cat", "cat"]}))
