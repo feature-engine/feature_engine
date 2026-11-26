@@ -509,6 +509,45 @@ which returns the following output:
     [True, True, False, True, False, True, True, True]
 
 
+With polars
+~~~~~~~~~~~
+
+:class:`MRMR()` also works with polars dataframes. It selects the same features and returns
+a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from sklearn.datasets import load_breast_cancer
+    from feature_engine.selection import MRMR
+
+    data = load_breast_cancer()
+    X = pl.DataFrame(data.data, schema=list(data.feature_names), orient="row")
+    y = pl.Series("target", data.target)
+
+    sel = MRMR(method="FCQ", regression=False)
+    Xtr = sel.fit_transform(X, y)
+    print(Xtr.head())
+
+In the following output we see the 6 selected features, the same ones that we obtained with
+pandas in the F-statistic example:
+
+.. code:: text
+
+    shape: (5, 6)
+    ┌────────────────┬──────────────┬──────────────┬─────────────────┬────────────┬───────────────┐
+    │ mean perimeter ┆ mean concave ┆ worst radius ┆ worst perimeter ┆ worst area ┆ worst concave │
+    │ ---            ┆ points       ┆ ---          ┆ ---             ┆ ---        ┆ points        │
+    │ f64            ┆ ---          ┆ f64          ┆ f64             ┆ f64        ┆ ---           │
+    │                ┆ f64          ┆              ┆                 ┆            ┆ f64           │
+    ╞════════════════╪══════════════╪══════════════╪═════════════════╪════════════╪═══════════════╡
+    │ 122.8          ┆ 0.1471       ┆ 25.38        ┆ 184.6           ┆ 2019.0     ┆ 0.2654        │
+    │ 132.9          ┆ 0.07017      ┆ 24.99        ┆ 158.8           ┆ 1956.0     ┆ 0.186         │
+    │ 130.0          ┆ 0.1279       ┆ 23.57        ┆ 152.5           ┆ 1709.0     ┆ 0.243         │
+    │ 77.58          ┆ 0.1052       ┆ 14.91        ┆ 98.87           ┆ 567.7      ┆ 0.2575        │
+    │ 135.1          ┆ 0.1043       ┆ 22.54        ┆ 152.2           ┆ 1575.0     ┆ 0.1625        │
+    └────────────────┴──────────────┴──────────────┴─────────────────┴────────────┴───────────────┘
+
 Considerations
 --------------
 
