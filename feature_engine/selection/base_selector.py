@@ -1,10 +1,12 @@
+import narwhals as nw
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.dataframe_helpers import drop_variables_from_df, subset_df
 from feature_engine.tags import _return_tags
 
 
@@ -41,41 +43,33 @@ class BaseSelector(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         self.confirm_variables = confirm_variables
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Return dataframe with selected features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The input dataframe.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_selected_features]
-            Pandas dataframe with the selected features.
+        X_new: dataframe of shape = [n_samples, n_selected_features]
+            The dataframe with the selected features, in the same library as the
+            input.
         """
-
-        # check if fit is performed prior to transform
         check_is_fitted(self)
-
-        # check if input is a dataframe
         X = check_X(X)
-
-        # check if number of columns in test dataset matches to train dataset
         _check_X_matches_training_df(X, self.n_features_in_)
+        X = subset_df(X, self.feature_names_in_)
+        X = drop_variables_from_df(X, self.features_to_drop_)
+        return nw.to_native(X, pass_through=True)
 
-        # reorder df to match train set
-        X = X[self.feature_names_in_]
+    def _get_feature_names_in(self, X: IntoDataFrame):
+        """Get the names and number of features in the train set (the dataframe
+        used during fit)."""
 
-        # return the dataframe with the selected features
-        return X.drop(columns=self.features_to_drop_)
-
-    def _get_feature_names_in(self, X):
-        """Get the names and number of features in the train set. The dataframe
-        used during fit."""
-
-        self.feature_names_in_ = X.columns.to_list()
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
