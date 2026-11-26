@@ -1,634 +1,537 @@
+import re
+
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
-from pandas.testing import assert_frame_equal
 
 from feature_engine.timeseries.forecasting import WindowFeatures
+from tests.backend_helpers import frame_to_dict, make_series
 
-_date_time = [
-    pd.Timestamp("2020-05-15 12:00:00"),
-    pd.Timestamp("2020-05-15 12:15:00"),
-    pd.Timestamp("2020-05-15 12:30:00"),
-    pd.Timestamp("2020-05-15 12:45:00"),
-    pd.Timestamp("2020-05-15 13:00:00"),
-    pd.Timestamp("2020-05-15 13:15:00"),
-    pd.Timestamp("2020-05-15 13:30:00"),
-    pd.Timestamp("2020-05-15 13:45:00"),
-    pd.Timestamp("2020-05-15 14:00:00"),
-]
+DATA = {
+    "x1": [1.0, 2.0, 4.0, 7.0, 11.0, 16.0, 22.0],
+    "x2": [10, 20, 30, 40, 50, 60, 70],
+    "cat": ["a", "b", "c", "d", "e", "f", "g"],
+}
 
+PANDAS_MAJOR = int(pd.__version__.split(".")[0])
+# pandas < 3 has no rolling first, last and nunique, and its sem divides by n - 1.
+PANDAS_3_FUNCTIONS = ["first", "last", "nunique", "sem"]
 
-@pytest.mark.parametrize("_window", [[2, 2, 3], ["45min", "45min", "30min"]])
-def test_error_when_duplicated_windows(_window):
-    with pytest.raises(ValueError):
-        WindowFeatures(window=_window)
-
-
-@pytest.mark.parametrize("_periods", [1, 2, 3])
-def test_permitted_param_periods(_periods):
-    transformer = WindowFeatures(periods=_periods)
-    assert transformer.periods == _periods
+MSG_POLARS_FUNCTIONS = (
+    "With dataframes other than pandas, functions takes only ['count', 'first', "
+    "'kurt', 'last', 'max', 'mean', 'median', 'min', 'nunique', 'rank', 'sem', "
+    "'skew', 'std', 'sum', 'var']. "
+)
 
 
-@pytest.mark.parametrize("_periods", ["pizza", 3.33, ["mate", "cumbia"], None])
-def test_error_when_non_permitted_param_periods(_periods):
-    with pytest.raises(ValueError):
-        WindowFeatures(periods=_periods)
+# init parameters
+@pytest.mark.parametrize("window", [0, -1, True, [], [3, 0], [2, False]])
+def test_error_if_window_not_permitted(window):
+    msg = (
+        "window must be a positive integer, a time span or a non-empty list of "
+        f"them. Got {window} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(window=window)
+
+
+@pytest.mark.parametrize("window", [[2, 2, 3], ["45min", "45min", "30min"]])
+def test_error_if_window_duplicated(window):
+    msg = f"There are duplicated windows in the list. Got {window} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(window=window)
+
+
+@pytest.mark.parametrize("min_periods", [-1, 1.5, "1", True, [1]])
+def test_error_if_min_periods_not_permitted(min_periods):
+    msg = (
+        "min_periods must be None or a non-negative integer. "
+        f"Got {min_periods} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(min_periods=min_periods)
 
 
 @pytest.mark.parametrize(
-    "_functions", ["mean", "std", ["sum", "mean"], ["sum", "mean", "count"]]
+    "functions", [3.33, [1, "mean"], None, ("mean", "sum"), [], ""]
 )
-def test_permitted_param_functions(_functions):
-    transformer = WindowFeatures(functions=_functions)
-    assert transformer.functions == _functions
+def test_error_if_functions_not_string_or_list(functions):
+    msg = (
+        "functions must be a string or a non-empty list of strings. "
+        f"Got {functions} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(functions=functions)
+
+
+@pytest.mark.parametrize("functions", [["sum", "sum", "mean"], ["max", "max"]])
+def test_error_if_functions_duplicated(functions):
+    msg = f"There are duplicated functions in the list. Got {functions} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(functions=functions)
 
 
 @pytest.mark.parametrize(
-    "_functions", [3.33, [1, "mean"], None, ["sum", "sum", "mean"]]
+    "periods", ["pizza", 3.33, ["mate", "cumbia"], None, 0, -1, True]
 )
-def test_error_when_non_permitted_param_functions(_functions):
-    with pytest.raises(ValueError):
-        WindowFeatures(functions=_functions)
+def test_error_if_periods_not_positive_integer(periods):
+    msg = f"periods must be a positive integer. Got {periods} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(periods=periods)
 
 
-@pytest.mark.parametrize("_drop_or", [-1, [0], None, 7, "hola"])
-def test_error_when_non_permitted_param_drop_original(_drop_or):
-    with pytest.raises(ValueError):
-        WindowFeatures(drop_original=_drop_or)
+@pytest.mark.parametrize("sort_index", [-1, 1, None, "hola", [True]])
+def test_error_if_sort_index_not_bool(sort_index):
+    msg = f"sort_index takes values True and False. Got {sort_index} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(sort_index=sort_index)
 
 
-@pytest.mark.parametrize("_drop_na", [-1, [0], None, 7, "hola"])
-def test_error_when_non_permitted_param_drop_na(_drop_na):
-    with pytest.raises(ValueError):
-        WindowFeatures(drop_na=_drop_na)
-
-
-def test_get_feature_names_out(df_time):
-    # input features
-    original_features = ["ambient_temp", "module_temp", "irradiation", "color"]
-
-    # case 1: 1 window, multiple variables, multiple functions
-    tr = WindowFeatures(window=3, functions=["mean", "sum"])
-    tr.fit(df_time)
-
-    # expected
-    output = [
-        "ambient_temp_window_3_mean",
-        "ambient_temp_window_3_sum",
-        "module_temp_window_3_mean",
-        "module_temp_window_3_sum",
-        "irradiation_window_3_mean",
-        "irradiation_window_3_sum",
-    ]
-    output = original_features + output
-    assert tr.get_feature_names_out(input_features=None) == output
-    assert tr.get_feature_names_out(input_features=original_features) == output
-
-    with pytest.raises(ValueError):
-        # get error when a user passes a string instead of list
-        tr.get_feature_names_out(input_features=["ambient_temp"])
-
-    with pytest.raises(ValueError):
-        # assert error when uses passes features that were not transformed
-        tr.get_feature_names_out(input_features=["color"])
-
-    # case 2: 1 window, 1 variable, multiple functions
-    tr = WindowFeatures(
-        variables="ambient_temp", window=2, functions=["sum", "mean", "count"]
-    )
-    tr.fit(df_time)
-
-    # expected
-    output = [
-        "ambient_temp_window_2_sum",
-        "ambient_temp_window_2_mean",
-        "ambient_temp_window_2_count",
-    ]
-    output = original_features + output
-    assert tr.get_feature_names_out(input_features=None) == output
-    assert tr.get_feature_names_out(input_features=df_time.columns) == output
-
-    # case 3: multiple windows, multiple variables, multiple functions
-    tr = WindowFeatures(window=[2, 3], functions=["mean", "sum"])
-    tr.fit(df_time)
-
-    # expected
-    output = [
-        "ambient_temp_window_2_mean",
-        "ambient_temp_window_2_sum",
-        "module_temp_window_2_mean",
-        "module_temp_window_2_sum",
-        "irradiation_window_2_mean",
-        "irradiation_window_2_sum",
-        "ambient_temp_window_3_mean",
-        "ambient_temp_window_3_sum",
-        "module_temp_window_3_mean",
-        "module_temp_window_3_sum",
-        "irradiation_window_3_mean",
-        "irradiation_window_3_sum",
-    ]
-    output = original_features + output
-    assert tr.get_feature_names_out(input_features=None) == output
-    assert tr.get_feature_names_out(input_features=original_features) == output
-
-    # case 4: 1 window, multiple variables, 1 function
-    tr = WindowFeatures(window=2, functions=["mean"])
-    tr.fit(df_time)
-
-    # expected
-    output = [
-        "ambient_temp_window_2_mean",
-        "module_temp_window_2_mean",
-        "irradiation_window_2_mean",
-    ]
-    output = original_features + output
-    assert tr.get_feature_names_out(input_features=None) == output
-
-    # case 5: When function is a string
-    tr = WindowFeatures(window=2, functions="mean")
-    tr.fit(df_time)
-
-    # expected
-    output = [
-        "ambient_temp_window_2_mean",
-        "module_temp_window_2_mean",
-        "irradiation_window_2_mean",
-    ]
-    output = original_features + output
-    assert tr.get_feature_names_out(input_features=None) == output
-    assert tr.get_feature_names_out(input_features=original_features) == output
-
-    # case 6: drop_original is True
-    tr = WindowFeatures(window=2, functions="mean", drop_original=True)
-    tr.fit(df_time)
-
-    # expected
-    output = [
-        "ambient_temp_window_2_mean",
-        "module_temp_window_2_mean",
-        "irradiation_window_2_mean",
-    ]
-    assert tr.get_feature_names_out(input_features=None) == ["color"] + output
-    assert (
-        tr.get_feature_names_out(input_features=original_features) == ["color"] + output
-    )
-
-
-def test_single_window_when_using_periods(df_time):
-
-    expected_results = {
-        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76],
-        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
-        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56, 0.74],
-        "color": [
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-        ],
-        "ambient_temp_window_3_median": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            31.51,
-            32.15,
-            32.39,
-            32.5,
-            32.52,
-        ],
-        "module_temp_window_3_median": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            49.84,
-            50.63,
-            50.63,
-            49.61,
-            47.01,
-        ],
-        "irradiation_window_3_median": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            0.65,
-            0.76,
-            0.65,
-            0.49,
-            0.49,
-        ],
-    }
-    expected_results_df = pd.DataFrame(data=expected_results, index=_date_time)
-
-    # Case 1: automatically select variables
-    transformer = WindowFeatures(window=3, functions=["median"], periods=2)
-    df_tr = transformer.fit_transform(df_time)
-
-    assert df_tr.head(9).equals(expected_results_df)
-
-    # Case 2: when drop_original is true
+@pytest.mark.parametrize(
+    "window, min_periods, functions, periods, freq, sort_index, missing_values, "
+    "drop_original, drop_na",
+    [
+        (3, None, "mean", 1, None, True, "raise", False, False),
+        ([2, 3], 0, ["sum", "mean", "count"], 2, "15min", False, "ignore", True, False),
+        (["45min", "30min"], 2, ["std"], 3, "1h", True, "ignore", False, True),
+    ],
+)
+def test_init_param_assignment(
+    window,
+    min_periods,
+    functions,
+    periods,
+    freq,
+    sort_index,
+    missing_values,
+    drop_original,
+    drop_na,
+):
     transformer = WindowFeatures(
-        window=3, functions=["median"], periods=2, drop_original=True
+        window=window,
+        min_periods=min_periods,
+        functions=functions,
+        periods=periods,
+        freq=freq,
+        sort_index=sort_index,
+        missing_values=missing_values,
+        drop_original=drop_original,
+        drop_na=drop_na,
     )
-    df_tr = transformer.fit_transform(df_time)
-
-    assert df_tr.head(9).equals(
-        expected_results_df.drop(["ambient_temp", "module_temp", "irradiation"], axis=1)
-    )
-
-    # Case 3: user indicates multiple variables
-    transformer = WindowFeatures(
-        variables=["module_temp", "irradiation"],
-        window=3,
-        functions="median",
-        periods=2,
-    )
-    transformer.fit(df_time)
-    df_tr = transformer.transform(df_time)
-
-    assert df_tr.head(9).equals(
-        expected_results_df.drop(["ambient_temp_window_3_median"], axis=1)
-    )
-
-    # Case 4: user indicates 1 variable
-    transformer = WindowFeatures(
-        variables=["module_temp"], window=3, functions=["median"], periods=2
-    )
-    transformer.fit(df_time)
-    df_tr = transformer.transform(df_time)
-
-    assert df_tr.head(9).equals(
-        expected_results_df.drop(
-            ["ambient_temp_window_3_median", "irradiation_window_3_median"], axis=1
-        )
-    )
+    assert transformer.window == window
+    assert transformer.min_periods == min_periods
+    assert transformer.functions == functions
+    assert transformer.periods == periods
+    assert transformer.freq == freq
+    assert transformer.sort_index == sort_index
+    assert transformer.missing_values == missing_values
+    assert transformer.drop_original == drop_original
+    assert transformer.drop_na == drop_na
 
 
-def test_single_window_when_using_freq(df_time):
+# fit and transform
+def test_get_feature_names_out(make_df):
+    X = make_df(DATA)
+    original = ["x1", "x2", "cat"]
 
-    expected_results = {
-        "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68, 33.76],
-        "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52, 49.8],
-        "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56, 0.74],
-        "color": [
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-        ],
-        "ambient_temp_window_2_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            62.82,
-            63.66,
-            64.54,
-            65.01,
-            65.12,
-        ],
-        "module_temp_window_2_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            99.02,
-            102.19,
-            102.98,
-            100.24,
-            96.62,
-        ],
-        "irradiation_window_2_sum": [
-            np.nan,
-            np.nan,
-            np.nan,
-            np.nan,
-            1.3,
-            1.44,
-            1.41,
-            1.18,
-            0.91,
-        ],
+    transformer = WindowFeatures(window=3, functions=["mean", "sum"]).fit(X)
+    expected = original + [
+        "x1_window_3_mean",
+        "x1_window_3_sum",
+        "x2_window_3_mean",
+        "x2_window_3_sum",
+    ]
+    assert transformer.get_feature_names_out() == expected
+    assert transformer.get_feature_names_out(input_features=original) == expected
+    # with pandas, the columns are an Index, not a list
+    assert transformer.get_feature_names_out(input_features=X.columns) == expected
+
+    transformer = WindowFeatures(window=[2, 3], functions="mean").fit(X)
+    assert transformer.get_feature_names_out() == original + [
+        "x1_window_2_mean",
+        "x2_window_2_mean",
+        "x1_window_3_mean",
+        "x2_window_3_mean",
+    ]
+
+    transformer = WindowFeatures(window=[2, 3], functions=["sum", "mean"]).fit(X)
+    assert transformer.get_feature_names_out() == original + [
+        "x1_window_2_sum",
+        "x1_window_2_mean",
+        "x2_window_2_sum",
+        "x2_window_2_mean",
+        "x1_window_3_sum",
+        "x1_window_3_mean",
+        "x2_window_3_sum",
+        "x2_window_3_mean",
+    ]
+
+    transformer = WindowFeatures(variables="x2", drop_original=True).fit(X)
+    assert transformer.get_feature_names_out() == ["x1", "cat", "x2_window_3_mean"]
+
+
+@pytest.mark.parametrize("input_features", [["x1"], ["cat"]])
+def test_error_if_input_features_differ_from_fit(make_df, input_features):
+    transformer = WindowFeatures().fit(make_df(DATA))
+    msg = "input_features is not equal to feature_names_in_"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.get_feature_names_out(input_features=input_features)
+
+
+def test_error_if_input_features_not_list(make_df):
+    transformer = WindowFeatures().fit(make_df(DATA))
+    msg = "input_features must be a list or an array. Got x1 instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        transformer.get_feature_names_out(input_features="x1")
+
+
+def test_multiple_windows_and_functions(make_df):
+    X = make_df(DATA)
+    transformer = WindowFeatures(window=[2, 3], functions=["sum", "mean"])
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    # the dicts below don't check the order of the columns
+    assert list(Xt.columns) == transformer.get_feature_names_out()
+    assert frame_to_dict(Xt) == {
+        **DATA,
+        "x1_window_2_sum": [None, None, 3.0, 6.0, 11.0, 18.0, 27.0],
+        "x1_window_2_mean": [None, None, 1.5, 3.0, 5.5, 9.0, 13.5],
+        "x2_window_2_sum": [None, None, 30, 50, 70, 90, 110],
+        "x2_window_2_mean": [None, None, 15.0, 25.0, 35.0, 45.0, 55.0],
+        "x1_window_3_sum": [None, None, None, 7.0, 13.0, 22.0, 34.0],
+        "x1_window_3_mean": pytest.approx(
+            [None, None, None, 7 / 3, 13 / 3, 22 / 3, 34 / 3]
+        ),
+        "x2_window_3_sum": [None, None, None, 60, 90, 120, 150],
+        "x2_window_3_mean": [None, None, None, 20.0, 30.0, 40.0, 50.0],
     }
 
-    expected_results_df = pd.DataFrame(data=expected_results, index=_date_time)
 
-    # Case 1: automatically select variables
-    transformer = WindowFeatures(window=2, functions=["sum"], freq="45min")
-    df_tr = transformer.fit_transform(df_time)
+@pytest.mark.parametrize(
+    "function, expected",
+    [
+        ("count", [4.0, 4.0, 4.0]),
+        ("sum", [14.0, 24.0, 38.0]),
+        ("mean", [3.5, 6.0, 9.5]),
+        ("median", [3.0, 5.5, 9.0]),
+        ("var", [7.0, 15.333333, 27.0]),
+        ("std", [2.645751, 3.915780, 5.196152]),
+        ("min", [1.0, 2.0, 4.0]),
+        ("max", [7.0, 11.0, 16.0]),
+        ("skew", [0.863919, 0.599581, 0.456178]),
+        ("kurt", [-0.285714, -0.768431, -0.951989]),
+        ("sem", [1.322876, 1.957890, 2.598076]),
+        ("first", [1.0, 2.0, 4.0]),
+        ("last", [7.0, 11.0, 16.0]),
+        ("nunique", [4.0, 4.0, 4.0]),
+        ("rank", [4.0, 4.0, 4.0]),
+    ],
+)
+def test_functions(make_df, function, expected):
+    if function in PANDAS_3_FUNCTIONS and make_df is pd.DataFrame and PANDAS_MAJOR < 3:
+        pytest.skip(f"{function} needs pandas 3")
+    X = make_df(DATA)
+    Xt = WindowFeatures(variables="x1", window=4, functions=function).fit_transform(X)
 
-    assert df_tr.head(9).round(3).equals(expected_results_df)
+    assert isinstance(Xt, make_df)
+    # the first window with 4 rows is shifted to the fifth row
+    assert frame_to_dict(Xt)[f"x1_window_4_{function}"] == pytest.approx(
+        [None, None, None, None] + expected, abs=1e-6
+    )
 
-    # Case 2: when drop_original is true
+
+@pytest.mark.parametrize(
+    "function, expected",
+    [
+        ("first", [1.0, 3.0, 3.0]),
+        ("last", [3.0, 3.0, 3.0]),
+        ("nunique", [2, 1, 1]),
+        # the value of the fifth row's window is missing, so it has no rank
+        ("rank", [2.0, 1.5, None]),
+        ("sem", [1.0, 0, 0]),
+    ],
+)
+def test_functions_skip_missing_values(make_df, function, expected):
+    if function in PANDAS_3_FUNCTIONS and make_df is pd.DataFrame and PANDAS_MAJOR < 3:
+        pytest.skip(f"{function} needs pandas 3")
+    X = make_df({"x1": [1.0, None, 3.0, 3.0, None, 5.0]})
     transformer = WindowFeatures(
-        window=2, functions=["sum"], freq="45min", drop_original=True
+        window=3, min_periods=2, functions=function, missing_values="ignore"
     )
-    df_tr = transformer.fit_transform(df_time)
+    Xt = transformer.fit_transform(X)
 
-    assert (
-        df_tr.head(9)
-        .round(3)
-        .equals(
-            expected_results_df.drop(
-                ["ambient_temp", "module_temp", "irradiation"], axis=1
-            )
-        )
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt)[f"x1_window_3_{function}"] == pytest.approx(
+        [None, None, None] + expected
     )
 
-    # Case 3: user indicates multiple variables
+
+def test_periods(make_df):
+    X = make_df(DATA)
+    Xt = WindowFeatures(window=2, functions="max", periods=3).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        **DATA,
+        "x1_window_2_max": [None, None, None, None, 2.0, 4.0, 7.0],
+        "x2_window_2_max": [None, None, None, None, 20, 30, 40],
+    }
+
+
+def test_min_periods(make_df):
+    X = make_df(DATA)
+    Xt = WindowFeatures(window=3, min_periods=1).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        **DATA,
+        "x1_window_3_mean": pytest.approx(
+            [None, 1.0, 1.5, 7 / 3, 13 / 3, 22 / 3, 34 / 3]
+        ),
+        "x2_window_3_mean": [None, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0],
+    }
+
+
+def test_min_periods_with_multiple_windows(make_df):
+    X = make_df(DATA)
+    Xt = WindowFeatures(variables="x2", window=[2, 3], min_periods=2).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        **DATA,
+        "x2_window_2_mean": [None, None, 15.0, 25.0, 35.0, 45.0, 55.0],
+        "x2_window_3_mean": [None, None, 15.0, 20.0, 30.0, 40.0, 50.0],
+    }
+
+
+@pytest.mark.parametrize(
+    "min_periods, mean, count",
+    [
+        (
+            None,
+            [None, None, None, None, None, None, 34 / 3],
+            [None, None, None, 2.0, 2.0, 2.0, 3.0],
+        ),
+        (
+            2,
+            [None, None, 1.5, 1.5, 4.5, 9.0, 34 / 3],
+            [None, None, 2.0, 2.0, 2.0, 2.0, 3.0],
+        ),
+    ],
+)
+def test_missing_values_ignored(make_df, min_periods, mean, count):
+    X = make_df({**DATA, "x1": [1.0, 2.0, None, 7.0, 11.0, 16.0, 22.0]})
+    transformer = WindowFeatures(
+        variables="x1",
+        functions=["mean", "count"],
+        min_periods=min_periods,
+        missing_values="ignore",
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    # windows with missing data need min_periods rows with data
+    assert frame_to_dict(Xt)["x1_window_3_mean"] == pytest.approx(mean)
+    assert frame_to_dict(Xt)["x1_window_3_count"] == count
+
+
+def test_drop_original(make_df):
+    X = make_df(DATA)
+    Xt = WindowFeatures(window=2, drop_original=True).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "cat": DATA["cat"],
+        "x1_window_2_mean": [None, None, 1.5, 3.0, 5.5, 9.0, 13.5],
+        "x2_window_2_mean": [None, None, 15.0, 25.0, 35.0, 45.0, 55.0],
+    }
+
+
+def test_drop_na(make_df):
+    X = make_df(DATA)
+    Xt = WindowFeatures(window=[2, 4], functions="min", drop_na=True).fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "x1": [11.0, 16.0, 22.0],
+        "x2": [50, 60, 70],
+        "cat": ["e", "f", "g"],
+        "x1_window_2_min": [4.0, 7.0, 11.0],
+        "x2_window_2_min": [30, 40, 50],
+        "x1_window_4_min": [1.0, 2.0, 4.0],
+        "x2_window_4_min": [10, 20, 30],
+    }
+
+
+def test_drop_original_and_drop_na(make_df):
+    X = make_df(DATA)
+    transformer = WindowFeatures(window=2, drop_original=True, drop_na=True)
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "cat": ["c", "d", "e", "f", "g"],
+        "x1_window_2_mean": [1.5, 3.0, 5.5, 9.0, 13.5],
+        "x2_window_2_mean": [15.0, 25.0, 35.0, 45.0, 55.0],
+    }
+
+
+def test_transform_x_y(make_df):
+    X = make_df(DATA)
+    y = make_series(make_df, [1, 2, 3, 4, 5, 6, 7], name="y")
+    transformer = WindowFeatures(window=4, drop_na=True).fit(X)
+
+    Xt, yt = transformer.transform_x_y(X, y)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == frame_to_dict(transformer.transform(X))
+    assert list(yt) == [5, 6, 7]
+
+
+def test_return_empty_without_numerical_variables(make_df):
+    X = make_df({"cat": DATA["cat"]})
+    transformer = WindowFeatures(
+        window=[2, 3], functions=["mean", "max"], return_empty=True
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"cat": DATA["cat"]}
+
+
+# pandas: the index orders the rows in time and allows time spans and freq
+@pytest.fixture
+def df_time_expected():
+    return pd.DataFrame(
+        {
+            "ambient_temp": [31.31, 31.51, 32.15, 32.39, 32.62, 32.5, 32.52, 32.68],
+            "module_temp": [49.18, 49.84, 52.35, 50.63, 49.61, 47.01, 46.67, 47.52],
+            "irradiation": [0.51, 0.79, 0.65, 0.76, 0.42, 0.49, 0.57, 0.56],
+            "color": ["blue"] * 8,
+        },
+        index=pd.date_range("2020-05-15 12:00:00", periods=8, freq="15min"),
+    )
+
+
+def test_freq_with_pandas(df_time, df_time_expected):
     transformer = WindowFeatures(
         variables=["ambient_temp", "irradiation"],
         window=2,
         functions="sum",
         freq="45min",
     )
-    df_tr = transformer.fit_transform(df_time)
+    Xt = transformer.fit_transform(df_time).head(8)
 
-    assert (
-        df_tr.head(9)
-        .round(3)
-        .equals(expected_results_df.drop(["module_temp_window_2_sum"], axis=1))
+    expected = df_time_expected.assign(
+        ambient_temp_window_2_sum=[np.nan] * 4 + [62.82, 63.66, 64.54, 65.01],
+        irradiation_window_2_sum=[np.nan] * 4 + [1.3, 1.44, 1.41, 1.18],
     )
+    pd.testing.assert_frame_equal(Xt, expected, check_freq=False)
 
-    # Case 4: user indicates 1 variable
+
+def test_multiple_windows_with_periods_and_freq_with_pandas(df_time, df_time_expected):
     transformer = WindowFeatures(
-        variables=["irradiation"], window=2, functions=["sum"], freq="45min"
-    )
-    df_tr = transformer.fit_transform(df_time)
-
-    assert (
-        df_tr.head(9)
-        .round(3)
-        .equals(
-            expected_results_df.drop(
-                ["ambient_temp_window_2_sum", "module_temp_window_2_sum"], axis=1
-            )
-        )
-    )
-
-
-def test_multiple_windows(df_time):
-
-    # Case 1: automatically select variables
-    transformer = WindowFeatures(
-        window=[2, 3], functions=["sum", "mean"], periods=15, freq="min"
-    )
-    df_time_tr = transformer.fit_transform(df_time)
-
-    # Expected
-    X = df_time.copy()
-    num_vars = ["ambient_temp", "module_temp", "irradiation"]
-    tmp = X[num_vars].rolling(2).agg(["sum", "mean"]).shift(periods=15, freq="min")
-    tmp.columns = tmp.columns.droplevel()
-    X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
-    tmp = X[num_vars].rolling(3).agg(["sum", "mean"]).shift(periods=15, freq="min")
-    tmp.columns = tmp.columns.droplevel()
-    X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
-    X_tr.columns = transformer.get_feature_names_out()
-
-    assert df_time_tr.equals(X_tr)
-
-    # Case 2: user indicates multiple variables
-    transformer = WindowFeatures(
-        variables=["ambient_temp", "irradiation"],
+        variables="irradiation",
         window=[2, 3],
         functions=["sum", "mean"],
-        freq="30min",
+        periods=30,
+        freq="min",
     )
-    df_time_tr = transformer.fit_transform(df_time)
+    Xt = transformer.fit_transform(df_time).head(8)
 
-    # Expected
-    X = df_time.copy()
-    tmp = (
-        X[["ambient_temp", "irradiation"]]
-        .rolling(2)
-        .agg(["sum", "mean"])
-        .shift(freq="30min")
+    # 30 periods of 1 minute shift the windows by 2 rows, which are 15 minutes apart
+    expected = df_time_expected.assign(
+        irradiation_window_2_sum=[np.nan] * 3 + [1.3, 1.44, 1.41, 1.18, 0.91],
+        irradiation_window_2_mean=[np.nan] * 3 + [0.65, 0.72, 0.705, 0.59, 0.455],
+        irradiation_window_3_sum=[np.nan] * 4 + [1.95, 2.2, 1.83, 1.67],
+        irradiation_window_3_mean=[np.nan] * 4 + [0.65, 2.2 / 3, 0.61, 1.67 / 3],
     )
-    tmp.columns = tmp.columns.droplevel()
-    X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
-    tmp = (
-        X[["ambient_temp", "irradiation"]]
-        .rolling(3)
-        .agg(["sum", "mean"])
-        .shift(freq="30min")
-    )
-    tmp.columns = tmp.columns.droplevel()
-    X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
-    X_tr.columns = transformer.get_feature_names_out()
+    pd.testing.assert_frame_equal(Xt, expected, check_freq=False)
 
-    assert df_time_tr.equals(X_tr)
 
-    # Case 4: user indicates 1 variable
+def test_time_span_windows_with_pandas(df_time, df_time_expected):
     transformer = WindowFeatures(
-        variables=["irradiation"],
-        window=[2, 3],
-        functions="std",
-        periods=1,
+        variables="irradiation", window=["30min", "45min"], functions="max"
     )
-    df_time_tr = transformer.fit_transform(df_time)
+    Xt = transformer.fit_transform(df_time).head(8)
 
-    # Expected
-    X = df_time.copy()
-    tmp = X["irradiation"].rolling(2).agg("std").shift(periods=1)
-    X_tr = X.merge(tmp, left_index=True, right_index=True, how="left")
-    tmp = X["irradiation"].rolling(3).agg("std").shift(periods=1)
-    X_tr = X_tr.merge(tmp, left_index=True, right_index=True, how="left")
-    X_tr.columns = transformer.get_feature_names_out()
-
-    assert df_time_tr.equals(X_tr)
-
-
-def test_min_periods_is_used(df_time):
-    # min_periods was accepted and documented but never reached pandas
-    # rolling(), so the leading rows stayed NaN whatever the user asked for.
-    variables = ["ambient_temp", "module_temp", "irradiation"]
-
-    transformer = WindowFeatures(window=3, min_periods=1)
-    df_tr = transformer.fit_transform(df_time)
-
-    expected = (
-        df_time[variables].rolling(window=3, min_periods=1).agg("mean").shift(periods=1)
+    # windows of time spans take the rows available
+    expected = df_time_expected.assign(
+        irradiation_window_30min_max=[np.nan, 0.51, 0.79, 0.79, 0.76, 0.76, 0.49, 0.57],
+        irradiation_window_45min_max=[np.nan, 0.51, 0.79, 0.79, 0.79, 0.76, 0.76, 0.57],
     )
-    expected.columns = [f"{var}_window_3_mean" for var in variables]
-
-    assert_frame_equal(df_tr[expected.columns], expected)
-
-    # with min_periods=1 only the very first row (shifted out) remains NaN
-    assert df_tr["ambient_temp_window_3_mean"].isna().sum() == 1
-
-    # the default is unchanged: pandas requires a full window
-    df_default = WindowFeatures(window=3).fit_transform(df_time)
-    assert df_default["ambient_temp_window_3_mean"].isna().sum() == 3
+    pd.testing.assert_frame_equal(Xt, expected, check_freq=False)
 
 
-def test_min_periods_is_used_with_multiple_windows(df_time):
-    transformer = WindowFeatures(window=[2, 3], min_periods=1)
-    df_tr = transformer.fit_transform(df_time)
+def test_sort_index_with_pandas(df_time):
+    X = df_time.sample(frac=1, random_state=1)
 
-    for win in (2, 3):
-        expected = (
-            df_time["ambient_temp"].rolling(window=win, min_periods=1).mean().shift(1)
-        )
-        assert_frame_equal(
-            df_tr[[f"ambient_temp_window_{win}_mean"]],
-            expected.to_frame(f"ambient_temp_window_{win}_mean"),
-        )
-
-
-def test_sort_index(df_time):
-    # Shuffle dataframe
-    Xs = df_time.copy()
-    Xs = Xs.sample(frac=1)
+    Xt = WindowFeatures(sort_index=True).fit_transform(X)
+    pd.testing.assert_frame_equal(Xt, WindowFeatures().fit_transform(df_time))
 
     transformer = WindowFeatures(sort_index=False)
-    df_tr = transformer.fit_transform(Xs)
-    assert_frame_equal(df_tr[transformer.variables_], Xs[transformer.variables_])
+    Xt = transformer.fit_transform(X)
+    pd.testing.assert_frame_equal(Xt[df_time.columns], X)
 
-    transformer = WindowFeatures(sort_index=True)
-    df_tr = transformer.fit_transform(Xs)
-    assert_frame_equal(
-        df_tr[transformer.variables_], Xs[transformer.variables_].sort_index()
+
+def test_transform_x_y_aligns_y_on_the_index_with_pandas(df_time):
+    X = df_time.sample(frac=1, random_state=1)
+    y = pd.Series(np.arange(len(X)), index=X.index)
+    transformer = WindowFeatures(window="45min", drop_na=True).fit(X)
+
+    Xt, yt = transformer.transform_x_y(X, y)
+
+    pd.testing.assert_frame_equal(Xt, transformer.transform(X))
+    pd.testing.assert_series_equal(yt, y.loc[Xt.index])
+
+
+def test_integer_column_names_with_pandas():
+    X = pd.DataFrame({0: DATA["x1"], 1: DATA["x2"], "cat": DATA["cat"]})
+    transformer = WindowFeatures(window=[2, 3], drop_original=True, drop_na=True)
+    Xt = transformer.fit_transform(X)
+
+    expected = pd.DataFrame(
+        {
+            "cat": ["d", "e", "f", "g"],
+            "0_window_2_mean": [3.0, 5.5, 9.0, 13.5],
+            "1_window_2_mean": [25.0, 35.0, 45.0, 55.0],
+            "0_window_3_mean": [7 / 3, 13 / 3, 22 / 3, 34 / 3],
+            "1_window_3_mean": [20.0, 30.0, 40.0, 50.0],
+        },
+        index=[3, 4, 5, 6],
     )
+    # the columns started as a mix of integers and strings
+    expected.columns = expected.columns.astype(object)
+    pd.testing.assert_frame_equal(Xt, expected)
 
 
-def test_drop_na(df_time):
-    df = df_time.head(9).copy()
-
-    expected_results = {
-        "ambient_temp": [32.62, 32.5, 32.52, 32.68, 33.76],
-        "module_temp": [49.61, 47.01, 46.67, 47.52, 49.8],
-        "irradiation": [0.42, 0.49, 0.57, 0.56, 0.74],
-        "color": [
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-        ],
-        "ambient_temp_window_3_median": [
-            31.51,
-            32.15,
-            32.39,
-            32.5,
-            32.52,
-        ],
-        "module_temp_window_3_median": [
-            49.84,
-            50.63,
-            50.63,
-            49.61,
-            47.01,
-        ],
-        "irradiation_window_3_median": [
-            0.65,
-            0.76,
-            0.65,
-            0.49,
-            0.49,
-        ],
-    }
-    expected_results_df = pd.DataFrame(data=expected_results, index=_date_time[4:])
-
-    # Case 1: automatically select variables
-    transformer = WindowFeatures(
-        window=3, functions=["median"], periods=2, drop_na=True
+# polars: the windows are numbers of rows, and min_periods must be greater than 0
+@pytest.mark.parametrize("window", ["3D", ["45min", "30min"], [2, "30min"]])
+def test_error_if_time_span_window_with_polars(window):
+    msg = (
+        "Time spans in window, like '3D', are only supported with pandas "
+        "dataframes, because they use the dataframe's DatetimeIndex. With other "
+        "dataframes, window takes integers, the number of rows in each window. "
+        f"Got {window} instead."
     )
-    df_tr = transformer.fit_transform(df)
+    with pytest.raises(NotImplementedError, match=re.escape(msg)):
+        WindowFeatures(window=window).fit(pl.DataFrame(DATA))
 
-    assert df_tr.equals(expected_results_df)
 
-    # Case 2: when drop_original is true
-    transformer = WindowFeatures(
-        window=3,
-        functions=["median"],
-        periods=2,
-        drop_original=True,
-        drop_na=True,
+@pytest.mark.parametrize("functions", ["quantile", ["mean", "prod"]])
+def test_error_if_function_not_supported_with_polars(functions):
+    msg = MSG_POLARS_FUNCTIONS + f"Got {functions} instead."
+    with pytest.raises(NotImplementedError, match=re.escape(msg)):
+        WindowFeatures(functions=functions).fit(pl.DataFrame(DATA))
+
+
+def test_error_if_min_periods_is_zero_with_polars():
+    msg = (
+        "min_periods=0 is only supported with pandas dataframes. With other "
+        "dataframes, min_periods takes integers greater than 0 or None. "
+        "Got 0 instead."
     )
-    df_tr = transformer.fit_transform(df)
-
-    assert df_tr.equals(
-        expected_results_df.drop(["ambient_temp", "module_temp", "irradiation"], axis=1)
-    )
-
-    # Case 3: user indicates multiple variables
-    transformer = WindowFeatures(
-        variables=["module_temp", "irradiation"],
-        window=3,
-        functions="median",
-        periods=2,
-        drop_na=True,
-    )
-    transformer.fit(df)
-    df_tr = transformer.transform(df)
-
-    assert df_tr.equals(
-        expected_results_df.drop(["ambient_temp_window_3_median"], axis=1)
-    )
-
-
-def test_transform_x_y(df_time):
-    df = df_time.head(9).copy()
-    y = pd.Series(np.zeros(len(df)), index=df.index)
-
-    expected_results = {
-        "ambient_temp": [32.62, 32.5, 32.52, 32.68, 33.76],
-        "module_temp": [49.61, 47.01, 46.67, 47.52, 49.8],
-        "irradiation": [0.42, 0.49, 0.57, 0.56, 0.74],
-        "color": [
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-            "blue",
-        ],
-        "ambient_temp_window_3_median": [
-            31.51,
-            32.15,
-            32.39,
-            32.5,
-            32.52,
-        ],
-        "module_temp_window_3_median": [
-            49.84,
-            50.63,
-            50.63,
-            49.61,
-            47.01,
-        ],
-        "irradiation_window_3_median": [
-            0.65,
-            0.76,
-            0.65,
-            0.49,
-            0.49,
-        ],
-    }
-    expected_results_df = pd.DataFrame(data=expected_results, index=_date_time[4:])
-    transformer = WindowFeatures(
-        window=3, functions=["median"], periods=2, drop_na=True
-    )
-
-    df_tr = transformer.fit_transform(df)
-
-    assert df_tr.equals(expected_results_df)
-    assert len(df_tr) != len(y)
-
-    Xt, yt = transformer.transform_x_y(df, y)
-    assert len(Xt) == len(yt)
-    assert len(y) != len(yt)
-    assert (Xt.index == yt.index).all()
+    with pytest.raises(NotImplementedError, match=re.escape(msg)):
+        WindowFeatures(min_periods=0).fit(pl.DataFrame(DATA))
