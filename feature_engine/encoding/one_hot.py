@@ -254,6 +254,7 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
         self.variables_ = variables_
         self._get_feature_names_in(X)
+        self._add_new_feature_names(self.feature_names_in_)
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -293,6 +294,9 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
         else:
             X = X[non_encoded]
 
+        if not X.columns.is_unique:
+            self._check_unique_feature_names(X.columns.tolist())
+
         return X
 
     def inverse_transform(self, X: pd.DataFrame):
@@ -310,9 +314,25 @@ class OneHotEncoder(CategoricalMethodsMixin, CategoricalInitMixin):
 
         return feature_names
 
+    def _check_unique_feature_names(self, feature_names: List) -> List:
+        seen = set()
+        duplicates = []
+        for f in feature_names:
+            if f in seen:
+                duplicates.append(f)
+            else:
+                seen.add(f)
+        if duplicates:
+            raise ValueError(
+                f"The resulting transformed dataframe will contain duplicated "
+                f"variable names: {list(dict.fromkeys(duplicates))}."
+            )
+        return feature_names
+
     def _add_new_feature_names(self, feature_names) -> List:
         """Adds new features to df columns, and removes categoricals."""
         feature_names = [f for f in feature_names if f not in self.variables_]
         feature_names = feature_names + self._get_new_features_name()
+        self._check_unique_feature_names(feature_names)
 
         return feature_names
