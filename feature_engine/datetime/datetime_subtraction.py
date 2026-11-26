@@ -327,6 +327,15 @@ class DatetimeSubtraction(BaseCreation):
 
         return nw.to_native(X, pass_through=True)
 
+    def _add_new_feature_names(self, feature_names):
+        """Add the new features and, if drop_original is True, remove the
+        same columns that transform() drops: variables and reference."""
+        feature_names = feature_names + self._get_new_features_name()
+        if self.drop_original is True:
+            to_drop = set(self.variables_) | set(self.reference_)
+            feature_names = [f for f in feature_names if f not in to_drop]
+        return feature_names
+
     def _to_datetime(
         self, X: Union[IntoDataFrame, nw.DataFrame]
     ) -> Dict[Union[str, int], np.ndarray]:

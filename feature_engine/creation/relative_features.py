@@ -281,6 +281,15 @@ class RelativeFeatures(BaseCreation):
 
         return nw.to_native(X, pass_through=True)
 
+    def _add_new_feature_names(self, feature_names):
+        """Add the new features and, if drop_original is True, remove the
+        same columns that transform() drops: variables and reference."""
+        feature_names = feature_names + self._get_new_features_name()
+        if self.drop_original is True:
+            to_drop = set(self.variables) | set(self.reference)
+            feature_names = [f for f in feature_names if f not in to_drop]
+        return feature_names
+
     def _raise_error_when_zero_in_denominator(self):
         raise ValueError(
             "Some of the reference variables contain zeroes. Division by zero "
