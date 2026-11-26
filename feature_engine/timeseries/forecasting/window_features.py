@@ -101,10 +101,15 @@ class WindowFeatures(BaseForecastTransformer):
         greater than 0.
 
     functions: string or list of strings, default = 'mean'
-        The functions to apply within the window. Valid functions can be found
-        `here <https://pandas.pydata.org/docs/reference/window.html>`_. With polars,
-        the valid functions are 'count', 'kurt', 'max', 'mean', 'median', 'min',
-        'skew', 'std', 'sum' and 'var'.
+        The functions to apply to the values of each variable within the window.
+        With pandas, the valid functions are the methods of pandas rolling windows
+        that aggregate one variable, like 'mean', 'max' or 'std'. See the pandas
+        `documentation <https://pandas.pydata.org/docs/reference/window.html>`_ for
+        the functions of your pandas version. With polars, the valid functions are
+        'count', 'first', 'kurt', 'last', 'max', 'mean', 'median', 'min', 'nunique',
+        'rank', 'sem', 'skew', 'std', 'sum' and 'var', which compute the same
+        statistics as the pandas functions with the same name. 'rank' needs polars
+        1.35 or later.
 
     periods: int, default=1
         Number of periods to shift. Can be a positive integer. See param `periods` in

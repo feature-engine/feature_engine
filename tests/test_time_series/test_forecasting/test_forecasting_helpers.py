@@ -109,17 +109,20 @@ def test_add_lag_features_with_fill_value(backend):
 
 def test_add_window_features(make_df):
     X = check_X(make_df({"a": [1.0, 2.0, 3.0, 4.0], "b": [4.0, 3.0, 2.0, 1.0]}))
-    names = ["a_max", "a_mean", "b_max", "b_mean"]
-    Xt = add_window_features(X, ["a", "b"], [2], ["max", "mean"], None, 1, None, names)
+    names = ["a_max", "a_mean", "a_first", "b_max", "b_mean", "b_first"]
+    functions = ["max", "mean", "first"]
+    Xt = add_window_features(X, ["a", "b"], [2], functions, None, 1, None, names)
 
-    # max and mean come from different libraries with polars, in the order of names
+    # with polars, the functions come from different libraries, in the order of names
     assert frame_to_dict(nw.to_native(Xt, pass_through=True)) == {
         "a": [1.0, 2.0, 3.0, 4.0],
         "b": [4.0, 3.0, 2.0, 1.0],
         "a_max": [None, None, 2.0, 3.0],
         "a_mean": [None, None, 1.5, 2.5],
+        "a_first": [None, None, 1.0, 2.0],
         "b_max": [None, None, 4.0, 3.0],
         "b_mean": [None, None, 3.5, 2.5],
+        "b_first": [None, None, 4.0, 3.0],
     }
 
 

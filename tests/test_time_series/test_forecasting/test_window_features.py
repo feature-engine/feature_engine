@@ -14,9 +14,14 @@ DATA = {
     "cat": ["a", "b", "c", "d", "e", "f", "g"],
 }
 
+PANDAS_MAJOR = int(pd.__version__.split(".")[0])
+# pandas < 3 has no rolling first, last and nunique, and its sem divides by n - 1.
+PANDAS_3_FUNCTIONS = ["first", "last", "nunique", "sem"]
+
 MSG_POLARS_FUNCTIONS = (
-    "With dataframes other than pandas, functions takes only ['count', 'kurt', "
-    "'max', 'mean', 'median', 'min', 'skew', 'std', 'sum', 'var']. "
+    "With dataframes other than pandas, functions takes only ['count', 'first', "
+    "'kurt', 'last', 'max', 'mean', 'median', 'min', 'nunique', 'rank', 'sem', "
+    "'skew', 'std', 'sum', 'var']. "
 )
 
 
@@ -186,9 +191,16 @@ def test_multiple_windows_and_functions(make_df):
         ("max", [7.0, 11.0, 16.0]),
         ("skew", [0.863919, 0.599581, 0.456178]),
         ("kurt", [-0.285714, -0.768431, -0.951989]),
+        ("sem", [1.322876, 1.957890, 2.598076]),
+        ("first", [1.0, 2.0, 4.0]),
+        ("last", [7.0, 11.0, 16.0]),
+        ("nunique", [4.0, 4.0, 4.0]),
+        ("rank", [4.0, 4.0, 4.0]),
     ],
 )
 def test_functions(make_df, function, expected):
+    if function in PANDAS_3_FUNCTIONS and make_df is pd.DataFrame and PANDAS_MAJOR < 3:
+        pytest.skip(f"{function} needs pandas 3")
     X = make_df(DATA)
     Xt = WindowFeatures(variables="x1", window=4, functions=function).fit_transform(X)
 
@@ -196,6 +208,31 @@ def test_functions(make_df, function, expected):
     # the first window with 4 rows is shifted to the fifth row
     assert frame_to_dict(Xt)[f"x1_window_4_{function}"] == pytest.approx(
         [None, None, None, None] + expected, abs=1e-6
+    )
+
+
+@pytest.mark.parametrize(
+    "function, expected",
+    [
+        ("first", [1.0, 3.0, 3.0]),
+        ("last", [3.0, 3.0, 3.0]),
+        ("nunique", [2, 1, 1]),
+        # the value of the fifth row's window is missing, so it has no rank
+        ("rank", [2.0, 1.5, None]),
+        ("sem", [1.0, 0, 0]),
+    ],
+)
+def test_functions_skip_missing_values(make_df, function, expected):
+    if function in PANDAS_3_FUNCTIONS and make_df is pd.DataFrame and PANDAS_MAJOR < 3:
+        pytest.skip(f"{function} needs pandas 3")
+    X = make_df({"x1": [1.0, None, 3.0, 3.0, None, 5.0]})
+    transformer = WindowFeatures(
+        window=3, min_periods=2, functions=function, missing_values="ignore"
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert frame_to_dict(Xt)[f"x1_window_3_{function}"] == pytest.approx(
+        [None, None, None] + expected
     )
 
 
@@ -363,15 +400,6 @@ def test_time_span_windows_with_pandas(df_time, df_time_expected):
     pd.testing.assert_frame_equal(Xt, expected, check_freq=False)
 
 
-def test_functions_only_in_pandas(df_time):
-    transformer = WindowFeatures(variables="irradiation", functions=["sem", "last"])
-    Xt = transformer.fit_transform(df_time)
-
-    expected = df_time["irradiation"].rolling(3).agg(["sem", "last"]).shift(1)
-    expected.columns = ["irradiation_window_3_sem", "irradiation_window_3_last"]
-    pd.testing.assert_frame_equal(Xt[expected.columns], expected)
-
-
 def test_sort_index_with_pandas(df_time):
     X = df_time.sample(frac=1, random_state=1)
 
@@ -434,7 +462,7 @@ def test_error_if_time_span_window_with_polars(window):
         WindowFeatures(window=window).fit(pl.DataFrame(DATA))
 
 
-@pytest.mark.parametrize("functions", ["sem", ["mean", "last"]])
+@pytest.mark.parametrize("functions", ["quantile", ["mean", "prod"]])
 def test_error_if_function_not_supported_with_polars(functions):
     msg = MSG_POLARS_FUNCTIONS + f"Got {functions} instead."
     with pytest.raises(NotImplementedError, match=re.escape(msg)):

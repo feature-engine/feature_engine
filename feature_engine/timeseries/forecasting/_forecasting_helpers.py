@@ -17,8 +17,9 @@ from narwhals.typing import IntoDataFrame
 
 DataFrame = Union[IntoDataFrame, nw.DataFrame]
 
-# pandas' rolling functions that other dataframes support: with narwhals, or with
-# polars' own expressions when narwhals has none (they are faster than numpy).
+# pandas' rolling functions that other dataframes support: with narwhals, with
+# polars' rolling expressions when narwhals has none (they are faster than numpy),
+# and with polars aggregations over the rows of each window when polars has none.
 _NW_ROLLING = {
     "count": lambda col, win, min_samples: (~col.is_null())
     .cast(nw.Float64)
@@ -26,6 +27,8 @@ _NW_ROLLING = {
     "mean": lambda col, win, min_samples: col.rolling_mean(
         win, min_samples=min_samples
     ),
+    "sem": lambda col, win, min_samples: col.rolling_std(win, min_samples=min_samples)
+    / (~col.is_null()).cast(nw.Float64).rolling_sum(win, min_samples=1).sqrt(),
     "std": lambda col, win, min_samples: col.rolling_std(win, min_samples=min_samples),
     "sum": lambda col, win, min_samples: col.rolling_sum(win, min_samples=min_samples),
     "var": lambda col, win, min_samples: col.rolling_var(win, min_samples=min_samples),
@@ -40,9 +43,18 @@ _POLARS_ROLLING = {
         win, min_samples=min_samples
     ),
     "min": lambda col, win, min_samples: col.rolling_min(win, min_samples=min_samples),
+    "rank": lambda col, win, min_samples: col.rolling_rank(
+        win, min_samples=min_samples
+    ),
     "skew": lambda col, win, min_samples: col.rolling_skew(
         win, bias=False, min_samples=min_samples
     ),
+}
+# like pandas, they skip missing values.
+_POLARS_ROW_WINDOWS = {
+    "first": lambda col: col.drop_nulls().first(),
+    "last": lambda col: col.drop_nulls().last(),
+    "nunique": lambda col: col.drop_nulls().n_unique(),
 }
 
 
@@ -223,13 +235,11 @@ def check_window_parameters(
             f"each window. Got {window} instead."
         )
     function_list = functions if isinstance(functions, list) else [functions]
-    if not all(
-        function in _NW_ROLLING or function in _POLARS_ROLLING
-        for function in function_list
-    ):
+    supported = sorted([*_NW_ROLLING, *_POLARS_ROLLING, *_POLARS_ROW_WINDOWS])
+    if not all(function in supported for function in function_list):
         raise NotImplementedError(
             "With dataframes other than pandas, functions takes only "
-            f"{sorted([*_NW_ROLLING, *_POLARS_ROLLING])}. Got {functions} instead."
+            f"{supported}. Got {functions} instead."
         )
     if min_periods == 0:
         raise NotImplementedError(
@@ -309,15 +319,27 @@ def add_window_features(
             if function in _NW_ROLLING:
                 rolled = _NW_ROLLING[function](nw.col(var), win, min_samples)
                 nw_exprs.append(rolled.shift(periods).alias(name))
-            else:
+            elif function in _POLARS_ROLLING:
                 rolled = _POLARS_ROLLING[function](plx.col(var), win, min_samples)
+                native_exprs.append(rolled.shift(periods).alias(name))
+            else:
+                # like pandas, a window needs min_samples values that are not missing.
+                not_missing = plx.col(var).is_not_null().cast(plx.UInt32)
+                rolled = plx.when(
+                    not_missing.rolling_sum(win, min_samples=1) >= min_samples
+                ).then(
+                    _POLARS_ROW_WINDOWS[function](plx.col(var)).rolling(
+                        index_column="__row__", period=f"{win}i"
+                    )
+                )
                 native_exprs.append(rolled.shift(periods).alias(name))
 
         columns = X.columns
         X = X.with_columns(nw_exprs)
         if len(native_exprs) > 0:
-            # the polars features were added last: restore the order of the names.
-            X_pl = X.to_native().with_columns(native_exprs)
+            # the polars features were added last: restore the order of the names,
+            # which also drops the row numbers that the windows of rows need.
+            X_pl = X.to_native().with_row_index("__row__").with_columns(native_exprs)
             X = nw.from_native(X_pl, eager_only=True).select(columns + names)
 
     return X

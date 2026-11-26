@@ -80,8 +80,9 @@ can pass a list of integers, strings or functions, to perform computations over 
 window sizes.
 
 :class:`WindowFeatures` performs the mathematical operations over the windows with the
-methods of `pandas.rolling`. Therefore, you can use any operation supported
-by pandas. For supported aggregation functions, see Rolling Window
+methods of `pandas.rolling`. Therefore, you can use any method that aggregates the
+values of one variable, like `"mean"`, `"max"` or `"std"`. For the functions of your
+pandas version, see Rolling Window
 `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
 With `pandas.shift`, :class:`WindowFeatures` places the value derived from the past
@@ -618,8 +619,10 @@ sorted in time before creating the features. For the same reason, with polars:
 - `window` takes the number of rows in each window, as an integer or a list of integers.
   Time spans, like `"30min"`, are not supported.
 - `freq` is not supported: the window features are shifted by `periods` rows.
-- `functions` takes `"count"`, `"kurt"`, `"max"`, `"mean"`, `"median"`, `"min"`,
-  `"skew"`, `"std"`, `"sum"` and `"var"`.
+- `functions` takes `"count"`, `"first"`, `"kurt"`, `"last"`, `"max"`, `"mean"`,
+  `"median"`, `"min"`, `"nunique"`, `"rank"`, `"sem"`, `"skew"`, `"std"`, `"sum"` and
+  `"var"`. They compute the same statistics as the pandas functions with the same name.
+  `"rank"` needs polars 1.35 or later.
 - `min_periods` must be greater than 0.
 - `sort_index` does not apply.
 
@@ -669,6 +672,41 @@ have enough past data to fill the window, contain null values:
     └──────────────┴─────────────┴─────────────────┴─────────────────┴────────────────┴────────────────┘
 
 To take windows with fewer rows at the start of the series, set `min_periods`.
+
+Besides statistics like the mean, we can take the first and last values of each window,
+and the rank of the last value within the window:
+
+.. code:: python
+
+    win_f = WindowFeatures(
+        variables="irradiation", window=4, functions=["first", "last", "rank"]
+    )
+
+    X_tr = win_f.fit_transform(X)
+
+    print(X_tr)
+
+In the fifth row, the window holds the irradiation of the first 4 rows. Its last value,
+0.76, is the third smallest of the window:
+
+.. code:: text
+
+    shape: (8, 5)
+    ┌──────────────┬─────────────┬───────────────────────┬──────────────────────┬──────────────────────┐
+    │ ambient_temp ┆ irradiation ┆ irradiation_window_4_ ┆ irradiation_window_4 ┆ irradiation_window_4 │
+    │ ---          ┆ ---         ┆ first                 ┆ _last                ┆ _rank                │
+    │ f64          ┆ f64         ┆ ---                   ┆ ---                  ┆ ---                  │
+    │              ┆             ┆ f64                   ┆ f64                  ┆ f64                  │
+    ╞══════════════╪═════════════╪═══════════════════════╪══════════════════════╪══════════════════════╡
+    │ 31.31        ┆ 0.51        ┆ null                  ┆ null                 ┆ null                 │
+    │ 31.51        ┆ 0.79        ┆ null                  ┆ null                 ┆ null                 │
+    │ 32.15        ┆ 0.65        ┆ null                  ┆ null                 ┆ null                 │
+    │ 32.39        ┆ 0.76        ┆ null                  ┆ null                 ┆ null                 │
+    │ 32.62        ┆ 0.42        ┆ 0.51                  ┆ 0.76                 ┆ 3.0                  │
+    │ 32.5         ┆ 0.49        ┆ 0.79                  ┆ 0.42                 ┆ 1.0                  │
+    │ 32.52        ┆ 0.57        ┆ 0.65                  ┆ 0.49                 ┆ 2.0                  │
+    │ 32.68        ┆ 0.56        ┆ 0.76                  ┆ 0.57                 ┆ 3.0                  │
+    └──────────────┴─────────────┴───────────────────────┴──────────────────────┴──────────────────────┘
 
 We can also drop the rows with null values in the window features from the dataframe and
 the target:
