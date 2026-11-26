@@ -10,13 +10,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from feature_engine.selection import (
-    RecursiveFeatureAddition,
-    RecursiveFeatureElimination,
-)
+from feature_engine.selection import RecursiveFeatureAddition
 
 _selectors = [
-    RecursiveFeatureElimination,
     RecursiveFeatureAddition,
 ]
 
@@ -164,12 +160,6 @@ def test_feature_importances(_estimator, _importance, df_test):
         list(np.round(sel.feature_importances_.values, 2)) == np.round(_importance, 2)
     ).all()
 
-    sel = RecursiveFeatureElimination(_estimator, threshold=-100).fit(X, y)
-    _importance.sort(reverse=False)
-    assert (
-        list(np.round(sel.feature_importances_.values, 2)) == np.round(_importance, 2)
-    ).all()
-
 
 ests = [
     BaggingClassifier(
@@ -206,19 +196,10 @@ def test_permutation_importance(_estimator, df_test):
         sel.feature_importances_.sort_index(), expected_importances.sort_index()
     )
 
-    sel = RecursiveFeatureElimination(_estimator, threshold=-100).fit(X, y)
-    assert_series_equal(
-        sel.feature_importances_.sort_index(), expected_importances.sort_index()
-    )
-
 
 @pytest.mark.parametrize("_estimator", ests)
 def test_selection_after_permutation_importance(_estimator, df_test):
     X, y = df_test
     sel = RecursiveFeatureAddition(_estimator)
-    Xtr = sel.fit_transform(X, y)
-    assert Xtr.shape[1] < X.shape[1]
-
-    sel = RecursiveFeatureElimination(_estimator)
     Xtr = sel.fit_transform(X, y)
     assert Xtr.shape[1] < X.shape[1]

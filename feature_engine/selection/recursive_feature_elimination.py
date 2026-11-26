@@ -1,9 +1,10 @@
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.model_selection import cross_validate
 
 from feature_engine._docstrings.fit_attributes import (
-    _feature_importances_docstring,
-    _feature_importances_std_docstring,
     _feature_names_in_docstring,
     _n_features_in_docstring,
     _performance_drifts_docstring,
@@ -28,6 +29,7 @@ from feature_engine._docstrings.selection._docstring import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.selection.base_recursive_selector import BaseRecursiveSelector
+from feature_engine.selection.base_selection_functions import _importance_series
 
 
 @Substitution(
@@ -38,8 +40,6 @@ from feature_engine.selection.base_recursive_selector import BaseRecursiveSelect
     variables=_variables_numerical_docstring,
     confirm_variables=_confirm_variables_docstring,
     initial_model_performance_=_initial_model_performance_docstring,
-    feature_importances_=_feature_importances_docstring,
-    feature_importances_std_=_feature_importances_std_docstring,
     performance_drifts_=_performance_drifts_docstring,
     performance_drifts_std_=_performance_drifts_std_docstring,
     features_to_drop_=_features_to_drop_docstring,
@@ -97,9 +97,14 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
     ----------
     {initial_model_performance_}
 
-    {feature_importances_}
+    feature_importances_:
+        The feature importance (comes from step 2), sorted from the least to the
+        most important feature. A pandas Series with the features as index when X
+        is a pandas dataframe, and a dictionary with the features as keys otherwise.
 
-    {feature_importances_std_}
+    feature_importances_std_:
+        The standard deviation of the feature importance, as a pandas Series or a
+        dictionary, like `feature_importances_`.
 
     {performance_drifts_}
 
@@ -144,31 +149,59 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
     3   1
     4   2
     5   2
+
+    The same with polars:
+
+    >>> import polars as pl
+    >>> rfe.fit_transform(pl.DataFrame(X.to_dict(orient="list")), y.to_list())
+    shape: (6, 1)
+    ┌─────┐
+    │ x2  │
+    │ --- │
+    │ i64 │
+    ╞═════╡
+    │ 2   │
+    │ 4   │
+    │ 3   │
+    │ 1   │
+    │ 2   │
+    │ 2   │
+    └─────┘
     """
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Find the important features. Note that the selector trains various models at
         each round of selection, so it might take a while.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
            The input dataframe
         y: array-like of shape (n_samples)
            Target variable. Required to train the estimator.
         """
 
-        X, y = super().fit(X, y)
+        nw_X, y = super().fit(X, y)
 
-        # Sort the feature importance values increasingly
-        self.feature_importances_.sort_values(ascending=True, inplace=True)
+        if nwd.is_pandas_dataframe(X) is True:
+            # pandas is faster than narwhals.
+            self.feature_importances_ = self.feature_importances_.sort_values()
+        else:
+            # numpy's default quicksort is the one of pandas' sort_values, so tied
+            # features are evaluated in the same order with every backend.
+            features = list(self.feature_importances_.keys())
+            values = np.array(list(self.feature_importances_.values()))
+            order = values.argsort()
+            self.feature_importances_ = _importance_series(
+                X, [features[i] for i in order], values[order]
+            )
 
         # to collect selected features
         _selected_features = []
 
-        # temporary copy where we will remove features recursively
-        X_tmp = X[self.variables_].copy()
+        # features left in the model as we remove them recursively
+        remaining_features = list(self.variables_)
 
         # we need to update the performance as we remove features
         baseline_model_performance = self.initial_model_performance_
@@ -178,19 +211,25 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
         self.performance_drifts_std_ = {}
 
         # evaluate every feature, starting from the least important
-        # remember that feature_importances_ is ordered already
-        for feature in list(self.feature_importances_.index):
+        for feature in self.feature_importances_.keys():
 
             # if there is only 1 feature left
-            if X_tmp.shape[1] == 1:
+            if len(remaining_features) == 1:
                 self.performance_drifts_[feature] = 0
                 _selected_features.append(feature)
                 break
 
             # remove feature and train new model
+            features_tmp = [f for f in remaining_features if f != feature]
+            if nwd.is_pandas_dataframe(X) is True:
+                # pandas is faster than narwhals.
+                X_tmp = X[features_tmp]
+            else:
+                X_tmp = nw_X.select(nw.col(*features_tmp)).to_native()
+
             model_tmp = cross_validate(
                 estimator=self.estimator,
-                X=X_tmp.drop(columns=feature),
+                X=X_tmp,
                 y=y,
                 cv=self._cv,
                 groups=self.groups,
@@ -214,7 +253,7 @@ class RecursiveFeatureElimination(BaseRecursiveSelector):
 
             else:
                 # remove feature and adjust initial performance
-                X_tmp = X_tmp.drop(columns=feature)
+                remaining_features = features_tmp
 
                 baseline_model = cross_validate(
                     estimator=self.estimator,
