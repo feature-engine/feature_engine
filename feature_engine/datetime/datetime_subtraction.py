@@ -1,8 +1,8 @@
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
-from pandas.api.types import is_datetime64_any_dtype as is_datetime
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -31,6 +31,12 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    subset_df,
+)
+from feature_engine.datetime._datetime_helpers import datetime_to_numpy
 from feature_engine.variable_handling.check_variables import check_datetime_variables
 from feature_engine.variable_handling.find_variables import find_datetime_variables
 
@@ -47,6 +53,27 @@ _example = """
     0  2022-09-18  2022-08-18             31.0
     1  2022-10-27  2022-08-27             61.0
     2  2022-12-24  2022-06-24            183.0
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.datetime import DatetimeSubtraction
+    >>> X = pl.DataFrame({
+    >>>     "date1": ["2022-09-18", "2022-10-27", "2022-12-24"],
+    >>>     "date2": ["2022-08-18", "2022-08-27", "2022-06-24"]})
+    >>> dtf = DatetimeSubtraction(variables=["date1"], reference=["date2"])
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+    shape: (3, 3)
+    ┌────────────┬────────────┬─────────────────┐
+    │ date1      ┆ date2      ┆ date1_sub_date2 │
+    │ ---        ┆ ---        ┆ ---             │
+    │ str        ┆ str        ┆ f64             │
+    ╞════════════╪════════════╪═════════════════╡
+    │ 2022-09-18 ┆ 2022-08-18 ┆ 31.0            │
+    │ 2022-10-27 ┆ 2022-08-27 ┆ 61.0            │
+    │ 2022-12-24 ┆ 2022-06-24 ┆ 183.0           │
+    └────────────┴────────────┴─────────────────┘
         """.rstrip()
 
 
@@ -219,20 +246,19 @@ class DatetimeSubtraction(BaseCreation):
         self.utc = utc
         self.format = format
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, or np.array. Default=None.
+        y: Series, or np.array. Default=None.
             It is not needed in this transformer. You can pass y or None.
         """
-        # Common checks and attributes
         X = check_X(X)
 
         # check variables are datetime
@@ -266,100 +292,88 @@ class DatetimeSubtraction(BaseCreation):
             vars = list(set(self.variables_ + self.reference_))
             _check_contains_na(X, vars)
 
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        # save train set shape
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Add new features.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The input dataframe plus the new variables.
         """
 
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
         X = check_X(X)
-
-        # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
+        X = subset_df(X, self.feature_names_in_)
 
+        variables = list(set(self.variables_ + self.reference_))
         if self.missing_values == "raise":
-            vars = list(set(self.variables_ + self.reference_))
-            _check_contains_na(X, vars)
+            _check_contains_na(X, variables)
 
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
+        X = add_columns_to_df(X, self._sub(self._to_datetime(X)))
+        if self.drop_original is True:
+            X = drop_variables_from_df(X, variables)
 
-        X_dt = self._to_datetime(X)
+        return nw.to_native(X, pass_through=True)
 
-        new_features = self._sub(X_dt)
-
-        X = pd.concat([X, new_features], axis=1)
-
-        if self.drop_original:
-            X = X.drop(
-                columns=set(self.variables_ + self.reference_),
-            )
-
-        return X
-
-    def _to_datetime(self, X: pd.DataFrame):
-        """convert variables to datetime."""
-        # convert datetime variables
-        datetime_df = pd.concat(
-            [
-                pd.to_datetime(
-                    X[variable],
-                    dayfirst=self.dayfirst,
-                    yearfirst=self.yearfirst,
-                    utc=self.utc,
-                    format=self.format,
-                )
-                for variable in set(self.variables_ + self.reference_)
-            ],
-            axis=1,
+    def _to_datetime(
+        self, X: Union[IntoDataFrame, nw.DataFrame]
+    ) -> Dict[Union[str, int], np.ndarray]:
+        """Convert the variables and reference columns to numpy datetime64 arrays."""
+        needed = sorted(set(self.variables_ + self.reference_))
+        arrays = datetime_to_numpy(
+            X,
+            needed,
+            dayfirst=self.dayfirst,
+            yearfirst=self.yearfirst,
+            utc=self.utc,
+            format=self.format,
+            dateutil_fallback=True,
         )
 
-        non_dt_columns = datetime_df.columns[~datetime_df.apply(is_datetime)].tolist()
-
-        if non_dt_columns:
+        non_dt_columns = [
+            var for var, values in zip(needed, arrays) if values.dtype.kind != "M"
+        ]
+        if len(non_dt_columns) > 0:
             raise ValueError(
                 "ValueError: variable(s) "
                 + (len(non_dt_columns) * "{} ").format(*non_dt_columns)
                 + "could not be converted to datetime. Try setting utc=True"
             )
-        return datetime_df
 
-    def _sub(self, dt_df: pd.DataFrame):
+        return dict(zip(needed, arrays))
+
+    def _sub(
+        self, dt_arrays: Dict[Union[str, int], np.ndarray]
+    ) -> Dict[str, np.ndarray]:
         """make datetime subtraction"""
-        new_df = pd.DataFrame()
+        names = self._get_new_features_name()
+        # "Y"/"M" are non-linear units: numpy can only divide timedeltas by
+        # them once both sides are cast to a common linear unit (ns), which
+        # is also what pandas does internally for Timedelta / Timedelta.
+        unit_td = np.timedelta64(1, self.output_unit).astype("timedelta64[ns]")
+
+        new_features = {}
+        idx = 0
         for reference in self.reference_:
-            new_varnames = [f"{var}_sub_{reference}" for var in self.variables_]
-            new_df[new_varnames] = (
-                dt_df[self.variables_]
-                .sub(dt_df[reference], axis=0)
-                .div(np.timedelta64(1, self.output_unit).astype("timedelta64[ns]"))
-            )
+            ref_arr = dt_arrays[reference]
+            for var in self.variables_:
+                diff = (dt_arrays[var] - ref_arr).astype("timedelta64[ns]")
+                new_features[names[idx]] = diff / unit_td
+                idx += 1
 
-        if self.new_variables_names is not None:
-            new_df.columns = self.new_variables_names
-
-        return new_df
+        return new_features
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

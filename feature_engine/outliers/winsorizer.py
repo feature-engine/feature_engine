@@ -4,8 +4,8 @@
 import warnings
 from typing import List, Literal, Union
 
-import numpy as np
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._docstrings.fit_attributes import (
     _feature_names_in_docstring,
@@ -26,7 +26,11 @@ from feature_engine._docstrings.init_parameters.outliers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
-from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    replace_columns_in_df,
+    to_numpy,
+)
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
@@ -145,25 +149,33 @@ class Winsoriser(WinsorizerBase):
     8 -0.469474
     9  0.542560
 
+    With polars:
+
     >>> import numpy as np
-    >>> import pandas as pd
+    >>> import polars as pl
     >>> from feature_engine.outliers import Winsoriser
     >>> np.random.seed(42)
-    >>> X = pd.DataFrame(dict(x = np.random.normal(size = 10)))
+    >>> X = pl.DataFrame(dict(x = np.random.normal(size = 10)))
     >>> wz = Winsoriser(capping_method='mad', tail='both', fold=3)
     >>> wz.fit(X)
     >>> wz.transform(X)
-              x
-    0  0.496714
-    1 -0.138264
-    2  0.647689
-    3  1.523030
-    4 -0.234153
-    5 -0.234137
-    6  1.579213
-    7  0.767435
-    8 -0.469474
-    9  0.542560
+    shape: (10, 1)
+    ┌───────────┐
+    │ x         │
+    │ ---       │
+    │ f64       │
+    ╞═══════════╡
+    │ 0.496714  │
+    │ -0.138264 │
+    │ 0.647689  │
+    │ 1.52303   │
+    │ -0.234153 │
+    │ -0.234137 │
+    │ 1.579213  │
+    │ 0.767435  │
+    │ -0.469474 │
+    │ 0.54256   │
+    └───────────┘
     """
 
     def __init__(
@@ -178,7 +190,7 @@ class Winsoriser(WinsorizerBase):
     ) -> None:
         if not isinstance(add_indicators, bool):
             raise ValueError(
-                "add_indicators takes only booleans True and False"
+                "add_indicators takes only booleans True and False. "
                 f"Got {add_indicators} instead."
             )
         super().__init__(
@@ -186,55 +198,43 @@ class Winsoriser(WinsorizerBase):
         )
         self.add_indicators = add_indicators
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Cap the variable values. Optionally, add outlier indicators.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features + n_ind]
+        X_new: dataframe of shape = [n_samples, n_features + n_ind]
             The dataframe with the capped variables and indicators.
             The number of output variables depends on the values for 'tail' and
             'add_indicators': if passing 'add_indicators=False', will be equal
             to 'n_features', otherwise, will have an additional indicator column
             per processed feature for each tail.
         """
-        if not self.add_indicators:
-            X_out = super()._transform(X)
+        X = self._check_transform_input_and_state(X)
+        original = dict(zip(self.variables_, to_numpy(X, self.variables_)))
+        capped = self._cap(original)
+        if len(capped) > 0:
+            X = replace_columns_in_df(X, capped)
 
-        else:
-            X_orig = check_X(X)
-            X_out = super()._transform(X_orig)
-            X_orig = X_orig[self.variables_]
-            X_out_filtered = X_out[self.variables_]
+        if self.add_indicators is True:
+            indicators = {}
+            for var, values in original.items():
+                new_values = capped.get(var, values)
+                if self.tail in ["left", "both"]:
+                    indicators[f"{var}_left"] = (new_values > values).astype("float64")
+                if self.tail in ["right", "both"]:
+                    indicators[f"{var}_right"] = (new_values < values).astype(
+                        "float64"
+                    )
+            X = add_columns_to_df(X, indicators)
 
-            if self.tail in ["left", "both"]:
-                X_left = X_out_filtered > X_orig
-                X_left.columns = [str(cl) + "_left" for cl in self.variables_]
-            if self.tail in ["right", "both"]:
-                X_right = X_out_filtered < X_orig
-                X_right.columns = [str(cl) + "_right" for cl in self.variables_]
-            if self.tail == "left":
-                X_out = pd.concat([X_out, X_left.astype(np.float64)], axis=1)
-            elif self.tail == "right":
-                X_out = pd.concat([X_out, X_right.astype(np.float64)], axis=1)
-            else:
-                X_both = pd.concat([X_left, X_right], axis=1).astype(np.float64)
-                X_both = X_both[
-                    [
-                        cl1
-                        for cl2 in zip(X_left.columns.values, X_right.columns.values)
-                        for cl1 in cl2
-                    ]
-                ]
-                X_out = pd.concat([X_out, X_both], axis=1)
-
-        return X_out
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

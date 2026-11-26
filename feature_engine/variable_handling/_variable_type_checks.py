@@ -1,62 +1,113 @@
-import pandas as pd
-from pandas.api.types import is_object_dtype, is_string_dtype
-from pandas.core.dtypes.common import is_datetime64_any_dtype as is_datetime
-from pandas.core.dtypes.common import is_numeric_dtype as is_numeric
+import warnings
+from datetime import date, datetime
+
+import narwhals as nw
+from dateutil.parser import parser
 
 
-def is_object(s) -> bool:
-    return is_object_dtype(s) or is_string_dtype(s)
+def _is_date_or_datetime(dtype) -> bool:
+    # nw.selectors.datetime() only matches Datetime, not Date, so this needs
+    # its own explicit check.
+    return isinstance(dtype, (nw.Date, nw.Datetime))
 
 
-def _is_categorical_and_is_not_datetime(column: pd.Series) -> bool:
-    # check for datetime only if the type of the categories is not numeric
-    # because pd.to_datetime throws an error when it is an integer
-    if isinstance(column.dtype, pd.CategoricalDtype):
-        is_cat = _is_categories_num(column) or not _is_convertible_to_dt(column)
-
-    # check for datetime only if object cannot be cast as numeric because
-    # if it could pd.to_datetime would convert it to datetime regardless
-    elif is_object(column):
-        is_cat = _is_convertible_to_num(column) or not _is_convertible_to_dt(column)
-
-    else:
-        is_cat = False
-
-    return is_cat
-
-
-def _is_categories_num(column: pd.Series) -> bool:
-    return is_numeric(column.dtype.categories)
-
-
-def _is_convertible_to_dt(column: pd.Series) -> bool:
+def _looks_like_date_string(value) -> bool:
+    # taken from pandas
+    # https://github.com/pandas-dev/pandas/blob/cbae8aea4a31a4052736ab0d23f284ff1e78aa06/pandas/_libs/tslibs/parsing.pyx#L666
     try:
-        var = pd.to_datetime(column, utc=True)
-        return is_datetime(var)
-    except Exception:
+        result, _ = parser()._parse(value)
+    except TypeError:
         return False
 
+    if result is None:
+        return False
 
-def _is_convertible_to_num(column: pd.Series) -> bool:
+    fields = ("year", "month", "day", "hour", "minute", "second")
+    found_fields = sum(1 for field in fields if getattr(result, field) is not None)
+    return found_fields >= 2
+
+
+def _is_convertible_to_num(s: "nw.Series") -> bool:
+    values = s.drop_nulls().to_list()
+    if len(values) == 0:
+        return False
     try:
-        ser = pd.to_numeric(column)
+        for value in values[:100]:
+            float(value)
     except (ValueError, TypeError):
-        ser = column
-    return is_numeric(ser)
+        return False
+    return True
 
 
-def _is_categorical_and_is_datetime(column: pd.Series) -> bool:
-    # check for datetime only if the type of the categories is not numeric
-    # because pd.to_datetime throws an error when it is an integer
-    if isinstance(column.dtype, pd.CategoricalDtype):
-        is_dt = not _is_categories_num(column) and _is_convertible_to_dt(column)
+def _is_convertible_to_dt(s: "nw.Series") -> bool:
+    values = s.drop_nulls()
+    values_list = values.to_list()
+    if len(values_list) == 0:
+        return False
 
-    # check for datetime only if object cannot be cast as numeric because
-    # if it could pd.to_datetime would convert it to datetime regardless
-    elif is_object(column):
-        is_dt = not _is_convertible_to_num(column) and _is_convertible_to_dt(column)
+    first_value = values_list[0]
+    if not isinstance(first_value, (date, datetime)):
+        if _looks_like_date_string(first_value) is False:
+            return False
 
-    else:
-        is_dt = False
+    # Try the backend's own vectorized parser first (faster).
+    # Fall back to the per-value check (below) when it fails.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        try:
+            values.str.to_datetime()
+            return True
+        except Exception:
+            pass
 
-    return is_dt
+    for value in values_list[:100]:
+        if isinstance(value, (date, datetime)):
+            continue
+        if _looks_like_date_string(value) is False:
+            return False
+    return True
+
+
+def _is_categories_num(s: "nw.Series") -> bool:
+    return s.cat.get_categories().dtype.is_numeric()
+
+
+def _is_categorical_and_is_not_datetime(s: "nw.Series") -> bool:
+    if isinstance(s.dtype, nw.Enum):
+        # an explicit, user-defined category set is an unambiguous categorical
+        # signal, unlike a generic string column, so skip the datetime check
+        return True
+
+    if isinstance(s.dtype, nw.Categorical):
+        # check for datetime only if the categories are not numeric, because
+        # a numeric-backed categorical (pandas-only - polars categories are
+        # always string-backed) can never hold dates
+        categories_are_numeric = _is_categories_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return categories_are_numeric is True or is_convertible_to_dt is False
+
+    if isinstance(s.dtype, (nw.String, nw.Object)):
+        # check for datetime only if the column cannot be cast as numeric,
+        # because if it could, it would be a numeric column, not a date
+        is_convertible_to_num = _is_convertible_to_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return is_convertible_to_num is True or is_convertible_to_dt is False
+
+    return False
+
+
+def _is_categorical_and_is_datetime(s: "nw.Series") -> bool:
+    if isinstance(s.dtype, nw.Enum):
+        return False
+
+    if isinstance(s.dtype, nw.Categorical):
+        categories_are_numeric = _is_categories_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return categories_are_numeric is False and is_convertible_to_dt is True
+
+    if isinstance(s.dtype, (nw.String, nw.Object)):
+        is_convertible_to_num = _is_convertible_to_num(s)
+        is_convertible_to_dt = _is_convertible_to_dt(s)
+        return is_convertible_to_num is False and is_convertible_to_dt is True
+
+    return False

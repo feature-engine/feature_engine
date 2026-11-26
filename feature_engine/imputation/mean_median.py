@@ -4,7 +4,7 @@
 import warnings
 from typing import List, Optional, Union
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -27,6 +27,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import aggregate_columns
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_handling import (
     check_numerical_variables,
@@ -102,6 +103,30 @@ class MeanImputer(BaseImputer):
     2  1.0    b
     3  0.0  NaN
     4  1.0    a
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.imputation import MeanImputer
+    >>> X = pl.DataFrame(dict(
+    >>>        x1 = [None, 1, 1, 0, None],
+    >>>        x2 = ["a", None, "b", None, "a"],
+    >>>        ))
+    >>> mmi = MeanImputer(imputation_method='median')
+    >>> mmi.fit(X)
+    >>> mmi.transform(X)
+    shape: (5, 2)
+    ┌─────┬──────┐
+    │ x1  ┆ x2   │
+    │ --- ┆ ---  │
+    │ f64 ┆ str  │
+    ╞═════╪══════╡
+    │ 1.0 ┆ a    │
+    │ 1.0 ┆ null │
+    │ 1.0 ┆ b    │
+    │ 0.0 ┆ null │
+    │ 1.0 ┆ a    │
+    └─────┴──────┘
     """
 
     def __init__(
@@ -111,8 +136,14 @@ class MeanImputer(BaseImputer):
         return_empty: bool = False,
     ) -> None:
 
-        if imputation_method not in ["median", "mean"]:
-            raise ValueError("imputation_method takes only values 'median' or 'mean'")
+        if not isinstance(imputation_method, str) or imputation_method not in [
+            "median",
+            "mean",
+        ]:
+            raise ValueError(
+                "imputation_method takes only values 'median' or 'mean'. "
+                f"Got {imputation_method} instead."
+            )
 
         self.imputation_method = imputation_method
         self.variables = _check_variables_input_value(variables)
@@ -120,16 +151,17 @@ class MeanImputer(BaseImputer):
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the mean or median values.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
-            The training dataset.
+        X: dataframe of shape = [n_samples, n_features]
+            The training dataset. Can be a pandas, polars, or any other dataframe
+            supported by narwhals.
 
-        y: pandas series or None, default=None
+        y: Series or None, default=None
             y is not needed in this imputation. You can pass None or y.
         """
 
@@ -142,16 +174,12 @@ class MeanImputer(BaseImputer):
         else:
             variables_ = check_numerical_variables(X, self.variables)
 
-        # find imputation parameters: mean or median
-        if self.imputation_method == "mean":
-            imputer_dict_ = X[variables_].mean().to_dict()
-
-        elif self.imputation_method == "median":
-            imputer_dict_ = X[variables_].median().to_dict()
+        imputer_dict_ = aggregate_columns(X, variables_, self.imputation_method)
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 

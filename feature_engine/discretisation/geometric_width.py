@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -30,6 +30,7 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import to_numpy
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
@@ -159,28 +160,27 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
         self.return_empty = return_empty
         self.bins = bins
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the boundaries of the geometric width intervals / bins for each
         variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset. Can be the entire dataframe, not just the variables
             to be transformed.
         y: None
             y is not needed in this encoder. You can pass y or None.
         """
 
-        # check input dataframe
         X, variables_ = self._fit_setup(X)
 
-        # fit
         binner_dict_ = {}
 
-        for var in variables_:
-            min_, max_ = X[var].min(), X[var].max()
+        for var, values in zip(variables_, to_numpy(X, variables_)):
+            min_: float = values.min()
+            max_: float = values.max()
             increment = np.power(max_ - min_, 1.0 / self.bins)
             bins = np.r_[
                 -np.inf, min_ + np.power(increment, np.arange(1, self.bins)), np.inf
@@ -191,6 +191,7 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
 
         self.binner_dict_ = binner_dict_
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self

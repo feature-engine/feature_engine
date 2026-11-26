@@ -4,7 +4,8 @@
 import warnings
 from typing import List, Optional, Union
 
-import pandas as pd
+import narwhals as nw
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -27,6 +28,7 @@ from feature_engine._docstrings.methods import (
     _inverse_transform_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 
 
 @Substitution(
@@ -96,12 +98,36 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
     >>> mns.fit(X)
     >>> X = mns.transform(X)
     >>> X.head()
-            x
-    0  0.496714
-    1 -0.138264
-    2  0.647689
-    3  1.523030
-    4 -0.234153
+              x
+    0  0.051125
+    1 -0.071456
+    2  0.093623
+    3  0.518122
+    4 -0.084093
+
+    With polars:
+
+    >>> import numpy as np
+    >>> import polars as pl
+    >>> from feature_engine.scaling import MeanNormalisationScaler
+    >>> np.random.seed(42)
+    >>> X = pl.DataFrame(dict(x = np.random.lognormal(size = 100)))
+    >>> mns = MeanNormalisationScaler()
+    >>> mns.fit(X)
+    >>> X = mns.transform(X)
+    >>> X.head()
+    shape: (5, 1)
+    ┌───────────┐
+    │ x         │
+    │ ---       │
+    │ f64       │
+    ╞═══════════╡
+    │ 0.051125  │
+    │ -0.071456 │
+    │ 0.093623  │
+    │ 0.518122  │
+    │ -0.084093 │
+    └───────────┘
     """
 
     def __init__(
@@ -115,25 +141,31 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
         self.variables = _check_variables_input_value(variables)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Finds the mean and value range of each variable.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features].
+        X: dataframe of shape = [n_samples, n_features].
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
 
-        # check input dataframe
         X, variables_ = self._fit_setup(X)
 
-        mean_ = X[variables_].mean().to_dict()
-        range_ = (X[variables_].max() - X[variables_].min()).to_dict()
+        arrays = to_numpy(X, variables_)
+        # .item() returns plain Python numbers, not numpy scalars.
+        mean_: dict = {
+            var: values.mean().item() for var, values in zip(variables_, arrays)
+        }
+        range_: dict = {
+            var: (values.max() - values.min()).item()
+            for var, values in zip(variables_, arrays)
+        }
 
         # check for constant columns
         constant_columns = [col for col, value in range_.items() if value == 0]
@@ -146,55 +178,62 @@ class MeanNormalisationScaler(BaseNumericalTransformer):
         self.variables_ = variables_
         self.mean_ = mean_
         self.range_ = range_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Transform the variables using mean normalisation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
+        arrays = to_numpy(X, self.variables_)
+        X = replace_columns_in_df(
+            X,
+            {
+                var: (values - self.mean_[var]) / self.range_[var]
+                for var, values in zip(self.variables_, arrays)
+            },
+        )
+        return nw.to_native(X, pass_through=True)
 
-        # transformation
-        X[self.variables_] = (X[self.variables_] - self.mean_) / self.range_
-
-        return X
-
-    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Convert the data back to the original representation.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_tr: pandas dataframe
+        X_tr: dataframe
             The dataframe with the transformed variables.
         """
 
-        # check input dataframe and if class was fitted
         X = self._check_transform_input_and_state(X)
-
-        # inverse transform
-        X[self.variables_] = X[self.variables_] * self.range_ + self.mean_
-
-        return X
+        arrays = to_numpy(X, self.variables_)
+        X = replace_columns_in_df(
+            X,
+            {
+                var: values * self.range_[var] + self.mean_[var]
+                for var, values in zip(self.variables_, arrays)
+            },
+        )
+        return nw.to_native(X, pass_through=True)
 
 
 # TODO: remove in version 2.1.0

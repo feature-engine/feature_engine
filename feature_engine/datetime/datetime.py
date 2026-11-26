@@ -1,10 +1,8 @@
-# Authors: dodoarg <eargiolas96@gmail.com>
-
 from typing import List, Optional, Union
 
-import pandas as pd
-from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from pandas.api.types import is_numeric_dtype as is_numeric
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame, IntoSeries
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -32,14 +30,20 @@ from feature_engine.dataframe_checks import (
     _check_X_matches_training_df,
     check_X,
 )
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    subset_df,
+)
 from feature_engine.datetime._datetime_constants import (
     FEATURES_DEFAULT,
     FEATURES_FUNCTIONS,
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
-from feature_engine.variable_handling._variable_type_checks import (
-    _is_categorical_and_is_datetime,
+from feature_engine.datetime._datetime_helpers import (
+    datetime_to_numpy,
+    index_to_datetime_numpy,
 )
 from feature_engine.variable_handling.check_variables import check_datetime_variables
 from feature_engine.variable_handling.find_variables import find_datetime_variables
@@ -58,8 +62,9 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     new columns to the dataset. DatetimeFeatures can extract datetime information from
     existing datetime or object-like variables or from the dataframe index.
 
-    DatetimeFeatures uses `pandas.to_datetime` to convert object variables to datetime
-    and pandas.dt to extract the features from datetime.
+    DatetimeFeatures works with pandas and polars dataframes. `dayfirst`,
+    `yearfirst` and `utc` are pandas-only parsing options and have no effect on
+    polars input, so use `format` there instead.
 
     The transformer supports the extraction of the following features:
 
@@ -93,7 +98,8 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         If None, the transformer will find and select all datetime variables,
         including variables of type object that can be converted to datetime.
         If "index", the transformer will extract datetime features from the
-        index of the dataframe.
+        index of the dataframe. "index" is only supported when `X` is a pandas
+        dataframe, since only pandas dataframes have an index.
 
     {return_empty}
 
@@ -119,11 +125,14 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     dayfirst: bool, default="False"
         Specify a date parse order if arg is str or is list-like. If True, parses
         dates with the day first, e.g. 10/11/12 is parsed as 2012-11-10. Same as in
-        `pandas.to_datetime`.
+        `pandas.to_datetime`. Only applied when `X` is a pandas dataframe; ignored
+        for other backends, which have no equivalent parsing option.
 
     yearfirst: bool, default="False"
         Specify a date parse order if arg is str or is list-like.
-        Same as in `pandas.to_datetime`.
+        Same as in `pandas.to_datetime`. Only applied when `X` is a pandas
+        dataframe; ignored for other backends, which have no equivalent parsing
+        option.
 
         - If True parses dates with the year first, e.g. 10/11/12 is parsed as
           2010-11-12.
@@ -131,7 +140,9 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
     utc: bool, default=None
         Return UTC DatetimeIndex if True (converting any tz-aware datetime.datetime
-        objects as well). Same as in `pandas.to_datetime`.
+        objects as well). Same as in `pandas.to_datetime`. Only applied when `X` is
+        a pandas dataframe; ignored for other backends, which have no equivalent
+        parsing option.
 
     format: str, default None
         The strftime to parse time, e.g. "%d/%m/%Y". Check pandas `to_datetime()` for
@@ -182,6 +193,25 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
     0       2022           9                 18
     1       2022          10                 27
     2       2022          12                 24
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.datetime import DatetimeFeatures
+    >>> X = pl.DataFrame(dict(date = ["2022-09-18", "2022-10-27", "2022-12-24"]))
+    >>> dtf = DatetimeFeatures(features_to_extract = ["year", "month", "day_of_month"])
+    >>> dtf.fit(X)
+    >>> dtf.transform(X)
+    shape: (3, 3)
+    ┌───────────┬────────────┬───────────────────┐
+    │ date_year ┆ date_month ┆ date_day_of_month │
+    │ ---       ┆ ---        ┆ ---               │
+    │ i64       ┆ i64        ┆ i64               │
+    ╞═══════════╪════════════╪═══════════════════╡
+    │ 2022      ┆ 9          ┆ 18                │
+    │ 2022      ┆ 10         ┆ 27                │
+    │ 2022      ┆ 12         ┆ 24                │
+    └───────────┴────────────┴───────────────────┘
     """
 
     def __init__(
@@ -240,7 +270,7 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         self.features_to_extract = features_to_extract
         self.format = format
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         This transformer does not learn any parameter.
 
@@ -249,42 +279,30 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples. Can be the entire dataframe, not just the
             variables to transform.
 
-        y: pandas Series, default=None
+        y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-        # check input dataframe
         X = check_X(X)
 
-        # special case index
         if self.variables == "index":
-
-            if not (
-                is_datetime(X.index)
-                or (
-                    not is_numeric(X.index) and _is_categorical_and_is_datetime(X.index)
-                )
-            ):
-                raise TypeError("The dataframe index is not datetime.")
-
+            index = index_to_datetime_numpy(X)
+            if self.missing_values == "raise":
+                self._check_index_contains_na(index)
             self.variables_ = []
 
-        elif self.variables is None:
-            self.variables_ = find_datetime_variables(
-                X, return_empty=self.return_empty
-            )
-
         else:
-            self.variables_ = check_datetime_variables(X, self.variables)
-
-        # check if datetime variables contains na
-        if self.missing_values == "raise":
-            if self.variables == "index":
-                self._check_index_contains_na(X.index)
+            if self.variables is None:
+                self.variables_ = find_datetime_variables(
+                    X, return_empty=self.return_empty
+                )
             else:
+                self.variables_ = check_datetime_variables(X, self.variables)
+
+            if self.missing_values == "raise":
                 _check_contains_na(X, self.variables_)
 
         if self.features_to_extract is None:
@@ -294,96 +312,81 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
         else:
             self.features_to_extract_ = self.features_to_extract
 
-        # save input features
-        self.feature_names_in_ = X.columns.tolist()
-
-        # save train set shape
+        self.feature_names_in_ = list(X.columns)
         self.n_features_in_ = X.shape[1]
 
         return self
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Extract the date and time features and add them to the dataframe.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The data to transform.
 
         Returns
         -------
-        X_new: pandas dataframe, shape = [n_samples, n_features x n_df_features]
+        X_new: dataframe, shape = [n_samples, n_features x n_df_features]
             The dataframe with the original variables plus the new variables.
         """
-
-        # Check method fit has been called
         check_is_fitted(self)
-
-        # check that input is a dataframe
         X = check_X(X)
-
-        # Check if input data contains same number of columns as dataframe used to fit.
         _check_X_matches_training_df(X, self.n_features_in_)
+        X = subset_df(X, self.feature_names_in_)
 
-        # reorder variables to match train set
-        X = X[self.feature_names_in_]
-
-        # special case index
         if self.variables == "index":
-            # check if dataset contains na
-            if self.missing_values == "raise":
-                self._check_index_contains_na(X.index)
-
-            # convert index to a datetime series
-            idx_datetime = pd.Series(
-                pd.to_datetime(
-                    X.index,
-                    dayfirst=self.dayfirst,
-                    yearfirst=self.yearfirst,
-                    utc=self.utc,
-                    format=self.format,
-                ),
-                index=X.index,
+            index = index_to_datetime_numpy(
+                X,
+                dayfirst=self.dayfirst,
+                yearfirst=self.yearfirst,
+                utc=self.utc,
+                format=self.format,
             )
-
-            # create new features
-            for feat in self.features_to_extract_:
-                X[FEATURES_SUFFIXES[feat][1:]] = FEATURES_FUNCTIONS[feat](idx_datetime)
+            if self.missing_values == "raise":
+                self._check_index_contains_na(index)
+            new_features = self._extract_features(index)
 
         else:
-            # check if dataset contains na
             if self.missing_values == "raise":
                 _check_contains_na(X, self.variables_)
 
             if len(self.variables_) == 0:
-                return X
+                return nw.to_native(X, pass_through=True)
 
-            # convert datetime variables
-            datetime_df = pd.concat(
-                [
-                    pd.to_datetime(
-                        X[variable],
-                        dayfirst=self.dayfirst,
-                        yearfirst=self.yearfirst,
-                        utc=self.utc,
-                        format=self.format,
-                    )
-                    for variable in self.variables_
-                ],
-                axis=1,
+            arrays = datetime_to_numpy(
+                X,
+                self.variables_,
+                dayfirst=self.dayfirst,
+                yearfirst=self.yearfirst,
+                utc=self.utc,
+                format=self.format,
+                local_time=True,
             )
+            new_features = {}
+            for var, values in zip(self.variables_, arrays):
+                for feat, result in self._extract_features(values).items():
+                    new_features[str(var) + FEATURES_SUFFIXES[feat]] = result
 
-            # create new features
-            for var in self.variables_:
-                for feat in self.features_to_extract_:
-                    X[str(var) + FEATURES_SUFFIXES[feat]] = FEATURES_FUNCTIONS[feat](
-                        datetime_df[var]
-                    )
-            if self.drop_original:
-                X.drop(self.variables_, axis=1, inplace=True)
+        X = add_columns_to_df(X, new_features)
+        if self.variables != "index" and self.drop_original is True:
+            X = drop_variables_from_df(X, self.variables_)
 
-        return X
+        return nw.to_native(X, pass_through=True)
+
+    def _extract_features(self, values: np.ndarray) -> dict:
+        """Returns the date and time features of one datetime array, by feature."""
+        na_mask = np.isnat(values)
+        has_na = bool(na_mask.any())
+        features = {}
+        for feat in self.features_to_extract_:
+            result = FEATURES_FUNCTIONS[feat](values)
+            if has_na is True:
+                result = result.astype("float64")
+                result[na_mask] = np.nan
+            features[feat] = result
+        return features
 
     def _get_new_features_name(self) -> List:
         """create the names for the datetime features."""
@@ -401,8 +404,8 @@ class DatetimeFeatures(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin)
 
         return feature_names
 
-    def _check_index_contains_na(self, index: pd.Index):
-        if index.isnull().any():
+    def _check_index_contains_na(self, index: np.ndarray) -> None:
+        if np.isnat(index).any():
             raise ValueError(
                 "The dataframe index contains missing data. "
                 "Check and remove those before using this transformer "

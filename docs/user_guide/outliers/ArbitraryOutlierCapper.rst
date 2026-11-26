@@ -96,6 +96,44 @@ values:
     dtype: float64
 
 
+With polars
+-----------
+
+:class:`ArbitraryOutlierCapper()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.outliers import ArbitraryOutlierCapper
+
+    df = pl.DataFrame({
+        "age": [20.0, 21.0, 19.0, 45.0, 67.0, 18.0, 90.0, 34.0, 55.0, 23.0],
+        "fare": [7.5, 8.0, 71.3, 13.0, 30.5, 7.9, 512.3, 26.0, 15.5, 8.6],
+    })
+
+    capper = ArbitraryOutlierCapper(
+        max_capping_dict={"age": 50, "fare": 200},
+        min_capping_dict=None,
+    )
+
+    capper.fit(df)
+    Xt = capper.transform(df)
+
+    print(Xt.select(["age", "fare"]).max())
+
+The resulting maximum values, capped at the values we entered in the dictionary:
+
+.. code:: text
+
+    shape: (1, 2)
+    ┌──────┬───────┐
+    │ age  ┆ fare  │
+    │ ---  ┆ ---   │
+    │ f64  ┆ f64   │
+    ╞══════╪═══════╡
+    │ 50.0 ┆ 200.0 │
+    └──────┴───────┘
+
 Additional resources
 --------------------
 

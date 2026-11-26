@@ -1,61 +1,52 @@
 import pandas as pd
 import pytest
-import sklearn
 from numpy import nan
 from sklearn import clone
 from sklearn.exceptions import NotFittedError
 from sklearn.pipeline import Pipeline
 from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.fixes import parse_version
 
 from feature_engine.preprocessing import MatchCategories, MatchVariables
 from feature_engine.tags import _return_tags
+from tests.backend_helpers import frame_to_dict
 from tests.estimator_checks.estimator_checks import (
     check_feature_engine_estimator,
     test_df,
 )
 from tests.estimator_checks.sklearn_check_wrapper import wrap_for_check_estimator
 
-sklearn_version = parse_version(parse_version(sklearn.__version__).base_version)
-
 _estimators = [MatchCategories(ignore_format=True), MatchVariables()]
 
-if sklearn_version < parse_version("1.6"):
+FAILED_CHECKS = _return_tags()["_xfail_checks"]
+FAILED_CHECKS_MATCHCOLS = _return_tags()["_xfail_checks"]
 
-    @pytest.mark.parametrize("estimator", _estimators)
-    def test_check_estimator_from_sklearn(estimator):
-        return check_estimator(estimator)
+msg1 = "input shape of dataframes in fit and transform can differ"
+msg2 = (
+    "transformer takes categorical variables, and inf cannot be determined"
+    "on these variables. Thus, check is not implemented"
+)
 
-else:
-    FAILED_CHECKS = _return_tags()["_xfail_checks"]
-    FAILED_CHECKS_MATCHCOLS = _return_tags()["_xfail_checks"]
+FAILED_CHECKS.update({"check_estimators_nan_inf": msg2})
+FAILED_CHECKS_MATCHCOLS.update(
+    {
+        "check_transformer_general": msg1,
+        "check_estimators_nan_inf": msg2,
+    }
+)
 
-    msg1 = "input shape of dataframes in fit and transform can differ"
-    msg2 = (
-        "transformer takes categorical variables, and inf cannot be determined"
-        "on these variables. Thus, check is not implemented"
+
+@pytest.mark.parametrize(
+    "estimator, failed_tests",
+    [
+        (_estimators[0], FAILED_CHECKS),
+        (_estimators[1], FAILED_CHECKS_MATCHCOLS),
+    ],
+)
+def test_check_estimator_from_sklearn(estimator, failed_tests):
+    return check_estimator(
+        estimator=wrap_for_check_estimator(estimator),
+        expected_failed_checks=failed_tests,
     )
-
-    FAILED_CHECKS.update({"check_estimators_nan_inf": msg2})
-    FAILED_CHECKS_MATCHCOLS.update(
-        {
-            "check_transformer_general": msg1,
-            "check_estimators_nan_inf": msg2,
-        }
-    )
-
-    @pytest.mark.parametrize(
-        "estimator, failed_tests",
-        [
-            (_estimators[0], FAILED_CHECKS),
-            (_estimators[1], FAILED_CHECKS_MATCHCOLS),
-        ],
-    )
-    def test_check_estimator_from_sklearn(estimator, failed_tests):
-        return check_estimator(
-            estimator=wrap_for_check_estimator(estimator),
-            expected_failed_checks=failed_tests,
-        )
 
 
 @pytest.mark.parametrize("estimator", [MatchCategories(), MatchVariables()])
@@ -88,3 +79,24 @@ def test_transformers_in_pipeline_with_set_output_pandas(transformer):
     Xtp = pipe.fit_transform(X, y)
 
     pd.testing.assert_frame_equal(Xtt, Xtp)
+
+
+_REORDER_DATA = {
+    "var_A": ["a", "b", "c", "a"],
+    "var_B": ["x", "y", "x", "y"],
+    "num": [1.0, 2.0, 3.0, 4.0],
+}
+
+
+@pytest.mark.parametrize("transformer", [MatchCategories(), MatchVariables()])
+def test_transform_reorders_columns_as_in_train_set(make_df, transformer):
+    X = make_df(_REORDER_DATA)
+    expected = transformer.fit(X).transform(X)
+
+    reordered = ["num", "var_B", "var_A"]
+    X_reordered = make_df({var: _REORDER_DATA[var] for var in reordered})
+    Xt = transformer.transform(X_reordered)
+
+    assert isinstance(Xt, make_df)
+    assert list(Xt.columns) == list(expected.columns)
+    assert frame_to_dict(Xt) == frame_to_dict(expected)

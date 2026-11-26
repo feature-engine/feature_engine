@@ -156,6 +156,42 @@ original variables and also the new variables with the time difference:
     4 2019-03-09 2018-04-08         0.917199
 
 
+With polars
+~~~~~~~~~~~
+
+:class:`DatetimeSubtraction()` also works with polars dataframes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.datetime import DatetimeSubtraction
+
+    data = pl.DataFrame({
+        "date1" : ["2022-09-01", "2022-10-01", "2022-12-01"],
+        "date2" : ["2022-09-15", "2022-10-15", "2022-12-15"],
+        "date3" : ["2022-08-01", "2022-09-01", "2022-11-01"],
+        "date4" : ["2022-08-15", "2022-09-15", "2022-11-15"],
+    })
+
+    dtf = DatetimeSubtraction(variables=["date1", "date2"], reference=["date3", "date4"])
+
+    data = dtf.fit_transform(data)
+
+    print(data)
+
+.. code:: text
+
+    shape: (3, 8)
+    ┌────────────┬────────────┬────────────┬────────────┬─────────────────┬─────────────────┬─────────────────┬─────────────────┐
+    │ date1      ┆ date2      ┆ date3      ┆ date4      ┆ date1_sub_date3 ┆ date2_sub_date3 ┆ date1_sub_date4 ┆ date2_sub_date4 │
+    │ ---        ┆ ---        ┆ ---        ┆ ---        ┆ ---             ┆ ---             ┆ ---             ┆ ---             │
+    │ str        ┆ str        ┆ str        ┆ str        ┆ f64             ┆ f64             ┆ f64             ┆ f64             │
+    ╞════════════╪════════════╪════════════╪════════════╪═════════════════╪═════════════════╪═════════════════╪═════════════════╡
+    │ 2022-09-01 ┆ 2022-09-15 ┆ 2022-08-01 ┆ 2022-08-15 ┆ 31.0            ┆ 45.0            ┆ 17.0            ┆ 31.0            │
+    │ 2022-10-01 ┆ 2022-10-15 ┆ 2022-09-01 ┆ 2022-09-15 ┆ 30.0            ┆ 44.0            ┆ 16.0            ┆ 30.0            │
+    │ 2022-12-01 ┆ 2022-12-15 ┆ 2022-11-01 ┆ 2022-11-15 ┆ 30.0            ┆ 44.0            ┆ 16.0            ┆ 30.0            │
+    └────────────┴────────────┴────────────┴────────────┴─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+
 Drop original variables after computation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

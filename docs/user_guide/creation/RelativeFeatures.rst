@@ -141,6 +141,51 @@ Which will return the names of all the variables in the transformed data:
      'Marks_pow_Age']
 
 
+With polars
+-----------
+
+:class:`RelativeFeatures()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.creation import RelativeFeatures
+
+    df = pl.DataFrame({
+        "Age": [20, 21, 19, 18],
+        "Marks": [0.9, 0.8, 0.7, 0.6],
+    })
+
+    transformer = RelativeFeatures(
+        variables=["Age", "Marks"],
+        reference=["Age"],
+        func = ["sub", "div", "mod", "pow"],
+    )
+
+    print(transformer.fit_transform(df))
+
+The resulting values match those found with pandas (`Age_pow_Age`'s large
+values are genuine `int64` overflow from raising `Age` to the power of
+itself, not an error - the same happens with pandas):
+
+.. code:: text
+
+    shape: (4, 10)
+    ┌─────┬───────┬─────────────┬───────────────┬─────────────┬───────────────┬─────────────┬───────────────┬──────────────────────┬───────────────┐
+    │ Age ┆ Marks ┆ Age_sub_Age ┆ Marks_sub_Age ┆ Age_div_Age ┆ Marks_div_Age ┆ Age_mod_Age ┆ Marks_mod_Age ┆ Age_pow_Age          ┆ Marks_pow_Age │
+    │ --- ┆ ---   ┆ ---         ┆ ---           ┆ ---         ┆ ---           ┆ ---         ┆ ---           ┆ ---                  ┆ ---           │
+    │ i64 ┆ f64   ┆ i64         ┆ f64           ┆ f64         ┆ f64           ┆ i64         ┆ f64           ┆ i64                  ┆ f64           │
+    ╞═════╪═══════╪═════════════╪═══════════════╪═════════════╪═══════════════╪═════════════╪═══════════════╪══════════════════════╪═══════════════╡
+    │ 20  ┆ 0.9   ┆ 0           ┆ -19.1         ┆ 1.0         ┆ 0.045         ┆ 0           ┆ 0.9           ┆ -2101438300051996672 ┆ 0.121577      │
+    │ 21  ┆ 0.8   ┆ 0           ┆ -20.2         ┆ 1.0         ┆ 0.038095      ┆ 0           ┆ 0.8           ┆ -1595931050845505211 ┆ 0.009223      │
+    │ 19  ┆ 0.7   ┆ 0           ┆ -18.3         ┆ 1.0         ┆ 0.036842      ┆ 0           ┆ 0.7           ┆ 6353754964178307979  ┆ 0.00114       │
+    │ 18  ┆ 0.6   ┆ 0           ┆ -17.4         ┆ 1.0         ┆ 0.033333      ┆ 0           ┆ 0.6           ┆ -497033925936021504  ┆ 0.000102      │
+    └─────┴───────┴─────────────┴───────────────┴─────────────┴───────────────┴─────────────┴───────────────┴──────────────────────┴───────────────┘
+
+`fill_value`, `drop_original`, and `get_feature_names_out()` work
+identically to the pandas examples above.
+
+
 Additional resources
 --------------------
 

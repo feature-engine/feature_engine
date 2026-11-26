@@ -1,9 +1,9 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -26,6 +26,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import aggregate_columns
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.variable_handling import (
     check_numerical_variables,
@@ -140,6 +141,27 @@ class EndTailImputer(BaseImputer):
     2  0.500000
     3  0.000000
     4  1.199359
+
+    With polars:
+
+    >>> import polars as pl
+    >>> from feature_engine.imputation import EndTailImputer
+    >>> X = pl.DataFrame({"x1": [None, 0.5, 0.5, 0.0, None]})
+    >>> eti = EndTailImputer(imputation_method='gaussian', tail='right', fold=3)
+    >>> eti.fit(X)
+    >>> eti.transform(X)
+    shape: (5, 1)
+    ┌──────────┐
+    │ x1       │
+    │ ---      │
+    │ f64      │
+    ╞══════════╡
+    │ 1.199359 │
+    │ 0.5      │
+    │ 0.5      │
+    │ 0.0      │
+    │ 1.199359 │
+    └──────────┘
     """
 
     def __init__(
@@ -151,16 +173,23 @@ class EndTailImputer(BaseImputer):
         return_empty: bool = False,
     ) -> None:
 
-        if imputation_method not in ["gaussian", "iqr", "max"]:
+        if not isinstance(imputation_method, str) or imputation_method not in [
+            "gaussian",
+            "iqr",
+            "max",
+        ]:
             raise ValueError(
-                "imputation_method takes only values 'gaussian', 'iqr' or 'max'"
+                "imputation_method takes only values 'gaussian', 'iqr' or 'max'. "
+                f"Got {imputation_method} instead."
             )
 
-        if tail not in ["right", "left"]:
-            raise ValueError("tail takes only values 'right' or 'left'")
+        if not isinstance(tail, str) or tail not in ["right", "left"]:
+            raise ValueError(
+                f"tail takes only values 'right' or 'left'. Got {tail} instead."
+            )
 
-        if fold <= 0:
-            raise ValueError("fold takes only positive numbers")
+        if not isinstance(fold, (int, float)) or isinstance(fold, bool) or fold <= 0:
+            raise ValueError(f"fold takes only positive numbers. Got {fold} instead.")
 
         self.imputation_method = imputation_method
         self.tail = tail
@@ -170,13 +199,13 @@ class EndTailImputer(BaseImputer):
         _check_return_empty_is_bool(return_empty)
         self.return_empty = return_empty
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: IntoDataFrame, y: Optional[IntoSeries] = None):
         """
         Learn the values at the end of the variable distribution.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training dataset.
 
         y: pandas Series, default=None
@@ -191,33 +220,32 @@ class EndTailImputer(BaseImputer):
         else:
             variables_ = check_numerical_variables(X, self.variables)
 
-        # estimate imputation values
-        if self.imputation_method == "max":
-            imputer_dict_ = (X[variables_].max() * self.fold).to_dict()
-
-        elif self.imputation_method == "gaussian":
-            if self.tail == "right":
-                imputer_dict_ = (
-                    X[variables_].mean() + self.fold * X[variables_].std()
-                ).to_dict()
-            elif self.tail == "left":
-                imputer_dict_ = (
-                    X[variables_].mean() - self.fold * X[variables_].std()
-                ).to_dict()
-
-        elif self.imputation_method == "iqr":
-            IQR = X[variables_].quantile(0.75) - X[variables_].quantile(0.25)
-            if self.tail == "right":
-                imputer_dict_ = (
-                    X[variables_].quantile(0.75) + (IQR * self.fold)
-                ).to_dict()
-            elif self.tail == "left":
-                imputer_dict_ = (
-                    X[variables_].quantile(0.25) - (IQR * self.fold)
-                ).to_dict()
+        imputer_dict_ = self._end_values(X, variables_)
 
         self.variables_ = variables_
         self.imputer_dict_ = imputer_dict_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
+
+    def _end_values(self, X, variables: List[Union[str, int]]) -> Dict:
+        """Compute the end-of-distribution replacement value of each variable, per
+        `imputation_method` and `tail`."""
+        if self.imputation_method == "max":
+            maxs = aggregate_columns(X, variables, "max")
+            return {var: maxs[var] * self.fold for var in variables}
+
+        if self.imputation_method == "gaussian":
+            means = aggregate_columns(X, variables, "mean")
+            stds = aggregate_columns(X, variables, "std")
+            if self.tail == "right":
+                return {var: means[var] + self.fold * stds[var] for var in variables}
+            return {var: means[var] - self.fold * stds[var] for var in variables}
+
+        # imputation_method == "iqr"
+        q1 = aggregate_columns(X, variables, "quantile", 0.25)
+        q3 = aggregate_columns(X, variables, "quantile", 0.75)
+        if self.tail == "right":
+            return {var: q3[var] + self.fold * (q3[var] - q1[var]) for var in variables}
+        return {var: q1[var] - self.fold * (q3[var] - q1[var]) for var in variables}

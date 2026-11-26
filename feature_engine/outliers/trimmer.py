@@ -1,7 +1,11 @@
 # Authors: Soledad Galli <solegalli@protonmail.com>
 # License: BSD 3 clause
 
-import pandas as pd
+from typing import Union
+
+import narwhals as nw
+import numpy as np
+from narwhals.typing import IntoDataFrame
 
 from feature_engine._base_transformers.mixins import TransformXyMixin
 from feature_engine._docstrings.fit_attributes import (
@@ -23,6 +27,7 @@ from feature_engine._docstrings.init_parameters.outliers import (
 )
 from feature_engine._docstrings.methods import _fit_transform_docstring
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import filter_rows, to_numpy
 from feature_engine.outliers.base_outlier import WinsorizerBase
 
 
@@ -174,29 +179,33 @@ class OutlierTrimmer(WinsorizerBase, TransformXyMixin):
     9  0.54256
     """
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
         Remove observations with outliers from the dataframe.
 
         Parameters
         ----------
-        X : pandas dataframe of shape = [n_samples, n_features]
+        X : dataframe of shape = [n_samples, n_features]
             The data to be transformed.
 
         Returns
         -------
-        X_new: pandas dataframe of shape = [n_samples, n_features]
+        X_new: dataframe of shape = [n_samples, n_features]
             The dataframe without outlier observations.
         """
-
         X = self._check_transform_input_and_state(X)
+        X = filter_rows(X, self._rows_without_outliers(X))
+        return nw.to_native(X, pass_through=True)
 
-        for feature in self.right_tail_caps_.keys():
-            inliers = X[feature].le(self.right_tail_caps_[feature])
-            X = X.loc[inliers]
-
-        for feature in self.left_tail_caps_.keys():
-            inliers = X[feature].ge(self.left_tail_caps_[feature])
-            X = X.loc[inliers]
-
-        return X
+    def _rows_without_outliers(
+        self, X: Union[IntoDataFrame, nw.DataFrame]
+    ) -> np.ndarray:
+        """Returns True for the rows whose values are within the caps."""
+        arrays = dict(zip(self.variables_, to_numpy(X, self.variables_)))
+        # comparisons with NaN are False, so rows with missing values are removed
+        mask: np.ndarray = np.ones(len(X), dtype=bool)
+        for var, cap in self.right_tail_caps_.items():
+            mask &= arrays[var] <= cap
+        for var, cap in self.left_tail_caps_.items():
+            mask &= arrays[var] >= cap
+        return mask

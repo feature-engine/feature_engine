@@ -38,8 +38,8 @@ Now, we create the dataset:
     X["cat_var1"] = ["Hello"] * 1000
     X["cat_var2"] = ["Bye"] * 1000
 
-    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="T")
-    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="H")
+    X["date1"] = pd.date_range("2020-02-24", periods=1000, freq="min")
+    X["date2"] = pd.date_range("2021-09-29", periods=1000, freq="h")
     X["date3"] = ["2020-02-24"] * 1000
 
     print(X.head())
@@ -90,3 +90,48 @@ Below we see the error message:
 
     TypeError: Some of the variables are not categorical. Please cast them as object
     or categorical before using this transformer.
+
+With polars
+-----------
+
+:class:`check_categorical_variables()` works in the same way with a polars dataframe.
+Let's create an equivalent toy dataset:
+
+.. code:: python
+
+    import polars as pl
+    from datetime import datetime, timedelta
+    from sklearn.datasets import make_classification
+    from feature_engine.variable_handling import check_categorical_variables
+
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=4,
+        n_redundant=1,
+        n_clusters_per_class=1,
+        weights=[0.50],
+        class_sep=2,
+        random_state=1,
+    )
+
+    colnames = [f"num_var_{i+1}" for i in range(4)]
+    X = pl.DataFrame(X, schema=colnames)
+
+    X = X.with_columns(
+        pl.lit("Hello").alias("cat_var1"),
+        pl.lit("Bye").alias("cat_var2"),
+        pl.Series("date1", [datetime(2020, 2, 24) + timedelta(minutes=i) for i in range(1000)]),
+        pl.Series("date2", [datetime(2021, 9, 29) + timedelta(hours=i) for i in range(1000)]),
+        pl.lit("2020-02-24").alias("date3"),
+    )
+
+    var_cat = check_categorical_variables(X, ["cat_var1", "date3"])
+
+    var_cat
+
+Both variables are of type string and hence, will be in the resulting list:
+
+.. code:: python
+
+    ['cat_var1', 'date3']
+

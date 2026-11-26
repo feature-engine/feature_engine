@@ -265,6 +265,55 @@ With the method `inverse_transform`, we can transform the encoded dataframes bac
 original representation, that is, we can replace the encoding with the original categorical
 values.
 
+With polars
+-----------
+
+:class:`CountEncoder()` works in the same way with a polars dataframe:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import CountEncoder
+
+    df = pl.DataFrame({
+        "cabin": ["M", "C", "M", "B", "M"],
+        "sex": ["male", "female", "male", "female", "male"],
+        "embarked": ["S", "C", "S", "S", "Q"],
+    })
+
+    encoder = CountEncoder(
+        encoding_method="count",
+        variables=["cabin", "sex", "embarked"],
+    )
+    encoder.fit(df)
+
+    print(encoder.encoder_dict_)
+
+.. code:: python
+
+    {'cabin': {'M': 3, 'C': 1, 'B': 1}, 'sex': {'male': 3, 'female': 2}, 'embarked': {'S': 3, 'C': 1, 'Q': 1}}
+
+.. code:: python
+
+    Xt = encoder.transform(df)
+
+    print(Xt)
+
+.. code:: text
+
+    shape: (5, 3)
+    ┌───────┬─────┬──────────┐
+    │ cabin ┆ sex ┆ embarked │
+    │ ---   ┆ --- ┆ ---      │
+    │ i64   ┆ i64 ┆ i64      │
+    ╞═══════╪═════╪══════════╡
+    │ 3     ┆ 3   ┆ 3        │
+    │ 1     ┆ 2   ┆ 1        │
+    │ 3     ┆ 3   ┆ 3        │
+    │ 1     ┆ 2   ┆ 3        │
+    │ 3     ┆ 3   ┆ 1        │
+    └───────┴─────┴──────────┘
+
 Additional resources
 --------------------
 

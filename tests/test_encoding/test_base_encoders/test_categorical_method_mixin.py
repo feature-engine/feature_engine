@@ -1,3 +1,6 @@
+import re
+
+import narwhals as nw
 import numpy as np
 import pandas as pd
 import pytest
@@ -23,14 +26,13 @@ def test_underscore_check_na_method():
     variables = ["words", "animals"]
 
     enc = MockClassFit(missing_values="raise")
-    with pytest.raises(ValueError) as record:
-        enc._check_na(input_df, variables)
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
         "`missing_values='ignore'` when initialising this transformer."
     )
-    assert str(record.value) == msg
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        enc._check_na(input_df, variables)
 
 
 def test_check_or_select_variables():
@@ -102,13 +104,11 @@ def test_raises_error_when_nan_introduced():
     enc = MockClass(unseen="raise")
     msg = "During the encoding, NaN values were introduced in the feature(s) words."
 
-    with pytest.raises(ValueError) as record:
-        enc._check_nan_values_after_transformation(output_df)
-    assert str(record.value) == msg
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        enc._check_nan_values_after_transformation(nw.from_native(output_df))
 
-    with pytest.raises(ValueError) as record:
+    with pytest.raises(ValueError, match=re.escape(msg)):
         enc.transform(input_df)
-    assert str(record.value) == msg
 
 
 def test_raises_warning_when_nan_introduced():
@@ -117,26 +117,23 @@ def test_raises_warning_when_nan_introduced():
     enc = MockClass(unseen="ignore")
     msg = "During the encoding, NaN values were introduced in the feature(s) words."
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UserWarning, match=re.escape(msg)):
         enc.transform(input_df)
-    assert record[0].message.args[0] == msg
 
-    with pytest.warns(UserWarning) as record:
-        enc._check_nan_values_after_transformation(output_df)
-    assert record[0].message.args[0] == msg
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        enc._check_nan_values_after_transformation(nw.from_native(output_df))
 
 
 def test_transform_raises_error_when_df_has_nan():
     input_df = pd.DataFrame({"words": ["dog", "dig", "cat", np.nan]})
     enc = MockClass()
-    with pytest.raises(ValueError) as record:
-        enc.transform(input_df)
     msg = (
         "Some of the variables in the dataset contain NaN. Check and "
         "remove those before using this transformer or set the parameter "
         "`missing_values='ignore'` when initialising this transformer."
     )
-    assert str(record.value) == msg
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        enc.transform(input_df)
 
 
 def test_transform_ignores_nan_in_df_to_transform():

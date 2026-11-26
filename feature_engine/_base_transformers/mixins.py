@@ -1,6 +1,9 @@
 from typing import Dict, List, Tuple, Union
 
-import pandas as pd
+import narwhals as nw
+import narwhals.dependencies as nwd
+from narwhals.typing import IntoDataFrame, IntoSeries
+import numpy as np
 from numpy import ndarray
 from numpy.typing import ArrayLike
 from sklearn.utils.validation import check_is_fitted
@@ -11,11 +14,12 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
+from feature_engine.dataframe_helpers import add_columns_to_df
 from feature_engine.variable_handling import check_numerical_variables
 
 
 class TransformXyMixin:
-    def transform_x_y(self, X: pd.DataFrame, y: pd.Series):
+    def transform_x_y(self, X: IntoDataFrame, y: IntoSeries):
         """
         Transform, align and adjust both X and y based on the transformations applied
         to X, ensuring that they correspond to the same set of rows if any were
@@ -23,32 +27,53 @@ class TransformXyMixin:
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The dataframe to transform.
 
-        y: pandas Series or Dataframe of length = n_samples
+        y: Series or Dataframe of length = n_samples
             The target variable to transform. Can be multi-output.
 
         Returns
         -------
-        X_new: pandas dataframe
+        X_new: dataframe
             The transformed dataframe of shape [n_samples - n_rows, n_features]. It may
             contain less rows than the original dataset.
 
-        y_new: pandas Series or DataFrame
+        y_new: Series or DataFrame
             The transformed target variable of length [n_samples - n_rows]. It contains
             as many rows as those left in X_new.
         """
+        check_is_fitted(self)
         X, y = check_X_y(X, y)
-        X = self.transform(X)
-        y = y.loc[X.index]
+
+        # tag each row with its position: a pandas index can have duplicates, and
+        # the other libraries have no index.
+        row_index_col = "__feature_engine_row_index__"
+        X = add_columns_to_df(X, {row_index_col: np.arange(len(X))})
+        # the tag makes X one column wider than in fit, so widen the reference
+        # while transform() runs.
+        feature_names_in = self.feature_names_in_
+        self.n_features_in_ += 1
+        self.feature_names_in_ = feature_names_in + [row_index_col]
+        try:
+            X = self.transform(nw.to_native(X, pass_through=True))
+        finally:
+            self.n_features_in_ -= 1
+            self.feature_names_in_ = feature_names_in
+
+        # not check_X: transform() can remove all the rows.
+        nw_X = nw.from_native(X, eager_only=True)
+        row_positions = nw_X.get_column(row_index_col).to_numpy()
+        X = nw_X.drop(row_index_col).to_native()
+        y = nw.from_native(y, allow_series=True)[row_positions].to_native()
+
         return X, y
 
 
 class FitFromDictMixin:
     def _fit_from_dict(
-        self, X: pd.DataFrame, user_dict_: Dict
-    ) -> Tuple[pd.DataFrame, List[Union[str, int]]]:
+        self, X: IntoDataFrame, user_dict_: Dict
+    ) -> Tuple[Union[IntoDataFrame, nw.DataFrame], List[Union[str, int]]]:
         """
         Checks that input is a dataframe, checks that variables in the dictionary
         entered by the user are of type numerical. Does not assign any
@@ -57,7 +82,7 @@ class FitFromDictMixin:
 
         Parameters
         ----------
-        X : Pandas DataFrame
+        X : dataframe
 
         user_dict_ : Dictionary. Default = None
             Any dictionary allowed by the transformer and entered by user.
@@ -65,7 +90,7 @@ class FitFromDictMixin:
         Raises
         ------
         TypeError
-            If the input is not a Pandas DataFrame or a numpy array
+            If the input is not a recognised dataframe
             If any of the variables in the dictionary are not numerical
         ValueError
             If there are no numerical variables in the df or the df is empty
@@ -73,20 +98,15 @@ class FitFromDictMixin:
 
         Returns
         -------
-        X : Pandas DataFrame
-            The same dataframe entered as parameter
+        X : pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise.
 
         variables_ : List
             The variables in the dictionary.
         """
-        # check input dataframe
         X = check_X(X)
-
-        # find or check for numerical variables
-        variables = list(user_dict_.keys())
-        variables_ = check_numerical_variables(X, variables)
-
-        # check if dataset contains na or inf
+        variables_ = check_numerical_variables(X, list(user_dict_.keys()))
         _check_contains_na(X, variables_)
         _check_contains_inf(X, variables_)
 
@@ -118,47 +138,20 @@ class GetFeatureNamesOutMixin:
         check_is_fitted(self)
 
         if input_features is not None:
-            # If input to fit is an array, then the variable names in
-            # feature_names_in_ are "x0", "x1","x2" ..."xn".
-            if self.feature_names_in_ == [f"x{i}" for i in range(self.n_features_in_)]:
-
-                # If the input was an array, we let the user enter the variable names.
-                if len(input_features) == self.n_features_in_:
-                    if isinstance(input_features, list):
-                        feature_names = input_features
-                    else:
-                        feature_names = list(input_features)
-
-                    # For transformers that add features to the data.
-                    feature_names = self._add_new_feature_names(feature_names)
-
-                    # For transformers that remove features from data, i..e, selectors.
-                    feature_names = self._remove_feature_names(
-                        feature_names, indices=True
-                    )
-
-                    return feature_names
-
-                else:
-                    raise ValueError(
-                        "The number of input_features does not match the number of "
-                        "features seen in the dataframe used in fit."
-                    )
+            msg = "input_features is not equal to feature_names_in_"
+            if isinstance(input_features, list):
+                if input_features != self.feature_names_in_:
+                    raise ValueError(msg)
+            elif isinstance(input_features, ndarray) or (
+                nwd.is_pandas_index(input_features) is True
+            ):
+                if list(input_features) != self.feature_names_in_:
+                    raise ValueError(msg)
             else:
-                msg = "input_features is not equal to feature_names_in_"
-                if isinstance(input_features, list):
-                    if input_features != self.feature_names_in_:
-                        raise ValueError(msg)
-                elif isinstance(input_features, ndarray) or isinstance(
-                    input_features, pd.core.indexes.base.Index
-                ):
-                    if list(input_features) != self.feature_names_in_:
-                        raise ValueError(msg)
-                else:
-                    raise ValueError(
-                        "input_features must be a list or an array. "
-                        "Got {input_features} instead."
-                    )
+                raise ValueError(
+                    "input_features must be a list or an array. "
+                    f"Got {input_features} instead."
+                )
 
         feature_names = self.feature_names_in_
 
@@ -166,7 +159,7 @@ class GetFeatureNamesOutMixin:
         feature_names = self._add_new_feature_names(feature_names)
 
         # For transformers that remove features from data, i..e, selectors.
-        feature_names = self._remove_feature_names(feature_names, indices=False)
+        feature_names = self._remove_feature_names(feature_names)
 
         return feature_names
 
@@ -183,14 +176,10 @@ class GetFeatureNamesOutMixin:
 
         return feature_names
 
-    def _remove_feature_names(self, feature_names, indices=False) -> List:
+    def _remove_feature_names(self, feature_names) -> List:
         # For transformers that remove features from data, i..e, selectors.
         if hasattr(self, "features_to_drop_"):
-            if indices is True:
-                mask = self.get_support(indices=True)
-                feature_names = [feature_names[i] for i in mask]
-            else:
-                feature_names = [
-                    f for f in feature_names if f not in self.features_to_drop_
-                ]
+            feature_names = [
+                f for f in feature_names if f not in self.features_to_drop_
+            ]
         return feature_names

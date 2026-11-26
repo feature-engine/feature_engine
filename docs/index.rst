@@ -127,7 +127,7 @@ The following characteristics make feature-engine unique:
 Installation
 ------------
 
-Feature-engine is a Python 3 package and works well with 3.9 or later.
+Feature-engine is a Python 3 package and works well with 3.11 or later.
 
 The simplest way to install feature-engine is from PyPI with pip:
 

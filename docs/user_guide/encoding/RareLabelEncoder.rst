@@ -179,11 +179,12 @@ In the following output, we see the number of observations per category:
 
 .. code:: python
 
+    var_A
     A    10
     B    10
     C     2
     D     1
-    Name: var_A, dtype: int64
+    Name: count, dtype: int64
 
 Now, we group categories only for variables with more than 3 unique categories:
 
@@ -216,10 +217,43 @@ a new category called `Rare`:
 
 .. code:: python
 
+    var_A
     A       10
     B       10
     Rare     3
-    Name: var_A, dtype: int64
+    Name: count, dtype: int64
+
+With polars
+-----------
+
+:class:`RareLabelEncoder()` works the same way with polars dataframes:
+
+.. code:: python
+
+    import polars as pl
+    from feature_engine.encoding import RareLabelEncoder
+
+    data = {'var_A': ['A'] * 10 + ['B'] * 10 + ['C'] * 2 + ['D'] * 1}
+    data = pl.DataFrame(data)
+
+    rare_encoder = RareLabelEncoder(tol=0.05, n_categories=3, max_n_categories=2)
+    Xt = rare_encoder.fit_transform(data)
+    Xt['var_A'].value_counts().sort('var_A')
+
+We see the same grouping as with the pandas dataframe:
+
+.. code:: text
+
+    shape: (3, 2)
+    ┌───────┬───────┐
+    │ var_A ┆ count │
+    │ ---   ┆ ---   │
+    │ str   ┆ u32   │
+    ╞═══════╪═══════╡
+    │ A     ┆ 10    │
+    │ B     ┆ 10    │
+    │ Rare  ┆ 3     │
+    └───────┴───────┘
 
 Considerations
 --------------
