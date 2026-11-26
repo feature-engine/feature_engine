@@ -64,13 +64,16 @@ the same type of dataframe it receives.
 
 With pandas dataframes, :class:`ExpandingWindowFeatures` works on top of `pandas.expanding`,
 `pandas.aggregate` and `pandas.shift`. It uses `pandas.aggregate` to perform the
-mathematical operations over the expanding window. Therefore, you can use any operation
-supported by pandas. For supported aggregation functions, see Expanding Window
+mathematical operations over the expanding window. Therefore, you can use any method that
+aggregates the values of one variable, like `"mean"`, `"max"` or `"std"`. For the
+functions of your pandas version, see Expanding Window
 `Functions <https://pandas.pydata.org/docs/reference/window.html>`_.
 
-With polars dataframes, :class:`ExpandingWindowFeatures` supports the functions `"count"`,
-`"sum"`, `"mean"`, `"median"`, `"min"`, `"max"`, `"std"` and `"var"`, and returns the
-same values as pandas.
+With polars dataframes, :class:`ExpandingWindowFeatures` takes the functions `"count"`,
+`"first"`, `"kurt"`, `"last"`, `"max"`, `"mean"`, `"median"`, `"min"`, `"nunique"`,
+`"rank"`, `"sem"`, `"skew"`, `"std"`, `"sum"` and `"var"`. They compute the same
+statistics as the pandas functions with the same name. `"rank"` needs polars 1.35 or
+later.
 
 :class:`ExpandingWindowFeatures` lags the result of the expanding
 window operation. This is useful to ensure that only the information known at predict
@@ -431,6 +434,32 @@ The original variable is no longer in the output dataframe:
     2020-05-15 12:45:00                    31.656667                       32.15
     2020-05-15 13:00:00                    31.840000                       32.39
 
+Getting the name of the new features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We can easily obtain the name of the original and new variables with the method
+`get_feature_names_out`.
+
+.. code:: python
+
+    win_f = ExpandingWindowFeatures()
+
+    win_f.fit(X)
+
+    win_f.get_feature_names_out()
+
+We obtain the names of the original variables plus the new expanding window features:
+
+.. code:: python
+
+    ['ambient_temp',
+     'module_temp',
+     'irradiation',
+     'color',
+     'ambient_temp_expanding_mean',
+     'module_temp_expanding_mean',
+     'irradiation_expanding_mean']
+
 With polars
 ~~~~~~~~~~~
 
@@ -482,41 +511,34 @@ so its expanding window features are null:
     │ 2020-05-15 13:00 ┆ 32.62        ┆ 31.84                       ┆ 32.39                      │
     └──────────────────┴──────────────┴─────────────────────────────┴────────────────────────────┘
 
-With polars, other functions, like `"skew"`, raise an error:
+Besides statistics like the mean, we can take the rank of the last past value among all
+the past values, and the standard error of their mean:
 
 .. code:: python
 
-    ExpandingWindowFeatures(functions=["skew"]).fit_transform(X)
+    win_f = ExpandingWindowFeatures(functions=["rank", "sem"])
+
+    X_tr = win_f.fit_transform(X)
+
+    print(X_tr)
+
+The temperature rises over time, so each past value is the highest so far, and its rank
+is the number of past values:
 
 .. code:: text
 
-    NotImplementedError: With dataframes other than pandas, functions takes only ['count', 'max', 'mean', 'median', 'min', 'std', 'sum', 'var']. Got ['skew'] instead.
-
-Getting the name of the new features
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-We can easily obtain the name of the original and new variables with the method
-`get_feature_names_out`.
-
-.. code:: python
-
-    win_f = ExpandingWindowFeatures()
-
-    win_f.fit(X)
-
-    win_f.get_feature_names_out()
-
-We obtain the names of the original variables plus the new expanding window features:
-
-.. code:: python
-
-    ['ambient_temp',
-     'module_temp',
-     'irradiation',
-     'color',
-     'ambient_temp_expanding_mean',
-     'module_temp_expanding_mean',
-     'irradiation_expanding_mean']
+    shape: (5, 4)
+    ┌──────────────────┬──────────────┬─────────────────────────────┬────────────────────────────┐
+    │ date             ┆ ambient_temp ┆ ambient_temp_expanding_rank ┆ ambient_temp_expanding_sem │
+    │ ---              ┆ ---          ┆ ---                         ┆ ---                        │
+    │ str              ┆ f64          ┆ f64                         ┆ f64                        │
+    ╞══════════════════╪══════════════╪═════════════════════════════╪════════════════════════════╡
+    │ 2020-05-15 12:00 ┆ 31.31        ┆ null                        ┆ null                       │
+    │ 2020-05-15 12:15 ┆ 31.51        ┆ 1.0                         ┆ null                       │
+    │ 2020-05-15 12:30 ┆ 32.15        ┆ 2.0                         ┆ 0.1                        │
+    │ 2020-05-15 12:45 ┆ 32.39        ┆ 3.0                         ┆ 0.253333                   │
+    │ 2020-05-15 13:00 ┆ 32.62        ┆ 4.0                         ┆ 0.25632                    │
+    └──────────────────┴──────────────┴─────────────────────────────┴────────────────────────────┘
 
 See also
 --------

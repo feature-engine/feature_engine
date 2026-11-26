@@ -16,30 +16,55 @@ DATA = {
 
 DATES = pd.date_range("2020-05-15 12:00:00", periods=6, freq="15min")
 
+PANDAS_MAJOR = int(pd.__version__.split(".")[0])
+# pandas < 3 has no expanding first, last and nunique, and its sem divides by n - 1.
+PANDAS_3_FUNCTIONS = ["first", "last", "nunique", "sem"]
+
 
 # init parameters
 # the errors of the parameters from BaseForecastTransformer are tested in
 # test_base_forecast_transformer.py
+@pytest.mark.parametrize("min_periods", [-1, 1.5, "1", True, [1]])
+def test_error_if_min_periods_not_permitted(min_periods):
+    msg = (
+        "min_periods must be None or a non-negative integer. "
+        f"Got {min_periods} instead."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        ExpandingWindowFeatures(min_periods=min_periods)
+
+
 @pytest.mark.parametrize(
     "functions", [[np.min, np.max], np.min, 1, None, [], "", ["mean", 1], ("mean",)]
 )
 def test_error_if_functions_not_permitted(functions):
-    msg = f"functions must be a list of strings or a string. Got {functions} instead."
+    msg = (
+        "functions must be a string or a non-empty list of strings. "
+        f"Got {functions} instead."
+    )
     with pytest.raises(ValueError, match=re.escape(msg)):
         ExpandingWindowFeatures(functions=functions)
 
 
-def test_error_if_functions_duplicated():
-    msg = "There are duplicated functions in the list: ['sum', 'mean', 'sum']"
+@pytest.mark.parametrize("functions", [["sum", "mean", "sum"], ["max", "max"]])
+def test_error_if_functions_duplicated(functions):
+    msg = f"There are duplicated functions in the list. Got {functions} instead."
     with pytest.raises(ValueError, match=re.escape(msg)):
-        ExpandingWindowFeatures(functions=["sum", "mean", "sum"])
+        ExpandingWindowFeatures(functions=functions)
 
 
-@pytest.mark.parametrize("periods", [-1, 1.5, "1", None, [1]])
+@pytest.mark.parametrize("periods", [-1, 1.5, "1", None, [1], True])
 def test_error_if_periods_not_permitted(periods):
     msg = f"periods must be a non-negative integer. Got {periods} instead."
     with pytest.raises(ValueError, match=re.escape(msg)):
         ExpandingWindowFeatures(periods=periods)
+
+
+@pytest.mark.parametrize("sort_index", [-1, 1, None, "hola", [True]])
+def test_error_if_sort_index_not_bool(sort_index):
+    msg = f"sort_index takes values True and False. Got {sort_index} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        ExpandingWindowFeatures(sort_index=sort_index)
 
 
 @pytest.mark.parametrize(
@@ -48,7 +73,7 @@ def test_error_if_periods_not_permitted(periods):
     [
         (None, "mean", 1, None, True, "raise", False, False),
         (3, ["sum", "std"], 0, "15min", False, "ignore", True, True),
-        (1, ["max"], 2, "1h", True, "raise", False, True),
+        (0, ["max"], 2, "1h", True, "raise", False, True),
     ],
 )
 def test_init_param_assignment(
@@ -104,19 +129,15 @@ def test_init_param_assignment(
     ],
 )
 def test_get_feature_names_out(make_df, variables, functions, expected):
+    X = make_df(DATA)
     transformer = ExpandingWindowFeatures(variables=variables, functions=functions)
-    transformer.fit(make_df(DATA))
+    transformer.fit(X)
+    original = ["x1", "x2", "color"]
 
-    assert transformer.get_feature_names_out() == ["x1", "x2", "color"] + expected
-    assert (
-        transformer.get_feature_names_out(["x1", "x2", "color"])
-        == [
-            "x1",
-            "x2",
-            "color",
-        ]
-        + expected
-    )
+    assert transformer.get_feature_names_out() == original + expected
+    assert transformer.get_feature_names_out(original) == original + expected
+    # with pandas, the columns are an Index, not a list
+    assert transformer.get_feature_names_out(X.columns) == original + expected
 
 
 def test_get_feature_names_out_raises_error_if_input_features_not_list(make_df):
@@ -149,36 +170,38 @@ def test_default_expanding_mean_of_all_numerical_variables(make_df):
     }
 
 
-def test_all_functions_supported_with_polars(make_df):
-    functions = ["count", "sum", "mean", "median", "min", "max", "std", "var"]
+@pytest.mark.parametrize(
+    "function, expected",
+    [
+        ("count", [1.0, 2.0, 3.0, 4.0, 5.0]),
+        ("first", [2.0, 2.0, 2.0, 2.0, 2.0]),
+        ("kurt", [None, None, None, -5.211103, -2.897959]),
+        ("last", [2.0, 7.0, 1.0, 8.0, 2.0]),
+        ("max", [2.0, 7.0, 7.0, 8.0, 8.0]),
+        ("mean", [2.0, 4.5, 3.333333, 4.5, 4.0]),
+        ("median", [2.0, 4.5, 2.0, 4.5, 2.0]),
+        ("min", [2.0, 2.0, 1.0, 1.0, 1.0]),
+        ("nunique", [1.0, 2.0, 3.0, 4.0, 4.0]),
+        ("rank", [1.0, 2.0, 1.0, 4.0, 2.5]),
+        ("sem", [None, 2.5, 1.855921, 1.755942, 1.449138]),
+        ("skew", [None, None, 1.545393, 0.0, 0.587822]),
+        ("std", [None, 3.535534, 3.214550, 3.511885, 3.240370]),
+        ("sum", [2.0, 9.0, 10.0, 18.0, 20.0]),
+        ("var", [None, 12.5, 10.333333, 12.333333, 10.5]),
+    ],
+)
+def test_functions(make_df, function, expected):
+    if function in PANDAS_3_FUNCTIONS and make_df is pd.DataFrame and PANDAS_MAJOR < 3:
+        pytest.skip(f"{function} needs pandas 3")
     X = make_df(DATA)
-    Xt = ExpandingWindowFeatures(variables="x2", functions=functions).fit_transform(X)
+    transformer = ExpandingWindowFeatures(variables="x2", functions=function)
+    Xt = transformer.fit_transform(X)
 
     assert isinstance(Xt, make_df)
-    assert frame_to_dict(Xt) == {
-        **DATA,
-        "x2_expanding_count": [None, 1.0, 2.0, 3.0, 4.0, 5.0],
-        "x2_expanding_sum": [None, 2.0, 9.0, 10.0, 18.0, 20.0],
-        "x2_expanding_mean": pytest.approx(
-            [None, 2.0, 4.5, 3.3333333333333335, 4.5, 4.0]
-        ),
-        "x2_expanding_median": [None, 2.0, 4.5, 2.0, 4.5, 2.0],
-        "x2_expanding_min": [None, 2.0, 2.0, 1.0, 1.0, 1.0],
-        "x2_expanding_max": [None, 2.0, 7.0, 7.0, 8.0, 8.0],
-        "x2_expanding_std": pytest.approx(
-            [
-                None,
-                None,
-                3.5355339059327378,
-                3.214550253664318,
-                3.5118845842842465,
-                3.24037034920393,
-            ]
-        ),
-        "x2_expanding_var": pytest.approx(
-            [None, None, 12.5, 10.333333333333332, 12.333333333333334, 10.5]
-        ),
-    }
+    # the first row has no past values
+    assert frame_to_dict(Xt)[f"x2_expanding_{function}"] == pytest.approx(
+        [None] + expected, abs=1e-6
+    )
 
 
 @pytest.mark.parametrize(
@@ -246,6 +269,39 @@ def test_min_periods_and_missing_data(make_df, min_periods, expected):
     assert frame_to_dict(Xt) == {**DATA_NA, **expected}
 
 
+@pytest.mark.parametrize(
+    "function, min_periods, expected",
+    [
+        ("first", None, [None, None, 1.0, 1.0, 1.0, 1.0]),
+        ("first", 2, [None, None, None, None, 1.0, 1.0]),
+        ("last", None, [None, None, 1.0, 1.0, 4.0, 4.0]),
+        ("last", 2, [None, None, None, None, 4.0, 4.0]),
+        # like the sum, nunique is 0 before the first value
+        ("nunique", None, [None, 0.0, 1.0, 1.0, 2.0, 2.0]),
+        ("nunique", 2, [None, None, None, None, 2.0, 2.0]),
+        # the last past value is missing, so it has no rank
+        ("rank", None, [None, None, 1.0, None, 2.0, None]),
+        ("rank", 2, [None, None, None, None, 2.0, None]),
+        # inf is missing data for the std, but pandas counts it in the number of values
+        ("sem", None, [None, None, None, None, 1.5, 1.224745]),
+        ("sem", 2, [None, None, None, None, 1.5, 1.224745]),
+    ],
+)
+def test_functions_with_missing_data(make_df, function, min_periods, expected):
+    if function in PANDAS_3_FUNCTIONS and make_df is pd.DataFrame and PANDAS_MAJOR < 3:
+        pytest.skip(f"{function} needs pandas 3")
+    X = make_df(DATA_NA)
+    transformer = ExpandingWindowFeatures(
+        functions=function, min_periods=min_periods, missing_values="ignore"
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt)[f"x_expanding_{function}"] == pytest.approx(
+        expected, abs=1e-6
+    )
+
+
 def test_nan_is_missing_data(make_df):
     # polars keeps NaN apart from null, pandas treats both as missing data.
     X = make_df({"x": [1.0, np.nan, 3.0, 5.0]})
@@ -269,6 +325,8 @@ def test_drop_original(make_df):
     Xt = transformer.fit_transform(X)
 
     assert isinstance(Xt, make_df)
+    # the dicts below don't check the order of the columns
+    assert list(Xt.columns) == transformer.get_feature_names_out()
     assert frame_to_dict(Xt) == {
         "color": DATA["color"],
         "x1_expanding_min": [None, 3.0, 1.0, 1.0, 1.0, 1.0],
@@ -294,6 +352,21 @@ def test_drop_na(make_df):
         "x1_expanding_std": pytest.approx(
             [1.4142135623730951, 1.5275252316519468, 1.5, 1.7888543819998317]
         ),
+    }
+
+
+def test_drop_original_and_drop_na(make_df):
+    X = make_df(DATA)
+    transformer = ExpandingWindowFeatures(
+        functions="std", drop_original=True, drop_na=True
+    )
+    Xt = transformer.fit_transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {
+        "color": ["c", "d", "e", "f"],
+        "x1_expanding_std": pytest.approx([1.414214, 1.527525, 1.5, 1.788854]),
+        "x2_expanding_std": pytest.approx([3.535534, 3.214550, 3.511885, 3.240370]),
     }
 
 
@@ -364,32 +437,6 @@ def test_sort_index_with_pandas():
     pd.testing.assert_frame_equal(Xt, expected)
 
 
-def test_functions_not_supported_by_polars_with_pandas():
-    X = pd.DataFrame(DATA)
-    transformer = ExpandingWindowFeatures(variables="x2", functions=["skew", "sem"])
-    Xt = transformer.fit_transform(X)
-
-    expected = X.assign(
-        x2_expanding_skew=[
-            np.nan,
-            np.nan,
-            np.nan,
-            1.545392525695021,
-            0.0,
-            0.5878222855698739,
-        ],
-        x2_expanding_sem=[
-            np.nan,
-            np.nan,
-            2.5,
-            1.855921454276674,
-            1.7559422921421233,
-            1.4491376746189437,
-        ],
-    )
-    pd.testing.assert_frame_equal(Xt, expected)
-
-
 def test_integer_column_names_with_pandas():
     X = pd.DataFrame({0: [1.0, 2.0, 3.0], 1: [4, 5, 6], "c": ["x", "y", "z"]})
     transformer = ExpandingWindowFeatures(
@@ -412,21 +459,13 @@ def test_integer_column_names_with_pandas():
     pd.testing.assert_frame_equal(Xt, expected)
 
 
-# polars: the rows are used in the order given
-def test_rows_are_used_in_the_order_given_with_polars():
-    X = pl.DataFrame({"x": [8.0, 2.0, 7.0, 1.0]})
-    Xt = ExpandingWindowFeatures(functions="min", sort_index=True).fit_transform(X)
-
-    assert frame_to_dict(Xt)["x_expanding_min"] == [None, 8.0, 2.0, 2.0]
-
-
-def test_error_if_function_not_supported_with_polars():
+# polars: the functions that polars supports
+@pytest.mark.parametrize("functions", ["quantile", ["mean", "prod"]])
+def test_error_if_function_not_supported_with_polars(functions):
     msg = (
-        "With dataframes other than pandas, functions takes only "
-        "['count', 'max', 'mean', 'median', 'min', 'std', 'sum', 'var']. "
-        "Got ['mean', 'skew', 'sem'] instead."
+        "With dataframes other than pandas, functions takes only ['count', 'first', "
+        "'kurt', 'last', 'max', 'mean', 'median', 'min', 'nunique', 'rank', 'sem', "
+        f"'skew', 'std', 'sum', 'var']. Got {functions} instead."
     )
     with pytest.raises(NotImplementedError, match=re.escape(msg)):
-        ExpandingWindowFeatures(functions=["mean", "skew", "sem"]).fit(
-            pl.DataFrame(DATA)
-        )
+        ExpandingWindowFeatures(functions=functions).fit(pl.DataFrame(DATA))

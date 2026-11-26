@@ -37,9 +37,6 @@ from feature_engine.timeseries.forecasting.base_forecast_transformers import (
     BaseForecastTransformer,
 )
 
-# functions supported with dataframes other than pandas.
-_FUNCTIONS = ["count", "sum", "mean", "median", "min", "max", "std", "var"]
-
 
 @Substitution(
     variables=_variables_numerical_docstring,
@@ -74,10 +71,8 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
     The dataframe's index orders the rows in time, so it must have unique values
     and no NaN.
 
-    With polars, ExpandingWindowFeatures supports the functions 'count', 'sum',
-    'mean', 'median', 'min', 'max', 'std' and 'var', and returns the same values
-    as pandas. polars dataframes have no index, so the rows must be sorted in time
-    before using the transformer, and `freq` and `sort_index` are not used.
+    polars dataframes have no index, so the rows must be sorted in time before using
+    the transformer, and `freq` and `sort_index` are not used.
 
     ExpandingWindowFeatures works only with numerical variables. You can pass a
     list of variables to use as input for the expanding window. Alternatively,
@@ -98,10 +93,15 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         `expanding()` documentation for more details.
 
     functions: str, list of str, default = 'mean'
-        The functions to apply within the window. With pandas, valid functions can be
-        found `here <https://pandas.pydata.org/docs/reference/window.html>`_. With
-        polars, the functions can be 'count', 'sum', 'mean', 'median', 'min', 'max',
-        'std' and 'var'.
+        The functions to apply to the past values of each variable. With pandas, the
+        valid functions are the methods of pandas expanding windows that aggregate one
+        variable, like 'mean', 'max' or 'std'. See the pandas `documentation
+        <https://pandas.pydata.org/docs/reference/window.html#expanding-window-functions>`_
+        for the functions of your pandas version. With polars, the valid functions are
+        'count', 'first', 'kurt', 'last', 'max', 'mean', 'median', 'min', 'nunique',
+        'rank', 'sem', 'skew', 'std', 'sum' and 'var', which compute the same
+        statistics as the pandas functions with the same name. 'rank' needs polars
+        1.35 or later.
 
     periods: int, default=1
         Number of periods to shift. Can be zero or a positive integer. See param
@@ -215,21 +215,39 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
         drop_na: bool = False,
     ) -> None:
 
+        if min_periods is not None and (
+            not isinstance(min_periods, int)
+            or isinstance(min_periods, bool)
+            or min_periods < 0
+        ):
+            raise ValueError(
+                "min_periods must be None or a non-negative integer. "
+                f"Got {min_periods} instead."
+            )
+
         if (
             not isinstance(functions, (str, list))
             or len(functions) == 0
             or not all(isinstance(val, str) for val in functions)
         ):
             raise ValueError(
-                "functions must be a list of strings or a string. "
+                "functions must be a string or a non-empty list of strings. "
                 f"Got {functions} instead."
             )
         if isinstance(functions, list) and len(functions) != len(set(functions)):
-            raise ValueError(f"There are duplicated functions in the list: {functions}")
+            raise ValueError(
+                f"There are duplicated functions in the list. Got {functions} instead."
+            )
 
-        if not isinstance(periods, int) or periods < 0:
+        # bool is a subclass of int, but True is not a number of periods.
+        if not isinstance(periods, int) or isinstance(periods, bool) or periods < 0:
             raise ValueError(
                 f"periods must be a non-negative integer. Got {periods} instead."
+            )
+
+        if not isinstance(sort_index, bool):
+            raise ValueError(
+                f"sort_index takes values True and False. Got {sort_index} instead."
             )
 
         super().__init__(
@@ -255,7 +273,7 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
             y is not needed in this transformer. You can pass None or y.
         """
         super().fit(X, y)
-        check_functions_supported(check_X(X), self.functions, _FUNCTIONS)
+        check_functions_supported(check_X(X), self.functions)
         return self
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
@@ -296,19 +314,13 @@ class ExpandingWindowFeatures(BaseForecastTransformer):
 
         return nw.to_native(X, pass_through=True)
 
-    def _functions_list(self) -> List[str]:
-        """Return the functions as a list."""
-        if isinstance(self.functions, list):
-            return self.functions
-        return [self.functions]
-
     def _get_new_features_name(self) -> List:
-        """Get names of the window features."""
-
-        feature_names = [
+        """Get names of the expanding window features."""
+        functions = (
+            self.functions if isinstance(self.functions, list) else [self.functions]
+        )
+        return [
             f"{feature}_expanding_{agg}"
             for feature in self.variables_
-            for agg in self._functions_list()
+            for agg in functions
         ]
-
-        return feature_names
