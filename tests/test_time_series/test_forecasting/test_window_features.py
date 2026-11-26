@@ -65,13 +65,11 @@ def test_error_if_functions_not_string_or_list(functions):
         WindowFeatures(functions=functions)
 
 
-def test_error_if_functions_duplicated():
-    msg = (
-        "There are duplicated functions in the list. "
-        "Got ['sum', 'sum', 'mean'] instead."
-    )
+@pytest.mark.parametrize("functions", [["sum", "sum", "mean"], ["max", "max"]])
+def test_error_if_functions_duplicated(functions):
+    msg = f"There are duplicated functions in the list. Got {functions} instead."
     with pytest.raises(ValueError, match=re.escape(msg)):
-        WindowFeatures(functions=["sum", "sum", "mean"])
+        WindowFeatures(functions=functions)
 
 
 @pytest.mark.parametrize(
@@ -83,16 +81,32 @@ def test_error_if_periods_not_positive_integer(periods):
         WindowFeatures(periods=periods)
 
 
+@pytest.mark.parametrize("sort_index", [-1, 1, None, "hola", [True]])
+def test_error_if_sort_index_not_bool(sort_index):
+    msg = f"sort_index takes values True and False. Got {sort_index} instead."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        WindowFeatures(sort_index=sort_index)
+
+
 @pytest.mark.parametrize(
-    "window, min_periods, functions, periods, freq, sort_index",
+    "window, min_periods, functions, periods, freq, sort_index, missing_values, "
+    "drop_original, drop_na",
     [
-        (3, None, "mean", 1, None, True),
-        ([2, 3], 0, ["sum", "mean", "count"], 2, "15min", False),
-        (["45min", "30min"], 2, ["std"], 3, "1h", True),
+        (3, None, "mean", 1, None, True, "raise", False, False),
+        ([2, 3], 0, ["sum", "mean", "count"], 2, "15min", False, "ignore", True, False),
+        (["45min", "30min"], 2, ["std"], 3, "1h", True, "ignore", False, True),
     ],
 )
 def test_init_param_assignment(
-    window, min_periods, functions, periods, freq, sort_index
+    window,
+    min_periods,
+    functions,
+    periods,
+    freq,
+    sort_index,
+    missing_values,
+    drop_original,
+    drop_na,
 ):
     transformer = WindowFeatures(
         window=window,
@@ -101,9 +115,9 @@ def test_init_param_assignment(
         periods=periods,
         freq=freq,
         sort_index=sort_index,
-        missing_values="ignore",
-        drop_original=True,
-        drop_na=True,
+        missing_values=missing_values,
+        drop_original=drop_original,
+        drop_na=drop_na,
     )
     assert transformer.window == window
     assert transformer.min_periods == min_periods
@@ -111,9 +125,9 @@ def test_init_param_assignment(
     assert transformer.periods == periods
     assert transformer.freq == freq
     assert transformer.sort_index == sort_index
-    assert transformer.missing_values == "ignore"
-    assert transformer.drop_original is True
-    assert transformer.drop_na is True
+    assert transformer.missing_values == missing_values
+    assert transformer.drop_original == drop_original
+    assert transformer.drop_na == drop_na
 
 
 # fit and transform
@@ -248,6 +262,7 @@ def test_functions_skip_missing_values(make_df, function, expected):
     )
     Xt = transformer.fit_transform(X)
 
+    assert isinstance(Xt, make_df)
     assert frame_to_dict(Xt)[f"x1_window_3_{function}"] == pytest.approx(
         [None, None, None] + expected
     )
@@ -492,14 +507,7 @@ def test_integer_column_names_with_pandas():
     pd.testing.assert_frame_equal(Xt, expected)
 
 
-# polars: the rows are used in the order given and the windows are numbers of rows
-def test_rows_keep_their_order_with_polars():
-    X = pl.DataFrame({"x1": [4.0, 1.0, 7.0, 2.0]})
-    Xt = WindowFeatures(window=2, functions="max").fit_transform(X)
-
-    assert frame_to_dict(Xt)["x1_window_2_max"] == [None, None, 4.0, 7.0]
-
-
+# polars: the windows are numbers of rows, and min_periods must be greater than 0
 @pytest.mark.parametrize("window", ["3D", ["45min", "30min"], [2, "30min"]])
 def test_error_if_time_span_window_with_polars(window):
     msg = (

@@ -114,6 +114,7 @@ def test_add_window_features(make_df):
     Xt = add_window_features(X, ["a", "b"], [2], functions, None, 1, None, names)
 
     # with polars, the functions come from different libraries, in the order of names
+    assert list(Xt.columns) == ["a", "b"] + names
     assert frame_to_dict(nw.to_native(Xt, pass_through=True)) == {
         "a": [1.0, 2.0, 3.0, 4.0],
         "b": [4.0, 3.0, 2.0, 1.0],
@@ -128,7 +129,7 @@ def test_add_window_features(make_df):
 
 @pytest.mark.parametrize(
     "window, functions, min_periods",
-    [("3D", "mean", None), (3, ["sem"], None), (3, "mean", 0)],
+    [("3D", "mean", None), (3, ["quantile"], None), (3, "mean", 0)],
 )
 def test_check_window_parameters_accepts_everything_with_pandas(
     window, functions, min_periods

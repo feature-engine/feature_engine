@@ -259,6 +259,11 @@ class WindowFeatures(BaseForecastTransformer):
                 f"periods must be a positive integer. Got {periods} instead."
             )
 
+        if not isinstance(sort_index, bool):
+            raise ValueError(
+                f"sort_index takes values True and False. Got {sort_index} instead."
+            )
+
         super().__init__(
             variables, return_empty, missing_values, drop_original, drop_na
         )
