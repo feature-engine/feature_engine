@@ -394,6 +394,48 @@ def test_get_feature_names_out(make_df):
     tr.fit(df)
     assert tr.get_feature_names_out() == input_vars + new
 
+    # drop_original removes variables AND reference columns, including a
+    # reference that is not in variables (the bug from issue 1103).
+    tr = DatetimeSubtraction(variables="d1", reference="d2", drop_original=True)
+    tr.fit(df)
+    expected = ["d3", "d4", "d1_sub_d2"]
+    assert tr.get_feature_names_out() == expected
+    assert list(nw.from_native(tr.transform(df), eager_only=True).columns) == expected
+
+    tr = DatetimeSubtraction(variables=["d1", "d2"], reference="d3", drop_original=True)
+    tr.fit(df)
+    expected = ["d4", "d1_sub_d3", "d2_sub_d3"]
+    assert tr.get_feature_names_out() == expected
+    assert list(nw.from_native(tr.transform(df), eager_only=True).columns) == expected
+
+
+def test_set_output_pandas_with_drop_original():
+    df = pd.DataFrame(
+        {
+            "d1": ["Feb-2010", "Mar-2010"],
+            "d2": ["Feb-2011", "Mar-2011"],
+            "d3": ["Feb-2012", "Mar-2012"],
+        }
+    )
+    tr = DatetimeSubtraction(variables="d1", reference="d2", drop_original=True)
+    tr.set_output(transform="pandas")
+    Xt = tr.fit_transform(df)
+    assert list(Xt.columns) == ["d3", "d1_sub_d2"]
+
+
+def test_set_output_polars_with_drop_original():
+    df = pl.DataFrame(
+        {
+            "d1": ["Feb-2010", "Mar-2010"],
+            "d2": ["Feb-2011", "Mar-2011"],
+            "d3": ["Feb-2012", "Mar-2012"],
+        }
+    )
+    tr = DatetimeSubtraction(variables="d1", reference="d2", drop_original=True)
+    tr.set_output(transform="polars")
+    Xt = tr.fit_transform(df)
+    assert Xt.columns == ["d3", "d1_sub_d2"]
+
 
 # common tests
 estimator = [DatetimeSubtraction(variables=["date1"], reference=["date2"])]

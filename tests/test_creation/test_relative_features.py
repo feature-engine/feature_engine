@@ -422,6 +422,41 @@ def test_get_feature_names_out(make_df, _drop):
     else:
         assert feat_out == list(DATA.keys()) + varnames
 
+    transformer = RelativeFeatures(
+        variables=["Age"],
+        reference=["Marks"],
+        func=["add"],
+        drop_original=_drop,
+    )
+    Xt = transformer.fit_transform(df)
+    feat_out = list(nw.from_native(Xt, eager_only=True).columns)
+    assert feat_out == transformer.get_feature_names_out(input_features=None)
+    if _drop is True:
+        expected = [c for c in DATA if c not in ("Age", "Marks")] + ["Age_add_Marks"]
+    else:
+        expected = list(DATA.keys()) + ["Age_add_Marks"]
+    assert feat_out == expected
+
+
+def test_set_output_pandas_with_drop_original():
+    df = pd.DataFrame({"Name": ["a", "b"], "Age": [1, 2], "Marks": [3, 4]})
+    tr = RelativeFeatures(
+        variables=["Age"], reference=["Marks"], func=["add"], drop_original=True
+    )
+    tr.set_output(transform="pandas")
+    Xt = tr.fit_transform(df)
+    assert list(Xt.columns) == ["Name", "Age_add_Marks"]
+
+
+def test_set_output_polars_with_drop_original():
+    df = pl.DataFrame({"Name": ["a", "b"], "Age": [1, 2], "Marks": [3, 4]})
+    tr = RelativeFeatures(
+        variables=["Age"], reference=["Marks"], func=["add"], drop_original=True
+    )
+    tr.set_output(transform="polars")
+    Xt = tr.fit_transform(df)
+    assert Xt.columns == ["Name", "Age_add_Marks"]
+
 
 @pytest.mark.parametrize("make_df", [pd.DataFrame, pl.DataFrame])
 @pytest.mark.parametrize("_drop", [True, False])
