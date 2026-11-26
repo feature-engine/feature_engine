@@ -534,3 +534,72 @@ def test_inverse_transform_raises_not_implemented_error(df_enc_binary):
     enc = OneHotEncoder().fit(df_enc_binary)
     with pytest.raises(NotImplementedError):
         enc.inverse_transform(df_enc_binary)
+
+
+def test_onehot_encoder_dummy_name_matches_input_column():
+    X = pd.DataFrame({"a_b": ["x", "x", "y", "y"], "a": ["b", "c", "b", "c"]})
+
+    # 1. Default order
+    encoder = OneHotEncoder()
+    result = encoder.fit_transform(X)
+    expected_cols = ["a_b_x", "a_b_y", "a_b", "a_c"]
+    expected_values = [
+        [1, 0, 1, 0],
+        [1, 0, 0, 1],
+        [0, 1, 1, 0],
+        [0, 1, 0, 1],
+    ]
+    assert result.columns.tolist() == expected_cols
+    assert result.values.tolist() == expected_values
+    assert list(encoder.get_feature_names_out()) == expected_cols
+
+    # set_output pandas check
+    res_pandas = encoder.set_output(transform="pandas").transform(X)
+    assert res_pandas.columns.tolist() == expected_cols
+    assert res_pandas.values.tolist() == expected_values
+
+    # 2. Reverse variable order
+    encoder_rev = OneHotEncoder(variables=["a", "a_b"])
+    result_rev = encoder_rev.fit_transform(X)
+    expected_rev_cols = ["a_b", "a_c", "a_b_x", "a_b_y"]
+    expected_rev_values = [
+        [1, 0, 1, 0],
+        [0, 1, 1, 0],
+        [1, 0, 0, 1],
+        [0, 1, 0, 1],
+    ]
+    assert result_rev.columns.tolist() == expected_rev_cols
+    assert result_rev.values.tolist() == expected_rev_values
+    assert list(encoder_rev.get_feature_names_out()) == expected_rev_cols
+
+
+def test_onehot_encoder_raises_error_on_output_feature_name_collision():
+    # 1. Collision with retained non-encoded numeric column
+    X = pd.DataFrame({"a": ["x", "y"], "a_x": [10, 20]})
+    encoder = OneHotEncoder()
+
+    msg = (
+        "The resulting transformed dataframe will contain duplicated "
+        "variable names: ['a_x']."
+    )
+    with pytest.raises(ValueError) as excinfo:
+        encoder.fit(X)
+    assert str(excinfo.value) == msg
+
+    with pytest.raises(ValueError) as excinfo:
+        encoder.fit_transform(X)
+    assert str(excinfo.value) == msg
+
+    # 2. When drop_last=True drops the colliding category, no collision occurs
+    X_drop = pd.DataFrame({"a": ["y", "x"], "a_x": [10, 20]})
+    encoder_drop = OneHotEncoder(drop_last=True)
+    res_drop = encoder_drop.fit_transform(X_drop)
+    assert res_drop.columns.tolist() == ["a_x", "a_y"]
+    assert list(encoder_drop.get_feature_names_out()) == ["a_x", "a_y"]
+
+    # 3. Collision between two generated dummy features
+    X_dupe_dummies = pd.DataFrame({"a_b": ["c", "d"], "a": ["b_c", "e"]})
+    encoder_dupe = OneHotEncoder()
+    with pytest.raises(ValueError) as excinfo:
+        encoder_dupe.fit(X_dupe_dummies)
+    assert "a_b_c" in str(excinfo.value)
