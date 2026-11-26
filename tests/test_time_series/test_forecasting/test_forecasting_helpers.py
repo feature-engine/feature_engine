@@ -7,8 +7,10 @@ import pytest
 
 from feature_engine.dataframe_checks import check_X
 from feature_engine.timeseries.forecasting._forecasting_helpers import (
+    add_expanding_window_features,
     add_lag_features,
     add_window_features,
+    check_functions_supported,
     check_index,
     check_window_parameters,
     sort_by_index,
@@ -136,3 +138,32 @@ def test_check_window_parameters_accepts_everything_with_pandas(
 ):
     X = check_X(pd.DataFrame({"a": [1, 2, 3]}, index=DATES))
     check_window_parameters(X, window, functions, min_periods)
+
+
+def test_add_expanding_window_features(make_df):
+    X = check_X(make_df({"a": [1.0, 3.0, 2.0, 4.0]}))
+    names = ["a_max", "a_median", "a_sum"]
+    Xt = add_expanding_window_features(
+        X, ["a"], ["max", "median", "sum"], None, 1, None, False, names
+    )
+
+    # with polars, the median is a polars series among narwhals expressions
+    assert list(Xt.columns) == ["a"] + names
+    assert frame_to_dict(nw.to_native(Xt, pass_through=True)) == {
+        "a": [1.0, 3.0, 2.0, 4.0],
+        "a_max": [None, 1.0, 3.0, 3.0],
+        "a_median": [None, 1.0, 2.0, 2.0],
+        "a_sum": [None, 1.0, 4.0, 6.0],
+    }
+
+
+def test_check_functions_supported():
+    check_functions_supported(check_X(pd.DataFrame({"a": [1]})), ["quantile"])
+
+    msg = (
+        "With dataframes other than pandas, functions takes only ['count', 'first', "
+        "'kurt', 'last', 'max', 'mean', 'median', 'min', 'nunique', 'rank', 'sem', "
+        "'skew', 'std', 'sum', 'var']. Got quantile instead."
+    )
+    with pytest.raises(NotImplementedError, match=re.escape(msg)):
+        check_functions_supported(check_X(pl.DataFrame({"a": [1]})), "quantile")
