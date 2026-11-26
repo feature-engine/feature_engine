@@ -4,7 +4,6 @@
 from typing import List, Optional, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.mixins import TransformXyMixin
@@ -24,6 +23,12 @@ from feature_engine._docstrings.init_parameters.all_transformers import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X
+from feature_engine.dataframe_helpers import (
+    filter_rows,
+    missing_values_count,
+    missing_values_mask,
+    rows_with_missing_values,
+)
 from feature_engine.imputation.base_imputer import BaseImputer
 from feature_engine.tags import _return_tags
 from feature_engine.variable_handling import check_all_variables, find_all_variables
@@ -181,7 +186,7 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         """
 
         # check input dataframe
-        nw_X = check_X(X)
+        X = check_X(X)
 
         # find variables for which indicator should be added
         if self.variables is None:
@@ -191,20 +196,12 @@ class DropMissingData(BaseImputer, TransformXyMixin):
 
         # If user passes a threshold, then missing_only is ignored:
         if self.threshold is None and self.missing_only is True:
-            # Benchmarked: a per-column isnull().sum() loop beats a narwhals-
-            # generic call on pandas input, matching MissingIndicator's split.
-            if nwd.is_pandas_dataframe(X):
-                variables_ = [
-                    var for var in variables_ if X[var].isnull().sum() > 0
-                ]
-            else:
-                null_counts = nw_X.select(variables_).null_count().row(0)
-                variables_ = [
-                    var for var, count in zip(variables_, null_counts) if count > 0
-                ]
+            counts = missing_values_count(X, variables_)
+            variables_ = [var for var, count in zip(variables_, counts) if count > 0]
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -224,9 +221,8 @@ class DropMissingData(BaseImputer, TransformXyMixin):
             [n_samples - n_samples_with_na, n_features]
         """
 
-        nw_X = self._transform(X)
-        # TODO
-        return self._select_rows(nw_X, keep=True)
+        X = self._transform(X)
+        return self._select_rows(X, keep=True)
 
     def return_na_data(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -249,7 +245,7 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         X = self._transform(X)
         return self._select_rows(X, keep=False)
 
-    def _select_rows(self, X: IntoDataFrame, keep: bool) -> IntoDataFrame:
+    def _select_rows(self, X, keep: bool) -> IntoDataFrame:
         """
         Shared row-selection logic for transform() (keep=True, rows without
         missing data) and return_na_data() (keep=False, rows with missing
@@ -258,41 +254,19 @@ class DropMissingData(BaseImputer, TransformXyMixin):
         of X - they can never overlap or leave a row out.
         """
         if len(self.variables_) == 0:
-            # dropna(subset=[]) keeps every row: there are no variables to
-            # evaluate missingness on, so nothing can ever be "missing".
-            if keep is True:
-                return X.to_native()
-            return X.head(0).to_native()
+            # there are no variables to evaluate, so no row is missing data.
+            X = X if keep is True else X.head(0)
+            return nw.to_native(X, pass_through=True)
 
-        # Benchmarked: a numpy-backed mask beats both pandas' own axis=1
-        # isnull()/notna().sum() (a known-slow reduction) and the narwhals
-        # path below, so pandas keeps this dedicated fast path. X is the
-        # narwhals frame returned by check_X, so branch on its implementation.
-        if X.implementation.is_pandas():
-            X = X.to_native()
-            if self.threshold is not None:
-                non_null_count = X[self.variables_].notna().to_numpy().sum(axis=1)
-                mask = non_null_count >= len(self.variables_) * self.threshold
-            else:
-                mask = ~X[self.variables_].isnull().to_numpy().any(axis=1)
-            if keep is False:
-                mask = ~mask
-            return X[mask]
+        if self.threshold is not None:
+            is_missing = missing_values_mask(X, self.variables_)
+            non_null_count = (~is_missing).sum(axis=1)
+            mask = non_null_count >= len(self.variables_) * self.threshold
         else:
-            if self.threshold is not None:
-                non_null_count = nw.sum_horizontal(
-                    (~nw.col(var).is_null()).cast(nw.Int64)
-                    for var in self.variables_
-                )
-                expr = non_null_count >= len(self.variables_) * self.threshold
-            else:
-                expr = ~nw.any_horizontal(
-                    (nw.col(var).is_null() for var in self.variables_),
-                    ignore_nulls=True,
-                )
-            if keep is False:
-                expr = ~expr
-            return X.filter(expr).to_native()
+            mask = ~rows_with_missing_values(X, self.variables_)
+        if keep is False:
+            mask = ~mask
+        return nw.to_native(filter_rows(X, mask), pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

@@ -1,18 +1,20 @@
+from typing import Union
+
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from feature_engine._base_transformers.mixins import GetFeatureNamesOutMixin
 from feature_engine.dataframe_checks import _check_X_matches_training_df, check_X
+from feature_engine.dataframe_helpers import fill_missing_in_df, subset_df
 from feature_engine.tags import _return_tags
 
 
 class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
     """shared set-up checks and methods across imputers"""
 
-    def _transform(self, X: IntoDataFrame) -> IntoDataFrame:
+    def _transform(self, X: IntoDataFrame) -> Union[IntoDataFrame, nw.DataFrame]:
         """
         Common checks before transforming data:
 
@@ -27,14 +29,14 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
 
         Returns
         -------
-        X: narwhals dataframe.
-            The narwhalified version of the dataframe entered by the user.
+        X: pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise, with the variables in the same order as in the train set.
         """
         check_is_fitted(self)
-        nw_X = check_X(X)
+        X = check_X(X)
         _check_X_matches_training_df(X, self.n_features_in_)
-
-        return nw_X
+        return subset_df(X, self.feature_names_in_)
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -50,32 +52,9 @@ class BaseImputer(TransformerMixin, BaseEstimator, GetFeatureNamesOutMixin):
         X_new: dataframe of shape = [n_samples, n_features]
             The dataframe without missing values in the selected variables.
         """
-        nw_X = self._transform(X)
-
-        # pandas-native fillna is ~1.3-1.6x faster than narwhals-generic
-        # fill_null equivalent at the 10k-100k
-        if nwd.is_pandas_dataframe(X):
-            X = X.fillna(value=self.imputer_dict_)
-            X = X.infer_objects()
-        else:
-            nw_X = nw_X.with_columns(
-                nw.col(var).fill_null(value)
-                for var, value in self.imputer_dict_.items()
-            )
-            X = nw_X.to_native()
-
-        return X
-
-    def _get_feature_names_in(self, X):
-        """Get the names and number of features in the train set (the dataframe
-        used during fit)."""
-        if nwd.is_pandas_dataframe(X):
-            self.feature_names_in_ = list(X.columns)
-        else:
-            self.feature_names_in_ = nw.from_native(X, eager_only=True).columns
-        self.n_features_in_ = X.shape[1]
-
-        return self
+        X = self._transform(X)
+        X = fill_missing_in_df(X, self.imputer_dict_)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

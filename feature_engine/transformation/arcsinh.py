@@ -8,6 +8,7 @@ import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
 )
@@ -195,11 +196,12 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         self: ArcSinhTransformer
             The fitted transformer.
         """
-
-        _, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -217,19 +219,16 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         X_new: dataframe
             The dataframe with the transformed variables.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
+        # arcsinh((x - loc) / scale)
+        new_columns = {
+            var: np.arcsinh((values.astype(float) - self.loc) / self.scale)
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        # Apply arcsinh transformation: arcsinh((x - loc) / scale)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
-        result = np.arcsinh((values - self.loc) / self.scale)
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -245,19 +244,16 @@ class ArcSinhTransformer(BaseNumericalTransformer):
         X_tr: dataframe
             The dataframe with the inverse transformed variables.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
+        # x = sinh(y) * scale + loc
+        new_columns = {
+            var: np.sinh(values.astype(float)) * self.scale + self.loc
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
 
-        # Inverse transform: x = sinh(y) * scale + loc
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
-        result = np.sinh(values) * self.scale + self.loc
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

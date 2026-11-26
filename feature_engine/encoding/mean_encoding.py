@@ -3,7 +3,6 @@
 from typing import List, Union
 
 import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_init_input_params import (
@@ -30,6 +29,7 @@ from feature_engine._docstrings.methods import (
 )
 from feature_engine._docstrings.substitute import Substitution
 from feature_engine.dataframe_checks import check_X_y
+from feature_engine.dataframe_helpers import subset_df
 from feature_engine.encoding._helper_functions import (
     TARGET_NAME,
     add_target_to_X,
@@ -223,13 +223,16 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
             The target.
         """
 
-        nw_X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y)
         variables_ = self._check_or_select_variables(X)
         self._check_na(X, variables_)
 
         self.encoder_dict_ = {}
 
-        nw_Xy = add_target_to_X(nw_X, y)
+        # adding a column to a wide pandas dataframe is slow, so take the variables.
+        nw_Xy = add_target_to_X(
+            nw.from_native(subset_df(X, variables_), eager_only=True), y
+        )
         y_nw = nw_Xy[TARGET_NAME]
         y_prior = y_nw.mean()
 
@@ -239,39 +242,25 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
         if self.smoothing == "auto":
             y_var = y_nw.var(ddof=0)
 
-        # pandas is faster than narwhals.
-        if nwd.is_pandas_dataframe(X):
-            # pandas series with the index of X
-            y = y_nw.to_native()
-            for var in variables_:
-                if self.smoothing == "auto":
-                    damping = y.groupby(X[var]).var(ddof=0) / y_var
-                else:
-                    damping = self.smoothing
-                counts = X[var].value_counts()
-                counts.index = counts.index.infer_objects()
-                _lambda = counts / (counts + damping)
-                self.encoder_dict_[var] = (
-                    _lambda * y.groupby(X[var], observed=False).mean()
-                    + (1.0 - _lambda) * y_prior
-                ).to_dict()
-        else:
-            for var in variables_:
-                stats = nw_Xy.group_by(var, drop_null_keys=True).agg(
-                    nw.col(TARGET_NAME).mean().alias("__mean__"),
-                    nw.col(TARGET_NAME).len().alias("__count__"),
-                    nw.col(TARGET_NAME).var(ddof=0).alias("__var__"),
-                )
-                if self.smoothing == "auto":
-                    damping = nw.col("__var__") / y_var
-                else:
-                    damping = self.smoothing
-                _lambda = nw.col("__count__") / (nw.col("__count__") + damping)
-                encoding = _lambda * nw.col("__mean__") + (1.0 - _lambda) * y_prior
-                stats = stats.select(var, encoding.alias("__encoding__"))
-                self.encoder_dict_[var] = dict(
-                    zip(stats[var].to_list(), stats["__encoding__"].to_list())
-                )
+        for var in variables_:
+            # group_by() needs string names; pandas columns can be integers.
+            category = nw_Xy.get_column(var).alias("__category__")
+            category_y = category.to_frame().with_columns(y_nw)
+            stats = category_y.group_by("__category__", drop_null_keys=True).agg(
+                nw.col(TARGET_NAME).mean().alias("__mean__"),
+                nw.col(TARGET_NAME).len().alias("__count__"),
+                nw.col(TARGET_NAME).var(ddof=0).alias("__var__"),
+            )
+            if self.smoothing == "auto":
+                damping = nw.col("__var__") / y_var
+            else:
+                damping = self.smoothing
+            _lambda = nw.col("__count__") / (nw.col("__count__") + damping)
+            encoding = _lambda * nw.col("__mean__") + (1.0 - _lambda) * y_prior
+            stats = stats.select("__category__", encoding.alias("__encoding__"))
+            self.encoder_dict_[var] = dict(
+                zip(stats["__category__"].to_list(), stats["__encoding__"].to_list())
+            )
 
         # assign underscore parameters at the end in case code above fails
         self.variables_ = variables_

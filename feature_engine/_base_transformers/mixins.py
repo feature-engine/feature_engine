@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple, Union
 import narwhals as nw
 import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame, IntoSeries
+import numpy as np
 from numpy import ndarray
 from numpy.typing import ArrayLike
 from sklearn.utils.validation import check_is_fitted
@@ -13,6 +14,7 @@ from feature_engine.dataframe_checks import (
     check_X,
     check_X_y,
 )
+from feature_engine.dataframe_helpers import add_columns_to_df
 from feature_engine.variable_handling import check_numerical_variables
 
 
@@ -41,40 +43,29 @@ class TransformXyMixin:
             The transformed target variable of length [n_samples - n_rows]. It contains
             as many rows as those left in X_new.
         """
-        # check_X_y validates X against y and returns X as a narwhals dataframe;
-        # y stays native.
-        nw_X, y = check_X_y(X, y)
+        check_is_fitted(self)
+        X, y = check_X_y(X, y)
 
-        if nw_X.implementation.is_pandas():
-            # pandas rows carry labels, so y can be realigned on the index of
-            # the rows that transform() kept.
-            X = self.transform(X)
-            y = y.loc[X.index]
-        else:
-            # positional backends (polars, pyarrow, ...) have no row labels:
-            # tag each row with its position, transform, then use the tags that
-            # survived to subset y.
-            row_index_col = "__feature_engine_row_index__"
-            nw_X = nw_X.with_row_index(row_index_col)
-            # the tag column leaves X one column wider than the training set,
-            # which transform()'s column-count check (when the transformer has
-            # one) would reject. Widen the reference by one for the duration of
-            # this internal call only.
-            has_count_check = hasattr(self, "n_features_in_")
-            if has_count_check:
-                self.n_features_in_ += 1
-            try:
-                X = self.transform(nw_X.to_native())
-            finally:
-                if has_count_check:
-                    self.n_features_in_ -= 1
-            nw_X = nw.from_native(X, eager_only=True)
-            row_positions = nw_X.get_column(row_index_col).to_list()
-            X = nw_X.drop(row_index_col).to_native()
-            if nwd.is_into_series(y):
-                y = nw.from_native(y, series_only=True)[row_positions].to_native()
-            else:
-                y = nw.from_native(y, eager_only=True)[row_positions].to_native()
+        # tag each row with its position: a pandas index can have duplicates, and
+        # the other libraries have no index.
+        row_index_col = "__feature_engine_row_index__"
+        X = add_columns_to_df(X, {row_index_col: np.arange(len(X))})
+        # the tag makes X one column wider than in fit, so widen the reference
+        # while transform() runs.
+        feature_names_in = self.feature_names_in_
+        self.n_features_in_ += 1
+        self.feature_names_in_ = feature_names_in + [row_index_col]
+        try:
+            X = self.transform(nw.to_native(X, pass_through=True))
+        finally:
+            self.n_features_in_ -= 1
+            self.feature_names_in_ = feature_names_in
+
+        # not check_X: transform() can remove all the rows.
+        nw_X = nw.from_native(X, eager_only=True)
+        row_positions = nw_X.get_column(row_index_col).to_numpy()
+        X = nw_X.drop(row_index_col).to_native()
+        y = nw.from_native(y, allow_series=True)[row_positions].to_native()
 
         return X, y
 
@@ -82,7 +73,7 @@ class TransformXyMixin:
 class FitFromDictMixin:
     def _fit_from_dict(
         self, X: IntoDataFrame, user_dict_: Dict
-    ) -> Tuple[nw.DataFrame, List[Union[str, int]]]:
+    ) -> Tuple[Union[IntoDataFrame, nw.DataFrame], List[Union[str, int]]]:
         """
         Checks that input is a dataframe, checks that variables in the dictionary
         entered by the user are of type numerical. Does not assign any
@@ -107,18 +98,19 @@ class FitFromDictMixin:
 
         Returns
         -------
-        nw_X : narwhals dataframe
-            The dataframe entered as parameter, as a narwhals dataframe.
+        X : pandas or narwhals dataframe
+            The same pandas dataframe if X is pandas, or X in narwhals format
+            otherwise.
 
         variables_ : List
             The variables in the dictionary.
         """
-        nw_X = check_X(X)
+        X = check_X(X)
         variables_ = check_numerical_variables(X, list(user_dict_.keys()))
         _check_contains_na(X, variables_)
         _check_contains_inf(X, variables_)
 
-        return nw_X, variables_
+        return X, variables_
 
 
 class GetFeatureNamesOutMixin:

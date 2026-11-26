@@ -154,7 +154,7 @@ class ArbitraryOutlierCapper(BaseOutlier):
         y: Series, default=None
             y is not needed in this transformer. You can pass y or None.
         """
-        nw_X = check_X(X)
+        X = check_X(X)
 
         if self.max_capping_dict is None:
             self.right_tail_caps_ = {}
@@ -174,8 +174,8 @@ class ArbitraryOutlierCapper(BaseOutlier):
 
         self.variables_ = check_numerical_variables(X, variables)
 
-        self.feature_names_in_ = nw_X.columns
-        self.n_features_in_ = nw_X.shape[1]
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 

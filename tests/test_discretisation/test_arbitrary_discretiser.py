@@ -136,3 +136,22 @@ def test_error_when_nan_introduced_during_transform(make_df, return_object):
     transformer.fit(train)
     with pytest.raises(ValueError, match=re.escape(msg)):
         transformer.transform(test)
+
+
+def test_nan_introduced_only_for_values_outside_the_limits(make_df):
+    # values equal to the outer limits fall inside the first and last intervals
+    data = {"var_a": [0.0, 5.0, 10.0], "var_b": [-1.0, 5.0, 10.0]}
+    X = make_df(data)
+    limits_dict = {"var_a": [0, 5, 10], "var_b": [0, 5, 10]}
+    msg = (
+        "During the discretisation, NaN values were introduced "
+        "in the feature(s) var_b."
+    )
+
+    transformer = ArbitraryDiscretiser(binning_dict=limits_dict).fit(X)
+    with pytest.warns(UserWarning, match=re.escape(msg)):
+        Xt = transformer.transform(X)
+
+    assert isinstance(Xt, make_df)
+    assert frame_to_dict(Xt) == {"var_a": [0, 0, 1], "var_b": [None, 0, 1]}
+    assert frame_to_dict(X) == data

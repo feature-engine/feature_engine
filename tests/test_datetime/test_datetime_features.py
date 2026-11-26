@@ -9,7 +9,6 @@ from sklearn.pipeline import Pipeline
 from feature_engine.datetime import DatetimeFeatures
 from feature_engine.datetime._datetime_constants import (
     FEATURES_DEFAULT,
-    FEATURES_FUNCTIONS,
     FEATURES_SUFFIXES,
     FEATURES_SUPPORTED,
 )
@@ -44,12 +43,34 @@ CROSS_BACKEND_DATA = {
 feat_names_default_cb = [f"date{FEATURES_SUFFIXES[feat]}" for feat in FEATURES_DEFAULT]
 
 
+# The features of CROSS_BACKEND_DATES, as pandas' .dt accessor returns them.
+CROSS_BACKEND_FEATURES = {
+    "month": [1, 2, 12, 7],
+    "quarter": [1, 1, 4, 3],
+    "semester": [1, 1, 2, 2],
+    "year": [2020, 2020, 2020, 2021],
+    "week": [1, 9, 53, 28],
+    "day_of_week": [2, 5, 3, 3],
+    "day_of_month": [1, 29, 31, 15],
+    "day_of_year": [1, 60, 366, 196],
+    "weekend": [0, 1, 0, 0],
+    "month_start": [1, 0, 0, 0],
+    "month_end": [0, 1, 1, 0],
+    "quarter_start": [1, 0, 0, 0],
+    "quarter_end": [0, 0, 1, 0],
+    "year_start": [1, 0, 0, 0],
+    "year_end": [0, 0, 1, 0],
+    "leap_year": [1, 1, 1, 0],
+    "days_in_month": [31, 29, 31, 31],
+    "hour": [0, 12, 23, 6],
+    "minute": [0, 30, 59, 7],
+    "second": [0, 45, 59, 8],
+}
+
+
 def _expected_cross_backend_features(feats):
-    """Reference feature values computed with pandas' native FEATURES_FUNCTIONS,
-    the ground truth both the pandas and the narwhals extraction paths must match."""
-    dt = pd.Series(pd.to_datetime(CROSS_BACKEND_DATES))
     return {
-        f"date{FEATURES_SUFFIXES[feat]}": list(FEATURES_FUNCTIONS[feat](dt))
+        f"date{FEATURES_SUFFIXES[feat]}": CROSS_BACKEND_FEATURES[feat]
         for feat in feats
     }
 

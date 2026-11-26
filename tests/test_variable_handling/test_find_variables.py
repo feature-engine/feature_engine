@@ -1,7 +1,11 @@
+import warnings
+from functools import partial
+
 import pandas as pd
 import polars as pl
 import pytest
 
+from feature_engine.dataframe_checks import check_X
 from feature_engine.variable_handling import (
     find_all_variables,
     find_categorical_and_numerical_variables,
@@ -362,3 +366,35 @@ def test_numcat_exclude_datetime_false_keeps_date_like_category(make_df):
     assert find_categorical_and_numerical_variables(
         df, "date_cat", exclude_datetime=False
     ) == (["date_cat"], [])
+
+
+@pytest.mark.parametrize(
+    "find_variables, expected",
+    [
+        (find_numerical_variables, ["Age", "Marks"]),
+        (find_categorical_variables, ["Name", "City"]),
+        (find_datetime_variables, ["date_range", "date_obj0", "date_range_tz"]),
+        (find_all_variables, list(DATETIME_DATA)),
+        (
+            find_categorical_and_numerical_variables,
+            (["Name", "City"], ["Age", "Marks"]),
+        ),
+        (
+            partial(find_categorical_and_numerical_variables, variables="Age"),
+            ([], ["Age"]),
+        ),
+        (
+            partial(
+                find_categorical_and_numerical_variables, variables=["Name", "Age"]
+            ),
+            (["Name"], ["Age"]),
+        ),
+    ],
+)
+def test_check_X_output_does_not_raise_warning(make_df, find_variables, expected):
+    # check_X returns polars as narwhals, which nwd.is_pandas_dataframe warns about
+    X = check_X(make_df(DATETIME_DATA))
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert find_variables(X) == expected

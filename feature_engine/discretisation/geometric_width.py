@@ -30,6 +30,7 @@ from feature_engine._docstrings.methods import (
     _transform_discretiser_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import to_numpy
 from feature_engine.discretisation.base_discretiser import BaseDiscretiser
 
 
@@ -173,14 +174,13 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
             y is not needed in this encoder. You can pass y or None.
         """
 
-        nw_X, variables_ = self._fit_setup(X)
+        X, variables_ = self._fit_setup(X)
 
-        # fit
         binner_dict_ = {}
 
-        for var in variables_:
-            col = nw_X.get_column(var)
-            min_, max_ = col.min(), col.max()
+        for var, values in zip(variables_, to_numpy(X, variables_)):
+            min_: float = values.min()
+            max_: float = values.max()
             increment = np.power(max_ - min_, 1.0 / self.bins)
             bins = np.r_[
                 -np.inf, min_ + np.power(increment, np.arange(1, self.bins)), np.inf
@@ -191,6 +191,7 @@ class GeometricWidthDiscretiser(BaseDiscretiser):
 
         self.binner_dict_ = binner_dict_
         self.variables_ = variables_
-        self._get_feature_names_in(X)
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self

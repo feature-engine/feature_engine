@@ -2,8 +2,6 @@
 
 from typing import List, Union
 
-import narwhals as nw
-import narwhals.dependencies as nwd
 from narwhals.typing import IntoDataFrame
 
 Variables = Union[int, str, List[Union[str, int]]]
@@ -44,10 +42,7 @@ def retain_variables_if_in_df(X: IntoDataFrame, variables):
     if isinstance(variables, (str, int)):
         variables = [variables]
 
-    if nwd.is_pandas_dataframe(X) is True:
-        columns = set(X.columns)
-    else:
-        columns = set(nw.from_native(X, eager_only=True).columns)
+    columns = set(X.columns)
     variables_in_df = [var for var in variables if var in columns]
 
     # Raise an error if no column is left to work with.

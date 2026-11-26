@@ -9,6 +9,7 @@ import numpy as np
 from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._base_transformers.base_numerical import BaseNumericalTransformer
+from feature_engine.dataframe_helpers import replace_columns_in_df, to_numpy
 from feature_engine._base_transformers.mixins import FitFromDictMixin
 from feature_engine._check_init_parameters.check_init_input_params import (
     _check_return_empty_is_bool,
@@ -194,43 +195,43 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         y: Series, default=None
             It is not needed in this transformer. You can pass y or None.
         """
-
         if isinstance(self.C, dict):
-            nw_X, variables_ = super()._fit_from_dict(X, self.C)
+            X, variables_ = super()._fit_from_dict(X, self.C)
         else:
-            nw_X, variables_ = self._fit_setup(X)
+            X, variables_ = self._fit_setup(X)
 
-        values = nw_X.select(nw.col(variables_)).to_numpy()
-        values = values.astype(float)
+        arrays: List[np.ndarray] = [v.astype(float) for v in to_numpy(X, variables_)]
 
         C_ = self.C
 
         # 0 for strictly positive variables, abs(min) + 1 (shift to positive)
         # otherwise.
         if self.C == "auto":
-            mins = values.min(axis=0)
-            c_values = np.where(mins > 0, 0, np.abs(mins) + 1)
-            C_ = dict(zip(variables_, c_values.tolist()))
+            C_ = {
+                var: 0.0 if values.min() > 0 else float(np.abs(values.min()) + 1)
+                for var, values in zip(variables_, arrays)
+            }
 
         # C=0 is the original LogTransformer contract: no constant is added,
         # so fail fast at fit time exactly as before this class supported C.
-        if C_ == 0 and np.any(values <= 0):
+        if C_ == 0 and any(np.any(values <= 0) for values in arrays):
             raise ValueError(
                 "Some variables contain zero or negative values, can't apply log"
             )
 
         self.variables_ = variables_
         self.C_ = C_
-        self._get_feature_names_in(X)
+
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = X.shape[1]
 
         return self
 
-    def _c_as_array(self) -> Union[int, float, np.ndarray]:
-        """Broadcastable form of C_: a plain scalar, or a numpy array ordered
-        to line up column-wise with self.variables_ when C_ is a dict."""
+    def _c_of(self, variable: Union[str, int]) -> float:
+        """Returns the constant C_ to add to the variable."""
         if isinstance(self.C_, dict):
-            return np.array([self.C_[var] for var in self.variables_], dtype=float)
-        return self.C_
+            return float(self.C_[variable])
+        return float(self.C_)
 
     def transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -246,8 +247,7 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         X_new: dataframe
             The dataframe with the transformed variables.
         """
-
-        nw_X = self._check_transform_input_and_state(X)
+        X = self._check_transform_input_and_state(X)
 
         if self.C_ == 0:
             error_msg = (
@@ -259,25 +259,18 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
                 + " constant C, can't apply log."
             )
 
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
-        shifted = values + self._c_as_array()
-
-        if np.any(shifted <= 0):
+        shifted = {
+            var: values.astype(float) + self._c_of(var)
+            for var, values in zip(self.variables_, to_numpy(X, self.variables_))
+        }
+        if any(np.any(values <= 0) for values in shifted.values()):
             raise ValueError(error_msg)
 
-        # transform
-        if self.base == "e":
-            result = np.log(shifted)
-        else:
-            result = np.log10(shifted)
+        log = np.log if self.base == "e" else np.log10
+        new_columns = {var: log(values) for var, values in shifted.items()}
 
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def inverse_transform(self, X: IntoDataFrame) -> IntoDataFrame:
         """
@@ -293,24 +286,18 @@ class LogTransformer(BaseNumericalTransformer, FitFromDictMixin):
         X_tr: dataframe
             The dataframe with the transformed variables.
         """
+        X = self._check_transform_input_and_state(X)
 
-        nw_X = self._check_transform_input_and_state(X)
-        values = nw_X.select(nw.col(self.variables_)).to_numpy().astype(float)
-        c_arr = self._c_as_array()
+        new_columns = {}
+        for var, values in zip(self.variables_, to_numpy(X, self.variables_)):
+            values = values.astype(float)
+            if self.base == "e":
+                new_columns[var] = np.exp(values) - self._c_of(var)
+            else:
+                new_columns[var] = 10**values - self._c_of(var)
 
-        # inverse_transform
-        if self.base == "e":
-            result = np.exp(values) - c_arr
-        else:
-            result = 10**values - c_arr
-
-        new_series = [
-            nw.new_series(var, result[:, i], backend=nw_X.implementation)
-            for i, var in enumerate(self.variables_)
-        ]
-        X = nw_X.with_columns(*new_series).to_native()
-
-        return X
+        X = replace_columns_in_df(X, new_columns)
+        return nw.to_native(X, pass_through=True)
 
     def _more_tags(self):
         tags_dict = _return_tags()

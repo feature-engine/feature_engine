@@ -21,6 +21,11 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    subset_df,
+)
 from feature_engine.creation.base_creation import BaseCreation
 
 
@@ -284,7 +289,7 @@ class MathFeatures(BaseCreation):
         new_variable_names = self._get_new_features_name()
 
         func = self.func
-        if nwd.is_pandas_dataframe(X) is True and _pandas_version() < 3:
+        if not isinstance(X, nw.DataFrame) and _pandas_version() < 3:
             if isinstance(func, list):
                 func = [_FUNC_TO_STRING_ALIAS.get(fun, fun) for fun in func]
             else:
@@ -293,44 +298,32 @@ class MathFeatures(BaseCreation):
         functions = func if isinstance(func, list) else [func]
         reducers = [_get_numpy_reducer(fun) for fun in functions]
 
-        nw_X = nw.from_native(X, eager_only=True)
-        if nwd.is_pandas_dataframe(X) is True:
-            values = X[self.variables].to_numpy()
-        else:
-            values = nw_X.select(self.variables).to_numpy()
+        values = subset_df(X, self.variables).to_numpy()
 
         # Nullable extension dtypes produce object arrays. Keep those, custom
         # callables, and less common aggregations on the fallback path below.
         if reducers and values.dtype.kind in "biuf" and all(reducers):
-            new_series = []
+            new_features = {}
             for (reducer, kwargs), name in zip(reducers, new_variable_names):
                 # pandas' named reductions do not warn for empty/all-missing rows.
                 # NumPy returns the same values but emits RuntimeWarning for some
                 # reducers, so silence only those warnings on this equivalent path.
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", RuntimeWarning)
-                    result = reducer(values, axis=1, **kwargs)
-                new_series.append(
-                    nw.new_series(name, result, backend=nw_X.implementation)
-                )
-            nw_X = nw_X.with_columns(*new_series)
-            if self.drop_original is True:
-                nw_X = nw_X.drop(self.variables)
-            X = nw_X.to_native()
-        elif nwd.is_pandas_dataframe(X) is True:
+                    new_features[name] = reducer(values, axis=1, **kwargs)
+            X = add_columns_to_df(X, new_features)
+        elif not isinstance(X, nw.DataFrame):
             result = X[self.variables].agg(func, axis=1)
             if len(new_variable_names) == 1:
                 X[new_variable_names[0]] = result
             else:
                 X[new_variable_names] = result
-            if self.drop_original is True:
-                X = X.drop(columns=self.variables)
         else:
             # polars has no equivalent to pandas' agg(func, axis=1): apply each
             # function natively via map_rows, one call per function. map_rows
             # passes each row as a plain tuple, not a Series, so callables that
             # rely on Series methods (e.g. `row.max()`) need `max(row)` instead.
-            sub_native = nw_X.select(self.variables).to_native()
+            sub_native = X.select(self.variables).to_native()
             new_series = []
             for fun, name in zip(functions, new_variable_names):
                 if not callable(fun):
@@ -342,15 +335,15 @@ class MathFeatures(BaseCreation):
                 result_df = sub_native.map_rows(fun)
                 new_series.append(
                     nw.new_series(
-                        name, result_df.to_series(0), backend=nw_X.implementation
+                        name, result_df.to_series(0), backend=X.implementation
                     )
                 )
-            nw_X = nw_X.with_columns(*new_series)
-            if self.drop_original is True:
-                nw_X = nw_X.drop(self.variables)
-            X = nw_X.to_native()
+            X = X.with_columns(*new_series)
 
-        return X
+        if self.drop_original is True:
+            X = drop_variables_from_df(X, self.variables)
+
+        return nw.to_native(X, pass_through=True)
 
     def _get_new_features_name(self) -> List:
         """Return names of the created features."""

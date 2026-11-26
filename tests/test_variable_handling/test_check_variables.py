@@ -1,7 +1,10 @@
+import warnings
+
 import pandas as pd
 import polars as pl
 import pytest
 
+from feature_engine.dataframe_checks import check_X
 from feature_engine.variable_handling import (
     check_all_variables,
     check_categorical_variables,
@@ -203,3 +206,21 @@ def test_check_all_variables_raises_errors_when_not_in_dataframe(make_df, input_
 
     with pytest.raises(KeyError, match=msg):
         check_all_variables(df, input_vars)
+
+
+@pytest.mark.parametrize(
+    "check_variables, variables",
+    [
+        (check_numerical_variables, ["Age", "Marks"]),
+        (check_categorical_variables, ["Name", "City"]),
+        (check_datetime_variables, ["date_range", "date_obj0"]),
+        (check_all_variables, ["Name", "Age"]),
+    ],
+)
+def test_check_X_output_does_not_raise_warning(make_df, check_variables, variables):
+    # check_X returns polars as narwhals, which nwd.is_pandas_dataframe warns about
+    X = check_X(make_df(DATETIME_DATA))
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert check_variables(X, variables) == variables

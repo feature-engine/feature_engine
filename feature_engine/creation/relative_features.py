@@ -20,6 +20,11 @@ from feature_engine._docstrings.methods import (
     _transform_creation_docstring,
 )
 from feature_engine._docstrings.substitute import Substitution
+from feature_engine.dataframe_helpers import (
+    add_columns_to_df,
+    drop_variables_from_df,
+    to_numpy,
+)
 from feature_engine.creation.base_creation import BaseCreation
 
 _PERMITTED_FUNCTIONS = [
@@ -231,15 +236,12 @@ class RelativeFeatures(BaseCreation):
 
         X = self._check_transform_input_and_state(X)
 
-        nw_X = nw.from_native(X, eager_only=True)
-        # Extract each column as its own 1D array (not one batched 2D array
-        # via select().to_numpy()) so mixed int/float variables each keep
-        # their own dtype promotion, matching pandas' per-column .sub()/
-        # .div()/etc. instead of upcasting everything to a common dtype.
-        var_arrays = {var: nw_X.get_column(var).to_numpy() for var in self.variables}
-        ref_arrays = {ref: nw_X.get_column(ref).to_numpy() for ref in self.reference}
+        # One array per column, not a 2D array, so that mixed int and float
+        # variables keep their own dtype instead of being cast to a common one.
+        var_arrays = dict(zip(self.variables, to_numpy(X, self.variables)))
+        ref_arrays = dict(zip(self.reference, to_numpy(X, self.reference)))
 
-        new_series = []
+        new_features = {}
         for func in self.func:
             op = _NUMPY_OPS[func]
             for reference in self.reference:
@@ -269,15 +271,15 @@ class RelativeFeatures(BaseCreation):
                     else:
                         result = op(var_arrays[var], ref_arr)
 
-                    new_series.append(
-                        nw.new_series(name, result, backend=nw_X.implementation)
-                    )
+                    new_features[name] = result
 
-        nw_X = nw_X.with_columns(*new_series)
+        X = add_columns_to_df(X, new_features)
         if self.drop_original is True:
-            nw_X = nw_X.drop(list(set(self.variables + self.reference)))
+            X = drop_variables_from_df(
+                X, list(set(self.variables + self.reference))
+            )
 
-        return nw_X.to_native()
+        return nw.to_native(X, pass_through=True)
 
     def _raise_error_when_zero_in_denominator(self):
         raise ValueError(

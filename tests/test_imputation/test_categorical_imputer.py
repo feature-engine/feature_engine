@@ -354,6 +354,15 @@ def test_variables_cast_as_category_frequent(data_na):
     pd.testing.assert_frame_equal(X_transformed, X_reference)
 
 
+def test_variables_cast_as_category_that_have_the_fill_value():
+    # pandas only
+    X = pd.DataFrame({"var": pd.Categorical(["a", None, "Missing"])})
+    Xt = CategoricalImputer().fit_transform(X)
+
+    expected = pd.DataFrame({"var": pd.Categorical(["a", "Missing", "Missing"])})
+    pd.testing.assert_frame_equal(Xt, expected)
+
+
 def test_polars_categorical_dtype_widens_on_missing_fill(data_na):
     # polars only.
     df_na = pl.DataFrame(data_na).with_columns(pl.col("City").cast(pl.Categorical))

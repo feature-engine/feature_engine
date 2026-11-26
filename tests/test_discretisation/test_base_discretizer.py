@@ -83,3 +83,13 @@ def test_transform(make_df, data_california):
     X = transformer.fit_transform(data)
     assert isinstance(X, make_df)
     assert frame_to_dict(X)["HouseAge"] == expected_labels
+
+
+@pytest.mark.parametrize("return_boundaries", [False, True])
+def test_transform_does_not_modify_the_input(make_df, return_boundaries):
+    data = {"HouseAge": [10.0, 30.0, 50.0], "other": ["a", "b", "c"]}
+    X = make_df(data)
+
+    MockClassFit(return_boundaries=return_boundaries).fit_transform(X)
+
+    assert frame_to_dict(X) == data
