@@ -1,7 +1,9 @@
-from typing import List, Union
+from typing import Dict, List, Union
 
+import narwhals as nw
+import narwhals.dependencies as nwd
 import numpy as np
-import pandas as pd
+from narwhals.typing import IntoDataFrame, IntoSeries
 
 from feature_engine._check_init_parameters.check_variables import (
     _check_variables_input_value,
@@ -27,6 +29,7 @@ from feature_engine.discretisation import (
     EqualFrequencyDiscretiser,
     EqualWidthDiscretiser,
 )
+from feature_engine.encoding._helper_functions import TARGET_NAME, add_target_to_X
 from feature_engine.encoding.woe import WoE
 from feature_engine.selection.base_selector import BaseSelector
 from feature_engine.tags import _return_tags
@@ -67,6 +70,10 @@ class SelectByInformationValue(BaseSelector, WoE):
 
     SelectByInformationValue() is only suitable to select features for binary
     classification.
+
+    The WoE is not defined for categories or intervals with no positive or no
+    negative cases. For those, the transformer replaces the zero count by 0.5 to
+    calculate the WoE and the IV.
 
     SelectByInformationValue() can determine the IV for numerical and categorical
     variables. For numerical variables, it first sorts the variables into intervals,
@@ -159,6 +166,30 @@ class SelectByInformationValue(BaseSelector, WoE):
     3   3
     4   3
     5   2
+
+    With polars
+
+    >>> import polars as pl
+    >>> from feature_engine.selection import SelectByInformationValue
+    >>> X = pl.DataFrame(dict(x1 = [1,1,1,1,1,1],
+    >>>                     x2 = [3,2,2,3,3,2],
+    >>>                     x3 = ["a","b","c","a","c","b"]))
+    >>> y = pl.Series([1,1,1,0,0,0])
+    >>> iv = SelectByInformationValue()
+    >>> iv.fit_transform(X, y)
+    shape: (6, 1)
+    ┌─────┐
+    │ x2  │
+    │ --- │
+    │ i64 │
+    ╞═════╡
+    │ 3   │
+    │ 2   │
+    │ 2   │
+    │ 3   │
+    │ 3   │
+    │ 2   │
+    └─────┘
     """
 
     def __init__(
@@ -173,7 +204,10 @@ class SelectByInformationValue(BaseSelector, WoE):
         if not isinstance(bins, int) or isinstance(bins, int) and bins <= 0:
             raise ValueError(f"bins must be an integer. Got {bins} instead.")
 
-        if strategy not in ["equal_width", "equal_frequency"]:
+        if not isinstance(strategy, str) or strategy not in [
+            "equal_width",
+            "equal_frequency",
+        ]:
             raise ValueError(
                 "strategy takes only values 'equal_width' or 'equal_frequency'. "
                 f"Got {strategy} instead."
@@ -181,62 +215,48 @@ class SelectByInformationValue(BaseSelector, WoE):
 
         if not isinstance(threshold, (int, float)):
             raise ValueError(
-                f"threshold must be an integer or a float. Got {threshold} "
-                "instead."
+                f"threshold must be an integer or a float. Got {threshold} instead."
             )
 
+        super().__init__(confirm_variables)
         self.variables = _check_variables_input_value(variables)
         self.bins = bins
         self.strategy = strategy
         self.threshold = threshold
-        self.confirm_variables = confirm_variables
 
-    def fit(self, X: pd.DataFrame, y: pd.Series):
+    def fit(self, X: IntoDataFrame, y: IntoSeries):
         """
         Learn the information value. Find features with IV above the threshold.
 
         Parameters
         ----------
-        X: pandas dataframe of shape = [n_samples, n_features]
+        X: dataframe of shape = [n_samples, n_features]
             The training input samples.
 
-        y: pandas series of shape = [n_samples, ]
+        y: series of shape = [n_samples, ]
             Target, must be binary.
         """
-        # check input dataframe
         X, y = self._check_fit_input(X, y)
 
-        # find categorical and numerical variables
-        # find all variables or check those entered are present in the dataframe
         self.variables_ = _select_all_variables(
             X, self.variables, self.confirm_variables, exclude_datetime=True
         )
 
+        # variables_ has no datetime variables left, and skipping the datetime
+        # check (which parses the values) doesn't change the numerical variables.
         _, variables_numerical = find_categorical_and_numerical_variables(
-            X, self.variables_
+            X, self.variables_, exclude_datetime=False
         )
 
-        # check for missing values
         _check_contains_na(X, self.variables_)
         _check_contains_inf(X, variables_numerical)
 
-        # get input df features number and name
         self._get_feature_names_in(X)
 
-        # If there are numerical variables, discretize them
         if len(variables_numerical) > 0:
-            discretiser = self._make_discretiser(variables_numerical)
-            X = discretiser.fit_transform(X)
+            X = self._make_discretiser(variables_numerical).fit_transform(X)
 
-        self.information_values_ = {}
-        for var in self.variables_:
-            woe, _ = self._calculate_woe(X, y, var)
-            iv = self._calculate_iv(
-                woe["__pos__"].to_numpy(),
-                woe["__neg__"].to_numpy(),
-                woe["__woe__"].to_numpy(),
-            )
-            self.information_values_[var] = iv
+        self.information_values_ = self._calculate_information_values(X, y)
 
         self.features_to_drop_ = [
             f
@@ -246,25 +266,63 @@ class SelectByInformationValue(BaseSelector, WoE):
 
         return self
 
-    def _calculate_iv(self, pos, neg, woe):
-        return np.sum((pos - neg) * woe)
+    def _calculate_information_values(
+        self, X: IntoDataFrame, y: IntoSeries
+    ) -> Dict[Union[str, int], float]:
+        """
+        Return the IV of each variable. Zero counts are replaced by 0.5, as in the
+        WoEEncoder.
+        """
+        # pandas is faster than narwhals.
+        if nwd.is_pandas_dataframe(X) is True:
+            y_arr = y.to_numpy(dtype=float)
+            total_pos = y_arr.sum()
+            total_neg = len(y_arr) - total_pos
+            information_values = {}
+            for var in self.variables_:
+                codes, _ = X[var].factorize()
+                pos = np.bincount(codes, weights=y_arr)
+                neg = np.bincount(codes) - pos
+                pos = np.where(pos == 0, 0.5, pos) / total_pos
+                neg = np.where(neg == 0, 0.5, neg) / total_neg
+                information_values[var] = float(np.sum((pos - neg) * np.log(pos / neg)))
+            return information_values
+
+        nw_Xy = add_target_to_X(nw.from_native(X, eager_only=True), y)
+        total_pos = nw_Xy[TARGET_NAME].sum()
+        total_neg = len(nw_Xy) - total_pos
+
+        pos, neg = nw.col("__pos__"), nw.col("__n__") - nw.col("__pos__")
+        pos = nw.when(pos == 0).then(0.5).otherwise(pos) / total_pos
+        neg = nw.when(neg == 0).then(0.5).otherwise(neg) / total_neg
+        iv = ((pos - neg) * (pos / neg).log()).sum().alias("__iv__")
+
+        # a single lazy query lets polars compute the variables in parallel.
+        lazy_Xy = nw_Xy.lazy()
+        information_values = nw.concat(
+            [
+                lazy_Xy.group_by(var)
+                .agg(
+                    nw.col(TARGET_NAME).sum().alias("__pos__"),
+                    nw.len().alias("__n__"),
+                )
+                .select(iv)
+                for var in self.variables_
+            ],
+            how="vertical",
+        ).collect()
+        return dict(zip(self.variables_, information_values["__iv__"].to_list()))
 
     def _make_discretiser(self, variables):
         """
         Instantiate the EqualWidthDiscretiser or EqualFrequencyDiscretiser.
         """
+        # the IV only needs the interval of each value, so integer codes, which are
+        # faster to group than the interval boundaries, are enough.
         if self.strategy == "equal_width":
-            discretiser = EqualWidthDiscretiser(
-                bins=self.bins,
-                variables=variables,
-                return_boundaries=True,
-            )
+            discretiser = EqualWidthDiscretiser(bins=self.bins, variables=variables)
         else:
-            discretiser = EqualFrequencyDiscretiser(
-                q=self.bins,
-                variables=variables,
-                return_boundaries=True,
-            )
+            discretiser = EqualFrequencyDiscretiser(q=self.bins, variables=variables)
 
         return discretiser
 
