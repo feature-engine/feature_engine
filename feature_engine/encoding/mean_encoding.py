@@ -252,7 +252,9 @@ class MeanEncoder(CategoricalMethodsMixin, CategoricalInitMixinNA):
                 nw.col(TARGET_NAME).var(ddof=0).alias("__var__"),
             )
             if self.smoothing == "auto":
-                damping = nw.col("__var__") / y_var
+                # Zero target variance makes the ratio undefined; all group means
+                # then equal the prior, so damping of zero returns that mean.
+                damping = 0.0 if y_var == 0 else nw.col("__var__") / y_var
             else:
                 damping = self.smoothing
             _lambda = nw.col("__count__") / (nw.col("__count__") + damping)
